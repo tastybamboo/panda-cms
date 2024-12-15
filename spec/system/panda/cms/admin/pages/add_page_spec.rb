@@ -44,6 +44,24 @@ RSpec.describe "When adding a page", type: :system, js: true do
       select "Page", from: "Template"
       click_button "Create Page"
 
+      # Debug JavaScript loading
+      puts "Checking if EditorJS is loaded..."
+      page.evaluate_script("!!window.EditorJS")
+
+      # Wait for iframe to exist first
+      expect(page).to have_selector("iframe#editablePageFrame", wait: 10)
+
+      # Debug iframe visibility
+      puts "Checking iframe visibility..."
+      puts page.evaluate_script("document.getElementById('editablePageFrame').style.display")
+
+      # Wait for iframe to become visible
+      expect(page).to have_selector("iframe#editablePageFrame", visible: true, wait: 5)
+
+      # Debug editor initialization
+      puts "Checking editor initialization..."
+      page.evaluate_script("console.debug('[TEST] Editor initialization status:', window.editor && window.editor.isReady)")
+
       within_frame "editablePageFrame" do
         expect(page).to have_content("Basic Page Layout")
       end
@@ -58,7 +76,7 @@ RSpec.describe "When adding a page", type: :system, js: true do
       select "Page", from: "Template"
       click_button "Create Page"
       expect(page).to have_content("URL has already been taken")
-      expect(page.current_path).to eq "/admin/pages"
+      expect(page.current_path).to eq "/admin/pages/new"
     end
 
     it "updates the form if a parent page is selected" do

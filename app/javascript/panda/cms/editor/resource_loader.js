@@ -47,13 +47,10 @@ export class ResourceLoader {
     return new Promise((resolve, reject) => {
       const script = frameDocument.createElement("script")
       script.src = src
-      head.append(script)
+      resolve(script)
 
-      script.onload = () => {
-        console.debug(`[Panda CMS] Script loaded: ${src}`)
-        resolve(script)
-      }
       script.onerror = () => reject(new Error(`[Panda CMS] Script load error for ${src}`))
+      head.append(script)
     })
   }
 

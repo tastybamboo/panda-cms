@@ -7,6 +7,8 @@ module Panda
 
       before_save :downcase_email
 
+      scope :admin, -> { where(admin: true) }
+
       def is_admin?
         admin
       end

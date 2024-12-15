@@ -67,9 +67,16 @@ export class PlainTextEditor {
       },
       body: JSON.stringify({ content: content })
     })
-    .then(response => response.json())
-    .then(() => this.showSuccess())
-    .catch(error => this.showError(error))
+      .then(response => response.json())
+      .then(() => {
+        this.showSuccess()
+        // Show success message in parent window
+        parent.document.getElementById("successMessage").classList.remove("hidden")
+        setTimeout(() => {
+          parent.document.getElementById("successMessage").classList.add("hidden")
+        }, 3000)
+      })
+      .catch(error => this.showError(error))
   }
 
   /**

@@ -21,7 +21,7 @@ require "capybara/cuprite"
   logger: StringIO.new,
   browser_logger: StringIO.new,
   slowmo: ENV.fetch("SLOWMO", 0).to_f,
-  js_errors: !ENV["JS_ERRORS"].in?(%w[y 1 yes true]),
+  js_errors: true,
   headless: !ENV["HEADLESS"].in?(%w[n 0 no false]),
   pending_connection_errors: false
 }
@@ -38,6 +38,10 @@ end
 Capybara.default_driver = Capybara.javascript_driver = :better_cuprite
 
 module CupriteHelpers
+  def debug(message)
+    puts "[DEBUG] #{message}" if ENV["DEBUG"]
+  end
+
   # Drop #pause anywhere in a test to stop the execution.
   # Useful when you want to checkout the contents of a web page in the middle of a test
   # running in a headful mode.
@@ -62,4 +66,14 @@ end
 
 RSpec.configure do |config|
   config.include CupriteHelpers, type: :system
+
+  config.after(:each, type: :system) do |example|
+    if example.exception
+      debug "Test failed: #{example.full_description}"
+      debug "Error: #{example.exception.message.split("\n").first}"
+      debug "Current URL: #{page.current_url}"
+      debug "Current Path: #{page.current_path}"
+      debug "Page Title: #{page.title}"
+    end
+  end
 end

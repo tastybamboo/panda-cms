@@ -38,7 +38,7 @@ gem "panda_cms", path: "../panda_cms"
 
 ## Assets
 
-Whilst developing, you'll likely want to run the task `rake panda_cms:assets:watch_admin` to ensure your assets are updated. Alternatively, you can run `rake panda_cms:assets:compile`.
+Whilst developing, you'll likely want to run the task `rake panda_cms:assets:watch-admin` to ensure your assets are updated.
 
 ## Branching
 

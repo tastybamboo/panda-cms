@@ -1,6 +1,8 @@
 require "system_helper"
 
 RSpec.describe "When editing a page", type: :system do
+  include EditorJSHelpers
+
   context "when not logged in" do
     let(:homepage) { Panda::CMS::Page.find_by(path: "/") }
 
@@ -89,18 +91,33 @@ RSpec.describe "When editing a page", type: :system do
     it "allows editing rich text content of the page" do
       time = Time.now.strftime("%Y-%m-%d %H:%M:%S")
 
+      # Wait for iframe to exist and be visible
+      expect(page).to have_css("iframe#editablePageFrame", wait: 10)
+      expect(page).to have_selector("iframe#editablePageFrame", visible: true, wait: 10)
+
+      # Wait for save button to be present
+      expect(page).to have_css("a#saveEditableButton", wait: 10)
+
       within_frame "editablePageFrame" do
-        # Find the specific editor block with the exact text
-        find(:xpath, "//div[contains(@class, 'ce-paragraph') and contains(text(), 'This is the main content of the about page')]") do
-          # Find the editor block directly
-          find(:xpath, "//div[contains(@class, 'codex-editor__redactor')]").click
-          # Simulate typing the new content
-          page.driver.browser.keyboard.type("New rich text content #{time}")
-        end
+        # Wait for rich text area to be present
+        rich_text_area = find('div[data-editable-kind="rich_text"]', wait: 10)
+
+        # Wait for editor to be initialized by the iframe controller
+        expect(page).to have_css(".ce-block", wait: 5)
+        expect(page).to have_css(".ce-toolbar", wait: 5)
+
+        # Add content using the helper method
+        add_editor_paragraph("New rich text content #{time}")
       end
 
+      # Click the save button
       find("a", id: "saveEditableButton").click
 
+      # Wait for success message to become visible
+      expect(page).to have_css("#successMessage:not(.hidden)", wait: 10)
+      expect(page).to have_css(".flash-message-text", text: "This page was successfully updated!", wait: 10)
+
+      # Visit the page and verify the rendered content
       visit "/about"
       expect(page).to have_content("New rich text content #{time}")
     end

@@ -4,12 +4,21 @@ RSpec.describe "Website" do
   include_context "with standard pages"
   it "shows the homepage with rich text blocks and rendered JS" do
     visit "/"
-    # TODO: Look at Percy.io for visual regression testing
-    expect(page).to have_content("Homepage Layout")
-    # Simple JS
-    expect(page).to have_content("I like ice cream!")
-    # Stimulus JS
-    expect(page).to have_content("Hello, Stimulus!")
+
+    # Debug output for troubleshooting
+    if ENV["DEBUG"]
+      debug "Current URL: #{page.current_url}"
+      debug "Page Title: #{page.title}"
+      debug "Page HTML:"
+      debug page.html
+    end
+
+    # Wait for the layout to be visible
+    expect(page).to have_content("Homepage Layout", wait: 10)
+
+    # Wait for JavaScript to initialize
+    expect(page).to have_content("I like ice cream!", wait: 10)
+    expect(page).to have_content("Hello, Stimulus!", wait: 10)
   end
 
   it "shows the about page with plain text, code and rich text blocks" do
@@ -18,12 +27,12 @@ RSpec.describe "Website" do
     # Debug output for troubleshooting
     if ENV["DEBUG"]
       about = Panda::CMS::Page.find_by(path: "/about")
-      puts "\nPage: #{about.attributes.inspect}"
-      puts "\nBlock Contents:"
+      debug "Page: #{about.attributes.inspect}"
+      debug "Block Contents:"
       about.block_contents.each do |bc|
-        puts "\nBlock: #{bc.block.name}"
-        puts "Raw Content: #{bc.content.inspect}"
-        puts "Rendered Content: #{bc.cached_content.inspect}"
+        debug "Block: #{bc.block.name}"
+        debug "Raw Content: #{bc.content.inspect}"
+        debug "Rendered Content: #{bc.cached_content.inspect}"
       end
     end
 

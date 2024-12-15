@@ -2,7 +2,5 @@
   <% component.with_heading(text: "Edit Post", level: 1) do |heading| %>
   <% end %>
 
-  <div class="mt-4">
-    <%= render "form", post: post, url: url %>
-  </div>
+  <%= render "form", post: post, url: url, method: :patch %>
 <% end %>
