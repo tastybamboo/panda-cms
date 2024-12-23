@@ -1,7 +1,7 @@
 require "rails_helper"
 
 RSpec.describe Panda::CMS::EditorJs::Blocks::Alert do
-  include EditorJsHelper
+  include EditorHelpers
 
   let(:alert_primary) do
     {

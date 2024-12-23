@@ -69,7 +69,6 @@ export class PlainTextEditor {
     })
       .then(response => response.json())
       .then(() => {
-        this.showSuccess()
         // Show success message in parent window
         parent.document.getElementById("successMessage").classList.remove("hidden")
         setTimeout(() => {

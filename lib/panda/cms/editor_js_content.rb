@@ -8,12 +8,10 @@ module Panda::CMS::EditorJsContent
     before_save :generate_cached_content
   end
 
-  def content_changed?
-    will_save_change_to_content?
-  end
-
   def generate_cached_content
     return if content.nil?
+
+    raise "content is not a hash" unless content.is_a?(Hash)
 
     self.cached_content = if content.is_a?(Hash) && content["source"] == "editorJS"
       Panda::CMS::EditorJs::Renderer.new(content).render

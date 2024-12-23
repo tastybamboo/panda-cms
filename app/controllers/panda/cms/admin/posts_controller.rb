@@ -131,21 +131,8 @@ module Panda
             :status,
             :published_at,
             :user_id,
-            content: {}
-          ).tap do |permitted_params|
-            if permitted_params[:content].present?
-              permitted_params[:content] = if permitted_params[:content].is_a?(String)
-                Rails.logger.debug "Parsing content from string: #{permitted_params[:content]}"
-                JSON.parse(permitted_params[:content])
-              elsif permitted_params[:content].is_a?(ActionController::Parameters)
-                Rails.logger.debug "Converting content from parameters: #{permitted_params[:content].inspect}"
-                permitted_params[:content].to_unsafe_h
-              else
-                Rails.logger.debug "Using content as is: #{permitted_params[:content].inspect}"
-                permitted_params[:content]
-              end
-            end
-          end
+            :content
+          )
         end
       end
     end

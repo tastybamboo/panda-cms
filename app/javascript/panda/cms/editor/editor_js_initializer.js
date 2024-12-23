@@ -64,9 +64,6 @@ export class EditorJSInitializer {
 
       // Wait for EditorJS to be available
       await this.waitForEditorJS()
-
-      // Wait for all tools to be available
-      await this.waitForTools()
     } catch (error) {
       throw error
     }
@@ -269,7 +266,7 @@ export class EditorJSInitializer {
    */
   async waitForEditorJS() {
     let attempts = 0
-    const maxAttempts = 300 // 30 seconds with 100ms intervals
+    const maxAttempts = 30 // 3 seconds with 100ms intervals
 
     await new Promise((resolve, reject) => {
       const check = () => {
@@ -278,71 +275,6 @@ export class EditorJSInitializer {
           resolve()
         } else if (attempts >= maxAttempts) {
           reject(new Error('EditorJS core failed to load'))
-        } else {
-          setTimeout(check, 100)
-        }
-      }
-      check()
-    })
-  }
-
-  /**
-   * Wait for all tools to be available in window
-   */
-  async waitForTools() {
-    // Get base tools plus any custom tools from the application
-    const baseTools = {
-      Paragraph: ['Paragraph'],
-      Header: ['Header'],
-      NestedList: ['NestedList'],
-      Quote: ['Quote'],
-      Table: ['Table'],
-      SimpleImage: ['SimpleImage'],
-      Embed: ['Embed']
-    }
-
-    // Add any custom tools from the application
-    const customTools = window.PANDA_CMS_EDITOR_JS_TOOLS || {}
-    const toolPaths = { ...baseTools }
-
-    Object.keys(customTools).forEach(toolName => {
-      toolPaths[toolName] = [toolName]
-    })
-
-    let attempts = 0
-    const maxAttempts = 300 // 30 seconds with 100ms intervals
-
-    await new Promise((resolve, reject) => {
-      const check = () => {
-        attempts++
-        const toolStatus = {}
-
-        const available = Object.entries(toolPaths).every(([toolName, paths]) => {
-          // Try different possible paths where the tool might be exposed
-          const tool = paths.reduce((found, path) => {
-            return found || window[path]
-          }, undefined)
-
-          const isAvailable = tool && typeof tool === 'function'
-          toolStatus[toolName] = isAvailable
-
-          if (!isAvailable) {
-            console.debug(`Waiting for ${toolName} to be available... (attempt ${attempts}/${maxAttempts})`)
-          }
-          return isAvailable
-        })
-
-        if (available) {
-          console.debug('All tools are available as constructors!')
-          resolve()
-        } else if (attempts >= maxAttempts) {
-          const missingTools = Object.entries(toolStatus)
-            .filter(([_, isAvailable]) => !isAvailable)
-            .map(([name]) => name)
-
-          const error = new Error(`Editor tools failed to initialize: ${missingTools.join(', ')}`)
-          console.error(error)
-          reject(error)
         } else {
           setTimeout(check, 100)
         }
