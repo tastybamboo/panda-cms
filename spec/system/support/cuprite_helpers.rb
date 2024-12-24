@@ -1,3 +1,41 @@
+class FerrumLogger
+  def puts(log_str)
+    _log_symbol, _log_time, log_body_str = log_str.strip.split(" ", 3)
+    return if log_body_str.nil?
+
+    begin
+      log_body = JSON.parse(log_body_str)
+    rescue
+      puts log_body_str
+      return
+    end
+
+    case log_body["method"]
+    when "Runtime.consoleAPICalled"
+      log_body["params"]["args"].each do |arg|
+        case arg["type"]
+        when "string"
+          Kernel.puts arg["value"]
+        when "object"
+          Kernel.puts arg["preview"]["properties"].map { |x| [x["name"], x["value"]] }.to_h
+        end
+      end
+
+    when "Runtime.exceptionThrown"
+      # noop, this is already logged because we have "js_errors: true" in cuprite.
+
+    when "Log.entryAdded"
+      Kernel.puts "#{log_body["params"]["entry"]["url"]} - #{log_body["params"]["entry"]["text"]}"
+    end
+  end
+end
+
+# RSpec.configure do |config|
+#   config.before(:each, type: :system) do
+#     page.driver.browser.options.logger.page = page.driver.browser.page
+#   end
+# end
+
 # First, load Cuprite Capybara integration
 require "capybara/cuprite"
 
@@ -18,8 +56,7 @@ require "capybara/cuprite"
   process_timeout: 60,
   timeout: 30,
   inspector: ENV["DEBUG"].in?(%w[y 1 yes true]),
-  logger: StringIO.new,
-  browser_logger: StringIO.new,
+  logger: FerrumLogger.new,
   slowmo: ENV.fetch("SLOWMO", 0).to_f,
   js_errors: true,
   headless: !ENV["HEADLESS"].in?(%w[n 0 no false]),
@@ -49,9 +86,9 @@ module CupriteHelpers
     page.driver.pause
   end
 
-  # Drop #debug anywhere in a test to open a Chrome inspector and pause the execution
-  # Usage: debug(binding)
-  def debug(*)
+  # Drop #browser_debug anywhere in a test to open a Chrome inspector and pause the execution
+  # Usage: browser_debug(binding)
+  def browser_debug(*)
     page.driver.debug(*)
   end
 
@@ -66,14 +103,4 @@ end
 
 RSpec.configure do |config|
   config.include CupriteHelpers, type: :system
-
-  config.after(:each, type: :system) do |example|
-    if example.exception
-      debug "Test failed: #{example.full_description}"
-      debug "Error: #{example.exception.message.split("\n").first}"
-      debug "Current URL: #{page.current_url}"
-      debug "Current Path: #{page.current_path}"
-      debug "Page Title: #{page.title}"
-    end
-  end
 end

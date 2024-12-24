@@ -3,6 +3,9 @@ module EditorHelpers
     expect(page).to have_css("[data-controller='editor-form'] .codex-editor")
   end
 
+  def finish_editing
+  end
+
   def add_editor_header(text, level: 2)
     open_plus_menu
     within(".ce-popover--opened") do
@@ -43,8 +46,18 @@ module EditorHelpers
       find("[data-item-name='list']").click
     end
 
+    # TODO: Need to somehow check the UI here
+
     # Change list type if ordered
     if type == :ordered
+      # Need to add text first so the dropdown menu will show
+      # within(all(".ce-block").last) do
+      #   first_item = find(".cdx-nested-list__item [contenteditable='true']")
+      #   first_item.set("temp")
+      # end
+
+      pause
+
       find(".ce-inline-toolbar__dropdown").click
       within(".ce-conversion-toolbar__tools") do
         find(".ce-conversion-tool[data-type='ordered']").click

@@ -31,9 +31,14 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "rspec-rails"
   spec.add_development_dependency "simplecov"
   spec.add_development_dependency "simplecov-json"
+  spec.add_development_dependency "tty-box"
+  spec.add_development_dependency "tty-screen"
 
   # temp:
   spec.add_dependency "omniauth", "~> 2.1"
+
+  spec.add_development_dependency "debug"
+
   spec.add_development_dependency "omniauth"
   spec.add_development_dependency "omniauth-github", "~> 2.0"
   spec.add_development_dependency "omniauth-google-oauth2", "~> 1.1"
