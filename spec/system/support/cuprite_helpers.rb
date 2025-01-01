@@ -1,12 +1,14 @@
 class FerrumLogger
   def puts(log_str)
-    _log_symbol, _log_time, log_body_str = log_str.strip.split(" ", 3)
+    return if log_str.nil?
+
+    _log_symbol, _log_time, log_body_str = log_str.to_s.strip.split(" ", 3)
     return if log_body_str.nil?
 
     begin
       log_body = JSON.parse(log_body_str)
     rescue
-      puts log_body_str
+      Kernel.puts log_body_str
       return
     end
 
@@ -30,12 +32,6 @@ class FerrumLogger
   end
 end
 
-# RSpec.configure do |config|
-#   config.before(:each, type: :system) do
-#     page.driver.browser.options.logger.page = page.driver.browser.page
-#   end
-# end
-
 # First, load Cuprite Capybara integration
 require "capybara/cuprite"
 
@@ -56,7 +52,7 @@ require "capybara/cuprite"
   process_timeout: 60,
   timeout: 30,
   inspector: ENV["DEBUG"].in?(%w[y 1 yes true]),
-  logger: FerrumLogger.new,
+  logger: ENV["DEBUG"].in?(%w[y 1 yes true]) ? FerrumLogger.new : StringIO.new,
   slowmo: ENV.fetch("SLOWMO", 0).to_f,
   js_errors: true,
   headless: !ENV["HEADLESS"].in?(%w[n 0 no false]),

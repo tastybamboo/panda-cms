@@ -56,8 +56,8 @@ export class PlainTextEditor {
     const blockContentId = this.element.getAttribute("data-editable-block-content-id")
     const pageId = this.element.getAttribute("data-editable-page-id")
     const content = this.element.getAttribute("data-editable-kind") == "html" ?
-      this.element.innerText :
-      this.element.innerHTML
+      this.element.innerHTML :
+      this.element.innerText
 
     fetch(`${this.options.adminPath}/pages/${pageId}/block_contents/${blockContentId}`, {
       method: "PATCH",
@@ -74,6 +74,8 @@ export class PlainTextEditor {
         setTimeout(() => {
           parent.document.getElementById("successMessage").classList.add("hidden")
         }, 3000)
+        // Show visual feedback on the editor
+        this.showSuccess()
       })
       .catch(error => this.showError(error))
   }

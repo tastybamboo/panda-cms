@@ -1,30 +1,22 @@
 module EditorHelpers
   def wait_for_editor
-    expect(page).to have_css("[data-controller='editor-form'] .codex-editor")
+    find(".codex-editor", wait: 5).trigger("click")
   end
 
-  def finish_editing
-  end
-
-  def add_editor_header(text, level: 2)
+  def add_editor_header(text, level = 2)
     open_plus_menu
-    within(".ce-popover--opened") do
-      find("[data-item-name='header']").click
+    within(".ce-popover--opened", wait: 5) do
+      find("[data-item-name='header']", wait: 5).click
     end
 
-    # Type the header text in the most recently added block
-    within(all(".ce-block").last) do
-      header_input = find("h#{level}.ce-header[contenteditable='true']")
-      header_input.set(text)
+    within(all(".ce-block").last, wait: 5) do
+      find(".ce-header[contenteditable='true']", wait: 5).set(text)
     end
+  end
 
-    # Change header level if needed (default is h2)
-    if level != 2
-      find(".ce-inline-toolbar__dropdown").click
-      within(".ce-conversion-toolbar__tools") do
-        find(".ce-conversion-tool[data-level='#{level}']").click
-      end
-    end
+  def open_plus_menu
+    find(".ce-toolbar__plus", wait: 5).click
+    expect(page).to have_css(".ce-popover--opened", wait: 5)
   end
 
   def add_editor_paragraph(text)
@@ -84,19 +76,21 @@ module EditorHelpers
     end
   end
 
-  def add_editor_quote(text, caption)
+
+  def add_editor_quote(text, caption = nil)
     open_plus_menu
     within(".ce-popover--opened") do
       find("[data-item-name='quote']").click
     end
 
-    # Add quote text and caption in the most recently added block
     within(all(".ce-block").last) do
       quote_input = find(".cdx-quote__text[contenteditable='true']")
       quote_input.set(text)
 
-      caption_input = find(".cdx-quote__caption[contenteditable='true']")
-      caption_input.set(caption)
+      if caption
+        caption_input = find(".cdx-quote__caption[contenteditable='true']")
+        caption_input.set(caption)
+      end
     end
   end
 

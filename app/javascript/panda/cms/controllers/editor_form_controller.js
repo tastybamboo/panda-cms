@@ -7,7 +7,6 @@ export default class extends Controller {
   };
 
   connect() {
-    console.error("|bosh");
     this.initializeEditor();
   }
 

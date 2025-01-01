@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "json"
+
 module Panda
   module CMS
     module Admin
@@ -46,8 +48,12 @@ module Panda
         # POST /admin/posts
         def create
           @post = Panda::CMS::Post.new(post_params)
-          Rails.logger.debug "Creating post with params: #{post_params.inspect}"
-          Rails.logger.debug "Post content: #{@post.content.inspect}"
+
+          begin
+            @post.content = JSON.parse(post_params[:content])
+          rescue
+            @post.content = post_params[:content]
+          end
 
           if @post.save
             Rails.logger.debug "Post saved successfully"
