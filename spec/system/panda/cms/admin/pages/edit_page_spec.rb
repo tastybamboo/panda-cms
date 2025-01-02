@@ -79,12 +79,16 @@ RSpec.describe "When editing a page", type: :system do
 
       within_frame "editablePageFrame" do
         plain_text_area = find('[data-editable-kind="plain_text"]')
-        # Set content directly using JavaScript to avoid HTML escaping
-        page.execute_script("arguments[0].textContent = arguments[1]", plain_text_area.native, "Here is some plain text content #{time}")
+        # Match both <div> and <span> tags
+        plain_text_area.set("Here is some plain text content #{time}")
       end
 
       find("a", id: "saveEditableButton").click
+
       expect(page).to have_content("This page was successfully updated!")
+      # Wait for success message to become visible
+      expect(page).to have_css("#successMessage:not(.hidden)")
+      expect(page).to have_css(".flash-message-text", text: "This page was successfully updated!")
 
       visit "/about"
       expect(page).to have_content("Here is some plain text content #{time}")
@@ -103,7 +107,12 @@ RSpec.describe "When editing a page", type: :system do
 
       # Click the save button
       find("a", id: "saveEditableButton").click
+
       expect(page).to have_content("This page was successfully updated!")
+
+      # Wait for success message to become visible
+      expect(page).to have_css("#successMessage:not(.hidden)")
+      expect(page).to have_css(".flash-message-text", text: "This page was successfully updated!")
 
       # Visit the page and verify the rendered content
       visit "/about"

@@ -74,8 +74,6 @@ export class PlainTextEditor {
         setTimeout(() => {
           parent.document.getElementById("successMessage").classList.add("hidden")
         }, 3000)
-        // Show visual feedback on the editor
-        this.showSuccess()
       })
       .catch(error => this.showError(error))
   }
