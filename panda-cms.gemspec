@@ -39,6 +39,8 @@ Gem::Specification.new do |spec|
 
   spec.add_development_dependency "brakeman"
   spec.add_development_dependency "bundle-audit"
+  spec.add_development_dependency "erb_lint"
+  spec.add_development_dependency "yamllint"
   spec.add_development_dependency "debug"
   spec.add_development_dependency "faker"
   spec.add_development_dependency "factory_bot_rails"
