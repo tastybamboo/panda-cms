@@ -25,11 +25,12 @@
   <%= content_tag :iframe, nil,
       src: "#{page.path}?embed_id=#{page.id}",
       class: "p-0 m-0 w-full h-full border border-slate-200",
+      style: "min-height: 500px; width: 100%; height: 100%;",
       id: "editablePageFrame",
       data: {
-        controller: "editor",
-        editor_page_id_value: @page.id,
-        editor_admin_path_value: "#{admin_dashboard_url}",
-        editor_autosave_value: false
+        controller: "editor-iframe",
+        editor_iframe_page_id_value: @page.id,
+        editor_iframe_admin_path_value: "#{admin_dashboard_url}",
+        editor_iframe_autosave_value: false
       } %>
 <% end %>

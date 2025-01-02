@@ -1,3 +1,37 @@
+class FerrumLogger
+  def puts(log_str)
+    return if log_str.nil?
+
+    _log_symbol, _log_time, log_body_str = log_str.to_s.strip.split(" ", 3)
+    return if log_body_str.nil?
+
+    begin
+      log_body = JSON.parse(log_body_str)
+    rescue
+      Kernel.puts log_body_str
+      return
+    end
+
+    case log_body["method"]
+    when "Runtime.consoleAPICalled"
+      log_body["params"]["args"].each do |arg|
+        case arg["type"]
+        when "string"
+          Kernel.puts arg["value"]
+        when "object"
+          Kernel.puts arg["preview"]["properties"].map { |x| [x["name"], x["value"]] }.to_h
+        end
+      end
+
+    when "Runtime.exceptionThrown"
+      # noop, this is already logged because we have "js_errors: true" in cuprite.
+
+    when "Log.entryAdded"
+      Kernel.puts "#{log_body["params"]["entry"]["url"]} - #{log_body["params"]["entry"]["text"]}"
+    end
+  end
+end
+
 # First, load Cuprite Capybara integration
 require "capybara/cuprite"
 
@@ -18,10 +52,9 @@ require "capybara/cuprite"
   process_timeout: 60,
   timeout: 30,
   inspector: ENV["DEBUG"].in?(%w[y 1 yes true]),
-  logger: StringIO.new,
-  browser_logger: StringIO.new,
+  logger: ENV["DEBUG"].in?(%w[y 1 yes true]) ? FerrumLogger.new : StringIO.new,
   slowmo: ENV.fetch("SLOWMO", 0).to_f,
-  js_errors: !ENV["JS_ERRORS"].in?(%w[y 1 yes true]),
+  js_errors: true,
   headless: !ENV["HEADLESS"].in?(%w[n 0 no false]),
   pending_connection_errors: false
 }
@@ -38,6 +71,10 @@ end
 Capybara.default_driver = Capybara.javascript_driver = :better_cuprite
 
 module CupriteHelpers
+  def debug(message)
+    puts "[DEBUG] #{message}" if ENV["DEBUG"]
+  end
+
   # Drop #pause anywhere in a test to stop the execution.
   # Useful when you want to checkout the contents of a web page in the middle of a test
   # running in a headful mode.
@@ -45,9 +82,9 @@ module CupriteHelpers
     page.driver.pause
   end
 
-  # Drop #debug anywhere in a test to open a Chrome inspector and pause the execution
-  # Usage: debug(binding)
-  def debug(*)
+  # Drop #browser_debug anywhere in a test to open a Chrome inspector and pause the execution
+  # Usage: browser_debug(binding)
+  def browser_debug(*)
     page.driver.debug(*)
   end
 

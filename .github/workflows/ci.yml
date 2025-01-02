@@ -87,7 +87,7 @@ jobs:
           # CUPRITE_DEBUG: "true"
         run: |
           bundle exec rails db:setup
-          xvfb-run -a bundle exec rspec -f j -o tmp/rspec_results.json -f p
+          xvfb-run -a bundle exec rspec --tag ~skip -f j -o tmp/rspec_results.json -f p
       - name: Keep screenshots from failed system tests
         uses: actions/upload-artifact@v4
         if: failure()

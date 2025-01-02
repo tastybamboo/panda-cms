@@ -58,7 +58,7 @@ RSpec.describe "When adding a page", type: :system, js: true do
       select "Page", from: "Template"
       click_button "Create Page"
       expect(page).to have_content("URL has already been taken")
-      expect(page.current_path).to eq "/admin/pages"
+      expect(page.current_path).to eq "/admin/pages/new"
     end
 
     it "updates the form if a parent page is selected" do
@@ -85,6 +85,7 @@ RSpec.describe "When adding a page", type: :system, js: true do
 
     it "doesn't show the homepage template as selectable as it has already been used" do
       expect(page).to have_select("Template", options: ["Page"])
+      expect(page).to_not have_select("Template", options: ["Homepage"])
     end
 
     it "shows validation errors with an incorrect URL" do

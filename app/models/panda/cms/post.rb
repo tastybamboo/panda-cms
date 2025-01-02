@@ -36,6 +36,10 @@ module Panda
         slug.delete_prefix("/")
       end
 
+      def admin_param
+        id
+      end
+
       def excerpt(length = 100, squish: true)
         return "" if content.blank?
 

@@ -181,7 +181,7 @@ module Panda
       end
 
       def base_input_styles
-        "bg-white block w-full rounded-md border border-mid focus:border-mid p-2 text-dark outline-none focus:outline-0 ring-0 focus:ring-none focus:ring-mid ring-offset-0 focus:ring-offset-0 shadow-none focus:shadow-none border-mid"
+        "bg-white block w-full rounded-md border border-mid focus:border-mid p-2 text-dark outline-0 focus:outline-0 ring-0 focus:ring-0 focus:ring-mid ring-offset-0 focus:ring-offset-0 shadow-none focus:shadow-none border-mid"
       end
 
       def input_styles
@@ -193,7 +193,7 @@ module Panda
       end
 
       def select_styles
-        "col-start-1 row-start-1 w-full appearance-none rounded-md bg-white py-1.5 pl-3 pr-8 text-dark text-base outline-none outline-dark focus:outline focus:-outline-offset-2 focus:outline-dark"
+        "col-start-1 row-start-1 w-full appearance-none rounded-md bg-white py-1.5 pl-3 pr-8 text-dark text-base outline-0 outline-dark focus:outline focus:-outline-offset-2 focus:outline-dark"
       end
 
       def select_svg
@@ -203,7 +203,7 @@ module Panda
       end
 
       def button_styles
-        "inline-flex items-center rounded-md font-medium shadow-sm focus-visible:outline focus-visible:outline-none focus-visible:outline-offset-none text-dark border-2 border-mid bg-transparent hover:bg-light transition-all gap-x-1.5 px-3 py-2 text-base gap-x-1.5 px-2.5 py-1.5 mt-2 "
+        "inline-flex items-center rounded-md font-medium shadow-sm focus-visible:outline focus-visible:outline-0 focus-visible:outline-offset-none text-dark border-2 border-mid bg-transparent hover:bg-light transition-all gap-x-1.5 px-3 py-2 text-base gap-x-1.5 px-2.5 py-1.5 mt-2 "
       end
 
       def container_styles

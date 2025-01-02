@@ -1,3 +1,5 @@
+require "json"
+
 module Panda::CMS::EditorJsContent
   extend ActiveSupport::Concern
 
@@ -8,17 +10,12 @@ module Panda::CMS::EditorJsContent
     before_save :generate_cached_content
   end
 
-  def content_changed?
-    will_save_change_to_content?
-  end
-
   def generate_cached_content
-    return if content.nil?
-
-    self.cached_content = if content.is_a?(Hash) && content["source"] == "editorJS"
-      Panda::CMS::EditorJs::Renderer.new(content).render
-    else
-      content.to_s
+    if content.is_a?(String)
+      self.cached_content = content
+    elsif content.is_a?(Hash) && content["blocks"].present?
+      # Process EditorJS content
+      self.cached_content = Panda::CMS::EditorJs::Renderer.new(content).render
     end
   end
 end

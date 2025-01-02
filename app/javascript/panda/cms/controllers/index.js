@@ -24,8 +24,8 @@ pandaCmsApplication.register("editor-form", EditorFormController)
 import SlugController from "panda/cms/controllers/slug_controller"
 pandaCmsApplication.register("slug", SlugController)
 
-import EditorController from "panda/cms/controllers/editor_controller"
-pandaCmsApplication.register("editor", EditorController)
+import EditorIframeController from "panda/cms/controllers/editor_iframe_controller"
+pandaCmsApplication.register("editor-iframe", EditorIframeController)
 
 console.debug("[Panda CMS] Registering components...")
 

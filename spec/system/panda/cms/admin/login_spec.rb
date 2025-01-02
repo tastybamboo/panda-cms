@@ -63,7 +63,7 @@ RSpec.describe "Admin authentication", type: :system do
 
       # Add debugging and wait for page load
       expect(page).to have_current_path("/admin")
-      expect(page).to have_selector("#button-sign-in-google", wait: 5)
+      expect(page).to have_selector("#button-sign-in-google", wait: 1)
 
       find("#button-sign-in-google").click
       expect(page).to have_current_path("/admin")

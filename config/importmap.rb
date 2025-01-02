@@ -5,7 +5,7 @@ pin "@rails/actioncable/src", to: "@rails--actioncable--src.js", preload: true #
 pin "@hotwired/stimulus", to: "@hotwired--stimulus.js" # @3.2.2
 pin "@hotwired/stimulus-loading", to: "panda_cms/stimulus-loading.js", preload: true
 pin "tailwindcss-stimulus-components" # @6.1.2
-pin "@editorjs/editorjs", to: "@editorjs--editorjs.js" # @2.30.6
+pin "@editorjs/editorjs", to: "panda/cms/editor/editorjs.js" # @2.30.6
 
 # Pin the controllers directory
 pin "controllers", to: "panda/cms/controllers/index.js"

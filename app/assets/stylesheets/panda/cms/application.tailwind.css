@@ -40,5 +40,123 @@
   }
 }
 
-@import "actiontext.css";
-@import "editor.css";
+/* Default editor styles */
+@layer components {
+  .codex-editor__redactor .ce-block .ce-block__content {
+    @apply text-base font-normal font-sans text-dark leading-[1.6] space-y-[1.6rem];
+
+    h1.ce-header {
+      @apply text-3xl md:text-4xl font-semibold font-sans leading-[1.2];
+    }
+
+    h2.ce-header {
+      @apply text-2xl font-medium font-sans leading-[1.3] mb-4 mt-8;
+    }
+
+    h3.ce-header {
+      @apply text-xl font-normal font-sans leading-[1.3] mb-4 mt-6;
+    }
+
+    p,
+    li {
+      @apply leading-[1.6] tracking-wide max-w-[85ch];
+
+      a {
+        @apply text-[#1A9597] underline underline-offset-2 hover:text-[#158486] focus:outline-2 focus:outline-offset-2 focus:outline-[#1A9597];
+      }
+
+      strong,
+      b {
+        @apply font-semibold;
+      }
+    }
+
+    p {
+      @apply mb-4;
+    }
+
+    .cdx-quote {
+      @apply bg-[#eef0f3] border-l-inactive border-l-8 p-6 mb-4;
+
+      .cdx-quote__caption {
+        @apply block ml-6 mt-2 text-sm text-dark;
+      }
+
+      .cdx-quote__text {
+        quotes: "\201C""\201D""\2018""\2019";
+        @apply pl-6;
+
+        &:before {
+          @apply -ml-8 mr-2 text-dark text-6xl leading-4 align-text-bottom font-serif;
+          content: open-quote;
+        }
+
+        p {
+          @apply inline italic text-lg;
+        }
+      }
+    }
+
+    .cdx-list {
+      @apply mb-4 pl-6;
+
+      &--ordered {
+        @apply list-decimal;
+      }
+
+      &--unordered {
+        @apply list-disc;
+      }
+
+      .cdx-list {
+        @apply mt-2 mb-0;
+      }
+
+      .cdx-list__item {
+        @apply mb-2 pl-2;
+      }
+    }
+
+    .cdx-nested-list {
+      @apply mb-4 pl-6;
+
+      &--ordered {
+        @apply list-decimal;
+      }
+
+      &--unordered {
+        @apply list-disc;
+      }
+
+      .cdx-nested-list {
+        @apply mt-2 mb-0;
+      }
+
+      .cdx-nested-list__item {
+        @apply mb-2 pl-2;
+      }
+    }
+
+    .cdx-table {
+      @apply w-full border-collapse border-2 border-dark my-6;
+
+      &__head {
+        @apply font-semibold border-dark border-r-2 p-3 bg-light;
+      }
+
+      &__row {
+        @apply border-dark border-b-2;
+      }
+
+      &__cell {
+        @apply border-dark border-r-2 p-3;
+      }
+    }
+
+    .cdx-embed {
+      iframe {
+        @apply w-full border-none;
+      }
+    }
+  }
+}

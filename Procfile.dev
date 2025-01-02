@@ -1,2 +1,2 @@
 web: bin/rails server -b 0.0.0.0
-css: bin/rails app:panda-cms:watch_admin
+css: bin/rails app:panda:cms:watch_admin
