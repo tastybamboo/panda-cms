@@ -86,9 +86,12 @@ RSpec.configure do |config|
   config.order = :random
 
   # Use specific formatter for GitHub Actions
-  if ENV["GITHUB_ACTIONS"] == "true"
-    require "rspec/github"
-    config.add_formatter RSpec::Github::Formatter
+  RSpec.configure do |config|
+    # Use the GitHub Annotations formatter for CI
+    if ENV["GITHUB_ACTIONS"] == "true"
+      require "rspec/github"
+      config.add_formatter RSpec::Github::Formatter
+    end
   end
 
   config.include ViewComponent::TestHelpers, type: :view_component
