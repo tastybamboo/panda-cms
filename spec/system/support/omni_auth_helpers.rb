@@ -138,7 +138,7 @@ RSpec.configure do |config|
       debug "Test failed: #{example.full_description}"
       debug "Error: #{example.exception.message}"
       debug_page_state
-      debug "Screenshot saved to: #{page.save_screenshot}" if defined?(page) && page.respond_to?(:save_screenshot)
+      # debug "Screenshot saved to: #{page.save_screenshot}" if defined?(page) && page.respond_to?(:save_screenshot)
     end
   end
 end

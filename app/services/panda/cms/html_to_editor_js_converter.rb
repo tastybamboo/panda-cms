@@ -154,8 +154,6 @@ module Panda
         end
       end
 
-      private
-
       def self.create_paragraph_block(text)
         {
           "type" => "paragraph",

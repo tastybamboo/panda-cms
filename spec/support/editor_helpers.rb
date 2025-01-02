@@ -15,8 +15,18 @@ module EditorHelpers
   end
 
   def open_plus_menu
-    find(".ce-toolbar__plus", wait: 1).click
-    expect(page).to have_css(".ce-popover--opened", wait: 1)
+    # Find and click the last block
+    blocks = all(".ce-block")
+    if blocks.any?
+      blocks.last.click
+    else
+      # If no blocks exist, click the empty editor area
+      find(".codex-editor__redactor").click
+    end
+
+    # Click the plus button to open the menu
+    find(".ce-toolbar__plus").click
+    expect(page).to have_css(".ce-popover--opened")
   end
 
   def add_editor_paragraph(text)
@@ -62,7 +72,7 @@ module EditorHelpers
       first_item.set(items.first)
 
       # Add remaining items
-      items[1..-1].each do |item|
+      items[1..].each do |item|
         first_item.send_keys(:enter)
         # Wait for the new list item and find it
         list_items = list_container.all(".cdx-nested-list__item [contenteditable='true']")
@@ -71,7 +81,6 @@ module EditorHelpers
       end
     end
   end
-
 
   def add_editor_quote(text, caption = nil)
     open_plus_menu
@@ -91,21 +100,6 @@ module EditorHelpers
   end
 
   private
-
-  def open_plus_menu
-    # Find and click the last block
-    blocks = all(".ce-block")
-    if blocks.any?
-      blocks.last.click
-    else
-      # If no blocks exist, click the empty editor area
-      find(".codex-editor__redactor").click
-    end
-
-    # Click the plus button to open the menu
-    find(".ce-toolbar__plus").click
-    expect(page).to have_css(".ce-popover--opened")
-  end
 
   def debug_editor_state
     return unless ENV["DEBUG"]

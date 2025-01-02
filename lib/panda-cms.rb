@@ -53,7 +53,7 @@ Panda::CMS.loader.ignore("#{__dir__}/panda-cms")
 Panda::CMS.loader.push_dir(File.expand_path("panda/cms", __dir__), namespace: Panda::CMS)
 
 # Ignore both lib and lib/panda directories to prevent Rails autoloader conflicts
-Panda::CMS.loader.ignore("#{__dir__}")
+Panda::CMS.loader.ignore(__dir__.to_s)
 Panda::CMS.loader.ignore(File.expand_path("panda", __dir__))
 
 # Configure Zeitwerk inflections
