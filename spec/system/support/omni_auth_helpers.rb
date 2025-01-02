@@ -102,7 +102,7 @@ module OmniAuthHelpers
   def login_as_admin(firstname: nil, lastname: nil, email: nil)
     user = admin_user
     login_with_google(user)
-    expect(page).to have_content("Dashboard", wait: 10)
+    expect(page).to have_content("Dashboard", wait: 1)
   end
 
   def login_as_user(firstname: nil, lastname: nil, email: nil)

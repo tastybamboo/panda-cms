@@ -14,11 +14,11 @@ RSpec.describe "Website" do
     end
 
     # Wait for the layout to be visible
-    expect(page).to have_content("Homepage Layout", wait: 10)
+    expect(page).to have_content("Homepage Layout", wait: 1)
 
     # Wait for JavaScript to initialize
-    expect(page).to have_content("I like ice cream!", wait: 10)
-    expect(page).to have_content("Hello, Stimulus!", wait: 10)
+    expect(page).to have_content("I like ice cream!", wait: 1)
+    expect(page).to have_content("Hello, Stimulus!", wait: 1)
   end
 
   it "shows the about page with plain text, code and rich text blocks" do

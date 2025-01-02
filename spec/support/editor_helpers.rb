@@ -1,22 +1,22 @@
 module EditorHelpers
   def wait_for_editor
-    find(".codex-editor", wait: 5).trigger("click")
+    find(".codex-editor", wait: 1).trigger("click")
   end
 
   def add_editor_header(text, level = 2)
     open_plus_menu
-    within(".ce-popover--opened", wait: 5) do
-      find("[data-item-name='header']", wait: 5).click
+    within(".ce-popover--opened", wait: 1) do
+      find("[data-item-name='header']", wait: 1).click
     end
 
-    within(all(".ce-block").last, wait: 5) do
-      find(".ce-header[contenteditable='true']", wait: 5).set(text)
+    within(all(".ce-block").last, wait: 1) do
+      find(".ce-header[contenteditable='true']", wait: 1).set(text)
     end
   end
 
   def open_plus_menu
-    find(".ce-toolbar__plus", wait: 5).click
-    expect(page).to have_css(".ce-popover--opened", wait: 5)
+    find(".ce-toolbar__plus", wait: 1).click
+    expect(page).to have_css(".ce-popover--opened", wait: 1)
   end
 
   def add_editor_paragraph(text)
@@ -38,8 +38,6 @@ module EditorHelpers
       find("[data-item-name='list']").click
     end
 
-    # TODO: Need to somehow check the UI here
-
     # Change list type if ordered
     if type == :ordered
       # Need to add text first so the dropdown menu will show
@@ -47,8 +45,6 @@ module EditorHelpers
       #   first_item = find(".cdx-nested-list__item [contenteditable='true']")
       #   first_item.set("temp")
       # end
-
-      pause
 
       find(".ce-inline-toolbar__dropdown").click
       within(".ce-conversion-toolbar__tools") do

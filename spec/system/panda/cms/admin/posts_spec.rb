@@ -16,7 +16,7 @@ RSpec.describe "Admin Posts", type: :system do
       fill_in "post[title]", with: "Test Post"
       fill_in "post[slug]", with: "/test-post"
       select @other_admin.name, from: "post[user_id]"
-      fill_in "post[published_at]", with: Time.current.iso8601
+      fill_in "post[published_at]", with: (Time.current - 1.minute).iso8601
       select "Active", from: "post[status]"
 
       # Wait for editor container and input field
@@ -41,10 +41,6 @@ RSpec.describe "Admin Posts", type: :system do
       expect(post.cached_content).to have_css("ul li", text: "First unordered item")
       expect(post.cached_content).to have_css("ul li", text: "Second unordered item")
       expect(post.cached_content).to have_content("This is a test paragraph between lists")
-      # expect(post.cached_content).to have_css("ol li", text: "First ordered item")
-      # expect(post.cached_content).to have_css("ol li", text: "Second ordered item")
-      # expect(post.cached_content).to have_css(".quote", text: "Important quote")
-      # expect(post.cached_content).to have_css(".quote-caption", text: "Famous Person")
     end
 
     it "shows validation errors" do
