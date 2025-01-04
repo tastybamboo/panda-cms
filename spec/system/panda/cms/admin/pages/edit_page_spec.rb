@@ -74,7 +74,7 @@ RSpec.describe "When editing a page", type: :system do
       end
     end
 
-    fit "allows editing plain text content of the page" do
+    it "allows editing plain text content of the page" do
       time = Time.now.strftime("%Y-%m-%d %H:%M:%S")
 
       # First ensure the iframe is loaded
