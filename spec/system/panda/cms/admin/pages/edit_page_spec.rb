@@ -42,7 +42,6 @@ RSpec.describe "When editing a page", type: :system do
 
       within("#slideover") do
         expect(page).to have_field("Title", with: "About")
-        # expect(page).to have_field("Template", with: "Page", disabled: true)
       end
     end
 
