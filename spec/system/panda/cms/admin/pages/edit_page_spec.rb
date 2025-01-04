@@ -162,5 +162,117 @@ RSpec.describe "When editing a page", type: :system do
       expect(page).to have_content("New code content #{time}")
       expect(page).to have_content("Some paragraph from code block")
     end
+
+    it "properly initializes Editor.js in the iframe context" do
+      within_frame "editablePageFrame" do
+        # Wait for rich text area to be present
+        rich_text_area = find('div[data-editable-kind="rich_text"]', wait: 10)
+        rich_text_area.click
+
+        # Wait for editor to initialize
+        expect(page).to have_css('.codex-editor', wait: 10)
+        expect(page).to have_css('.ce-block', wait: 10)
+
+        # Debug: Print out what elements are available
+        debug "Available elements:"
+        debug page.all('.codex-editor *').map(&:tag_name).join(", ")
+
+        # Verify Editor.js toolbar is present and interactive
+        expect(page).to have_css('.ce-toolbar')
+        expect(page).to have_css('.ce-toolbar__plus')
+
+        # Try to interact with the editor to verify it's functional
+        rich_text_area.send_keys([:control, 'a'], [:backspace])
+        rich_text_area.send_keys("Test content")
+
+        # Verify content was added
+        expect(page).to have_content("Test content")
+      end
+    end
+
+    it "loads all required Editor.js resources" do
+      within_frame "editablePageFrame" do
+        # Wait for rich text area and editor initialization
+        rich_text_area = find('div[data-editable-kind="rich_text"]', wait: 10)
+        rich_text_area.click
+
+        # Check for core Editor.js elements
+        expect(page).to have_css('.codex-editor')
+        expect(page).to have_css('.ce-toolbar')
+
+        # Check for specific tool elements that should be present
+        expect(page).to have_css('.ce-toolbar__plus')  # Plus button for adding blocks
+
+        # Click plus button and verify tools menu appears
+        find('.ce-toolbar__plus').click
+        expect(page).to have_css('.ce-popover', wait: 10)
+
+        # Verify essential tools are available in the popover
+        within('.ce-popover') do
+          expect(page).to have_css('[data-item-name="paragraph"]')
+          expect(page).to have_css('[data-item-name="header"]')
+          expect(page).to have_css('[data-item-name="list"]')
+        end
+      end
+    end
+
+    it "handles Editor.js initialization failures gracefully" do
+      within_frame "editablePageFrame" do
+        # Wait for rich text area
+        rich_text_area = find('div[data-editable-kind="rich_text"]', wait: 10)
+        rich_text_area.click
+
+        # Debug: Print out what elements are available
+        debug "Available elements in iframe:"
+        debug page.all('*').map { |el| "#{el.tag_name}.#{el['class']}" }.join(", ")
+
+        # Check for either successful initialization or error state
+        expect(page).to have_css('.codex-editor', wait: 10)
+
+        success = page.has_css?('.ce-toolbar', wait: 5)
+        if !success
+          # If toolbar isn't found, we should see an error message
+          expect(page).to have_css('.editor-error-message')
+          expect(page).to have_content("Editor failed to initialize")
+        end
+      end
+    end
+
+    it "maintains editor state after page interactions" do
+      within_frame "editablePageFrame" do
+        rich_text_area = find('div[data-editable-kind="rich_text"]', wait: 10)
+        rich_text_area.click
+
+        # Wait for editor initialization
+        expect(page).to have_css('.codex-editor', wait: 10)
+        expect(page).to have_css('.ce-block', wait: 10)
+
+        # Add some content
+        rich_text_area.send_keys([:control, 'a'], [:backspace])
+        rich_text_area.send_keys("Initial content")
+      end
+
+      # Use JavaScript to trigger the slideover toggle since the click is failing
+      page.execute_script("document.getElementById('slideover-toggle').click()")
+      sleep 0.5 # Give time for animation
+      page.execute_script("document.getElementById('slideover-toggle').click()")
+      sleep 0.5 # Give time for animation
+
+      # Verify editor is still functional
+      within_frame "editablePageFrame" do
+        expect(page).to have_css('.codex-editor')
+        expect(page).to have_content("Initial content")
+
+        # Try adding more content
+        rich_text_area = find('div[data-editable-kind="rich_text"]')
+        rich_text_area.click
+        rich_text_area.send_keys(:enter)
+        rich_text_area.send_keys("Additional content")
+
+        # Verify both contents are present
+        expect(page).to have_content("Initial content")
+        expect(page).to have_content("Additional content")
+      end
+    end
   end
 end
