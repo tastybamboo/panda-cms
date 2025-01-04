@@ -8,7 +8,7 @@ class FerrumLogger
     begin
       log_body = JSON.parse(log_body_str)
     rescue
-      Kernel.puts log_body_str
+      # Don't output raw log strings to prevent duplication
       return
     end
 
@@ -17,6 +17,8 @@ class FerrumLogger
       log_body["params"]["args"].each do |arg|
         case arg["type"]
         when "string"
+          # Only output messages that aren't already prefixed with [Panda CMS]
+          next if arg["value"].to_s.start_with?("[Panda CMS]")
           Kernel.puts arg["value"]
         when "object"
           Kernel.puts arg["preview"]["properties"].map { |x| [x["name"], x["value"]] }.to_h
