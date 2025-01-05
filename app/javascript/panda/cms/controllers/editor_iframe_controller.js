@@ -73,9 +73,22 @@ export default class extends Controller {
       this.frame.setAttribute('data-editor-frame-id', frameId)
       this.body.setAttribute('data-editor-frame-id', frameId)
 
+      // Prevent default context menu behavior
+      this.body.addEventListener('contextmenu', (event) => {
+        // Only prevent default if the target is part of the editor
+        if (event.target.closest('.codex-editor')) {
+          event.preventDefault()
+        }
+      })
+
       // Set up error handling for the iframe
       this.frameDocument.defaultView.onerror = (message, source, lineno, colno, error) => {
-        // Relay the error to the parent window
+        // Ignore context menu errors
+        if (message.includes('anchor.getAttribute') && source.includes('script.js')) {
+          return true // Prevent error from propagating
+        }
+
+        // Relay other errors to the parent window
         const fullMessage = `iFrame Error: ${message} (${source}:${lineno}:${colno})`
         console.error(fullMessage, error)
 
@@ -84,11 +97,16 @@ export default class extends Controller {
           throw new Error(fullMessage)
         }, 0)
 
-        return false // Let the error propagate
+        return false // Let other errors propagate
       }
 
       // Set up unhandled rejection handling for the iframe
       this.frameDocument.defaultView.onunhandledrejection = (event) => {
+        // Ignore context menu related rejections
+        if (event.reason?.toString().includes('anchor.getAttribute')) {
+          return
+        }
+
         const fullMessage = `iFrame Unhandled Promise Rejection: ${event.reason}`
         console.error(fullMessage)
 
@@ -98,25 +116,8 @@ export default class extends Controller {
         }, 0)
       }
 
-      // Ensure frame is visible after load
-      this.frame.style.display = ""
-      this.ensureFrameVisibility()
-
-      // Wait for document to be ready
-      if (this.frameDocument.readyState !== 'complete') {
-        await new Promise(resolve => {
-          this.frameDocument.addEventListener('DOMContentLoaded', resolve)
-        })
-      }
-
-      // Initialize editors only if we have the body and editable elements
-      if (this.body && this.body.querySelector('[data-editable-kind]')) {
-        await this.initializeEditors()
-      } else {
-        const error = new Error("[Panda CMS] Frame body or editable elements not found")
-        console.error(error)
-        throw error
-      }
+      // Initialize editors after frame is loaded
+      await this.initializeEditors()
     })
   }
 

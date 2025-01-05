@@ -373,6 +373,9 @@ RSpec.describe "When editing a page", type: :system do
         # Add some content
         rich_text_area.send_keys([:control, 'a'], [:backspace])
         rich_text_area.send_keys("Initial content")
+
+        # Wait for content to be processed
+        expect(page).to have_content("Initial content", wait: 5)
       end
 
       # Use JavaScript to trigger the slideover toggle since the click is failing

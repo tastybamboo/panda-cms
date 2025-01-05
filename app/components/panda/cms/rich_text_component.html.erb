@@ -1,5 +1,5 @@
 <% if @editable %>
-  <div class="panda-cms-content" data-editable-previous-data="<%= @content.to_json %>" id="editor-<%= @options[:id] %>" data-editable-kind="rich_text" data-editable-block-content-id="<%= @options[:id] %>" data-editable-page-id="<%= @options[:data][:page_id] %>" style="border: 1px dashed #ccc; outline: none; cursor: pointer; transition: background 500ms linear; background-color: inherit;">
+  <div class="panda-cms-content" data-editable-previous-data="<%= Base64.strict_encode64(@content.to_json) %>" id="editor-<%= @options[:id] %>" data-editable-kind="rich_text" data-editable-block-content-id="<%= @options[:id] %>" data-editable-page-id="<%= @options[:data][:page_id] %>" style="border: 1px dashed #ccc; outline: none; cursor: pointer; transition: background 500ms linear; background-color: inherit;">
   </div>
 <% else %>
   <div class="panda-cms-content"><%= @content %></div>

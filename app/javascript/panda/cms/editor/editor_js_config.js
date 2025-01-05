@@ -15,163 +15,135 @@ if (window.PANDA_CMS_EDITOR_JS_RESOURCES) {
 }
 
 export const EDITOR_JS_CSS = `
-/* Editor layout styles */
-.codex-editor {
-  position: relative !important;
-  z-index: 995 !important;
-  padding: 0 40px !important; /* Add padding to make room for the + button */
-}
-
-.ce-toolbar__content {
-  max-width: 100% !important;
-  margin: 0 !important;
-  position: relative !important;
-  z-index: 1000 !important;
-  left: 0 !important;
-}
-
-.ce-toolbar__plus {
-  position: absolute !important;
-  left: -30px !important; /* Position + button in the left padding */
-  top: 50% !important;
-  transform: translateY(-50%) !important;
-  z-index: 1001 !important;
-  opacity: 1 !important;
-  width: 24px !important;
-  height: 24px !important;
-  margin: 0 !important;
-}
-
-.ce-toolbar__actions {
-  position: absolute !important;
-  right: -30px !important;
-  top: 50% !important;
-  transform: translateY(-50%) !important;
-  z-index: 1001 !important;
-}
-
-.ce-block__content {
-  max-width: 100% !important;
-  margin: 0 !important;
-  position: relative !important;
-  z-index: 999 !important;
-}
-
-/* Ensure proper nesting for content styles to apply */
-.codex-editor .codex-editor__redactor {
-  position: relative !important;
-  padding-bottom: 100px !important;
-  z-index: 998 !important;
-  margin: 0 !important;
-}
-
-/* Remove default editor styles that might interfere */
-.ce-header {
-  padding: 0 !important;
-  margin: 0 !important;
-  background: none !important;
-  border: none !important;
-  position: relative !important;
-  z-index: 997 !important;
-}
-
-.ce-paragraph {
-  padding: 0 !important;
-  margin: 0 !important;
-  line-height: inherit !important;
-  position: relative !important;
-  z-index: 997 !important;
-}
-
-/* Lists */
-.ce-block--list ul,
-.ce-block--list ol {
-  margin: 0 !important;
-  padding-left: inherit !important;
-  position: relative !important;
-  z-index: 997 !important;
-}
-
-.ce-block--list li {
-  margin: 0 !important;
-  padding-left: inherit !important;
-  position: relative !important;
-  z-index: 997 !important;
-}
-
-/* Ensure editor toolbar is above content */
-.ce-toolbar {
-  position: absolute !important;
-  left: 0 !important;
-  width: 100% !important;
-  z-index: 1002 !important;
-  background: transparent !important;
-}
-
-/* Style the block selection */
-.ce-block--selected {
-  background-color: rgba(16, 64, 113, 0.05) !important;
-  border-radius: 4px !important;
-  position: relative !important;
-  z-index: 996 !important;
-}
-
-/* Ensure editor wrapper is above page content */
-.ce-block__content-wrapper {
-  position: relative !important;
-  z-index: 994 !important;
-}
-
-/* Ensure popover is above everything */
-.ce-popover {
-  z-index: 1100 !important;
-  position: absolute !important;
-}
-
-/* Ensure inline toolbar is above everything */
-.ce-inline-toolbar {
-  z-index: 1101 !important;
-  position: absolute !important;
-}
-
-/* Ensure conversion toolbar is above everything */
-.ce-conversion-toolbar {
-  z-index: 1102 !important;
-  position: absolute !important;
-}
-
-/* Ensure all editor components are visible and clickable */
-.ce-toolbar,
-.ce-block,
-.ce-block__content,
-.ce-toolbar__content,
-.ce-toolbar__actions,
-.ce-toolbar__plus,
-.ce-popover,
-.ce-inline-toolbar,
-.ce-conversion-toolbar {
-  pointer-events: auto !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-}
-
-/* Fix toolbar button visibility */
-.ce-toolbar__plus-button,
-.ce-toolbar__settings-btn {
-  opacity: 1 !important;
-  visibility: visible !important;
-  pointer-events: auto !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-}
-
-/* Ensure buttons are visible on hover */
-.ce-toolbar__plus:hover .ce-toolbar__plus-button,
-.ce-toolbar__settings-btn:hover {
-  opacity: 1 !important;
-  background-color: rgba(16, 64, 113, 0.1) !important;
-}`
+  .codex-editor {
+    position: relative;
+  }
+  .codex-editor::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 65px;
+    margin-right: 5px;
+    background-color: #f9fafb;
+    border-right: 2px dashed #e5e7eb;
+    z-index: 0;
+  }
+  .ce-block {
+    padding-left: 70px;
+    position: relative;
+    min-height: 40px;
+  }
+  .ce-block__content {
+    position: relative;
+    max-width: none;
+  }
+  .ce-paragraph {
+    padding: 0;
+    line-height: 40px;
+  }
+  /* Base toolbar styles */
+  .ce-toolbar {
+    left: 0 !important;
+    right: auto !important;
+    background: none !important;
+    position: absolute !important;
+    width: 65px !important;
+    height: 40px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    padding: 0 !important;
+    margin-left: -70px !important;
+    margin-top: -5px !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: all !important;
+    z-index: 2 !important;
+  }
+  /* Ensure toolbar is visible for all blocks */
+  .ce-block .ce-toolbar {
+    display: flex !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+  .ce-toolbar__content {
+    max-width: none;
+    left: 70px !important;
+    display: flex !important;
+    position: relative !important;
+  }
+  .ce-toolbar__actions {
+    position: relative !important;
+    left: 5px !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    background: transparent !important;
+    z-index: 2;
+    display: flex !important;
+    align-items: center !important;
+    gap: 5px !important;
+    height: 40px !important;
+    padding: 0 !important;
+  }
+  .ce-toolbar__plus {
+    position: relative !important;
+    left: 0px !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    background: transparent !important;
+    border: none !important;
+    z-index: 2;
+    display: block !important;
+  }
+  .ce-toolbar__settings-btn {
+    position: relative !important;
+    left: -10px !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    background: transparent !important;
+    border: none !important;
+    z-index: 2;
+    display: block !important;
+  }
+  /* Style the search input */
+  .ce-popover__search {
+    padding-left: 3px !important;
+  }
+  .ce-popover__search input {
+    outline: none !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+  .ce-popover__search input::placeholder {
+    content: 'Search';
+  }
+  /* Ensure popups still work */
+  .ce-popover {
+    z-index: 4;
+  }
+  .ce-inline-toolbar {
+    z-index: 3;
+  }
+  /* Override any hiding behavior */
+  .ce-toolbar--closed,
+  .ce-toolbar--opened,
+  .ce-toolbar--showed {
+    display: flex !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+  /* Force toolbar to show on every block */
+  .ce-block:not(:focus):not(:hover) .ce-toolbar,
+  .ce-block--selected .ce-toolbar,
+  .ce-block--focused .ce-toolbar,
+  .ce-block--hover .ce-toolbar {
+    opacity: 1 !important;
+    visibility: visible !important;
+    display: flex !important;
+  }
+`
 
 export const getEditorConfig = (elementId, previousData, doc = document) => {
   // Validate holder element exists
@@ -188,6 +160,13 @@ export const getEditorConfig = (elementId, previousData, doc = document) => {
     data: previousData || {},
     placeholder: 'Click the + button to add content...',
     inlineToolbar: true,
+    i18n: {
+      toolbar: {
+        filter: {
+          placeholder: 'Search'
+        }
+      }
+    },
     tools: {
       header: {
         class: win.Header,

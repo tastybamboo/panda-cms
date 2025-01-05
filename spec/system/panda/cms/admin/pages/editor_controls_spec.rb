@@ -11,6 +11,47 @@ RSpec.describe "When using the Editor.js controls", type: :system do
     visit "/admin/pages/#{about_page.id}/edit"
   end
 
+  it "loads previous content from data-editable-previous-data attribute" do
+    previous_data = {
+      time: 1736094153000,
+      blocks: [
+        { type: "paragraph", data: { text: "Testing." } },
+        { type: "paragraph", data: { text: "Testing." } },
+        { type: "list", data: { style: "unordered", items: ["<b>12345.</b>", "Testing.", "Testing.<b></b>"] } },
+        { type: "paragraph", data: { text: "Testing 1234." } }
+      ],
+      version: "2.28.2"
+    }
+
+    within_frame "editablePageFrame" do
+      # Create a div with the previous data
+      page.execute_script(<<~JS)
+        const div = document.createElement('div');
+        div.className = 'panda-cms-content';
+        div.setAttribute('data-editable-previous-data', JSON.stringify(#{previous_data.to_json}));
+        div.setAttribute('data-editable-kind', 'rich_text');
+        div.id = 'test-editor';
+        document.body.appendChild(div);
+
+        // Trigger initialization
+        window.dispatchEvent(new CustomEvent('panda-cms:initialize-editors'));
+      JS
+
+      # Wait for editor to initialize
+      expect(page).to have_css('.codex-editor', wait: 10)
+      expect(page).to have_css('.ce-block', wait: 10)
+
+      # Verify the content is loaded
+      expect(page).to have_content("Testing.")
+      expect(page).to have_content("12345.")
+      expect(page).to have_content("Testing 1234.")
+
+      # Verify list is created correctly
+      expect(page).to have_css('.cdx-list')
+      expect(page).to have_css('.cdx-list__item', count: 3)
+    end
+  end
+
   xit "allows rich text formatting with keyboard shortcuts" do
     within_frame "editablePageFrame" do
       rich_text_area = find('div[data-editable-kind="rich_text"]', wait: 10)

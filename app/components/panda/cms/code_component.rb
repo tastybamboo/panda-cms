@@ -39,10 +39,11 @@ module Panda
             "editable-page-id": Current.page.id,
             "editable-block-content-id": block_content&.id
           }
-          @options[:class] = "block bg-yellow-50 font-mono p-2 border-2 border-yellow-700"
+          @options[:class] = "block bg-yellow-50 font-mono text-xs p-2 border-2 border-yellow-700"
           @options[:style] = "white-space: pre-wrap;"
 
           @options[:id] = "editor-#{block_content&.id}"
+
           # TODO: Switch between the HTML and the preview?
           content_tag(:div, code_content, @options, true)
         else

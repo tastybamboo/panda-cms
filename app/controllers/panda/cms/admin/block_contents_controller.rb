@@ -15,15 +15,20 @@ module Panda
           Rails.logger.debug "Content params: #{params.inspect}"
           Rails.logger.debug "Raw content: #{request.raw_post}"
 
-          if @block_content.update!(content: params.dig(:content))
-            @block_content.page.touch
-            render json: @block_content, status: :ok
-          else
-            render json: @block_content.errors, status: :unprocessable_entity
+          # Ensure content isn't HTML escaped before saving
+          params[:content] = CGI.unescapeHTML(params[:content]) if params[:content].present?
+
+          begin
+            if @block_content.update!(content: params[:content])
+              @block_content.page.touch
+              render json: @block_content, status: :ok
+            else
+              render json: @block_content.errors, status: :unprocessable_entity
+            end
+          rescue => e
+            Rails.logger.error "Error updating block content: #{e.message}"
+            render json: { error: e.message }, status: :unprocessable_entity
           end
-        rescue => e
-          Rails.logger.error "Error updating block content: #{e.message}"
-          render json: {error: e.message}, status: :unprocessable_entity
         end
 
         private
