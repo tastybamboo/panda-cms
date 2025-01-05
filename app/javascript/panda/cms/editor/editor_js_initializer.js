@@ -51,20 +51,54 @@ export class EditorJSInitializer {
       const editorCore = EDITOR_JS_RESOURCES[0]
       await ResourceLoader.loadScript(this.document, this.document.head, editorCore)
 
-      // Then load all tools in parallel
-      const toolLoads = EDITOR_JS_RESOURCES.slice(1).map(async (resource) => {
-        await ResourceLoader.loadScript(this.document, this.document.head, resource)
-      })
+      // Wait for EditorJS to be available
+      await this.waitForEditorJS()
 
       // Load CSS directly
       await ResourceLoader.embedCSS(this.document, this.document.head, EDITOR_JS_CSS)
 
-      // Wait for all resources to load
-      await Promise.all(toolLoads)
+      // Then load all tools sequentially to ensure proper initialization order
+      for (const resource of EDITOR_JS_RESOURCES.slice(1)) {
+        try {
+          await ResourceLoader.loadScript(this.document, this.document.head, resource)
+          // Wait for tool to be initialized
+          const toolName = resource.split('@')[0].split('/').pop()
+          await this.waitForTool(toolName)
+          console.debug(`[Panda CMS] Successfully loaded tool: ${toolName}`)
+        } catch (error) {
+          console.error(`[Panda CMS] Failed to load tool: ${resource}`, error)
+          throw error
+        }
+      }
 
-      // Wait for EditorJS to be available
-      await this.waitForEditorJS()
+      // Verify tools are loaded with proper mapping
+      const toolMapping = {
+        'paragraph': 'Paragraph',
+        'header': 'Header',
+        'nested-list': 'NestedList',
+        'quote': 'Quote',
+        'simple-image': 'SimpleImage',
+        'table': 'Table',
+        'embed': 'Embed'
+      }
+
+      // Debug output of loaded tools
+      console.debug('[Panda CMS] Checking loaded tools...')
+      const loadedTools = Object.entries(toolMapping).map(([urlName, globalName]) => {
+        const isLoaded = typeof this.document.defaultView[globalName] === 'function'
+        console.debug(`[Panda CMS] Tool ${urlName} -> ${globalName}: ${isLoaded ? 'LOADED' : 'NOT LOADED'}`)
+        return { urlName, globalName, isLoaded }
+      })
+
+      const missingTools = loadedTools.filter(tool => !tool.isLoaded)
+      if (missingTools.length > 0) {
+        const missingNames = missingTools.map(t => `${t.urlName} (${t.globalName})`).join(', ')
+        throw new Error(`Not all Editor.js tools were properly loaded. Missing: ${missingNames}`)
+      }
+
+      console.debug('[Panda CMS] All tools successfully loaded and verified')
     } catch (error) {
+      console.error('[Panda CMS] Error loading Editor.js resources:', error)
       throw error
     }
   }
@@ -262,24 +296,50 @@ export class EditorJSInitializer {
   }
 
   /**
-   * Wait for EditorJS core to be available in window
+   * Wait for a specific tool to be available in window context
    */
-  async waitForEditorJS() {
-    let attempts = 0
-    const maxAttempts = 30 // 3 seconds with 100ms intervals
+  async waitForTool(toolName, timeout = 5000) {
+    const toolMapping = {
+      'paragraph': 'Paragraph',
+      'header': 'Header',
+      'nested-list': 'NestedList',
+      'quote': 'Quote',
+      'simple-image': 'SimpleImage',
+      'table': 'Table',
+      'embed': 'Embed'
+    }
 
-    await new Promise((resolve, reject) => {
-      const check = () => {
-        attempts++
-        if (window.EditorJS) {
-          resolve()
-        } else if (attempts >= maxAttempts) {
-          reject(new Error('EditorJS core failed to load'))
-        } else {
-          setTimeout(check, 100)
-        }
+    const globalToolName = toolMapping[toolName]
+    if (!globalToolName) {
+      console.warn(`[Panda CMS] No mapping found for tool: ${toolName}`)
+      return
+    }
+
+    console.debug(`[Panda CMS] Waiting for tool ${toolName} -> ${globalToolName}...`)
+    const start = Date.now()
+    while (Date.now() - start < timeout) {
+      if (typeof this.document.defaultView[globalToolName] === 'function') {
+        console.debug(`[Panda CMS] Tool ${toolName} -> ${globalToolName} is ready`)
+        return
       }
-      check()
-    })
+      await new Promise(resolve => setTimeout(resolve, 100))
+    }
+    throw new Error(`[Panda CMS] Timeout waiting for tool: ${toolName} (${globalToolName})`)
+  }
+
+  /**
+   * Wait for EditorJS core to be available in window context
+   */
+  async waitForEditorJS(timeout = 5000) {
+    console.debug('[Panda CMS] Waiting for EditorJS core...')
+    const start = Date.now()
+    while (Date.now() - start < timeout) {
+      if (typeof this.document.defaultView.EditorJS === 'function') {
+        console.debug('[Panda CMS] EditorJS core is ready')
+        return
+      }
+      await new Promise(resolve => setTimeout(resolve, 100))
+    }
+    throw new Error('[Panda CMS] Timeout waiting for EditorJS')
   }
 }
