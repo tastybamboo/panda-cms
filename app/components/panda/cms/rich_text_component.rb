@@ -57,15 +57,17 @@ module Panda
           rescue Panda::CMS::HtmlToEditorJsConverter::ConversionError => e
             raise ComponentError, "Failed to convert content: #{e.message}"
           end
-        elsif @content.is_a?(Hash)
-          begin
-            renderer = Panda::CMS::EditorJs::Renderer.new(@content)
-            @content = renderer.render
-          rescue => e
-            raise ComponentError, "Failed to render content: #{e.message}"
-          end
         else
-          @content = @content.html_safe
+          if @content = JSON.parse(@content)
+            begin
+              renderer = Panda::CMS::EditorJs::Renderer.new(@content)
+              @content = renderer.render.html_safe
+            rescue => e
+              raise ComponentError, "Failed to render content: #{e.message}"
+            end
+          else
+            @content = @content.html_safe
+          end
         end
       rescue ActiveRecord::RecordNotFound => e
         raise ComponentError, "Database record not found: #{e.message}"

@@ -43,6 +43,10 @@ export const EDITOR_JS_CSS = `
     padding: 0;
     line-height: 40px;
   }
+  .codex-editor__redactor {
+    padding-bottom: 150px !important;
+    min-height: 100px !important;
+  }
   /* Base toolbar styles */
   .ce-toolbar {
     left: 0 !important;

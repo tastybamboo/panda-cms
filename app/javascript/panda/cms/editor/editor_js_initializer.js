@@ -164,6 +164,42 @@ export class EditorJSInitializer {
       holder.classList.add("editor-js-holder")
       element.appendChild(holder)
 
+      // Process initial data to handle list items and other content
+      if (initialData.blocks) {
+        initialData.blocks = initialData.blocks.map(block => {
+          if (block.type === 'list' && block.data && Array.isArray(block.data.items)) {
+            return {
+              ...block,
+              data: {
+                ...block.data,
+                items: block.data.items.map(item => {
+                  // Handle both string items and object items
+                  if (typeof item === 'string') {
+                    return {
+                      content: item,
+                      items: []
+                    }
+                  } else if (item.content) {
+                    return {
+                      content: item.content,
+                      items: Array.isArray(item.items) ? item.items : []
+                    }
+                  } else {
+                    return {
+                      content: String(item),
+                      items: []
+                    }
+                  }
+                })
+              }
+            }
+          }
+          return block
+        })
+      }
+
+      console.debug('[Panda CMS] Processed initial data:', initialData)
+
       // Create editor configuration
       const config = {
         holder: holder,

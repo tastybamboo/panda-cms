@@ -156,44 +156,49 @@ export default class extends Controller {
 
     // Initialize editors if they exist
     if (plainTextElements.length > 0 || richTextElements.length > 0) {
-      this.initializePlainTextEditors()
+      // Load resources first
       await this.loadEditorResources()
+
+      this.initializePlainTextEditors()
       await this.initializeRichTextEditors()
     }
   }
 
   async loadEditorResources() {
     console.debug("[Panda CMS] Loading editor resources in iframe...")
-    const resourceLoader = new ResourceLoader()
+    try {
+      // First load core EditorJS
+      await ResourceLoader.loadScript(this.frameDocument, this.frameDocument.head, EDITOR_JS_RESOURCES[0])
 
-    // First load core EditorJS
-    await resourceLoader.loadScript(this.frameDocument, this.frameDocument.head, EDITOR_JS_RESOURCES[0])
+      // Wait for EditorJS to be available with increased timeout
+      let timeout = 10000 // 10 seconds
+      const start = Date.now()
 
-    // Wait for EditorJS to be available with increased timeout
-    let timeout = 10000 // 10 seconds
-    const start = Date.now()
-
-    while (Date.now() - start < timeout) {
-      if (this.frameDocument.defaultView.EditorJS) {
-        console.debug("[Panda CMS] EditorJS core loaded successfully")
-        break
+      while (Date.now() - start < timeout) {
+        if (this.frameDocument.defaultView.EditorJS) {
+          console.debug("[Panda CMS] EditorJS core loaded successfully")
+          break
+        }
+        await new Promise(resolve => setTimeout(resolve, 100))
       }
-      await new Promise(resolve => setTimeout(resolve, 100))
+
+      if (!this.frameDocument.defaultView.EditorJS) {
+        throw new Error("Timeout waiting for EditorJS core to load")
+      }
+
+      // Load CSS
+      await ResourceLoader.embedCSS(this.frameDocument, this.frameDocument.head, EDITOR_JS_CSS)
+
+      // Then load all tools sequentially
+      for (const resource of EDITOR_JS_RESOURCES.slice(1)) {
+        await ResourceLoader.loadScript(this.frameDocument, this.frameDocument.head, resource)
+      }
+
+      console.debug("[Panda CMS] All editor resources loaded successfully")
+    } catch (error) {
+      console.error("[Panda CMS] Error loading editor resources:", error)
+      throw error
     }
-
-    if (!this.frameDocument.defaultView.EditorJS) {
-      throw new Error("Timeout waiting for EditorJS core to load")
-    }
-
-    // Load CSS
-    await resourceLoader.embedCSS(this.frameDocument, this.frameDocument.head, EDITOR_JS_CSS)
-
-    // Then load all tools sequentially
-    for (const resource of EDITOR_JS_RESOURCES.slice(1)) {
-      await resourceLoader.loadScript(this.frameDocument, this.frameDocument.head, resource)
-    }
-
-    console.debug("[Panda CMS] All editor resources loaded successfully")
   }
 
   waitForEditorJS() {
@@ -285,9 +290,6 @@ export default class extends Controller {
 
     if (richTextElements.length > 0) {
       try {
-        // Load resources first
-        await this.loadEditorResources()
-
         // Verify Editor.js is available in the iframe context
         if (!this.frameDocument.defaultView.EditorJS) {
           const error = new Error("Editor.js not loaded in iframe context")
@@ -301,34 +303,54 @@ export default class extends Controller {
         const editors = []
         for (const element of richTextElements) {
           try {
+            console.debug('[Panda CMS] Initializing editor for element:', {
+              id: element.id,
+              kind: element.getAttribute('data-editable-kind'),
+              blockContentId: element.getAttribute('data-editable-block-content-id')
+            })
+
             // Create holder element before initialization
             const holderId = `editor-${Math.random().toString(36).substr(2, 9)}`
             const holderElement = this.frameDocument.createElement('div')
             holderElement.id = holderId
             holderElement.className = 'editor-js-holder codex-editor'
+
+            // Clear any existing content
+            element.textContent = ''
             element.appendChild(holderElement)
 
-            // Verify the holder element exists
-            const verifyHolder = this.frameDocument.getElementById(holderId)
-            if (!verifyHolder) {
-              const error = new Error(`Failed to create editor holder element ${holderId}`)
-              console.error("[Panda CMS]", error)
-              throw error
-            }
-
-            console.debug(`[Panda CMS] Created editor holder: ${holderId}`, {
-              exists: !!verifyHolder,
-              parent: element.id || 'no-id',
-              editorJSAvailable: !!this.frameDocument.defaultView.EditorJS
-            })
-
             // Get previous data from the data attribute if available
-            let previousData = {}
+            let previousData = { blocks: [] }
             const previousDataAttr = element.getAttribute('data-editable-previous-data')
             if (previousDataAttr) {
               try {
                 const decodedData = atob(previousDataAttr)
-                previousData = JSON.parse(decodedData)
+                console.debug('[Panda CMS] Decoded previous data:', decodedData)
+                let parsedData = JSON.parse(decodedData)
+
+                // Check if we have double-encoded data
+                if (parsedData.blocks?.length === 1 &&
+                  parsedData.blocks[0]?.type === 'paragraph' &&
+                  parsedData.blocks[0]?.data?.text) {
+                  try {
+                    // Try to parse the inner JSON
+                    const innerData = JSON.parse(parsedData.blocks[0].data.text)
+                    if (innerData.blocks) {
+                      console.debug('[Panda CMS] Found double-encoded data, using inner content:', innerData)
+                      parsedData = innerData
+                    }
+                  } catch (e) {
+                    // If parsing fails, use the outer data
+                    console.debug('[Panda CMS] Not double-encoded data, using as is')
+                  }
+                }
+
+                if (parsedData && typeof parsedData === 'object' && Array.isArray(parsedData.blocks)) {
+                  previousData = parsedData
+                  console.debug('[Panda CMS] Using previous data:', previousData)
+                } else {
+                  console.warn('[Panda CMS] Invalid data format:', parsedData)
+                }
               } catch (error) {
                 console.error("[Panda CMS] Error parsing previous data:", error)
               }
@@ -341,7 +363,9 @@ export default class extends Controller {
 
             while (!editor && retryCount < maxRetries) {
               try {
+                console.debug(`[Panda CMS] Editor initialization attempt ${retryCount + 1}`)
                 editor = await initializer.initialize(holderElement, previousData, holderId)
+                console.debug('[Panda CMS] Editor initialized successfully:', editor)
                 break
               } catch (error) {
                 console.warn(`[Panda CMS] Editor initialization attempt ${retryCount + 1} failed:`, error)
@@ -360,7 +384,8 @@ export default class extends Controller {
               saveButton.addEventListener('click', async () => {
                 try {
                   const outputData = await editor.save()
-                  outputData.source = "editorJS"
+                  // Don't wrap the data in another object
+                  console.debug('[Panda CMS] Editor save data:', outputData)
 
                   const pageId = element.getAttribute("data-editable-page-id")
                   const blockContentId = element.getAttribute("data-editable-block-content-id")
@@ -378,6 +403,8 @@ export default class extends Controller {
                     throw new Error('Save failed')
                   }
 
+                  // Update the data attribute with the new content
+                  element.setAttribute('data-editable-previous-data', btoa(JSON.stringify(outputData)))
                   this.handleSuccess()
                 } catch (error) {
                   console.error("[Panda CMS] Save error:", error)
