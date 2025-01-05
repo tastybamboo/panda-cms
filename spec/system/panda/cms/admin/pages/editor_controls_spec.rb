@@ -17,7 +17,7 @@ RSpec.describe "When using the Editor.js controls", type: :system do
       blocks: [
         { type: "paragraph", data: { text: "Testing." } },
         { type: "paragraph", data: { text: "Testing." } },
-        { type: "list", data: { style: "unordered", items: ["<b>12345.</b>", "Testing.", "Testing.<b></b>"] } },
+        { type: "list", data: { style: "unordered", items: ["<b>12345.</b>", "Testing.", "Testing."] } },
         { type: "paragraph", data: { text: "Testing 1234." } }
       ],
       version: "2.28.2"

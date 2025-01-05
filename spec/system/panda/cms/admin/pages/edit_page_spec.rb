@@ -201,7 +201,8 @@ RSpec.describe "When editing a page", type: :system do
 
         # Verify editor data structure
         editor_data = page.evaluate_script('document.querySelector("[data-editable-kind=rich_text]").getAttribute("data-editable-previous-data")')
-        expect(editor_data).to include('"version":"2.28.2"')
+        decoded_data = JSON.parse(Base64.strict_decode64(editor_data))
+        expect(decoded_data["version"]).to eq("2.28.2")
       end
     end
 
