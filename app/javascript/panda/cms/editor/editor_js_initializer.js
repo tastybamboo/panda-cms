@@ -86,10 +86,64 @@ export class EditorJSInitializer {
     }
   }
 
+  async waitForEditorJS(timeout = 10000) {
+    console.debug('[Panda CMS] Waiting for EditorJS core...')
+    const start = Date.now()
+    while (Date.now() - start < timeout) {
+      if (typeof this.document.defaultView.EditorJS === 'function') {
+        console.debug('[Panda CMS] EditorJS core is ready')
+        return
+      }
+      await new Promise(resolve => setTimeout(resolve, 100))
+    }
+    throw new Error('[Panda CMS] Timeout waiting for EditorJS')
+  }
+
+  /**
+   * Wait for a specific tool to be available in window context
+   */
+  async waitForTool(toolName, timeout = 10000) {
+    if (!toolName) {
+      console.error('[Panda CMS] Invalid tool name provided')
+      return null
+    }
+
+    // Clean up tool name to handle npm package format
+    const cleanToolName = toolName.split('/').pop().replace('@', '')
+
+    const toolMapping = {
+      'paragraph': 'Paragraph',
+      'header': 'Header',
+      'nested-list': 'NestedList',
+      'list': 'NestedList',
+      'quote': 'Quote',
+      'simple-image': 'SimpleImage',
+      'table': 'Table',
+      'embed': 'Embed'
+    }
+
+    const globalToolName = toolMapping[cleanToolName] || cleanToolName
+    const start = Date.now()
+
+    while (Date.now() - start < timeout) {
+      const win = this.document.defaultView || window
+      if (win[globalToolName] && typeof win[globalToolName] === 'function') {
+        // If this is the NestedList tool, make it available as both list and nested-list
+        if (globalToolName === 'NestedList') {
+          win.List = win[globalToolName]
+        }
+        console.debug(`[Panda CMS] Successfully loaded tool: ${globalToolName}`)
+        return win[globalToolName]
+      }
+      await new Promise(resolve => setTimeout(resolve, 100))
+    }
+    throw new Error(`[Panda CMS] Timeout waiting for tool: ${cleanToolName} (${globalToolName})`)
+  }
+
   async initializeEditor(element, initialData = {}, editorId = null) {
     try {
-      // Wait for EditorJS core to be available
-      await this.waitForEditorJS()
+      // Wait for EditorJS core to be available with increased timeout
+      await this.waitForEditorJS(15000)
 
       // Get the window context (either iframe or parent)
       const win = this.document.defaultView || window
@@ -110,80 +164,10 @@ export class EditorJSInitializer {
       holder.classList.add("editor-js-holder")
       element.appendChild(holder)
 
-      // Get previous data from the data attribute if available
-      let previousData = initialData
-      // Get the parent element with the data attribute
-      const parentElement = element.closest('[data-editable-previous-data]')
-      const previousDataAttr = parentElement ? parentElement.getAttribute('data-editable-previous-data') : null
-      console.debug('[Panda CMS] Parent element:', parentElement)
-      console.debug('[Panda CMS] Previous data attribute:', previousDataAttr)
-
-      if (previousDataAttr) {
-        try {
-          // Decode Base64 data
-          const decodedData = atob(previousDataAttr)
-          console.debug('[Panda CMS] Decoded data:', decodedData)
-          const parsed = JSON.parse(decodedData)
-
-          // Ensure we have the required structure
-          if (parsed.blocks) {
-            // Process blocks to handle list data properly
-            parsed.blocks = parsed.blocks.map(block => {
-              if (block.type === 'list') {
-                console.debug('[Panda CMS] Processing list block:', block)
-                // Create a temporary div to decode HTML entities
-                const div = this.document.createElement('div')
-                return {
-                  ...block,
-                  data: {
-                    ...block.data,
-                    items: block.data.items.map(item => {
-                      div.innerHTML = item
-                      const content = div.innerHTML
-                      console.debug('[Panda CMS] Decoded list item:', content)
-                      return {
-                        content,
-                        items: []
-                      }
-                    })
-                  }
-                }
-              } else if (block.type === 'paragraph' && block.data && block.data.text) {
-                // Create a temporary div to decode HTML entities in paragraphs
-                const div = this.document.createElement('div')
-                div.innerHTML = block.data.text
-                return {
-                  ...block,
-                  data: {
-                    ...block.data,
-                    text: div.innerHTML
-                  }
-                }
-              }
-              return block
-            })
-            previousData = parsed
-            console.debug('[Panda CMS] Processed data:', previousData)
-          } else {
-            console.warn('[Panda CMS] Parsed data missing blocks array:', parsed)
-            // Initialize with empty blocks array if missing
-            previousData = { blocks: [], time: Date.now(), version: "2.28.2" }
-          }
-        } catch (error) {
-          console.error('[Panda CMS] Error parsing previous data:', error)
-          // Initialize with empty blocks array on error
-          previousData = { blocks: [], time: Date.now(), version: "2.28.2" }
-        }
-      } else {
-        console.debug('[Panda CMS] No previous data attribute found')
-        // Initialize with empty blocks array if no data
-        previousData = { blocks: [], time: Date.now(), version: "2.28.2" }
-      }
-
       // Create editor configuration
       const config = {
         holder: holder,
-        data: previousData,
+        data: initialData,
         placeholder: 'Click to start writing...',
         tools: {
           paragraph: {
@@ -251,26 +235,49 @@ export class EditorJSInitializer {
         }
       }
 
+      // Remove any undefined tools from the config
+      config.tools = Object.fromEntries(
+        Object.entries(config.tools)
+          .filter(([_, value]) => value?.class !== undefined)
+      )
+
       console.debug('[Panda CMS] Creating editor with config:', config)
 
-      // Create editor instance
+      // Create editor instance with extended timeout
       return new Promise((resolve, reject) => {
         try {
           // Add timeout for initialization
           const timeoutId = setTimeout(() => {
             reject(new Error('Editor initialization timeout'))
-          }, 5000)
+          }, 15000) // Increased to 15 seconds
 
           // Create editor instance with onReady callback
           const editor = new win.EditorJS({
             ...config,
             onReady: () => {
-              console.debug('[Panda CMS] Editor ready with data:', previousData)
+              console.debug('[Panda CMS] Editor ready with data:', initialData)
               clearTimeout(timeoutId)
               holder.editorInstance = editor
               resolve(editor)
+            },
+            onChange: (api, event) => {
+              console.debug('[Panda CMS] Editor content changed:', { api, event })
+            },
+            onError: (error) => {
+              console.error('[Panda CMS] Editor error:', error)
             }
           })
+
+          // Add error handler
+          editor.isReady
+            .then(() => {
+              console.debug('[Panda CMS] Editor is ready')
+            })
+            .catch((error) => {
+              console.error('[Panda CMS] Editor failed to initialize:', error)
+              clearTimeout(timeoutId)
+              reject(error)
+            })
         } catch (error) {
           clearTimeout(timeoutId)
           reject(error)
@@ -280,62 +287,5 @@ export class EditorJSInitializer {
       console.error('[Panda CMS] Error initializing editor:', error)
       throw error
     }
-  }
-
-  /**
-   * Wait for a specific tool to be available in window context
-   */
-  async waitForTool(toolName, timeout = 5000) {
-    if (!toolName) {
-      console.error('[Panda CMS] Invalid tool name provided')
-      return null
-    }
-
-    // Clean up tool name to handle npm package format
-    const cleanToolName = toolName.split('/').pop().replace('@', '')
-
-    const toolMapping = {
-      'paragraph': 'Paragraph',
-      'header': 'Header',
-      'nested-list': 'NestedList',
-      'list': 'NestedList',
-      'quote': 'Quote',
-      'simple-image': 'SimpleImage',
-      'table': 'Table',
-      'embed': 'Embed'
-    }
-
-    const globalToolName = toolMapping[cleanToolName] || cleanToolName
-    const start = Date.now()
-
-    while (Date.now() - start < timeout) {
-      const win = this.document.defaultView || window
-      if (win[globalToolName] && typeof win[globalToolName] === 'function') {
-        // If this is the NestedList tool, make it available as both list and nested-list
-        if (globalToolName === 'NestedList') {
-          win.List = win[globalToolName]
-        }
-        console.debug(`[Panda CMS] Successfully loaded tool: ${globalToolName}`)
-        return win[globalToolName]
-      }
-      await new Promise(resolve => setTimeout(resolve, 100))
-    }
-    throw new Error(`[Panda CMS] Timeout waiting for tool: ${cleanToolName} (${globalToolName})`)
-  }
-
-  /**
-   * Wait for EditorJS core to be available in window context
-   */
-  async waitForEditorJS(timeout = 5000) {
-    console.debug('[Panda CMS] Waiting for EditorJS core...')
-    const start = Date.now()
-    while (Date.now() - start < timeout) {
-      if (typeof this.document.defaultView.EditorJS === 'function') {
-        console.debug('[Panda CMS] EditorJS core is ready')
-        return
-      }
-      await new Promise(resolve => setTimeout(resolve, 100))
-    }
-    throw new Error('[Panda CMS] Timeout waiting for EditorJS')
   }
 }

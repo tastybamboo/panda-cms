@@ -164,102 +164,36 @@ export default class extends Controller {
 
   async loadEditorResources() {
     console.debug("[Panda CMS] Loading editor resources in iframe...")
-    try {
-      // First load EditorJS core
-      const editorCore = EDITOR_JS_RESOURCES[0]
-      await ResourceLoader.loadScript(this.frameDocument, this.head, editorCore)
+    const resourceLoader = new ResourceLoader()
 
-      // Wait for EditorJS to be available
-      await this.waitForEditorJS()
+    // First load core EditorJS
+    await resourceLoader.loadScript(this.frameDocument, this.frameDocument.head, EDITOR_JS_RESOURCES[0])
 
-      // Load CSS directly
-      await ResourceLoader.embedCSS(this.frameDocument, this.head, EDITOR_JS_CSS)
+    // Wait for EditorJS to be available with increased timeout
+    let timeout = 10000 // 10 seconds
+    const start = Date.now()
 
-      // Map of tool names to their expected global class names and URLs
-      const toolMapping = {
-        'paragraph': { className: 'Paragraph', url: EDITOR_JS_RESOURCES.find(r => r.includes('paragraph')) },
-        'header': { className: 'Header', url: EDITOR_JS_RESOURCES.find(r => r.includes('header')) },
-        'nested-list': { className: 'NestedList', url: EDITOR_JS_RESOURCES.find(r => r.includes('nested-list')) },
-        'quote': { className: 'Quote', url: EDITOR_JS_RESOURCES.find(r => r.includes('quote')) },
-        'simple-image': { className: 'SimpleImage', url: EDITOR_JS_RESOURCES.find(r => r.includes('simple-image')) },
-        'table': { className: 'Table', url: EDITOR_JS_RESOURCES.find(r => r.includes('table')) },
-        'embed': { className: 'Embed', url: EDITOR_JS_RESOURCES.find(r => r.includes('embed')) }
+    while (Date.now() - start < timeout) {
+      if (this.frameDocument.defaultView.EditorJS) {
+        console.debug("[Panda CMS] EditorJS core loaded successfully")
+        break
       }
-
-      // Load all tool scripts first
-      await Promise.all(Object.entries(toolMapping).map(async ([toolName, { url }]) => {
-        try {
-          console.debug(`[Panda CMS] Loading tool script: ${toolName} from ${url}`)
-          await ResourceLoader.loadScript(this.frameDocument, this.head, url)
-        } catch (error) {
-          console.error(`[Panda CMS] Failed to load tool script: ${toolName}`, error)
-          throw error
-        }
-      }))
-
-      // Then verify all tools are available
-      await Promise.all(Object.entries(toolMapping).map(async ([toolName, { className }]) => {
-        try {
-          console.debug(`[Panda CMS] Verifying tool: ${toolName} -> ${className}`)
-          await new Promise((resolve, reject) => {
-            const timeout = setTimeout(() => {
-              reject(new Error(`Timeout waiting for ${toolName} (${className}) to load`))
-            }, 10000)
-
-            const check = () => {
-              const toolClass = this.frameDocument.defaultView[className]
-              if (toolClass) {
-                console.debug(`[Panda CMS] Tool ${toolName} -> ${className} loaded:`, {
-                  toolClass: !!toolClass,
-                  window: this.frameDocument.defaultView === window ? 'main' : 'iframe',
-                  frameId: this.frame.getAttribute('data-editor-frame-id')
-                })
-                clearTimeout(timeout)
-                resolve()
-              } else {
-                setTimeout(check, 100)
-              }
-            }
-            check()
-          })
-        } catch (error) {
-          console.error(`[Panda CMS] Failed to verify tool: ${toolName}`, error)
-          throw error
-        }
-      }))
-
-      // Final verification of all tools
-      const missingTools = []
-      for (const [toolName, { className }] of Object.entries(toolMapping)) {
-        if (!this.frameDocument.defaultView[className]) {
-          missingTools.push(`${toolName}@${toolMapping[toolName].url?.split('@')[1] || 'unknown'}`)
-        }
-      }
-
-      if (missingTools.length > 0) {
-        const error = new Error(`Missing required Editor.js tools: ${missingTools.join(', ')}`)
-        console.error("[Panda CMS]", error)
-        throw error
-      }
-
-      // Set flags to indicate tools are initialized
-      this.frameDocument.defaultView.EDITOR_JS_TOOLS_INITIALIZED = true
-      this.frame.setAttribute('data-editor-tools-initialized', 'true')
-      this.body.setAttribute('data-editor-tools-initialized', 'true')
-
-      console.debug("[Panda CMS] Editor resources loaded in iframe", {
-        frameId: this.frame.getAttribute('data-editor-frame-id'),
-        toolsInitialized: true,
-        availableTools: Object.entries(toolMapping).map(([name, { className }]) => ({
-          name,
-          className,
-          loaded: !!this.frameDocument.defaultView[className]
-        }))
-      })
-    } catch (error) {
-      console.error("[Panda CMS] Error loading editor resources in iframe:", error)
-      throw error
+      await new Promise(resolve => setTimeout(resolve, 100))
     }
+
+    if (!this.frameDocument.defaultView.EditorJS) {
+      throw new Error("Timeout waiting for EditorJS core to load")
+    }
+
+    // Load CSS
+    await resourceLoader.embedCSS(this.frameDocument, this.frameDocument.head, EDITOR_JS_CSS)
+
+    // Then load all tools sequentially
+    for (const resource of EDITOR_JS_RESOURCES.slice(1)) {
+      await resourceLoader.loadScript(this.frameDocument, this.frameDocument.head, resource)
+    }
+
+    console.debug("[Panda CMS] All editor resources loaded successfully")
   }
 
   waitForEditorJS() {
@@ -351,6 +285,9 @@ export default class extends Controller {
 
     if (richTextElements.length > 0) {
       try {
+        // Load resources first
+        await this.loadEditorResources()
+
         // Verify Editor.js is available in the iframe context
         if (!this.frameDocument.defaultView.EditorJS) {
           const error = new Error("Editor.js not loaded in iframe context")
@@ -385,8 +322,37 @@ export default class extends Controller {
               editorJSAvailable: !!this.frameDocument.defaultView.EditorJS
             })
 
-            // Initialize editor with empty data
-            const editor = await initializer.initialize(holderElement, {}, holderId)
+            // Get previous data from the data attribute if available
+            let previousData = {}
+            const previousDataAttr = element.getAttribute('data-editable-previous-data')
+            if (previousDataAttr) {
+              try {
+                const decodedData = atob(previousDataAttr)
+                previousData = JSON.parse(decodedData)
+              } catch (error) {
+                console.error("[Panda CMS] Error parsing previous data:", error)
+              }
+            }
+
+            // Initialize editor with retry logic
+            let editor = null
+            let retryCount = 0
+            const maxRetries = 3
+
+            while (!editor && retryCount < maxRetries) {
+              try {
+                editor = await initializer.initialize(holderElement, previousData, holderId)
+                break
+              } catch (error) {
+                console.warn(`[Panda CMS] Editor initialization attempt ${retryCount + 1} failed:`, error)
+                retryCount++
+                if (retryCount === maxRetries) {
+                  throw error
+                }
+                // Wait before retrying
+                await new Promise(resolve => setTimeout(resolve, 1000))
+              }
+            }
 
             // Set up save handler for this editor
             const saveButton = parent.document.getElementById('saveEditableButton')
@@ -422,7 +388,9 @@ export default class extends Controller {
               console.warn("[Panda CMS] Save button not found")
             }
 
-            editors.push(editor)
+            if (editor) {
+              editors.push(editor)
+            }
           } catch (error) {
             console.error("[Panda CMS] Editor initialization error:", error)
             throw error

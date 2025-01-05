@@ -17,7 +17,9 @@ module Panda
 
           # Ensure content isn't HTML escaped before saving
           if params[:content].present?
-            content = CGI.unescapeHTML(params[:content])
+            # Convert ActionController::Parameters to a string if needed
+            content_str = params[:content].is_a?(ActionController::Parameters) ? params[:content].to_json : params[:content].to_s
+            content = CGI.unescapeHTML(content_str)
           else
             content = nil
           end
