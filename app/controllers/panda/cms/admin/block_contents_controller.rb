@@ -23,7 +23,7 @@ module Panda
           end
 
           begin
-            if content && @block_content.update!(content: params[:content])
+            if content && @block_content.update!(content: content)
               @block_content.page.touch
               render json: @block_content, status: :ok
             else
