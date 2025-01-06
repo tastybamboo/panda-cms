@@ -165,45 +165,49 @@ export class EditorJSInitializer {
       element.appendChild(holder)
 
       // Process initial data to handle list items and other content
+      let processedData = initialData
       if (initialData.blocks) {
-        initialData.blocks = initialData.blocks.map(block => {
-          if (block.type === 'list' && block.data && Array.isArray(block.data.items)) {
-            return {
-              ...block,
-              data: {
-                ...block.data,
-                items: block.data.items.map(item => {
-                  // Handle both string items and object items
-                  if (typeof item === 'string') {
-                    return {
-                      content: item,
-                      items: []
+        processedData = {
+          ...initialData,
+          blocks: initialData.blocks.map(block => {
+            if (block.type === 'list' && block.data && Array.isArray(block.data.items)) {
+              return {
+                ...block,
+                data: {
+                  ...block.data,
+                  items: block.data.items.map(item => {
+                    // Handle both string items and object items
+                    if (typeof item === 'string') {
+                      return {
+                        content: item,
+                        items: []
+                      }
+                    } else if (item.content) {
+                      return {
+                        content: item.content,
+                        items: Array.isArray(item.items) ? item.items : []
+                      }
+                    } else {
+                      return {
+                        content: String(item),
+                        items: []
+                      }
                     }
-                  } else if (item.content) {
-                    return {
-                      content: item.content,
-                      items: Array.isArray(item.items) ? item.items : []
-                    }
-                  } else {
-                    return {
-                      content: String(item),
-                      items: []
-                    }
-                  }
-                })
+                  })
+                }
               }
             }
-          }
-          return block
-        })
+            return block
+          })
+        }
       }
 
-      console.debug('[Panda CMS] Processed initial data:', initialData)
+      console.debug('[Panda CMS] Processed initial data:', processedData)
 
       // Create editor configuration
       const config = {
         holder: holder,
-        data: initialData,
+        data: processedData,
         placeholder: 'Click to start writing...',
         tools: {
           paragraph: {
@@ -242,32 +246,27 @@ export class EditorJSInitializer {
               quotePlaceholder: 'Enter a quote',
               captionPlaceholder: 'Quote\'s author'
             }
-          },
-          image: {
-            class: win.SimpleImage,
-            inlineToolbar: true,
-            config: {
-              placeholder: 'Paste an image URL...'
-            }
-          },
-          table: {
-            class: win.Table,
-            inlineToolbar: true,
-            config: {
-              rows: 2,
-              cols: 2
-            }
-          },
-          embed: {
-            class: win.Embed,
-            inlineToolbar: true,
-            config: {
-              services: {
-                youtube: true,
-                vimeo: true
-              }
-            }
           }
+        },
+        onChange: (api, event) => {
+          console.debug('[Panda CMS] Editor content changed:', { api, event })
+          // Save content to data attributes
+          api.saver.save().then((outputData) => {
+            const jsonString = JSON.stringify(outputData)
+            element.dataset.editablePreviousData = btoa(jsonString)
+            element.dataset.editableContent = jsonString
+            element.dataset.editableInitialized = 'true'
+          })
+        },
+        onReady: () => {
+          console.debug('[Panda CMS] Editor ready with data:', processedData)
+          element.dataset.editableInitialized = 'true'
+          holder.editorInstance = editor
+        },
+        onError: (error) => {
+          console.error('[Panda CMS] Editor error:', error)
+          element.dataset.editableInitialized = 'false'
+          throw error
         }
       }
 
@@ -291,16 +290,26 @@ export class EditorJSInitializer {
           const editor = new win.EditorJS({
             ...config,
             onReady: () => {
-              console.debug('[Panda CMS] Editor ready with data:', initialData)
+              console.debug('[Panda CMS] Editor ready with data:', processedData)
               clearTimeout(timeoutId)
               holder.editorInstance = editor
+              element.dataset.editableInitialized = 'true'
               resolve(editor)
             },
             onChange: (api, event) => {
               console.debug('[Panda CMS] Editor content changed:', { api, event })
+              // Save content to data attributes
+              api.saver.save().then((outputData) => {
+                const jsonString = JSON.stringify(outputData)
+                element.dataset.editablePreviousData = btoa(jsonString)
+                element.dataset.editableContent = jsonString
+              })
             },
             onError: (error) => {
               console.error('[Panda CMS] Editor error:', error)
+              element.dataset.editableInitialized = 'false'
+              clearTimeout(timeoutId)
+              reject(error)
             }
           })
 
@@ -308,14 +317,16 @@ export class EditorJSInitializer {
           editor.isReady
             .then(() => {
               console.debug('[Panda CMS] Editor is ready')
+              element.dataset.editableInitialized = 'true'
             })
             .catch((error) => {
               console.error('[Panda CMS] Editor failed to initialize:', error)
+              element.dataset.editableInitialized = 'false'
               clearTimeout(timeoutId)
               reject(error)
             })
         } catch (error) {
-          clearTimeout(timeoutId)
+          element.dataset.editableInitialized = 'false'
           reject(error)
         }
       })

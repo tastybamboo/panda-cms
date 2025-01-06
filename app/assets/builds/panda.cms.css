@@ -1246,10 +1246,6 @@ a.block-link:after {
   top: 0.5rem;
 }
 
-.left-0 {
-  left: 0px;
-}
-
 .z-10 {
   z-index: 10;
 }
@@ -2020,10 +2016,6 @@ a.block-link:after {
   padding: 1.5rem;
 }
 
-.p-12 {
-  padding: 3rem;
-}
-
 .px-1 {
   padding-left: 0.25rem;
   padding-right: 0.25rem;
@@ -2142,10 +2134,6 @@ a.block-link:after {
 
 .pt-4 {
   padding-top: 1rem;
-}
-
-.pl-16 {
-  padding-left: 4rem;
 }
 
 .text-left {

@@ -22,6 +22,7 @@ export default class extends Controller {
       rich: false
     }
     this.setupSlideoverHandling()
+    this.setupEditorInitializationListener()
   }
 
   setupControls() {
@@ -142,6 +143,17 @@ export default class extends Controller {
     })
   }
 
+  setupEditorInitializationListener() {
+    // Listen for the custom event to initialize editors
+    this.frame.addEventListener("load", () => {
+      const win = this.frame.contentWindow || this.frame.contentDocument.defaultView
+      win.addEventListener('panda-cms:initialize-editors', async () => {
+        console.debug("[Panda CMS] Received initialize-editors event")
+        await this.initializeEditors()
+      })
+    })
+  }
+
   async initializeEditors() {
     console.debug("[Panda CMS] Starting editor initialization")
 
@@ -156,11 +168,21 @@ export default class extends Controller {
 
     // Initialize editors if they exist
     if (plainTextElements.length > 0 || richTextElements.length > 0) {
-      // Load resources first
-      await this.loadEditorResources()
+      try {
+        // Load resources first
+        await this.loadEditorResources()
 
-      this.initializePlainTextEditors()
-      await this.initializeRichTextEditors()
+        // Initialize editors
+        await Promise.all([
+          this.initializePlainTextEditors(),
+          this.initializeRichTextEditors()
+        ])
+
+        console.debug("[Panda CMS] All editors initialized successfully")
+      } catch (error) {
+        console.error("[Panda CMS] Error initializing editors:", error)
+        throw error
+      }
     }
   }
 
@@ -303,6 +325,12 @@ export default class extends Controller {
         const editors = []
         for (const element of richTextElements) {
           try {
+            // Skip already initialized editors
+            if (element.dataset.editableInitialized === 'true' && element.querySelector('.codex-editor')) {
+              console.debug('[Panda CMS] Editor already initialized:', element.id)
+              continue
+            }
+
             console.debug('[Panda CMS] Initializing editor for element:', {
               id: element.id,
               kind: element.getAttribute('data-editable-kind'),
@@ -324,9 +352,17 @@ export default class extends Controller {
             const previousDataAttr = element.getAttribute('data-editable-previous-data')
             if (previousDataAttr) {
               try {
-                const decodedData = atob(previousDataAttr)
-                console.debug('[Panda CMS] Decoded previous data:', decodedData)
-                let parsedData = JSON.parse(decodedData)
+                let parsedData
+                try {
+                  // First try to parse as base64
+                  const decodedData = atob(previousDataAttr)
+                  console.debug('[Panda CMS] Decoded base64 data:', decodedData)
+                  parsedData = JSON.parse(decodedData)
+                } catch (e) {
+                  // If base64 fails, try direct JSON parse
+                  console.debug('[Panda CMS] Trying direct JSON parse')
+                  parsedData = JSON.parse(previousDataAttr)
+                }
 
                 // Check if we have double-encoded data
                 if (parsedData.blocks?.length === 1 &&
@@ -353,6 +389,19 @@ export default class extends Controller {
                 }
               } catch (error) {
                 console.error("[Panda CMS] Error parsing previous data:", error)
+                // If we can't parse the data, try to use it as plain text
+                previousData = {
+                  time: Date.now(),
+                  blocks: [
+                    {
+                      type: "paragraph",
+                      data: {
+                        text: element.textContent || ""
+                      }
+                    }
+                  ],
+                  version: "2.28.2"
+                }
               }
             }
 
@@ -366,6 +415,19 @@ export default class extends Controller {
                 console.debug(`[Panda CMS] Editor initialization attempt ${retryCount + 1}`)
                 editor = await initializer.initialize(holderElement, previousData, holderId)
                 console.debug('[Panda CMS] Editor initialized successfully:', editor)
+
+                // Set up autosave if enabled
+                if (this.autosaveValue) {
+                  editor.isReady.then(() => {
+                    editor.save().then((outputData) => {
+                      const jsonString = JSON.stringify(outputData)
+                      element.dataset.editablePreviousData = btoa(jsonString)
+                      element.dataset.editableContent = jsonString
+                      element.dataset.editableInitialized = 'true'
+                    })
+                  })
+                }
+
                 break
               } catch (error) {
                 console.warn(`[Panda CMS] Editor initialization attempt ${retryCount + 1} failed:`, error)
@@ -384,7 +446,6 @@ export default class extends Controller {
               saveButton.addEventListener('click', async () => {
                 try {
                   const outputData = await editor.save()
-                  // Don't wrap the data in another object
                   console.debug('[Panda CMS] Editor save data:', outputData)
 
                   const pageId = element.getAttribute("data-editable-page-id")
@@ -403,8 +464,12 @@ export default class extends Controller {
                     throw new Error('Save failed')
                   }
 
-                  // Update the data attribute with the new content
-                  element.setAttribute('data-editable-previous-data', btoa(JSON.stringify(outputData)))
+                  // Update the data attributes with the new content
+                  const jsonString = JSON.stringify(outputData)
+                  element.dataset.editablePreviousData = btoa(jsonString)
+                  element.dataset.editableContent = jsonString
+                  element.dataset.editableInitialized = 'true'
+
                   this.handleSuccess()
                 } catch (error) {
                   console.error("[Panda CMS] Save error:", error)
@@ -429,7 +494,7 @@ export default class extends Controller {
         this.editors.push(...validEditors)
 
         // If we didn't get any valid editors, that's an error
-        if (validEditors.length === 0) {
+        if (validEditors.length === 0 && richTextElements.length > 0) {
           const error = new Error("No editors were successfully initialized")
           console.error("[Panda CMS]", error)
           throw error
