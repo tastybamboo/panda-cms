@@ -2020,6 +2020,10 @@ a.block-link:after {
   padding: 1.5rem;
 }
 
+.p-12 {
+  padding: 3rem;
+}
+
 .px-1 {
   padding-left: 0.25rem;
   padding-right: 0.25rem;

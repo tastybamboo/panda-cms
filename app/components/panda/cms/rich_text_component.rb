@@ -58,15 +58,18 @@ module Panda
             raise ComponentError, "Failed to convert content: #{e.message}"
           end
         else
-          if @content = JSON.parse(@content)
-            begin
-              renderer = Panda::CMS::EditorJs::Renderer.new(@content)
+          begin
+            if @content.start_with?("{") && @content.end_with?("}")
+              renderer = Panda::CMS::EditorJs::Renderer.new(parsed_content)
               @content = renderer.render.html_safe
-            rescue => e
-              raise ComponentError, "Failed to render content: #{e.message}"
+            else
+              @content = @content.html_safe
             end
-          else
+          rescue JSON::ParserError => e
+            # If JSON parsing fails, treat it as HTML
             @content = @content.html_safe
+          rescue => e
+            raise ComponentError, "Failed to render content: #{e.message}"
           end
         end
       rescue ActiveRecord::RecordNotFound => e
