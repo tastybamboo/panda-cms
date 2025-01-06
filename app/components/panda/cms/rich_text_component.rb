@@ -60,6 +60,7 @@ module Panda
         else
           begin
             if @content.start_with?("{") && @content.end_with?("}")
+              parsed_content = JSON.parse(@content)
               renderer = Panda::CMS::EditorJs::Renderer.new(parsed_content)
               @content = renderer.render.html_safe
             else
