@@ -10,7 +10,15 @@ module Panda
           content = if preserved_content.present?
             # If preserved_content is a string (JSON), parse it
             begin
-              preserved_content.is_a?(String) ? JSON.parse(preserved_content) : preserved_content
+              if preserved_content.is_a?(String)
+                # Try to parse as JSON first
+                JSON.parse(preserved_content)
+              elsif preserved_content.is_a?(Hash)
+                # Convert Ruby hash keys to strings
+                preserved_content.deep_transform_keys(&:to_s)
+              else
+                preserved_content
+              end
             rescue JSON::ParserError => e
               Rails.logger.error "Failed to parse preserved content: #{e.message}"
               post.content
@@ -19,28 +27,56 @@ module Panda
             post.content
           end
 
-          Rails.logger.debug "Using content: #{content.inspect}"
-
-          # Ensure we have a valid editor content structure
-          content = if content.blank? || !content.is_a?(Hash) || !content.key?("blocks")
-            Rails.logger.debug "Creating new editor content structure"
+          # Always ensure we have a valid EditorJS structure
+          content = if content.blank? || content == "{}" || (content.is_a?(Hash) && content.empty?)
             {
-              time: Time.now.to_i * 1000,
-              blocks: [],
-              version: "2.28.2"
+              "time" => Time.current.to_i * 1000,
+              "blocks" => [
+                {
+                  "type" => "paragraph",
+                  "data" => {
+                    "text" => ""
+                  }
+                }
+              ],
+              "version" => "2.28.2"
             }
+          elsif content.is_a?(Hash)
+            # Ensure all keys are strings
+            content = content.deep_transform_keys(&:to_s)
+            if content["blocks"].present?
+              content
+            else
+              {
+                "time" => Time.current.to_i * 1000,
+                "blocks" => [
+                  {
+                    "type" => "paragraph",
+                    "data" => {
+                      "text" => content.to_s
+                    }
+                  }
+                ],
+                "version" => "2.28.2"
+              }
+            end
           else
-            # Ensure we have all required fields
-            Rails.logger.debug "Ensuring required fields are present"
-            content["time"] ||= Time.now.to_i * 1000
-            content["version"] ||= "2.28.2"
-            content["blocks"] ||= []
-            content
+            {
+              "time" => Time.current.to_i * 1000,
+              "blocks" => [
+                {
+                  "type" => "paragraph",
+                  "data" => {
+                    "text" => content.to_s
+                  }
+                }
+              ],
+              "version" => "2.28.2"
+            }
           end
 
-          json = content.to_json
-          Rails.logger.debug "Returning JSON: #{json}"
-          json
+          # Return the content as JSON string
+          content.to_json
         end
       end
     end

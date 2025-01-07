@@ -1,4 +1,6 @@
 import { Controller } from "@hotwired/stimulus";
+import { EDITOR_JS_RESOURCES, EDITOR_JS_CSS } from "panda/cms/editor/editor_js_config";
+import { ResourceLoader } from "panda/cms/editor/resource_loader";
 
 export default class extends Controller {
   static targets = ["editorContainer", "hiddenField"];
@@ -7,7 +9,27 @@ export default class extends Controller {
   };
 
   connect() {
-    this.initializeEditor();
+    this.loadEditorResources();
+  }
+
+  async loadEditorResources() {
+    try {
+      // First load EditorJS core
+      const editorCore = EDITOR_JS_RESOURCES[0];
+      await ResourceLoader.loadScript(document, document.head, editorCore);
+
+      // Load CSS
+      await ResourceLoader.embedCSS(document, document.head, EDITOR_JS_CSS);
+
+      // Then load all tools sequentially
+      for (const resource of EDITOR_JS_RESOURCES.slice(1)) {
+        await ResourceLoader.loadScript(document, document.head, resource);
+      }
+
+      await this.initializeEditor();
+    } catch (error) {
+      console.error("[Panda CMS] Failed to load editor resources:", error);
+    }
   }
 
   async initializeEditor() {
@@ -26,13 +48,15 @@ export default class extends Controller {
       const { getEditorConfig } = await import(
         "panda/cms/editor/editor_js_config"
       );
-      const config = getEditorConfig(holderId, this.getInitialContent());
 
-      editor_content_post;
+      // Get initial content before creating config
+      const initialContent = this.getInitialContent();
+      console.debug("[Panda CMS] Using initial content:", initialContent);
 
-      this.editor = new EditorJS({
-        ...config,
+      const config = {
+        ...getEditorConfig(holderId, initialContent),
         holder: holderId,
+        data: initialContent,
         autofocus: false,
         minHeight: 1,
         logLevel: "ERROR",
@@ -40,10 +64,50 @@ export default class extends Controller {
           if (!this.editor) return;
           this.editor.save().then((outputData) => {
             outputData.source = "editorJS";
-            this.hiddenFieldTarget.value = JSON.stringify(outputData);
+            const jsonString = JSON.stringify(outputData);
+            // Only store regular JSON
+            this.hiddenFieldTarget.value = jsonString;
           });
         },
-      });
+        onReady: () => {
+          console.debug("[Panda CMS] Editor ready with content:", initialContent);
+        },
+        tools: {
+          paragraph: {
+            class: window.Paragraph,
+            inlineToolbar: true
+          },
+          header: {
+            class: window.Header,
+            inlineToolbar: true
+          },
+          list: {
+            class: window.List || window.NestedList,
+            inlineToolbar: true
+          },
+          quote: {
+            class: window.Quote,
+            inlineToolbar: true
+          },
+          table: {
+            class: window.Table,
+            inlineToolbar: true
+          }
+        }
+      };
+
+      // Ensure EditorJS is available
+      const EditorJS = window.EditorJS;
+      if (!EditorJS) {
+        throw new Error("EditorJS not loaded");
+      }
+
+      this.editor = new EditorJS(config);
+
+      // Wait for editor to be ready
+      await this.editor.isReady;
+      console.debug("[Panda CMS] Editor initialized successfully");
+
     } catch (error) {
       console.error("[Panda CMS] Editor setup failed:", error);
     }
@@ -51,10 +115,14 @@ export default class extends Controller {
 
   getInitialContent() {
     try {
-      const value = this.hiddenFieldTarget.value;
-      if (value && value !== "{}") {
-        const data = JSON.parse(value);
-        if (data.blocks) return data;
+      const initialContent = this.hiddenFieldTarget.getAttribute("data-initial-content");
+      if (initialContent && initialContent !== "{}") {
+        try {
+          const data = JSON.parse(initialContent);
+          if (data.blocks) return data;
+        } catch (e) {
+          console.error("[Panda CMS] Failed to parse content:", e);
+        }
       }
     } catch (e) {
       console.warn("[Panda CMS] Could not parse initial content:", e);

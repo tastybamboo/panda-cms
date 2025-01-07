@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2024_11_23_234140) do
+ActiveRecord::Schema[8.0].define(version: 2025_01_06_223303) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -200,6 +200,8 @@ ActiveRecord::Schema[8.0].define(version: 2024_11_23_234140) do
     t.enum "status", default: "draft", null: false, enum_type: "panda_cms_post_status"
     t.jsonb "content", default: {}, null: false
     t.text "cached_content"
+    t.uuid "author_id"
+    t.index ["author_id"], name: "index_panda_cms_posts_on_author_id"
     t.index ["slug"], name: "index_panda_cms_posts_on_slug", unique: true
     t.index ["status"], name: "index_panda_cms_posts_on_status"
     t.index ["user_id"], name: "index_panda_cms_posts_on_user_id"
@@ -277,6 +279,7 @@ ActiveRecord::Schema[8.0].define(version: 2024_11_23_234140) do
   add_foreign_key "panda_cms_menus", "panda_cms_pages", column: "start_page_id"
   add_foreign_key "panda_cms_pages", "panda_cms_pages", column: "parent_id"
   add_foreign_key "panda_cms_pages", "panda_cms_templates"
+  add_foreign_key "panda_cms_posts", "panda_cms_users", column: "author_id"
   add_foreign_key "panda_cms_posts", "panda_cms_users", column: "user_id"
   add_foreign_key "panda_cms_redirects", "panda_cms_pages", column: "destination_panda_cms_page_id"
   add_foreign_key "panda_cms_redirects", "panda_cms_pages", column: "origin_panda_cms_page_id"

@@ -34,15 +34,39 @@ export const EDITOR_JS_CSS = `
     padding-left: 70px;
     position: relative;
     min-height: 40px;
+    margin: 0;
+    padding-bottom: 1em;
   }
   .ce-block__content {
     position: relative;
     max-width: none;
+    margin: 0;
   }
   .ce-paragraph {
     padding: 0;
-    line-height: 40px;
+    line-height: 1.6;
+    min-height: 1.6em;
+    margin: 0;
   }
+  /* Override inherited heading styles */
+  .ce-header h1,
+  .ce-header h2,
+  .ce-header h3,
+  .ce-header h4,
+  .ce-header h5,
+  .ce-header h6 {
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+    font-weight: 600;
+  }
+  .ce-header h1 { font-size: 2em; }
+  .ce-header h2 { font-size: 1.5em; }
+  .ce-header h3 { font-size: 1.17em; }
+  .ce-header h4 { font-size: 1em; }
+  .ce-header h5 { font-size: 0.83em; }
+  .ce-header h6 { font-size: 0.67em; }
+
   .codex-editor__redactor {
     padding-bottom: 150px !important;
     min-height: 100px !important;
@@ -146,6 +170,20 @@ export const EDITOR_JS_CSS = `
     opacity: 1 !important;
     visibility: visible !important;
     display: flex !important;
+  }
+
+  /* Ensure last block has bottom spacing */
+  .ce-block:last-child {
+    padding-bottom: 2em;
+  }
+
+  /* Reset all block type margins */
+  .ce-header,
+  .ce-paragraph,
+  .ce-quote,
+  .ce-list {
+    margin: 0 !important;
+    padding: 0 !important;
   }
 `
 

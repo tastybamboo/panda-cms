@@ -1,6 +1,15 @@
 module EditorHelpers
-  def wait_for_editor
-    find(".codex-editor", wait: 1).trigger("click")
+  def editor_container_id(post = nil)
+    if post&.persisted?
+      "#editor_post_#{post.id}_content"
+    else
+      "#editor_content_post"
+    end
+  end
+
+  def wait_for_editor(post = nil)
+    debug_editor_state
+    find("#{editor_container_id(post)} .codex-editor--empty", wait: 1).trigger("click")
   end
 
   def add_editor_header(text, level = 2)
@@ -15,30 +24,47 @@ module EditorHelpers
   end
 
   def open_plus_menu
-    # Find and click the last block
-    blocks = all(".ce-block")
-    if blocks.any?
-      blocks.last.click
+    if page.has_css?(".ce-toolbar__plus")
+      find(".ce-toolbar__plus").click
     else
-      # If no blocks exist, click the empty editor area
-      find(".codex-editor__redactor").click
+      # If plus button isn't visible, click at the end of the last block to show it
+      last_block = all(".ce-block").last
+      last_block.click
+      find(".ce-toolbar__plus").click
     end
-
-    # Click the plus button to open the menu
-    find(".ce-toolbar__plus").click
-    expect(page).to have_css(".ce-popover--opened")
   end
 
-  def add_editor_paragraph(text)
-    open_plus_menu
-    within(".ce-popover--opened") do
-      find("[data-item-name='paragraph']").click
-    end
+  def add_editor_paragraph(text, post = nil, replace_first: false)
+    # Wait for editor to be ready
+    debug_editor_state
+    debug "Looking for editor container: #{editor_container_id(post)}"
 
-    # Type the paragraph text in the most recently added block
-    within(all(".ce-block").last) do
-      paragraph_input = find(".ce-paragraph[contenteditable='true']")
-      paragraph_input.set(text)
+    within(editor_container_id(post)) do
+      # Find the inner editor instance
+      editor = find(".codex-editor--empty", wait: 1)
+
+      if replace_first && page.has_css?(".ce-block")
+        # Click the first paragraph to focus it
+        first_block = find(".ce-block")
+        first_block.click
+        # Clear existing content
+        first_block.find("[contenteditable]").send_keys([:control, "a"], :backspace)
+        # Enter new content
+        first_block.find("[contenteditable]").set(text)
+      else
+        # Open the plus menu if we're adding a new block
+        unless page.has_css?(".ce-block") && find_all(".ce-block").count == 1 && find(".ce-block [contenteditable]").text.blank?
+          open_plus_menu
+          within(".ce-popover--opened") do
+            find("[data-item-name='paragraph']").click
+          end
+        end
+
+        # Find the last block and enter text
+        within(all(".ce-block").last) do
+          find("[contenteditable]").set(text)
+        end
+      end
     end
   end
 
@@ -97,6 +123,14 @@ module EditorHelpers
         caption_input.set(caption)
       end
     end
+  end
+
+  def expect_editor_content_to_include(text)
+    # Wait for editor to be ready
+    find(".codex-editor")
+
+    # Check if any block contains the text
+    expect(page).to have_css(".ce-block [contenteditable]", text: text)
   end
 
   private

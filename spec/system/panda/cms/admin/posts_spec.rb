@@ -15,7 +15,7 @@ RSpec.describe "Admin Posts", type: :system do
 
       fill_in "post[title]", with: "Test Post"
       fill_in "post[slug]", with: "/test-post"
-      select @other_admin.name, from: "post[user_id]"
+      select @other_admin.name, from: "post[author_id]"
       fill_in "post[published_at]", with: (Time.current - 1.minute).iso8601
       select "Active", from: "post[status]"
 

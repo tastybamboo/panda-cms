@@ -8,6 +8,10 @@ export default class extends Controller {
     "output_text",
   ];
 
+  static values = {
+    addDatePrefix: { type: Boolean, default: false }
+  }
+
   connect() {
     console.debug("[Panda CMS] Slug handler connected...");
     // Generate path on initial load if title exists
@@ -17,29 +21,24 @@ export default class extends Controller {
   }
 
   generatePath() {
-    try {
-      const slug = this.createSlug(this.input_textTarget.value);
-      // For posts, we want to store just the slug part
-      const prefix = this.output_textTarget.dataset.prefix || "";
-      this.output_textTarget.value = "/" + slug;
+    const title = this.input_textTarget.value;
+    if (!title) return;
 
-      // If there's a prefix, show it in the UI but don't include it in the value
-      if (prefix) {
-        const prefixSpan = this.output_textTarget.previousElementSibling ||
-          (() => {
-            const span = document.createElement('span');
-            span.className = 'prefix';
-            this.output_textTarget.parentNode.insertBefore(span, this.output_textTarget);
-            return span;
-          })();
-        prefixSpan.textContent = prefix;
-      }
+    // Convert title to slug format
+    const slug = title
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
 
-      console.log("Have set the path to: " + this.output_textTarget.value);
-    } catch (error) {
-      console.error("Error generating path:", error);
-      // Add error class to path field
-      this.output_textTarget.classList.add("error");
+    // Only add year/month prefix for posts
+    if (this.addDatePrefixValue) {
+      // Get current date for year/month
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      this.output_textTarget.value = `/${year}/${month}/${slug}`;
+    } else {
+      this.output_textTarget.value = `/${slug}`;
     }
   }
 
