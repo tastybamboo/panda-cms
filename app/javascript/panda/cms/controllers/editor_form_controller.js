@@ -65,7 +65,9 @@ export default class extends Controller {
           this.editor.save().then((outputData) => {
             outputData.source = "editorJS";
             const jsonString = JSON.stringify(outputData);
-            // Only store regular JSON
+            // Store both base64 and regular JSON
+            this.editorContainerTarget.dataset.editablePreviousData = btoa(jsonString);
+            this.editorContainerTarget.dataset.editableContent = jsonString;
             this.hiddenFieldTarget.value = jsonString;
           });
         },
@@ -115,19 +117,52 @@ export default class extends Controller {
 
   getInitialContent() {
     try {
+      // Try to get content from the hidden field's data attribute
       const initialContent = this.hiddenFieldTarget.getAttribute("data-initial-content");
       if (initialContent && initialContent !== "{}") {
         try {
-          const data = JSON.parse(initialContent);
-          if (data.blocks) return data;
+          // First try to decode as base64
+          try {
+            const decodedData = atob(initialContent);
+            const data = JSON.parse(decodedData);
+            if (data.blocks) return data;
+          } catch (e) {
+            // If base64 decode fails, try direct JSON parse
+            const data = JSON.parse(initialContent);
+            if (data.blocks) return data;
+          }
         } catch (e) {
           console.error("[Panda CMS] Failed to parse content:", e);
+        }
+      }
+
+      // Try to get content from the editor container's data attributes
+      const previousData = this.editorContainerTarget.dataset.editablePreviousData;
+      const editorContent = this.editorContainerTarget.dataset.editableContent;
+
+      if (previousData) {
+        try {
+          const decodedData = atob(previousData);
+          const data = JSON.parse(decodedData);
+          if (data.blocks) return data;
+        } catch (e) {
+          console.debug("[Panda CMS] Failed to parse base64 data:", e);
+        }
+      }
+
+      if (editorContent && editorContent !== "{}") {
+        try {
+          const data = JSON.parse(editorContent);
+          if (data.blocks) return data;
+        } catch (e) {
+          console.debug("[Panda CMS] Failed to parse editor content:", e);
         }
       }
     } catch (e) {
       console.warn("[Panda CMS] Could not parse initial content:", e);
     }
 
+    // Return default content if nothing else works
     return {
       time: Date.now(),
       blocks: [{ type: "paragraph", data: { text: "" } }],

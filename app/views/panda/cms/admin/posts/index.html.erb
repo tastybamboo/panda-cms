@@ -11,7 +11,7 @@
       </div>
     <% end %>
     <% table.column("Status") { |post| render Panda::CMS::Admin::TagComponent.new(status: post.status) } %>
-    <% table.column("Published") { |post| render Panda::CMS::Admin::UserActivityComponent.new(at: post.published_at, user: post.user)} %>
+    <% table.column("Published") { |post| render Panda::CMS::Admin::UserActivityComponent.new(at: post.published_at, user: post.author)} %>
     <% table.column("Last Updated") { |post| render Panda::CMS::Admin::UserActivityComponent.new(whodunnit_to: post)} %>
   <% end %>
 

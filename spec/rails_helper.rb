@@ -32,8 +32,8 @@ require "factory_bot_rails"
 # require only the support files necessary.
 Rails.root.join("../support/").glob("**/*.rb").sort.each { |f| require f }
 
-# FactoryBot.definition_file_paths << File.join(File.dirname(__FILE__), "factories")
-# FactoryBot.find_definitions
+FactoryBot.definition_file_paths << File.join(File.dirname(__FILE__), "factories")
+FactoryBot.find_definitions
 
 Shoulda::Matchers.configure do |config|
   config.integrate do |with|

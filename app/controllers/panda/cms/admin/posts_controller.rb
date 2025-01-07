@@ -135,7 +135,6 @@ module Panda
             :slug,
             :status,
             :published_at,
-            :user_id,
             :author_id,
             :content
           )

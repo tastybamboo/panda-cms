@@ -21,8 +21,8 @@ module Panda
         presence: true,
         uniqueness: true,
         format: {
-          with: %r{\A/\d{4}/\d{2}/[a-z0-9-]+\z},
-          message: "must be in format /YYYY/MM/slug with only lowercase letters, numbers, and hyphens"
+          with: %r{\A(/\d{4}/\d{2}/[a-z0-9-]+|/[a-z0-9-]+)\z},
+          message: "must be in format /YYYY/MM/slug or /slug with only lowercase letters, numbers, and hyphens"
         }
 
       scope :ordered, -> { order(published_at: :desc) }

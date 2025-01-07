@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_01_06_223303) do
+ActiveRecord::Schema[8.0].define(version: 2025_01_07_052190) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -87,7 +87,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_01_06_223303) do
     t.jsonb "content", default: {}, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.text "cached_content"
+    t.jsonb "cached_content"
     t.index ["panda_cms_block_id"], name: "index_panda_cms_block_contents_on_panda_cms_block_id"
     t.index ["panda_cms_page_id"], name: "index_panda_cms_block_contents_on_panda_cms_page_id"
   end

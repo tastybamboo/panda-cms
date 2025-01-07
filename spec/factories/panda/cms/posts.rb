@@ -1,5 +1,5 @@
 FactoryBot.define do
-  factory :panda_cms_post, class: "Panda::CMS::Post" do
+  factory :panda_cms_post, class: "Panda::CMS::Post", aliases: [:post] do
     sequence(:title) { |n| "Post Title #{n}" }
     sequence(:slug) { |n|
       now = Time.current

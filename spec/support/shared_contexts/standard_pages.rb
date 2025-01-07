@@ -100,10 +100,19 @@ def create_content_blocks(page, content_blocks)
       block_data[:content]
     end
 
-    Panda::CMS::BlockContent.find_or_create_by!(
+    block = Panda::CMS::Block.find_or_create_by!(
+      key: block_data[:key],
+      template: block_data[:template]
+    ) do |b|
+      b.name = block_data[:name]
+      b.kind = block_data[:kind]
+    end
+
+    block_content = Panda::CMS::BlockContent.find_or_initialize_by(
       page: page,
-      block: Panda::CMS::Block.find_or_create_by!(block_data.except(:content)),
-      content: content
+      block: block
     )
+    block_content.content = content
+    block_content.save!
   end
 end
