@@ -144,46 +144,22 @@ module Panda
           return {} if content.blank?
 
           begin
-            parsed_content = if content.is_a?(String)
-              JSON.parse(content)
-            else
-              content
-            end
+            # If content is already a hash, return it
+            return content if content.is_a?(Hash)
 
-            # Ensure we have a properly structured hash with string keys
-            parsed_content = parsed_content.deep_transform_keys(&:to_s)
+            # If it's a string, try to parse it as JSON
+            parsed = JSON.parse(content)
 
-            if parsed_content["blocks"].present?
-              parsed_content
+            # Ensure we have a hash with expected structure
+            if parsed.is_a?(Hash) && parsed["blocks"].is_a?(Array)
+              parsed
             else
-              {
-                "time" => Time.current.to_i * 1000,
-                "blocks" => [
-                  {
-                    "type" => "paragraph",
-                    "data" => {
-                      "text" => parsed_content.to_s
-                    }
-                  }
-                ],
-                "version" => "2.28.2"
-              }
+              # If structure is invalid, return empty blocks structure
+              {"blocks" => []}
             end
           rescue JSON::ParserError => e
-            Rails.logger.error "Failed to parse content: #{e.message}"
-            # Return a properly structured hash even on parse error
-            {
-              "time" => Time.current.to_i * 1000,
-              "blocks" => [
-                {
-                  "type" => "paragraph",
-                  "data" => {
-                    "text" => content.to_s
-                  }
-                }
-              ],
-              "version" => "2.28.2"
-            }
+            Rails.logger.error "Failed to parse post content: #{e.message}"
+            {"blocks" => []}
           end
         end
       end

@@ -1,6 +1,11 @@
 module Panda
   module CMS
     module PostsHelper
+      def display_post_path(post)
+        # Unescape the path for display purposes
+        CGI.unescape(post.slug)
+      end
+
       def posts_months_menu
         Rails.cache.fetch("panda_cms_posts_months_menu", expires_in: 1.hour) do
           Panda::CMS::Post

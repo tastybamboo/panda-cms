@@ -4,7 +4,7 @@ export const EDITOR_JS_RESOURCES = [
   "https://cdn.jsdelivr.net/npm/@editorjs/header@2.8.1",
   "https://cdn.jsdelivr.net/npm/@editorjs/nested-list@1.4.2",
   "https://cdn.jsdelivr.net/npm/@editorjs/quote@2.6.0",
-  "https://cdn.jsdelivr.net/npm/@editorjs/simple-image@1.6.0",
+  "https://cdn.jsdelivr.net/npm/@editorjs/image@2.8.1",
   "https://cdn.jsdelivr.net/npm/@editorjs/table@2.3.0",
   "https://cdn.jsdelivr.net/npm/@editorjs/embed@2.7.0"
 ]
@@ -241,19 +241,51 @@ export const getEditorConfig = (elementId, previousData, doc = document) => {
           captionPlaceholder: 'Quote\'s author'
         }
       },
+      image: {
+        class: win.ImageTool,
+        config: {
+          endpoints: {
+            byFile: '/admin/files',
+          },
+          additionalRequestHeaders: {
+            'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]')?.content
+          },
+          uploader: {
+            uploadByFile(file) {
+              const formData = new FormData();
+              formData.append('image', file);
+
+              return fetch('/admin/files', {
+                method: 'POST',
+                headers: {
+                  'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]')?.content,
+                },
+                body: formData
+              })
+                .then(response => response.json())
+                .then(response => {
+                  if (response.success) {
+                    return {
+                      success: 1,
+                      file: {
+                        url: response.file.url,
+                        name: response.file.name,
+                        size: response.file.size
+                      }
+                    };
+                  }
+                  return { success: 0 };
+                });
+            }
+          }
+        }
+      },
       table: {
         class: win.Table,
         inlineToolbar: true,
         config: {
           rows: 2,
           cols: 2
-        }
-      },
-      image: {
-        class: win.SimpleImage,
-        inlineToolbar: true,
-        config: {
-          placeholder: 'Paste an image URL...'
         }
       },
       embed: {

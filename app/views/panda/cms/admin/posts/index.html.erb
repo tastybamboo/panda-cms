@@ -7,7 +7,9 @@
     <% table.column("Title") do |post| %>
       <div class="">
         <%= link_to post.title, edit_admin_post_path(post.admin_param), class: "block h-full w-full" %>
-        <span class="block text-xs text-black/60"><%= post_path(post) %></span>
+        <span class="block text-xs text-black/60">
+          <%= CGI.unescape("#{Panda::CMS.config.posts[:prefix]}#{post.slug}") %>
+        </span>
       </div>
     <% end %>
     <% table.column("Status") { |post| render Panda::CMS::Admin::TagComponent.new(status: post.status) } %>

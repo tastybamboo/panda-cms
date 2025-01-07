@@ -9,7 +9,14 @@ module Panda
       end
 
       def show
-        @post = Panda::CMS::Post.find_by!(slug: "/#{params[:slug]}")
+        @post = if params[:year] && params[:month]
+          # For date-based URLs
+          slug = "/#{params[:year]}/#{params[:month]}/#{params[:slug]}"
+          Panda::CMS::Post.find_by!(slug: slug)
+        else
+          # For non-date URLs
+          Panda::CMS::Post.find_by!(slug: "/#{params[:slug]}")
+        end
         render inline: "", layout: Panda::CMS.config.posts[:layouts][:show]
       end
 

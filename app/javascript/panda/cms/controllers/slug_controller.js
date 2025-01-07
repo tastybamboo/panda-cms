@@ -35,10 +35,12 @@ export default class extends Controller {
       // Get current date for year/month
       const now = new Date();
       const year = now.getFullYear();
-      const month = String(now.getMonth() + 1).padStart(2, '0');
-      this.output_textTarget.value = `/${year}/${month}/${slug}`;
+      const month = String(now.getMonth() + 1).padStart(2, "0");
+
+      // Use a different separator that won't get encoded
+      this.output_textTarget.value = `${year}-${month}-${slug}`;
     } else {
-      this.output_textTarget.value = `/${slug}`;
+      this.output_textTarget.value = slug;
     }
   }
 
@@ -48,37 +50,23 @@ export default class extends Controller {
       if (match) {
         this.parent_slugs = match[1];
         const prePath = (this.existing_rootTarget.value + this.parent_slugs).replace(/\/$/, "");
-        const prefixSpan = this.output_textTarget.previousElementSibling;
-        if (prefixSpan) {
-          prefixSpan.textContent = prePath;
-        }
-        console.log("Have set the pre-path to: " + prePath);
+        this.output_textTarget.value = prePath + "/" + this.output_textTarget.value.replace(/^\//, "");
       }
-    } catch (error) {
-      console.error("Error setting pre-path:", error);
+    } catch (e) {
+      console.error("[Panda CMS] Error setting pre-path:", e);
     }
   }
 
-  // TODO: Invoke a library or helper which can be shared with the backend
-  // and check for uniqueness at the same time
   createSlug(input) {
-    if (!input) return "";
-
-    var str = input
+    return input
       .toLowerCase()
-      .trim()
-      .replace(/[^\w\s-]/g, "-")
-      .replace(/&/g, "and")
-      .replace(/[\s_-]+/g, "-")
-      .trim();
-
-    return this.trimStartEnd(str, "-");
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
   }
 
   trimStartEnd(str, ch) {
-    var start = 0;
-    var end = str.length;
-
+    let start = 0,
+      end = str.length;
     while (start < end && str[start] === ch) ++start;
     while (end > start && str[end - 1] === ch) --end;
     return start > 0 || end < str.length ? str.substring(start, end) : str;
