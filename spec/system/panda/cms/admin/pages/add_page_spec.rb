@@ -63,7 +63,7 @@ RSpec.describe "When adding a page", type: :system, js: true do
 
     it "updates the form if a parent page is selected" do
       select "- About", from: "Parent"
-      expect(page).to have_content page.current_url.gsub!("/admin/pages/new", "") + "/about"
+      expect(page).to have_field("URL", with: /\/about\/$/)
     end
 
     xit "allows a page to have the same slug as another as long as the parent is different" do

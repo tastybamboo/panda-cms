@@ -5,7 +5,7 @@
 
   <%= render Panda::CMS::Admin::TableComponent.new(term: "post", rows: posts) do |table| %>
     <% table.column("Title") do |post| %>
-      <div class="">
+      <div>
         <%= link_to post.title, edit_admin_post_path(post.admin_param), class: "block h-full w-full" %>
         <span class="block text-xs text-black/60">
           <%= CGI.unescape("#{Panda::CMS.config.posts[:prefix]}#{post.slug}") %>

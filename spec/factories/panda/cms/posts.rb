@@ -1,32 +1,22 @@
 FactoryBot.define do
   factory :panda_cms_post, class: "Panda::CMS::Post", aliases: [:post] do
-    sequence(:title) { |n| "Post Title #{n}" }
-    sequence(:slug) { |n|
-      now = Time.current
-      "/#{now.year}/#{now.strftime("%m")}/post-#{n}"
-    }
+    sequence(:title) { |n| "Test Post #{n}" }
+    sequence(:slug) { |n| "/#{Time.current.strftime("%Y/%m")}/test-post-#{n}" }
     status { "active" }
     published_at { Time.current }
-    association :user, factory: :panda_cms_user
-    association :author, factory: :panda_cms_user
+
+    # Associate with an admin user for both user and author
+    association :user, factory: :panda_cms_admin_user
+    association :author, factory: :panda_cms_admin_user
+
     content do
       {
-        "time" => Time.current.to_i,
-        "blocks" => [
-          {
-            "type" => "header",
-            "data" => {
-              "text" => "Original Header",
-              "level" => 2
-            }
-          },
-          {
-            "type" => "paragraph",
-            "data" => {
-              "text" => "Original content"
-            }
-          }
-        ]
+        time: Time.current.to_i * 1000,
+        blocks: [
+          {type: "header", data: {text: "Test Header", level: 2}},
+          {type: "paragraph", data: {text: "Test content"}}
+        ],
+        version: "2.28.2"
       }
     end
   end

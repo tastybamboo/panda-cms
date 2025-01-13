@@ -4,7 +4,7 @@ export const EDITOR_JS_RESOURCES = [
   "https://cdn.jsdelivr.net/npm/@editorjs/header@2.8.1",
   "https://cdn.jsdelivr.net/npm/@editorjs/nested-list@1.4.2",
   "https://cdn.jsdelivr.net/npm/@editorjs/quote@2.6.0",
-  "https://cdn.jsdelivr.net/npm/@editorjs/image@2.8.1",
+  "https://cdn.jsdelivr.net/npm/@editorjs/simple-image@1.6.0",
   "https://cdn.jsdelivr.net/npm/@editorjs/table@2.3.0",
   "https://cdn.jsdelivr.net/npm/@editorjs/embed@2.7.0"
 ]
@@ -197,11 +197,21 @@ export const getEditorConfig = (elementId, previousData, doc = document) => {
   // Get the correct window context
   const win = doc.defaultView || window
 
+  // Ensure we have a clean holder element
+  holder.innerHTML = ""
+
   const config = {
     holder: elementId,
     data: previousData || {},
     placeholder: 'Click the + button to add content...',
     inlineToolbar: true,
+    onChange: () => {
+      // Ensure the editor is properly initialized before handling changes
+      if (holder && holder.querySelector('.codex-editor')) {
+        const event = new Event('editor:change', { bubbles: true })
+        holder.dispatchEvent(event)
+      }
+    },
     i18n: {
       toolbar: {
         filter: {
@@ -242,42 +252,10 @@ export const getEditorConfig = (elementId, previousData, doc = document) => {
         }
       },
       image: {
-        class: win.ImageTool,
+        class: win.SimpleImage,
+        inlineToolbar: true,
         config: {
-          endpoints: {
-            byFile: '/admin/files',
-          },
-          additionalRequestHeaders: {
-            'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]')?.content
-          },
-          uploader: {
-            uploadByFile(file) {
-              const formData = new FormData();
-              formData.append('image', file);
-
-              return fetch('/admin/files', {
-                method: 'POST',
-                headers: {
-                  'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]')?.content,
-                },
-                body: formData
-              })
-                .then(response => response.json())
-                .then(response => {
-                  if (response.success) {
-                    return {
-                      success: 1,
-                      file: {
-                        url: response.file.url,
-                        name: response.file.name,
-                        size: response.file.size
-                      }
-                    };
-                  }
-                  return { success: 0 };
-                });
-            }
-          }
+          placeholder: 'Paste an image URL...'
         }
       },
       table: {

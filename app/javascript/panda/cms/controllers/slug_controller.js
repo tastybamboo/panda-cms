@@ -37,10 +37,11 @@ export default class extends Controller {
       const year = now.getFullYear();
       const month = String(now.getMonth() + 1).padStart(2, "0");
 
-      // Use a different separator that won't get encoded
-      this.output_textTarget.value = `${year}-${month}-${slug}`;
+      // Add leading slash and use date format
+      this.output_textTarget.value = `/${year}/${month}/${slug}`;
     } else {
-      this.output_textTarget.value = slug;
+      // Add leading slash for regular pages
+      this.output_textTarget.value = `/${slug}`;
     }
   }
 
@@ -50,7 +51,9 @@ export default class extends Controller {
       if (match) {
         this.parent_slugs = match[1];
         const prePath = (this.existing_rootTarget.value + this.parent_slugs).replace(/\/$/, "");
-        this.output_textTarget.value = prePath + "/" + this.output_textTarget.value.replace(/^\//, "");
+        // Ensure we don't double up slashes
+        const currentPath = this.output_textTarget.value.replace(/^\//, "");
+        this.output_textTarget.value = `${prePath}/${currentPath}`;
       }
     } catch (e) {
       console.error("[Panda CMS] Error setting pre-path:", e);

@@ -73,6 +73,12 @@ export default class extends Controller {
         },
         onReady: () => {
           console.debug("[Panda CMS] Editor ready with content:", initialContent);
+          this.editorContainerTarget.dataset.editorInitialized = "true";
+          holderDiv.dataset.editorInitialized = "true";
+          // Add a class to indicate the editor is ready
+          holderDiv.classList.add("editor-ready");
+          // Dispatch an event when editor is ready
+          this.editorContainerTarget.dispatchEvent(new CustomEvent("editor:ready"));
         },
         tools: {
           paragraph: {
@@ -109,9 +115,20 @@ export default class extends Controller {
       // Wait for editor to be ready
       await this.editor.isReady;
       console.debug("[Panda CMS] Editor initialized successfully");
+      this.editorContainerTarget.dataset.editorInitialized = "true";
+      holderDiv.dataset.editorInitialized = "true";
+      // Add a class to indicate the editor is ready
+      holderDiv.classList.add("editor-ready");
+      // Dispatch an event when editor is ready
+      this.editorContainerTarget.dispatchEvent(new CustomEvent("editor:ready"));
 
     } catch (error) {
       console.error("[Panda CMS] Editor setup failed:", error);
+      this.editorContainerTarget.dataset.editorInitialized = "false";
+      if (holderDiv) {
+        holderDiv.dataset.editorInitialized = "false";
+        holderDiv.classList.remove("editor-ready");
+      }
     }
   }
 
