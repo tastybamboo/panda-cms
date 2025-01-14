@@ -3,24 +3,31 @@ module EditorHelpers
     if post&.persisted?
       "#editor_post_#{post.id}_content"
     else
-      "#editor_content_post"
+      "#editor_post_content"
     end
   end
 
   def wait_for_editor(post = nil)
     debug_editor_state
-    find("#{editor_container_id(post)} .codex-editor--empty", wait: 1).trigger("click")
+    within(editor_container_id(post)) do
+      # Wait for editor to be fully initialized
+      find(".codex-editor[data-editor-initialized='true']", wait: 10)
+      find(".ce-toolbar__plus", wait: 5)
+      # Only click if empty
+      if page.has_css?(".codex-editor--empty", wait: 1)
+        find(".codex-editor--empty").trigger("click")
+      end
+    end
   end
 
-  def add_editor_header(text, level = 2)
-    open_plus_menu
-    within(".ce-popover--opened", wait: 1) do
-      find("[data-item-name='header']", wait: 1).click
+  def add_editor_header(text, level = 1)
+    wait_for_editor_initialization
+    find(".ce-toolbar__plus").click
+    find("[data-item-name='header']", wait: 1).click
+    if level > 1
+      find(".ce-inline-toolbar [data-level='#{level}']").click
     end
-
-    within(all(".ce-block").last, wait: 1) do
-      find(".ce-header[contenteditable='true']", wait: 1).set(text)
-    end
+    find(".ce-paragraph").send_keys(text)
   end
 
   def open_plus_menu
@@ -131,6 +138,11 @@ module EditorHelpers
 
     # Check if any block contains the text
     expect(page).to have_css(".ce-block [contenteditable]", text: text)
+  end
+
+  def wait_for_editor_initialization
+    find(".codex-editor[data-editor-initialized='true']", wait: 10)
+    find(".ce-toolbar__plus", wait: 5)
   end
 
   private

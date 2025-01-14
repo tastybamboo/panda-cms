@@ -134,7 +134,6 @@ export default class extends Controller {
 
   getInitialContent() {
     try {
-      // Try to get content from the hidden field's data attribute
       const initialContent = this.hiddenFieldTarget.getAttribute("data-initial-content");
       if (initialContent && initialContent !== "{}") {
         try {

@@ -1,4 +1,4 @@
-require "rails_helper"
+require "system_helper"
 
 RSpec.describe "Adding a post", type: :system do
   include EditorHelpers

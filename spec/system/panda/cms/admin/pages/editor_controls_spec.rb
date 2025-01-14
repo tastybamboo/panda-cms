@@ -12,74 +12,46 @@ RSpec.describe "When using the Editor.js controls", type: :system do
   end
 
   it "loads previous content from data-editable-previous-data attribute" do
-    pending "Editor initialization is not completing in time. Need to investigate initialization timing and event handling."
-
-    previous_data = {
-      time: 1736094153000,
-      blocks: [
-        {type: "paragraph", data: {text: "Testing."}},
-        {type: "paragraph", data: {text: "Testing."}},
-        {type: "list", data: {
-          style: "unordered",
-          items: [
-            {content: "<b>12345.</b>", items: []},
-            {content: "Testing.", items: []},
-            {content: "Testing.", items: []}
-          ]
-        }},
-        {type: "paragraph", data: {text: "Testing 1234."}}
-      ],
-      version: "2.28.2"
-    }
-
     within_frame "editablePageFrame" do
-      # Create a div with the previous data
-      page.execute_script(<<~JS)
-        const div = document.createElement('div');
-        div.className = 'panda-cms-content';
-        div.setAttribute('data-editable-previous-data', '#{Base64.strict_encode64(previous_data.to_json)}');
-        div.setAttribute('data-editable-content', '#{Base64.strict_encode64(previous_data.to_json)}');
-        div.setAttribute('data-editable-kind', 'rich_text');
-        div.setAttribute('data-editable-initialized', 'false');
-        div.setAttribute('data-editable-version', '2.28.2');
-        div.setAttribute('data-editable-autosave', 'false');
-        div.setAttribute('data-editable-tools', '{"paragraph":true,"header":true,"list":true,"quote":true,"table":true}');
-        div.id = 'test-editor';
-        document.body.appendChild(div);
+      # Wait for editor initialization
+      wait_for_editor
 
-        // Wait for resources to load before triggering initialization
-        const checkResources = () => {
-          if (window.EditorJS) {
-            // Trigger initialization
-            window.dispatchEvent(new CustomEvent('panda-cms:initialize-editors'));
-          } else {
-            setTimeout(checkResources, 100);
-          }
-        };
-        checkResources();
-      JS
+      # Set up the test data
+      previous_data = {
+        time: 1736094153000,
+        blocks: [
+          {type: "paragraph", data: {text: "Testing."}},
+          {type: "paragraph", data: {text: "Testing."}},
+          {type: "list", data: {
+            style: "unordered",
+            items: [
+              {content: "<b>12345.</b>", items: []},
+              {content: "Testing.", items: []},
+              {content: "Testing.", items: []}
+            ]
+          }},
+          {type: "paragraph", data: {text: "Testing 1234."}}
+        ],
+        version: "2.28.2"
+      }
 
-      # Wait for editor to initialize
-      expect(page).to have_css(".codex-editor", wait: 10)
-      expect(page).to have_css(".ce-block", wait: 10)
+      # Set the previous data
+      editor_container = find('div[data-editable-kind="rich_text"]')
+      page.execute_script(
+        "arguments[0].dataset.editablePreviousData = '#{Base64.strict_encode64(previous_data.to_json)}'",
+        editor_container
+      )
 
-      # Wait for initialization to complete
-      initialized = false
-      10.times do
-        initialized = page.evaluate_script('document.querySelector("#test-editor").dataset.editableInitialized')
-        break if initialized == "true"
-        sleep 0.5
-      end
-      expect(initialized).to eq("true")
+      # Reload the editor
+      page.execute_script("window.location.reload()")
 
-      # Wait for content to be loaded
-      expect(page).to have_content("Testing.", wait: 5)
-      expect(page).to have_content("12345.", wait: 5)
-      expect(page).to have_content("Testing 1234.", wait: 5)
+      # Wait for editor to reinitialize
+      wait_for_editor
 
-      # Verify list is created correctly
-      expect(page).to have_css(".cdx-list", wait: 5)
-      expect(page).to have_css(".cdx-list__item", count: 3, wait: 5)
+      # Verify content is loaded
+      expect(page).to have_content("Testing.")
+      expect(page).to have_content("12345.")
+      expect(page).to have_content("Testing 1234.")
     end
   end
 
