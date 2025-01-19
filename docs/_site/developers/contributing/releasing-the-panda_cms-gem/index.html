@@ -2,14 +2,15 @@
 </code></pre></div></div><h3 id="releasing-a-new-version-of-the-panda-cms-gem"> <a href="#releasing-a-new-version-of-the-panda-cms-gem" class="anchor-heading" aria-labelledby="releasing-a-new-version-of-the-panda-cms-gem"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> Releasing a new version of the <code class="language-plaintext highlighter-rouge">panda-cms</code> gem</h3><p>With no staged changes, to set the next version number, run:</p><div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>RELEASE_VERSION=$(gem bump --pretend --no-commit | awk '{ print $4 }' | tr -d '[:space:]')
 echo $RELEASE_VERSION
 </code></pre></div></div><p>This should output the next patch release version.</p><p>You can also set <code class="language-plaintext highlighter-rouge">RELEASE_VERSION</code> manually:</p><div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>RELEASE_VERSION=0.6.2
-</code></pre></div></div><p>To release the gem <strong>to this version number</strong>, run:</p><div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>gem bump --version "$RELEASE_VERSION"
-bundle install
+</code></pre></div></div><p>To release the gem <strong>to this version number</strong>, run:</p><div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>gem bump --no-commit --version $RELEASE_VERSION
+bundle update
+git commit -am "Release $RELEASE_VERSION"
+git tag -a $RELEASE_VERSION -m "Release $RELEASE_VERSION"
 git checkout -b release/v$RELEASE_VERSION
-git add . &amp;&amp; git commit --message "[RELEASE] v$RELEASE_VERSION"
-git push
-git checkout main
-git merge release/v$RELEASE_VERSION
-git push
-gem build panda-cms.gemspec
-gem push panda-cms-$RELEASE_VERSION.gem
+git push origin release/v$RELEASE_VERSION
+gem tag
+gem release panda-cms -v $RELEASE_VERSION -g
+git checkout main &amp;&amp; git merge release/v$RELEASE_VERSION
+git push origin main
+git push origin :release/v$RELEASE_VERSION
 </code></pre></div></div><p>To release the gem to another version, set <code class="language-plaintext highlighter-rouge">RELEASE_VERSION</code> yourself first.</p></main><hr><footer><p class="text-small text-grey-dk-100 mb-0">&copy; 2024, Panda Software Limited.</p><div class="d-flex mt-2"></div></footer></div></div><div class="search-overlay"></div></div><script src="https://cdn.jsdelivr.net/npm/mermaid@9.1.6/dist/mermaid.min.js"></script> <script> var config = {} ; mermaid.initialize(config); window.mermaid.init(undefined, document.querySelectorAll('.language-mermaid')); </script>

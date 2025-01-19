@@ -49,7 +49,7 @@ require "capybara/cuprite"
     "disable-web-security": nil,
     "no-first-run": nil
   },
-  process_timeout: 60,
+  process_timeout: 120,
   timeout: 30,
   inspector: ENV["DEBUG"].in?(%w[y 1 yes true]),
   logger: ENV["DEBUG"].in?(%w[y 1 yes true]) ? FerrumLogger.new : StringIO.new,
