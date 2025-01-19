@@ -42,7 +42,8 @@ bundle update
 git commit -am "Release $RELEASE_VERSION"
 git tag -a $RELEASE_VERSION -m "Release $RELEASE_VERSION"
 git push origin release/v$RELEASE_VERSION
-gem release panda-cms -v $RELEASE_VERSION -g
+gem build panda-cms.gemspec
+gem push panda-cms-$RELEASE_VERSION.gem
 git checkout main && git merge release/v$RELEASE_VERSION
 git push origin main
 git push origin :release/v$RELEASE_VERSION
