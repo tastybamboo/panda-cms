@@ -557,6 +557,12 @@ RSpec.describe "When editing a page", type: :system do
       end
     end
 
+    # This test is skipped because multiple Editor.js instances on the same page
+    # is not yet fully implemented. To make this pass, we need to:
+    # 1. Update the editor_form_controller.js to handle multiple instances
+    # 2. Ensure each instance has unique IDs and doesn't interfere with others
+    # 3. Handle resource loading only once for all instances
+    # 4. Implement proper cleanup when instances are removed
     xit "supports multiple Editor.js instances on the same page" do
       within_frame "editablePageFrame" do
         # Create additional rich text areas
