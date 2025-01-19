@@ -1,6 +1,90 @@
+<%
+  editor_data = if @editable
+    begin
+      content = if @content.is_a?(String)
+        if @content.start_with?("{")
+          JSON.parse(@content)
+        else
+          # If it's HTML content, convert it to EditorJS format
+          {
+            "time" => Time.current.to_i * 1000,
+            "blocks" => [
+              {
+                "type" => "paragraph",
+                "data" => {
+                  "text" => @content.to_s
+                }
+              }
+            ],
+            "version" => "2.28.2"
+          }
+        end
+      else
+        @content
+      end
+
+      content = content.deep_transform_keys(&:to_s)
+      content["blocks"] = (content["blocks"] || []).map do |block|
+        case block["type"]
+        when "paragraph"
+          block["data"] = block["data"].merge(
+            "text" => block["data"]["text"].to_s.presence || ""
+          )
+        when "header"
+          block["data"] = block["data"].merge(
+            "text" => block["data"]["text"].to_s.presence || "",
+            "level" => block["data"]["level"].to_i
+          )
+        when "list"
+          block["data"] = block["data"].merge(
+            "items" => (block["data"]["items"] || []).map { |item| item.to_s.presence || "" }
+          )
+        end
+        block
+      end
+
+      content["version"] ||= "2.28.2"
+      content["time"] ||= Time.current.to_i * 1000
+
+      Base64.strict_encode64(content.to_json)
+    rescue StandardError => e
+      Rails.logger.error("Error encoding editor data: #{e.message}")
+      Rails.logger.error("Original content: #{@content.inspect}")
+      # Fall back to a simple paragraph with the original content
+      fallback_content = {
+        "time" => Time.current.to_i * 1000,
+        "blocks" => [
+          {
+            "type" => "paragraph",
+            "data" => {
+              "text" => @content.to_s
+            }
+          }
+        ],
+        "version" => "2.28.2"
+      }
+      Base64.strict_encode64(fallback_content.to_json)
+    end
+  end
+%>
 <% if @editable %>
-  <div class="panda-cms-content" data-editable-previous-data="<%= @content.to_json %>" id="editor-<%= @options[:id] %>" data-editable-kind="rich_text" data-editable-block-content-id="<%= @options[:id] %>" data-editable-page-id="<%= @options[:data][:page_id] %>" style="border: 1px dashed #ccc; outline: none; cursor: pointer; transition: background 500ms linear; background-color: inherit;">
+  <div class="panda-cms-content"
+       data-editable-previous-data="<%= editor_data %>"
+       data-editable-content="<%= editor_data %>"
+       data-editable-initialized="false"
+       data-editable-version="2.28.2"
+       data-editable-autosave="false"
+       data-editable-tools='{"paragraph":true,"header":true,"list":true,"quote":true,"table":true}'
+       id="editor-<%= @options[:id] %>"
+       data-editable-kind="rich_text"
+       data-editable-block-content-id="<%= @options[:id] %>"
+       data-editable-page-id="<%= @options[:data][:page_id] %>"
+       data-controller="editor-js"
+       data-editor-js-initialized-value="false"
+       data-editor-js-content-value="<%= editor_data %>">
   </div>
 <% else %>
-  <div class="panda-cms-content"><%= @content %></div>
+  <div class="panda-cms-content">
+    <%= @content.presence || "<p></p>".html_safe %>
+  </div>
 <% end %>

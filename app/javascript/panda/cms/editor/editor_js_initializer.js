@@ -51,235 +51,284 @@ export class EditorJSInitializer {
       const editorCore = EDITOR_JS_RESOURCES[0]
       await ResourceLoader.loadScript(this.document, this.document.head, editorCore)
 
-      // Then load all tools in parallel
-      const toolLoads = EDITOR_JS_RESOURCES.slice(1).map(async (resource) => {
-        await ResourceLoader.loadScript(this.document, this.document.head, resource)
-      })
+      // Wait for EditorJS to be available
+      await this.waitForEditorJS()
 
       // Load CSS directly
       await ResourceLoader.embedCSS(this.document, this.document.head, EDITOR_JS_CSS)
 
-      // Wait for all resources to load
-      await Promise.all(toolLoads)
+      // Then load all tools sequentially to ensure proper initialization order
+      for (const resource of EDITOR_JS_RESOURCES.slice(1)) {
+        try {
+          await ResourceLoader.loadScript(this.document, this.document.head, resource)
+          // Extract tool name from resource URL
+          const toolName = resource.split('/').pop().split('@')[0]
+          // Wait for tool to be initialized
+          const toolClass = await this.waitForTool(toolName)
 
-      // Wait for EditorJS to be available
-      await this.waitForEditorJS()
+          // If this is the nested-list tool, also make it available as 'list'
+          if (toolName === 'nested-list') {
+            const win = this.document.defaultView || window
+            win.List = toolClass
+          }
+
+          console.debug(`[Panda CMS] Successfully loaded tool: ${toolName}`)
+        } catch (error) {
+          console.error(`[Panda CMS] Failed to load tool: ${resource}`, error)
+          throw error
+        }
+      }
+
+      console.debug('[Panda CMS] All tools successfully loaded and verified')
     } catch (error) {
+      console.error('[Panda CMS] Error loading Editor.js resources:', error)
       throw error
     }
   }
 
-  async initializeEditor(element, initialData = {}, editorId = null) {
-    // Generate a consistent holder ID if not provided
-    const holderId = editorId || `editor-${element.id || Math.random().toString(36).substr(2, 9)}`
-
-    // Create or find the holder element in the correct document context
-    let holderElement = this.document.getElementById(holderId)
-    if (!holderElement) {
-      // Create the holder element in the correct document context
-      holderElement = this.document.createElement('div')
-      holderElement.id = holderId
-      holderElement.className = 'editor-js-holder codex-editor'
-
-      // Append to the element and force a reflow
-      element.appendChild(holderElement)
-      void holderElement.offsetHeight // Force a reflow
-    }
-
-    // Verify the holder element exists in the correct document context
-    const verifyHolder = this.document.getElementById(holderId)
-    if (!verifyHolder) {
-      throw new Error(`Failed to create editor holder element ${holderId}`)
-    }
-
-    // Clear any existing content in the holder
-    holderElement.innerHTML = ''
-
-    // Add source to initial data
-    if (initialData && !initialData.source) {
-      initialData.source = "editorJS"
-    }
-
-    // Get the base config but pass our document context
-    const config = getEditorConfig(holderId, initialData, this.document)
-
-    // Override specific settings for iframe context
-    const editorConfig = {
-      ...config,
-      holder: holderElement, // Use element reference instead of ID
-      minHeight: 1, // Prevent auto-height issues in iframe
-      autofocus: false, // Prevent focus issues
-      logLevel: 'ERROR', // Only show errors
-      tools: {
-        ...config.tools,
-        // Ensure tools use the correct window context
-        paragraph: { ...config.tools.paragraph, class: this.document.defaultView.Paragraph },
-        header: { ...config.tools.header, class: this.document.defaultView.Header },
-        list: { ...config.tools.list, class: this.document.defaultView.NestedList },
-        quote: { ...config.tools.quote, class: this.document.defaultView.Quote },
-        table: { ...config.tools.table, class: this.document.defaultView.Table },
-        image: { ...config.tools.image, class: this.document.defaultView.SimpleImage },
-        embed: { ...config.tools.embed, class: this.document.defaultView.Embed }
+  async waitForEditorJS(timeout = 10000) {
+    console.debug('[Panda CMS] Waiting for EditorJS core...')
+    const start = Date.now()
+    while (Date.now() - start < timeout) {
+      if (typeof this.document.defaultView.EditorJS === 'function') {
+        console.debug('[Panda CMS] EditorJS core is ready')
+        return
       }
+      await new Promise(resolve => setTimeout(resolve, 100))
     }
-
-    // Create editor instance directly
-    const editor = new this.document.defaultView.EditorJS({
-      ...editorConfig,
-      onReady: () => {
-        // Store the editor instance globally for testing
-        if (this.withinIFrame) {
-          this.document.defaultView.editor = editor
-        } else {
-          window.editor = editor
-        }
-
-        // Mark editor as ready
-        editor.isReady = true
-
-        // Force redraw of toolbar and blocks
-        setTimeout(async () => {
-          try {
-            const toolbar = holderElement.querySelector('.ce-toolbar')
-            const blockWrapper = holderElement.querySelector('.ce-block')
-
-            if (!toolbar || !blockWrapper) {
-              // Clear and insert a new block to force UI update
-              await editor.blocks.clear()
-              await editor.blocks.insert('paragraph')
-
-              // Force a redraw by toggling display
-              holderElement.style.display = 'none'
-              void holderElement.offsetHeight
-              holderElement.style.display = ''
-            }
-
-            // Call the ready hook if it exists
-            if (typeof window.onEditorJSReady === 'function') {
-              window.onEditorJSReady(editor)
-            }
-          } catch (error) {
-            console.error('Error during editor redraw:', error)
-          }
-        }, 100)
-      },
-      onChange: async (api, event) => {
-        try {
-          // Save the current editor data
-          const outputData = await api.saver.save()
-          outputData.source = "editorJS"
-          const contentJson = JSON.stringify(outputData)
-
-          if (!this.withinIFrame) {
-            // For form-based editors, update the hidden input
-            const form = element.closest('[data-controller="editor-form"]')
-            if (form) {
-              const hiddenInput = form.querySelector('[data-editor-form-target="hiddenField"]')
-              if (hiddenInput) {
-                hiddenInput.value = contentJson
-                hiddenInput.dataset.initialContent = contentJson
-                hiddenInput.dispatchEvent(new Event('change', { bubbles: true }))
-              }
-            }
-          } else {
-            // For iframe-based editors, update the element's data attribute
-            element.setAttribute('data-content', contentJson)
-            element.dispatchEvent(new Event('change', { bubbles: true }))
-
-            // Get the save button from parent window
-            const saveButton = parent.document.getElementById('saveEditableButton')
-            if (saveButton) {
-              // Store the current content on the save button for later use
-              saveButton.dataset.pendingContent = contentJson
-
-              // Add click handler if not already added
-              if (!saveButton.hasAttribute('data-handler-attached')) {
-                saveButton.setAttribute('data-handler-attached', 'true')
-                saveButton.addEventListener('click', async () => {
-                  try {
-                    const pageId = element.getAttribute("data-editable-page-id")
-                    const blockContentId = element.getAttribute("data-editable-block-content-id")
-                    const pendingContent = JSON.parse(saveButton.dataset.pendingContent || '{}')
-
-                    const response = await fetch(`${this.adminPathValue}/pages/${pageId}/block_contents/${blockContentId}`, {
-                      method: "PATCH",
-                      headers: {
-                        "Content-Type": "application/json",
-                        "X-CSRF-Token": this.csrfToken
-                      },
-                      body: JSON.stringify({ content: pendingContent })
-                    })
-
-                    if (!response.ok) {
-                      throw new Error('Save failed')
-                    }
-
-                    // Clear pending content after successful save
-                    delete saveButton.dataset.pendingContent
-                  } catch (error) {
-                    console.error('Error saving content:', error)
-                  }
-                })
-              }
-            }
-          }
-        } catch (error) {
-          console.error('Error in onChange handler:', error)
-        }
-      }
-    })
-
-    // Store editor instance on the holder element to maintain reference
-    holderElement.editorInstance = editor
-
-    if (!this.withinIFrame) {
-      // Store the editor instance on the controller element for potential future reference
-      const form = element.closest('[data-controller="editor-form"]')
-      if (form) {
-        form.editorInstance = editor
-      }
-    } else {
-      // For iframe editors, store the instance on the element itself
-      element.editorInstance = editor
-    }
-
-    // Return a promise that resolves when the editor is ready
-    return new Promise((resolve, reject) => {
-      const timeout = setTimeout(() => {
-        reject(new Error('Editor initialization timed out'))
-      }, 30000)
-
-      const checkReady = () => {
-        if (editor.isReady) {
-          clearTimeout(timeout)
-          resolve(editor)
-        } else {
-          setTimeout(checkReady, 100)
-        }
-      }
-      checkReady()
-    })
+    throw new Error('[Panda CMS] Timeout waiting for EditorJS')
   }
 
   /**
-   * Wait for EditorJS core to be available in window
+   * Wait for a specific tool to be available in window context
    */
-  async waitForEditorJS() {
-    let attempts = 0
-    const maxAttempts = 30 // 3 seconds with 100ms intervals
+  async waitForTool(toolName, timeout = 10000) {
+    if (!toolName) {
+      console.error('[Panda CMS] Invalid tool name provided')
+      return null
+    }
 
-    await new Promise((resolve, reject) => {
-      const check = () => {
-        attempts++
-        if (window.EditorJS) {
-          resolve()
-        } else if (attempts >= maxAttempts) {
-          reject(new Error('EditorJS core failed to load'))
-        } else {
-          setTimeout(check, 100)
+    // Clean up tool name to handle npm package format
+    const cleanToolName = toolName.split('/').pop().replace('@', '')
+
+    const toolMapping = {
+      'paragraph': 'Paragraph',
+      'header': 'Header',
+      'nested-list': 'NestedList',
+      'list': 'NestedList',
+      'quote': 'Quote',
+      'simple-image': 'SimpleImage',
+      'table': 'Table',
+      'embed': 'Embed'
+    }
+
+    const globalToolName = toolMapping[cleanToolName] || cleanToolName
+    const start = Date.now()
+
+    while (Date.now() - start < timeout) {
+      const win = this.document.defaultView || window
+      if (win[globalToolName] && typeof win[globalToolName] === 'function') {
+        // If this is the NestedList tool, make it available as both list and nested-list
+        if (globalToolName === 'NestedList') {
+          win.List = win[globalToolName]
+        }
+        console.debug(`[Panda CMS] Successfully loaded tool: ${globalToolName}`)
+        return win[globalToolName]
+      }
+      await new Promise(resolve => setTimeout(resolve, 100))
+    }
+    throw new Error(`[Panda CMS] Timeout waiting for tool: ${cleanToolName} (${globalToolName})`)
+  }
+
+  async initializeEditor(element, initialData = {}, editorId = null) {
+    try {
+      // Wait for EditorJS core to be available with increased timeout
+      await this.waitForEditorJS(15000)
+
+      // Get the window context (either iframe or parent)
+      const win = this.document.defaultView || window
+
+      // Create a unique ID for this editor instance if not provided
+      const uniqueId = editorId || `editor-${Math.random().toString(36).substring(2)}`
+
+      // Check if editor already exists
+      const existingEditor = element.querySelector('.codex-editor')
+      if (existingEditor) {
+        console.debug('[Panda CMS] Editor already exists, cleaning up...')
+        existingEditor.remove()
+      }
+
+      // Create a holder div for the editor
+      const holder = this.document.createElement("div")
+      holder.id = uniqueId
+      holder.classList.add("editor-js-holder")
+      element.appendChild(holder)
+
+      // Process initial data to handle list items and other content
+      let processedData = initialData
+      if (initialData.blocks) {
+        processedData = {
+          ...initialData,
+          blocks: initialData.blocks.map(block => {
+            if (block.type === 'list' && block.data && Array.isArray(block.data.items)) {
+              return {
+                ...block,
+                data: {
+                  ...block.data,
+                  items: block.data.items.map(item => {
+                    // Handle both string items and object items
+                    if (typeof item === 'string') {
+                      return {
+                        content: item,
+                        items: []
+                      }
+                    } else if (item.content) {
+                      return {
+                        content: item.content,
+                        items: Array.isArray(item.items) ? item.items : []
+                      }
+                    } else {
+                      return {
+                        content: String(item),
+                        items: []
+                      }
+                    }
+                  })
+                }
+              }
+            }
+            return block
+          })
         }
       }
-      check()
-    })
+
+      console.debug('[Panda CMS] Processed initial data:', processedData)
+
+      // Create editor configuration
+      const config = {
+        holder: holder,
+        data: processedData,
+        placeholder: 'Click to start writing...',
+        tools: {
+          paragraph: {
+            class: win.Paragraph,
+            inlineToolbar: true,
+            config: {
+              preserveBlank: true,
+              placeholder: 'Click to start writing...'
+            }
+          },
+          header: {
+            class: win.Header,
+            inlineToolbar: true,
+            config: {
+              placeholder: 'Enter a header',
+              levels: [1, 2, 3, 4, 5, 6],
+              defaultLevel: 2
+            }
+          },
+          'list': {  // Register as list instead of nested-list
+            class: win.NestedList,
+            inlineToolbar: true,
+            config: {
+              defaultStyle: 'unordered',
+              enableLineBreaks: true
+            }
+          },
+          quote: {
+            class: win.Quote,
+            inlineToolbar: true,
+            config: {
+              quotePlaceholder: 'Enter a quote',
+              captionPlaceholder: 'Quote\'s author'
+            }
+          }
+        },
+        onChange: (api, event) => {
+          console.debug('[Panda CMS] Editor content changed:', { api, event })
+          // Save content to data attributes
+          api.saver.save().then((outputData) => {
+            const jsonString = JSON.stringify(outputData)
+            element.dataset.editablePreviousData = btoa(jsonString)
+            element.dataset.editableContent = jsonString
+            element.dataset.editableInitialized = 'true'
+          })
+        },
+        onReady: () => {
+          console.debug('[Panda CMS] Editor ready with data:', processedData)
+          element.dataset.editableInitialized = 'true'
+          holder.editorInstance = editor
+        },
+        onError: (error) => {
+          console.error('[Panda CMS] Editor error:', error)
+          element.dataset.editableInitialized = 'false'
+          throw error
+        }
+      }
+
+      // Remove any undefined tools from the config
+      config.tools = Object.fromEntries(
+        Object.entries(config.tools)
+          .filter(([_, value]) => value?.class !== undefined)
+      )
+
+      console.debug('[Panda CMS] Creating editor with config:', config)
+
+      // Create editor instance with extended timeout
+      return new Promise((resolve, reject) => {
+        try {
+          // Add timeout for initialization
+          const timeoutId = setTimeout(() => {
+            reject(new Error('Editor initialization timeout'))
+          }, 15000) // Increased to 15 seconds
+
+          // Create editor instance with onReady callback
+          const editor = new win.EditorJS({
+            ...config,
+            onReady: () => {
+              console.debug('[Panda CMS] Editor ready with data:', processedData)
+              clearTimeout(timeoutId)
+              holder.editorInstance = editor
+              element.dataset.editableInitialized = 'true'
+              resolve(editor)
+            },
+            onChange: (api, event) => {
+              console.debug('[Panda CMS] Editor content changed:', { api, event })
+              // Save content to data attributes
+              api.saver.save().then((outputData) => {
+                const jsonString = JSON.stringify(outputData)
+                element.dataset.editablePreviousData = btoa(jsonString)
+                element.dataset.editableContent = jsonString
+              })
+            },
+            onError: (error) => {
+              console.error('[Panda CMS] Editor error:', error)
+              element.dataset.editableInitialized = 'false'
+              clearTimeout(timeoutId)
+              reject(error)
+            }
+          })
+
+          // Add error handler
+          editor.isReady
+            .then(() => {
+              console.debug('[Panda CMS] Editor is ready')
+              element.dataset.editableInitialized = 'true'
+            })
+            .catch((error) => {
+              console.error('[Panda CMS] Editor failed to initialize:', error)
+              element.dataset.editableInitialized = 'false'
+              clearTimeout(timeoutId)
+              reject(error)
+            })
+        } catch (error) {
+          element.dataset.editableInitialized = 'false'
+          reject(error)
+        }
+      })
+    } catch (error) {
+      console.error('[Panda CMS] Error initializing editor:', error)
+      throw error
+    }
   }
 }

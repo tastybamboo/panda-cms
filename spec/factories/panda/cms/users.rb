@@ -1,10 +1,12 @@
 FactoryBot.define do
-  factory :panda_cms_user, class: "Panda::CMS::User" do
-    sequence(:email) { |n| "user#{n}@example.org" }
-    sequence(:firstname) { |n| "User #{n}" }
-    sequence(:lastname) { |n| "Lastname #{n}" }
+  factory :panda_cms_user, class: "Panda::CMS::User", aliases: [:user] do
+    sequence(:email) { |n| "user#{n}@example.com" }
+    firstname { "John" }
+    lastname { "Doe" }
+    image_url { "https://example.com/avatar.jpg" }
+    admin { false }
 
-    trait :admin do
+    factory :panda_cms_admin_user, aliases: [:admin_user] do
       admin { true }
     end
   end

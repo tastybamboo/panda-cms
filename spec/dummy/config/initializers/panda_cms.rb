@@ -33,7 +33,8 @@ Panda::CMS.configure do |config|
     google: {
       enabled: true,
       create_account_on_first_login: true,
-      create_admin_account_on_first_login: false
+      create_admin_account_on_first_login: false,
+      strategy: :google_oauth2
     },
     github: {
       enabled: true,
@@ -41,4 +42,6 @@ Panda::CMS.configure do |config|
       create_admin_account_on_first_login: false
     }
   }
+  # Enable posts
+  config.posts = {enabled: true, prefix: "blog"}
 end

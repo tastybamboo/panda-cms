@@ -8,6 +8,10 @@ export default class extends Controller {
     "output_text",
   ];
 
+  static values = {
+    addDatePrefix: { type: Boolean, default: false }
+  }
+
   connect() {
     console.debug("[Panda CMS] Slug handler connected...");
     // Generate path on initial load if title exists
@@ -17,29 +21,27 @@ export default class extends Controller {
   }
 
   generatePath() {
-    try {
-      const slug = this.createSlug(this.input_textTarget.value);
-      // For posts, we want to store just the slug part
-      const prefix = this.output_textTarget.dataset.prefix || "";
-      this.output_textTarget.value = "/" + slug;
+    const title = this.input_textTarget.value;
+    if (!title) return;
 
-      // If there's a prefix, show it in the UI but don't include it in the value
-      if (prefix) {
-        const prefixSpan = this.output_textTarget.previousElementSibling ||
-          (() => {
-            const span = document.createElement('span');
-            span.className = 'prefix';
-            this.output_textTarget.parentNode.insertBefore(span, this.output_textTarget);
-            return span;
-          })();
-        prefixSpan.textContent = prefix;
-      }
+    // Convert title to slug format
+    const slug = title
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
 
-      console.log("Have set the path to: " + this.output_textTarget.value);
-    } catch (error) {
-      console.error("Error generating path:", error);
-      // Add error class to path field
-      this.output_textTarget.classList.add("error");
+    // Only add year/month prefix for posts
+    if (this.addDatePrefixValue) {
+      // Get current date for year/month
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, "0");
+
+      // Add leading slash and use date format
+      this.output_textTarget.value = `/${year}/${month}/${slug}`;
+    } else {
+      // Add leading slash for regular pages
+      this.output_textTarget.value = `/${slug}`;
     }
   }
 
@@ -49,37 +51,25 @@ export default class extends Controller {
       if (match) {
         this.parent_slugs = match[1];
         const prePath = (this.existing_rootTarget.value + this.parent_slugs).replace(/\/$/, "");
-        const prefixSpan = this.output_textTarget.previousElementSibling;
-        if (prefixSpan) {
-          prefixSpan.textContent = prePath;
-        }
-        console.log("Have set the pre-path to: " + prePath);
+        // Ensure we don't double up slashes
+        const currentPath = this.output_textTarget.value.replace(/^\//, "");
+        this.output_textTarget.value = `${prePath}/${currentPath}`;
       }
-    } catch (error) {
-      console.error("Error setting pre-path:", error);
+    } catch (e) {
+      console.error("[Panda CMS] Error setting pre-path:", e);
     }
   }
 
-  // TODO: Invoke a library or helper which can be shared with the backend
-  // and check for uniqueness at the same time
   createSlug(input) {
-    if (!input) return "";
-
-    var str = input
+    return input
       .toLowerCase()
-      .trim()
-      .replace(/[^\w\s-]/g, "-")
-      .replace(/&/g, "and")
-      .replace(/[\s_-]+/g, "-")
-      .trim();
-
-    return this.trimStartEnd(str, "-");
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
   }
 
   trimStartEnd(str, ch) {
-    var start = 0;
-    var end = str.length;
-
+    let start = 0,
+      end = str.length;
     while (start < end && str[start] === ch) ++start;
     while (end > start && str[end - 1] === ch) --end;
     return start > 0 || end < str.length ? str.substring(start, end) : str;

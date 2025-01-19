@@ -105,6 +105,6 @@ export class PlainTextEditor {
       this.element.style.backgroundColor = "inherit"
     }, 1000)
     console.log(error)
-    alert("Error:", error)
+    alert(`Error: ${error}`)
   }
 }

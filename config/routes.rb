@@ -35,14 +35,42 @@ Panda::CMS::Engine.routes.draw do
   # OmniAuth additionally adds a GET route for "#{Panda::CMS.route_namespace}/auth/:provider" but doesn't name it
   delete Panda::CMS.route_namespace, to: "admin/sessions#destroy", as: :admin_logout
 
-  if Panda::CMS.config.posts[:enabled]
-    # TODO: Allow multiple types of post in future
-    # TODO: This now requires a page to be created, make it explicit (with a rendering posts helper?)
-    # get Panda::CMS.posts[:prefix], to: "posts#index", as: :posts
-    get "#{Panda::CMS.config.posts[:prefix]}/:slug", to: "posts#show", as: :post
-  end
-
   ### APPENDED ROUTES ###
+
+  # TODO: Allow multiple types of post in future
+  if Panda::CMS.config.posts[:enabled]
+    get Panda::CMS.config.posts[:prefix], to: "posts#index", as: :posts
+
+    # Route for date-based URLs that won't encode slashes
+    get "#{Panda::CMS.config.posts[:prefix]}/:year/:month/:slug",
+      to: "posts#show",
+      as: :post_with_date,
+      constraints: {
+        year: /\d{4}/,
+        month: /\d{2}/,
+        slug: /[^\/]+/,
+        format: /html|json|xml/
+      }
+
+    # Route for non-date URLs
+    get "#{Panda::CMS.config.posts[:prefix]}/:slug",
+      to: "posts#show",
+      as: :post,
+      constraints: {
+        slug: /[^\/]+/,
+        format: /html|json|xml/
+      }
+
+    # Route for month archive
+    get "#{Panda::CMS.config.posts[:prefix]}/:year/:month",
+      to: "posts#by_month",
+      as: :posts_by_month,
+      constraints: {
+        year: /\d{4}/,
+        month: /\d{2}/,
+        format: /html|json|xml/
+      }
+  end
 
   # See lib/panda/cms/engine.rb
 end

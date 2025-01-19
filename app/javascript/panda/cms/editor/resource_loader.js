@@ -112,4 +112,93 @@ export class ResourceLoader {
     }
     return hash.toString(36)
   }
+
+  /**
+   * Load a script into the document
+   * @param {Document} doc - The document to load the script into
+   * @param {HTMLElement} target - The element to append the script to
+   * @param {string} url - The URL of the script to load
+   * @returns {Promise<void>}
+   */
+  static async loadScript(doc, target, url) {
+    return new ResourceLoader().loadScript(doc, target, url)
+  }
+
+  /**
+   * Embed CSS into the document
+   * @param {Document} doc - The document to embed the CSS into
+   * @param {HTMLElement} target - The element to append the style to
+   * @param {string} css - The CSS to embed
+   * @returns {Promise<void>}
+   */
+  static async embedCSS(doc, target, css) {
+    return new ResourceLoader().embedCSS(doc, target, css)
+  }
+
+  /**
+   * Instance method to load a script
+   */
+  async loadScript(doc, target, url) {
+    try {
+      // Check if script is already loaded
+      const existingScript = doc.querySelector(`script[src="${url}"]`)
+      if (existingScript) {
+        console.debug(`[Panda CMS] Script already loaded: ${url}, skipping`)
+        return
+      }
+
+      // Create and configure script element
+      const script = doc.createElement("script")
+      script.type = "text/javascript"
+      script.src = url
+      script.async = true
+
+      // Create a promise to track loading
+      const loadPromise = new Promise((resolve, reject) => {
+        script.onload = () => {
+          console.debug(`[Panda CMS] Script loaded: ${url}`)
+          resolve()
+        }
+        script.onerror = (error) => {
+          console.error(`[Panda CMS] Script failed to load: ${url}`, error)
+          reject(error)
+        }
+      })
+
+      // Add script to document
+      target.appendChild(script)
+
+      // Wait for script to load
+      await loadPromise
+    } catch (error) {
+      console.error(`[Panda CMS] Error loading script ${url}:`, error)
+      throw error
+    }
+  }
+
+  /**
+   * Instance method to embed CSS
+   */
+  async embedCSS(doc, target, css) {
+    try {
+      // Check if styles are already embedded
+      const existingStyle = doc.querySelector('style[data-panda-cms-styles]')
+      if (existingStyle) {
+        console.debug(`[Panda CMS] CSS already embedded, skipping`)
+        return
+      }
+
+      // Create and configure style element
+      const style = doc.createElement('style')
+      style.setAttribute('data-panda-cms-styles', 'true')
+      style.textContent = css
+
+      // Add style to document
+      target.appendChild(style)
+      console.debug(`[Panda CMS] Embedded CSS styles`)
+    } catch (error) {
+      console.error('[Panda CMS] Error embedding CSS:', error)
+      throw error
+    }
+  }
 }
