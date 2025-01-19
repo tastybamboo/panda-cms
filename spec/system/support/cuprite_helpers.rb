@@ -1,44 +1,10 @@
-class FerrumLogger
-  def puts(log_str)
-    return if log_str.nil?
-
-    _log_symbol, _log_time, log_body_str = log_str.to_s.strip.split(" ", 3)
-    return if log_body_str.nil?
-
-    begin
-      log_body = JSON.parse(log_body_str)
-    rescue
-      # Don't output raw log strings to prevent duplication
-      return
-    end
-
-    case log_body["method"]
-    when "Runtime.consoleAPICalled"
-      log_body["params"]["args"].each do |arg|
-        case arg["type"]
-        when "string"
-          # Only output messages that aren't already prefixed with [Panda CMS]
-          next if arg["value"].to_s.start_with?("[Panda CMS]")
-          Kernel.puts arg["value"]
-        when "object"
-          Kernel.puts arg["preview"]["properties"].map { |x| [x["name"], x["value"]] }.to_h
-        end
-      end
-
-    when "Runtime.exceptionThrown"
-      # noop, this is already logged because we have "js_errors: true" in cuprite.
-
-    when "Log.entryAdded"
-      Kernel.puts "#{log_body["params"]["entry"]["url"]} - #{log_body["params"]["entry"]["text"]}"
-    end
-  end
-end
-
 # First, load Cuprite Capybara integration
 require "capybara/cuprite"
+require_relative "ferrum_logger"
+require_relative "cuprite_helper_methods"
 
 @cuprite_options = {
-  window_size: [1440, 800],
+  window_size: [1440, 1000],
   browser_options: {
     "no-sandbox": nil,
     "disable-gpu": nil,
@@ -49,10 +15,13 @@ require "capybara/cuprite"
     "disable-sync": nil,
     "disable-translate": nil,
     "disable-web-security": nil,
-    "no-first-run": nil
+    "no-first-run": nil,
+    "ignore-certificate-errors": nil,
+    "allow-insecure-localhost": nil,
+    "enable-features": "NetworkService,NetworkServiceInProcess"
   },
-  process_timeout: 60,
-  timeout: 30,
+  process_timeout: 90,
+  timeout: 45,
   inspector: ENV["DEBUG"].in?(%w[y 1 yes true]),
   logger: ENV["DEBUG"].in?(%w[y 1 yes true]) ? FerrumLogger.new : StringIO.new,
   slowmo: ENV.fetch("SLOWMO", 0).to_f,
@@ -61,10 +30,6 @@ require "capybara/cuprite"
   pending_connection_errors: false
 }
 
-if ENV["DEBUG"] == "1"
-  puts "Registering Cuprite with options: #{@cuprite_options.inspect}"
-end
-
 Capybara.register_driver(:better_cuprite) do |app|
   Capybara::Cuprite::Driver.new(app, **@cuprite_options)
 end
@@ -72,32 +37,7 @@ end
 # Configure Capybara to use :better_cuprite driver by default
 Capybara.default_driver = Capybara.javascript_driver = :better_cuprite
 
-module CupriteHelpers
-  def debug(message)
-    puts "[DEBUG] #{message}" if ENV["DEBUG"]
-  end
-
-  # Drop #pause anywhere in a test to stop the execution.
-  # Useful when you want to checkout the contents of a web page in the middle of a test
-  # running in a headful mode.
-  def pause
-    page.driver.pause
-  end
-
-  # Drop #browser_debug anywhere in a test to open a Chrome inspector and pause the execution
-  # Usage: browser_debug(binding)
-  def browser_debug(*)
-    page.driver.debug(*)
-  end
-
-  # Allows sending a list of CSS selectors to be clicked on in the correct order (no delay)
-  # Useful where you need to trigger e.g. a blur event on an input field
-  def click_on_selectors(*css_selectors)
-    css_selectors.each do |selector|
-      page.driver.browser.at_css(selector).click
-    end
-  end
-end
+puts "[DEBUG] Registering Cuprite with options: #{@cuprite_options.inspect}" if ENV["BROWSER_DEBUG"]
 
 RSpec.configure do |config|
   config.include CupriteHelpers, type: :system

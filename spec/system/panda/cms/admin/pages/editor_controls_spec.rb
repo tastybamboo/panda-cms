@@ -98,8 +98,8 @@ RSpec.describe "When using the Editor.js controls", type: :system do
       expect(page).to have_css(".ce-block", wait: 1)
 
       # Debug: Print out what elements are available
-      debug "Available elements:"
-      debug page.all(".codex-editor *").map(&:tag_name).join(", ")
+      puts_debug "Available elements:"
+      puts_debug page.all(".codex-editor *").map(&:tag_name).join(", ")
 
       # Clear and type new text
       rich_text_area.send_keys([:control, "a"], [:backspace])
@@ -129,8 +129,8 @@ RSpec.describe "When using the Editor.js controls", type: :system do
       expect(page).to have_css(".ce-block", wait: 1)
 
       # Debug: Print out what elements are available
-      debug "Available elements:"
-      debug page.all(".codex-editor *").map(&:tag_name).join(", ")
+      puts_debug "Available elements:"
+      puts_debug page.all(".codex-editor *").map(&:tag_name).join(", ")
 
       # Create unordered list
       find(".ce-toolbar__plus", wait: 1).click

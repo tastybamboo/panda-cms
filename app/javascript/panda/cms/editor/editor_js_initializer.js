@@ -232,11 +232,7 @@ export class EditorJSInitializer {
             inlineToolbar: true,
             config: {
               defaultStyle: 'unordered',
-              enableLineBreaks: true,
-              inlineToolbar: true,
-              convertTo: 'list',
-              preserveBlank: true,
-              enableHTML: true
+              enableLineBreaks: true
             }
           },
           quote: {

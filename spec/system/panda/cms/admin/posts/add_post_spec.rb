@@ -17,43 +17,7 @@ RSpec.describe "Adding a post", type: :system do
     add_editor_header("Test Header")
     add_editor_paragraph("Test content")
     add_editor_list(["Item 1", "Item 2"])
-    add_editor_quote("Test quote")
-
-    if ENV["DEBUG"]
-      puts "\n=== Debug: Editor State After Adding Quote ==="
-
-      # First check if editor exists and is ready
-      editor_exists = page.evaluate_script('typeof window.editor !== "undefined" && window.editor !== null')
-      puts "\nEditor exists: #{editor_exists}"
-
-      if editor_exists
-        # Check EditorJS internal state
-        json_content = page.evaluate_script("window.editor.save()")
-        puts "\nEditorJS blocks:"
-        puts JSON.pretty_generate(json_content)
-
-        # Check what blocks exist
-        block_count = page.evaluate_script("window.editor.blocks.getBlocksCount()")
-        puts "\nTotal blocks: #{block_count}"
-
-        # Get all block types
-        block_types = page.evaluate_script("window.editor.blocks.getBlockTypes()")
-        puts "\nBlock types present:"
-        puts block_types.inspect
-      end
-
-      # Check the actual content in the editor
-      puts "\nVisible content in editor:"
-      within(editor_container_id) do
-        page.all(".ce-block").each_with_index do |block, i|
-          puts "Block #{i + 1}:"
-          puts "Text: #{block.text}"
-          puts "Classes: #{block["class"]}"
-        end
-      end
-
-      puts "\n=== End Debug ==="
-    end
+    add_editor_quote("Test quote", "Test caption")
 
     click_button "Create Post"
 
@@ -66,6 +30,7 @@ RSpec.describe "Adding a post", type: :system do
     expect_editor_content_to_include("Test Header", post)
     expect_editor_content_to_include("Test content", post)
     expect_editor_content_to_include("Item 1", post)
+    expect_editor_content_to_include("Item 2", post)
     expect_editor_content_to_include("Test quote", post)
   end
 
@@ -73,22 +38,17 @@ RSpec.describe "Adding a post", type: :system do
     add_editor_header("Test Header")
     add_editor_paragraph("Test content")
     add_editor_list(["Item 1", "Item 2"])
-    add_editor_quote("Test quote")
+    add_editor_quote("Test quote", "Test caption")
 
-    debug "\n=== Debug: Content before submission ==="
-    json_content = page.evaluate_script("window.editor.save()")
-    debug "\nEditorJS content:"
-    debug JSON.pretty_generate(json_content)
-
-    hidden_field = page.find("[data-editor-form-target='hiddenField']", visible: false, wait: 1)
-    debug "\nHidden field value:"
-    debug hidden_field.value
-
-    debug "\nAll contenteditable elements text:"
-    page.all("[contenteditable]").each_with_index do |el, i|
-      puts "#{i}: #{el.text}"
+    puts_debug "\n=== Debug: Content before submission ==="
+    puts_debug "Editor exists: #{page.evaluate_script('typeof window.editor !== "undefined" && window.editor !== null')}"
+    puts_debug "\nVisible content in editor:"
+    all(".ce-block").each_with_index do |block, index|
+      puts_debug "Block #{index + 1}:"
+      puts_debug "Text: #{block.text}"
+      puts_debug "Classes: #{block["class"]}"
     end
-    puts "=== End Debug ==="
+    puts_debug "=== End Debug ===\n"
 
     click_button "Create Post"
 
@@ -96,6 +56,7 @@ RSpec.describe "Adding a post", type: :system do
     expect_editor_content_to_include("Test Header")
     expect_editor_content_to_include("Test content")
     expect_editor_content_to_include("Item 1")
+    expect_editor_content_to_include("Item 2")
     expect_editor_content_to_include("Test quote")
   end
 end

@@ -240,7 +240,8 @@ export const getEditorConfig = (elementId, previousData, doc = document) => {
         class: win.NestedList,
         inlineToolbar: true,
         config: {
-          defaultStyle: 'unordered'
+          defaultStyle: 'unordered',
+          enableLineBreaks: true
         }
       },
       quote: {

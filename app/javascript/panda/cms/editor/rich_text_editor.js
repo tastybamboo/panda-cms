@@ -4,6 +4,7 @@ import Header from "@editorjs/header"
 import List from "@editorjs/list"
 import Quote from "@editorjs/quote"
 import Table from "@editorjs/table"
+import NestedList from "@editorjs/nested-list"
 
 export default class RichTextEditor {
   constructor(element, iframe) {
@@ -79,8 +80,12 @@ export default class RichTextEditor {
             inlineToolbar: true
           },
           list: {
-            class: List,
-            inlineToolbar: true
+            class: NestedList,
+            inlineToolbar: true,
+            config: {
+              defaultStyle: 'unordered',
+              enableLineBreaks: true
+            }
           },
           quote: {
             class: Quote,

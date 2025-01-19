@@ -90,8 +90,12 @@ export default class extends Controller {
             inlineToolbar: true
           },
           list: {
-            class: window.List || window.NestedList,
-            inlineToolbar: true
+            class: window.NestedList,
+            inlineToolbar: true,
+            config: {
+              defaultStyle: 'unordered',
+              enableLineBreaks: true
+            }
           },
           quote: {
             class: window.Quote,

@@ -5,33 +5,9 @@ OmniAuth.config.on_failure = proc { |env|
 }
 
 module OmniAuthHelpers
-  def debug(message)
-    puts "[DEBUG] #{message}" if ENV["DEBUG"]
-  end
-
-  def debug_page_state
-    return unless ENV["DEBUG"]
-    debug "Current URL: #{page.current_url}"
-    debug "Current Path: #{page.current_path}"
-    debug "Page Title: #{page.title}"
-    debug "Page HTML snippet:"
-    debug page.body[0..500] # First 500 chars of HTML
-
-    # Log any JS console errors
-    if page.driver.browser.respond_to?(:manage)
-      console_logs = page.driver.browser.manage.logs.get(:browser)
-      if console_logs.present?
-        debug "Browser Console Logs:"
-        console_logs.each { |log| debug "  #{log.message}" }
-      end
-    end
-  rescue => e
-    debug "Error capturing page state: #{e.message}"
-  end
-
   def login_with_google(user)
     OmniAuth.config.mock_auth[:google] = OmniAuth::AuthHash.new({
-      provider: "google_oauth2",
+      provider: "google",
       uid: user.id,
       info: {
         email: user.email,
@@ -50,7 +26,7 @@ module OmniAuthHelpers
 
   def manual_login_with_google(user)
     OmniAuth.config.mock_auth[:google] = OmniAuth::AuthHash.new({
-      provider: "google_oauth2",
+      provider: "google",
       uid: user.id,
       info: {
         email: user.email,
@@ -135,8 +111,7 @@ RSpec.configure do |config|
 
   config.after(:each, type: :system) do |example|
     if example.exception
-      debug "Test failed: #{example.full_description}"
-      debug "Error: #{example.exception.message}"
+      puts_debug "Test failed: #{example.full_description}"
       debug_page_state
       # debug "Screenshot saved to: #{page.save_screenshot}" if defined?(page) && page.respond_to?(:save_screenshot)
     end

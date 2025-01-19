@@ -89,10 +89,10 @@ RSpec.describe "When editing a page", type: :system do
         expect(first_plain_text["data-editable-kind"]).to eq("plain_text")
 
         # Debug: Print all editable elements
-        debug "Found editable elements:"
+        puts_debug "Found editable elements:"
         all("[data-editable-kind]").each do |el|
-          debug "  - Kind: #{el["data-editable-kind"]}, Content: #{el.text}"
-          debug "  - HTML: #{el["outerHTML"]}"
+          puts_debug "  - Kind: #{el["data-editable-kind"]}, Content: #{el.text}"
+          puts_debug "  - HTML: #{el["outerHTML"]}"
         end
 
         # Set the content directly on the first plain text area
@@ -188,8 +188,8 @@ RSpec.describe "When editing a page", type: :system do
         rich_text_area = find('div[data-editable-kind="rich_text"]', wait: 10)
 
         # Debug output to help diagnose issues
-        debug "Rich text area attributes:"
-        debug rich_text_area["outerHTML"]
+        puts_debug "Rich text area attributes:"
+        puts_debug rich_text_area["outerHTML"]
 
         # Verify the rich text area has required attributes
         expect(rich_text_area["data-editable-kind"]).to eq("rich_text")
@@ -249,16 +249,16 @@ RSpec.describe "When editing a page", type: :system do
         JS
 
         # Debug output of all scripts
-        debug "=== Loaded Scripts ==="
+        puts_debug "=== Loaded Scripts ==="
         scripts_info.each do |script|
-          debug "Script: #{script["src"]}"
-          debug "  Type: #{script["type"]}"
-          debug "  Async: #{script["async"]}"
-          debug "  Defer: #{script["defer"]}"
-          debug "  Loaded: #{script["loaded"]}"
-          debug "  Error: #{script["error"]}"
-          debug "  Text: #{script["text"]}"
-          debug "---"
+          puts_debug "Script: #{script["src"]}"
+          puts_debug "  Type: #{script["type"]}"
+          puts_debug "  Async: #{script["async"]}"
+          puts_debug "  Defer: #{script["defer"]}"
+          puts_debug "  Loaded: #{script["loaded"]}"
+          puts_debug "  Error: #{script["error"]}"
+          puts_debug "  Text: #{script["text"]}"
+          puts_debug "---"
         end
 
         # Verify required Editor.js scripts are loaded
@@ -300,10 +300,10 @@ RSpec.describe "When editing a page", type: :system do
           })();
         JS
 
-        debug "=== Script Loading Results ==="
-        debug "Found scripts: #{scripts_loaded["found"].join(", ")}"
-        debug "Missing scripts: #{scripts_loaded["missing"].join(", ")}"
-        debug "============================"
+        puts_debug "=== Script Loading Results ==="
+        puts_debug "Found scripts: #{scripts_loaded["found"].join(", ")}"
+        puts_debug "Missing scripts: #{scripts_loaded["missing"].join(", ")}"
+        puts_debug "============================"
 
         if !scripts_loaded["success"]
           fail "Missing required Editor.js scripts: #{scripts_loaded["missing"].join(", ")}"
@@ -366,8 +366,10 @@ RSpec.describe "When editing a page", type: :system do
         rich_text_area.click
 
         # Debug: Print out what elements are available
-        debug "Available elements in iframe:"
-        debug page.all("*").map { |el| "#{el.tag_name}.#{el["class"]}" }.join(", ")
+        puts_debug "Available elements in iframe:"
+        all("*").each do |element|
+          puts_debug "  #{element.tag_name}: #{element["class"]}"
+        end
 
         # Check for either successful initialization or error state
         expect(page).to have_css(".codex-editor", wait: 10)
@@ -439,7 +441,7 @@ RSpec.describe "When editing a page", type: :system do
         rich_text_area = find('div[data-editable-kind="rich_text"]', wait: 10)
 
         # Output detailed initialization state
-        debug_info = page.evaluate_script(<<~JS)
+        editor_info = page.evaluate_script(<<~JS)
           (function() {
             const debugInfo = {
               // Window state
@@ -536,20 +538,20 @@ RSpec.describe "When editing a page", type: :system do
         JS
 
         # Output the debug info to the test log
-        debug "=== Editor Debug Information ==="
-        debug JSON.pretty_generate(debug_info)
-        debug "=============================="
+        puts_debug "=== Editor Debug Information ==="
+        puts_debug JSON.pretty_generate(editor_info)
+        puts_debug "=============================="
 
         # Basic verification that we got debug info
-        expect(debug_info["windowState"]).to be_present
-        expect(debug_info["scripts"]).to be_present
-        expect(debug_info["elements"]).to be_present
+        expect(editor_info["windowState"]).to be_present
+        expect(editor_info["scripts"]).to be_present
+        expect(editor_info["elements"]).to be_present
 
         # If there are errors, output them prominently
-        if debug_info["errors"].any?
-          debug "!!! EDITOR INITIALIZATION ERRORS !!!"
-          debug_info["errors"].each do |error|
-            debug "  - #{error}"
+        if editor_info["errors"].any?
+          puts_debug "!!! EDITOR INITIALIZATION ERRORS !!!"
+          editor_info["errors"].each do |error|
+            puts_debug "  - #{error}"
           end
         end
       end
@@ -599,11 +601,11 @@ RSpec.describe "When editing a page", type: :system do
         expect(page).to have_css('[data-editor-tools-initialized="true"]')
 
         # Debug output for verification
-        debug "=== Editor Blocks ==="
+        puts_debug "=== Editor Blocks ==="
         all(".ce-block").each_with_index do |block, index|
-          debug "Block #{index + 1}: #{block.text}"
+          puts_debug "Block #{index + 1}: #{block.text}"
         end
-        debug "===================="
+        puts_debug "===================="
       end
     end
   end

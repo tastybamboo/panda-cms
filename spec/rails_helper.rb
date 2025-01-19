@@ -42,10 +42,19 @@ Shoulda::Matchers.configure do |config|
   end
 end
 
+module DebugHelpers
+  def puts_debug(message)
+    puts "[DEBUG] #{message}" if ENV["DEBUG"]
+  end
+end
+
 RSpec.configure do |config|
   # URL helpers in tests would be nice to use
   config.include Rails.application.routes.url_helpers
   config.include Panda::CMS::Engine.routes.url_helpers
+
+  # Add debug helper method globally
+  config.include DebugHelpers
 
   # Use transactions, so we don't have to worry about cleaning up the database
   # The idea is to start each example with a clean database, create whatever data
