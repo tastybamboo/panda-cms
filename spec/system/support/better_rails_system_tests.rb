@@ -22,7 +22,11 @@ RSpec.configure do |config|
   # Make sure this hook runs before others
   # Means you don't have to set js: true in every system spec
   config.prepend_before(:each, type: :system) do
-    driven_by :better_cuprite
+    driven_by :cuprite, screen_size: [1400, 2000], options: {
+      js_errors: true,
+      window_size: [1400, 2000],
+      browser_options: {"no-sandbox": nil}
+    }
     # Load our seeds, but make sure to keep them lean!
     Rails.application.load_seed
   end

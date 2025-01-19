@@ -67,6 +67,7 @@ module Panda
         generate_content_blocks
         update_existing_menu_items
         update_auto_menus
+        create_redirect_if_path_changed
       end
 
       def generate_content_blocks
@@ -90,6 +91,23 @@ module Panda
       #
       def update_existing_menu_items
         menu_items.where.not(text: title).update_all(text: title)
+      end
+
+      def create_redirect_if_path_changed
+        return unless saved_change_to_path?
+
+        old_path = saved_changes["path"].first
+        new_path = saved_changes["path"].last
+
+        # Create a redirect from the old path to the new path
+        Panda::CMS::Redirect.create!(
+          origin_panda_cms_page_id: id,
+          destination_panda_cms_page_id: id,
+          status_code: 301,
+          visits: 0,
+          origin_path: old_path,
+          destination_path: new_path
+        )
       end
     end
   end

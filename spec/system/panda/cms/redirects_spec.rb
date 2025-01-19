@@ -65,10 +65,13 @@ RSpec.describe "When following redirects", type: :system do
     # Should be redirected to the new path
     expect(page).to have_current_path("/new-about")
 
-    # Content should still be visible
+    # Wait for the page to fully load after redirect
     expect(page).to have_content("About")
 
+    # Wait a moment for the visit count to be updated
+    sleep 0.5
+
     # The automatically created redirect should have a visit
-    expect(new_redirect.visits).to eq(1)
+    expect(new_redirect.reload.visits).to eq(1)
   end
 end
