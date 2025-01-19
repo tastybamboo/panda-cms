@@ -26,7 +26,7 @@ GIT
 PATH
   remote: .
   specs:
-    panda-cms (0.7.1)
+    panda-cms (0.7.2)
       groupdate
       omniauth (~> 2.1)
       panda-core
