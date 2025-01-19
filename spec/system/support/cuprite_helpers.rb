@@ -20,8 +20,8 @@ require_relative "cuprite_helper_methods"
     "allow-insecure-localhost": nil,
     "enable-features": "NetworkService,NetworkServiceInProcess"
   },
-  process_timeout: 90,
-  timeout: 45,
+  process_timeout: 120,
+  timeout: 30,
   inspector: ENV["DEBUG"].in?(%w[y 1 yes true]),
   logger: ENV["DEBUG"].in?(%w[y 1 yes true]) ? FerrumLogger.new : StringIO.new,
   slowmo: ENV.fetch("SLOWMO", 0).to_f,
