@@ -35,6 +35,7 @@ PATH
   specs:
     panda-cms (0.7.2)
       groupdate
+      invisible_captcha
       omniauth (~> 2.1)
       panda-core
       pg
@@ -240,6 +241,8 @@ GEM
       actionpack (>= 6.0.0)
       activesupport (>= 6.0.0)
       railties (>= 6.0.0)
+    invisible_captcha (2.3.0)
+      rails (>= 5.2)
     io-console (0.8.0)
     irb (1.14.3)
       rdoc (>= 4.0.0)

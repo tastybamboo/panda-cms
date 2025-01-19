@@ -22,6 +22,7 @@ Gem::Specification.new do |spec|
   spec.required_ruby_version = ">= 3.0"
 
   spec.add_dependency "panda-core"
+  spec.add_dependency "invisible_captcha"
   spec.add_dependency "pg"
   spec.add_dependency "sanitize"
   spec.add_dependency "groupdate"
