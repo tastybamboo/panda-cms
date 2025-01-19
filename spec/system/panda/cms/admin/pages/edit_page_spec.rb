@@ -444,7 +444,7 @@ RSpec.describe "When editing a page", type: :system do
     it "outputs detailed editor initialization debug info" do
       within_frame "editablePageFrame" do
         # Wait for rich text area
-        rich_text_area = find('div[data-editable-kind="rich_text"]', wait: 10)
+        find('div[data-editable-kind="rich_text"]', wait: 10)
 
         # Output detailed initialization state
         editor_info = page.evaluate_script(<<~JS)

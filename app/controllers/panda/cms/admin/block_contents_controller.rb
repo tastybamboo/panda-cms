@@ -33,7 +33,7 @@ module Panda
             end
           rescue => e
             Rails.logger.error "Error updating block content: #{e.message}"
-            render json: { error: e.message }, status: :unprocessable_entity
+            render json: {error: e.message}, status: :unprocessable_entity
           end
         end
 

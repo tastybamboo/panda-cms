@@ -103,8 +103,8 @@ module Panda
         end
 
         # Handle the case where we have a date-prefixed slug (from JS)
-        if slug.match?(%r{\A(\d{4})-(\d{2})-(.+)\z})
-          year, month, base_slug = $1, $2, $3
+        if (match = slug.match(%r{\A(\d{4})-(\d{2})-(.+)\z}))
+          year, month, base_slug = match[1], match[2], match[3]
           return self.slug = "/#{year}/#{month}/#{base_slug}"
         end
 

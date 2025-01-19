@@ -140,7 +140,7 @@ module Panda
               else
                 process_html(@content)
               end
-            rescue JSON::ParserError => e
+            rescue JSON::ParserError
               process_html(@content)
             rescue => e
               Rails.logger.error("RichTextComponent render error: #{e.message}\nContent: #{@content.inspect}")
