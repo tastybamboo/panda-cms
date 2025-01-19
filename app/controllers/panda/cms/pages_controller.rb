@@ -4,6 +4,7 @@ module Panda
       include ActionView::Helpers::TagHelper
 
       before_action :check_login_required, only: [:root, :show]
+      before_action :handle_redirects, only: [:root, :show]
       after_action :record_visit, only: [:root, :show], unless: :ignore_visit?
 
       def root
@@ -40,6 +41,24 @@ module Panda
 
       private
 
+      def handle_redirects
+        current_path = "/" + params[:path].to_s
+        redirect = Panda::CMS::Redirect.find_by(origin_path: current_path)
+
+        if redirect
+          redirect.increment!(:visits)
+
+          # Check if the destination is also a redirect
+          next_redirect = Panda::CMS::Redirect.find_by(origin_path: redirect.destination_path)
+          if next_redirect
+            next_redirect.increment!(:visits)
+            redirect_to next_redirect.destination_path, status: redirect.status_code and return
+          end
+
+          redirect_to redirect.destination_path, status: redirect.status_code and return
+        end
+      end
+
       def check_login_required
         if Panda::CMS.config.require_login_to_view && !user_signed_in?
           redirect_to panda_cms_maintenance_path and return
@@ -66,6 +85,16 @@ module Panda
           params: params.to_unsafe_h.except(:controller, :action, :path),
           visited_at: Time.zone.now
         )
+      end
+
+      def create_redirect_if_path_changed
+        if path_changed? && path_was.present?
+          Panda::CMS::Redirect.create!(
+            origin_path: path_was,
+            destination_path: path,
+            status_code: 301
+          )
+        end
       end
     end
   end

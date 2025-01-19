@@ -10,12 +10,15 @@
   <% if @rows.any? %>
   <div class="table-row-group">
     <% @rows.each do |row| %>
-      <div class="table-row relative bg-mid/5 hover:bg-mid/20">
+      <div class="table-row relative bg-mid/5 hover:bg-mid/20" data-post-id="<%= row.id %>">
         <% @columns.each do |column| %>
           <div class="table-cell py-5 px-3 h-20 text-sm align-middle whitespace-nowrap border-b border-mid/20">
             <%= view_context.capture(row, &column.cell) %>
           </div>
         <% end %>
+        <div class="table-cell py-5 px-3 h-20 text-sm align-middle whitespace-nowrap border-b border-mid/20">
+          <%= button_to "Delete", view_context.admin_post_path(row), method: :delete, class: "btn btn-danger", data: { confirm: "Are you sure?" } %>
+        </div>
       </div>
     <% end %>
   </div>

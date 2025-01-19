@@ -15,69 +15,177 @@ if (window.PANDA_CMS_EDITOR_JS_RESOURCES) {
 }
 
 export const EDITOR_JS_CSS = `
-/* Editor layout styles */
-.ce-toolbar__content {
-  margin: 0 !important;
-  margin-left: 40px;
-  max-width: 100% !important;
-  width: 100% !important;
-}
+  .codex-editor {
+    position: relative;
+  }
+  .codex-editor::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 65px;
+    margin-right: 5px;
+    background-color: #f9fafb;
+    border-right: 2px dashed #e5e7eb;
+    z-index: 0;
+  }
+  .ce-block {
+    padding-left: 70px;
+    position: relative;
+    min-height: 40px;
+    margin: 0;
+    padding-bottom: 1em;
+  }
+  .ce-block__content {
+    position: relative;
+    max-width: none;
+    margin: 0;
+  }
+  .ce-paragraph {
+    padding: 0;
+    line-height: 1.6;
+    min-height: 1.6em;
+    margin: 0;
+  }
+  /* Override inherited heading styles */
+  .ce-header h1,
+  .ce-header h2,
+  .ce-header h3,
+  .ce-header h4,
+  .ce-header h5,
+  .ce-header h6 {
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+    font-weight: 600;
+  }
+  .ce-header h1 { font-size: 2em; }
+  .ce-header h2 { font-size: 1.5em; }
+  .ce-header h3 { font-size: 1.17em; }
+  .ce-header h4 { font-size: 1em; }
+  .ce-header h5 { font-size: 0.83em; }
+  .ce-header h6 { font-size: 0.67em; }
 
-.ce-block__content {
-  max-width: 100%;
-  margin: 0 !important;
-  margin-left: 10px !important;
-}
+  .codex-editor__redactor {
+    padding-bottom: 150px !important;
+    min-height: 100px !important;
+  }
+  /* Base toolbar styles */
+  .ce-toolbar {
+    left: 0 !important;
+    right: auto !important;
+    background: none !important;
+    position: absolute !important;
+    width: 65px !important;
+    height: 40px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    padding: 0 !important;
+    margin-left: -70px !important;
+    margin-top: -5px !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: all !important;
+    z-index: 2 !important;
+  }
+  /* Ensure toolbar is visible for all blocks */
+  .ce-block .ce-toolbar {
+    display: flex !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+  .ce-toolbar__content {
+    max-width: none;
+    left: 70px !important;
+    display: flex !important;
+    position: relative !important;
+  }
+  .ce-toolbar__actions {
+    position: relative !important;
+    left: 5px !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    background: transparent !important;
+    z-index: 2;
+    display: flex !important;
+    align-items: center !important;
+    gap: 5px !important;
+    height: 40px !important;
+    padding: 0 !important;
+  }
+  .ce-toolbar__plus {
+    position: relative !important;
+    left: 0px !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    background: transparent !important;
+    border: none !important;
+    z-index: 2;
+    display: block !important;
+  }
+  .ce-toolbar__settings-btn {
+    position: relative !important;
+    left: -10px !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    background: transparent !important;
+    border: none !important;
+    z-index: 2;
+    display: block !important;
+  }
+  /* Style the search input */
+  .ce-popover__search {
+    padding-left: 3px !important;
+  }
+  .ce-popover__search input {
+    outline: none !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+  .ce-popover__search input::placeholder {
+    content: 'Search';
+  }
+  /* Ensure popups still work */
+  .ce-popover {
+    z-index: 4;
+  }
+  .ce-inline-toolbar {
+    z-index: 3;
+  }
+  /* Override any hiding behavior */
+  .ce-toolbar--closed,
+  .ce-toolbar--opened,
+  .ce-toolbar--showed {
+    display: flex !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+  /* Force toolbar to show on every block */
+  .ce-block:not(:focus):not(:hover) .ce-toolbar,
+  .ce-block--selected .ce-toolbar,
+  .ce-block--focused .ce-toolbar,
+  .ce-block--hover .ce-toolbar {
+    opacity: 1 !important;
+    visibility: visible !important;
+    display: flex !important;
+  }
 
-/* Ensure proper nesting for content styles to apply */
-.codex-editor .codex-editor__redactor {
-  position: relative;
-}
+  /* Ensure last block has bottom spacing */
+  .ce-block:last-child {
+    padding-bottom: 2em;
+  }
 
-.codex-editor .codex-editor__redactor .ce-block {
-  position: relative;
-}
-
-.codex-editor .codex-editor__redactor .ce-block .ce-block__content {
-  position: relative;
-}
-
-/* Remove default editor styles that might interfere */
-.ce-header {
-  padding: 0 !important;
-  margin: 0 !important;
-  background: none !important;
-  border: none !important;
-}
-
-.ce-paragraph {
-  padding: 0 !important;
-  margin: 0 !important;
-  line-height: inherit !important;
-}
-
-/* Lists */
-.ce-block--list ul,
-.ce-block--list ol {
-  margin: 0;
-  padding-left: inherit;
-}
-
-.ce-block--list li {
-  margin: 0;
-  padding-left: inherit;
-}
-
-/* Ensure editor toolbar is above content */
-.ce-toolbar {
-  z-index: 100;
-}
-
-/* Style the block selection */
-.ce-block--selected {
-  background-color: rgba(16, 64, 113, 0.05);
-  border-radius: 4px;
-}`
+  /* Reset all block type margins */
+  .ce-header,
+  .ce-paragraph,
+  .ce-quote,
+  .ce-list {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+`
 
 export const getEditorConfig = (elementId, previousData, doc = document) => {
   // Validate holder element exists
@@ -86,14 +194,34 @@ export const getEditorConfig = (elementId, previousData, doc = document) => {
     throw new Error(`Editor holder element ${elementId} not found`)
   }
 
+  // Get the correct window context
+  const win = doc.defaultView || window
+
+  // Ensure we have a clean holder element
+  holder.innerHTML = ""
+
   const config = {
     holder: elementId,
     data: previousData || {},
     placeholder: 'Click the + button to add content...',
     inlineToolbar: true,
+    onChange: () => {
+      // Ensure the editor is properly initialized before handling changes
+      if (holder && holder.querySelector('.codex-editor')) {
+        const event = new Event('editor:change', { bubbles: true })
+        holder.dispatchEvent(event)
+      }
+    },
+    i18n: {
+      toolbar: {
+        filter: {
+          placeholder: 'Search'
+        }
+      }
+    },
     tools: {
       header: {
-        class: window.Header,
+        class: win.Header,
         inlineToolbar: true,
         config: {
           placeholder: 'Enter a header',
@@ -102,44 +230,45 @@ export const getEditorConfig = (elementId, previousData, doc = document) => {
         }
       },
       paragraph: {
-        class: window.Paragraph,
+        class: win.Paragraph,
         inlineToolbar: true,
         config: {
           placeholder: 'Start writing or press Tab to add content...'
         }
       },
       list: {
-        class: window.NestedList,
+        class: win.NestedList,
         inlineToolbar: true,
         config: {
-          defaultStyle: 'unordered'
+          defaultStyle: 'unordered',
+          enableLineBreaks: true
         }
       },
       quote: {
-        class: window.Quote,
+        class: win.Quote,
         inlineToolbar: true,
         config: {
           quotePlaceholder: 'Enter a quote',
           captionPlaceholder: 'Quote\'s author'
         }
       },
+      image: {
+        class: win.SimpleImage,
+        inlineToolbar: true,
+        config: {
+          placeholder: 'Paste an image URL...'
+        }
+      },
       table: {
-        class: window.Table,
+        class: win.Table,
         inlineToolbar: true,
         config: {
           rows: 2,
           cols: 2
         }
       },
-      image: {
-        class: window.SimpleImage,
-        inlineToolbar: true,
-        config: {
-          placeholder: 'Paste an image URL...'
-        }
-      },
       embed: {
-        class: window.Embed,
+        class: win.Embed,
         inlineToolbar: true,
         config: {
           services: {

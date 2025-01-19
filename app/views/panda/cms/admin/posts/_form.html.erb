@@ -1,7 +1,18 @@
 <%= panda_cms_form_with model: post, url: url, method: post.persisted? ? :put : :post do |f| %>
-  <%= f.text_field :title, class: "block w-full rounded-md border-0 p-2 text-gray-900 ring-1 ring-inset ring-mid placeholder:text-gray-300 focus:ring-1 focus:ring-inset focus:ring-dark sm:leading-6 hover:pointer" %>
-  <%= f.text_field :slug, class: "block w-full rounded-md border-0 p-2 text-gray-900 ring-1 ring-inset ring-mid placeholder:text-gray-300 focus:ring-1 focus:ring-inset focus:ring-dark sm:leading-6 hover:pointer" %>
-  <%= f.select :user_id, Panda::CMS::User.admin.map { |u| [u.name, u.id] }, {}, class: "block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-mid focus:ring-1 focus:ring-inset focus:ring-dark sm:leading-6 hover:pointer" %>
+  <div data-controller="slug" data-slug-add-date-prefix-value="true">
+    <%= f.text_field :title,
+        class: "block w-full rounded-md border-0 p-2 text-gray-900 ring-1 ring-inset ring-mid placeholder:text-gray-300 focus:ring-1 focus:ring-inset focus:ring-dark sm:leading-6 hover:pointer",
+        data: {
+          "slug-target": "input_text",
+          action: "focusout->slug#generatePath"
+        } %>
+    <%= f.text_field :slug,
+        class: "block w-full rounded-md border-0 p-2 text-gray-900 ring-1 ring-inset ring-mid placeholder:text-gray-300 focus:ring-1 focus:ring-inset focus:ring-dark sm:leading-6 hover:pointer",
+        data: {
+          "slug-target": "output_text"
+        } %>
+  </div>
+  <%= f.select :author_id, Panda::CMS::User.admin.map { |u| [u.name, u.id] }, {}, class: "block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-mid focus:ring-1 focus:ring-inset focus:ring-dark sm:leading-6 hover:pointer" %>
   <%= f.datetime_field :published_at, class: "block w-full rounded-md border-0 p-2 text-gray-900 ring-1 ring-inset ring-mid placeholder:text-gray-300 focus:ring-1 focus:ring-inset focus:ring-dark sm:leading-6 hover:pointer" %>
   <%= f.select :status, options_for_select([["Active", "active"], ["Draft", "draft"], ["Hidden", "hidden"], ["Archived", "archived"]], selected: post.status), {}, class: "block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-mid focus:ring-1 focus:ring-inset focus:ring-dark sm:leading-6 hover:pointer" %>
 
@@ -16,7 +27,7 @@
         } %>
     <div id="<%= editor_id %>"
          data-editor-form-target="editorContainer"
-         class="max-w-full block ml-12 bg-white pt-1 mb-4 mt-2 border border-mid rounded-md min-h-[300px]">
+         class="max-w-full block bg-white pt-1 mb-4 mt-2 border border-mid rounded-md min-h-[300px]">
     </div>
   </div>
 

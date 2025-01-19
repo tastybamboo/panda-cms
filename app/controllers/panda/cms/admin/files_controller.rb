@@ -1,20 +1,30 @@
+# frozen_string_literal: true
+
 module Panda
   module CMS
-    class Admin::FilesController < ApplicationController
-      before_action :set_initial_breadcrumb, only: %i[index show]
-      before_action :authenticate_admin_user!
+    module Admin
+      class FilesController < ApplicationController
+        before_action :authenticate_admin_user!
 
-      def index
-        redirect_to admin_dashboard_path
-      end
+        def create
+          file = params[:image]
+          return render json: {success: 0} unless file
 
-      def show
-      end
+          blob = ActiveStorage::Blob.create_and_upload!(
+            io: file,
+            filename: file.original_filename,
+            content_type: file.content_type
+          )
 
-      private
-
-      def set_initial_breadcrumb
-        add_breadcrumb "Media", admin_files_path
+          render json: {
+            success: true,
+            file: {
+              url: Rails.application.routes.url_helpers.rails_blob_url(blob, only_path: true),
+              name: blob.filename.to_s,
+              size: blob.byte_size
+            }
+          }
+        end
       end
     end
   end
