@@ -12,10 +12,23 @@ module Panda::CMS::EditorJsContent
 
   def generate_cached_content
     if content.is_a?(String)
-      self.cached_content = content
+      begin
+        parsed_content = JSON.parse(content)
+        self.cached_content = if parsed_content.is_a?(Hash) && parsed_content["blocks"].present?
+          Panda::CMS::EditorJs::Renderer.new(parsed_content).render
+        else
+          content
+        end
+      rescue JSON::ParserError
+        # If it's not JSON, treat it as plain text
+        self.cached_content = content
+      end
     elsif content.is_a?(Hash) && content["blocks"].present?
       # Process EditorJS content
       self.cached_content = Panda::CMS::EditorJs::Renderer.new(content).render
+    else
+      # For any other case, store as is
+      self.cached_content = content.to_s
     end
   end
 end

@@ -6,12 +6,10 @@ RSpec.describe "Website" do
     visit "/"
 
     # Debug output for troubleshooting
-    if ENV["DEBUG"]
-      debug "Current URL: #{page.current_url}"
-      debug "Page Title: #{page.title}"
-      debug "Page HTML:"
-      debug page.html
-    end
+    puts_debug "Current URL: #{page.current_url}"
+    puts_debug "Page Title: #{page.title}"
+    puts_debug "Page HTML:"
+    puts_debug page.html
 
     # Wait for the layout to be visible
     expect(page).to have_content("Homepage Layout", wait: 1)
@@ -25,15 +23,13 @@ RSpec.describe "Website" do
     visit "/about"
 
     # Debug output for troubleshooting
-    if ENV["DEBUG"]
-      about = Panda::CMS::Page.find_by(path: "/about")
-      debug "Page: #{about.attributes.inspect}"
-      debug "Block Contents:"
-      about.block_contents.each do |bc|
-        debug "Block: #{bc.block.name}"
-        debug "Raw Content: #{bc.content.inspect}"
-        debug "Rendered Content: #{bc.cached_content.inspect}"
-      end
+    about = Panda::CMS::Page.find_by(path: "/about")
+    puts_debug "Page: #{about.attributes.inspect}"
+    puts_debug "Block Contents:"
+    about.block_contents.each do |bc|
+      puts_debug "Block: #{bc.block.name}"
+      puts_debug "Raw Content: #{bc.content.inspect}"
+      puts_debug "Rendered Content: #{bc.cached_content.inspect}"
     end
 
     # Test what the user sees

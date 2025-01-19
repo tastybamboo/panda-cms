@@ -1,7 +1,7 @@
 <%= render "shared/header" %>
 <h1><%= @post.title %></h1>
 <div class="text-lg text-brand-text space-y-4 content">
-  <%= @post.cached_content %>
+  <%= @post.cached_content.html_safe %>
 </div>
 <%= yield %>
 <%= render "shared/footer" %>

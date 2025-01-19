@@ -3,7 +3,11 @@ require "turbo-rails"
 require "stimulus-rails"
 require "view_component"
 
+require "panda/core"
 require "panda/cms/railtie"
+
+require "omniauth"
+require "omniauth/rails_csrf_protection"
 
 module Panda
   module CMS

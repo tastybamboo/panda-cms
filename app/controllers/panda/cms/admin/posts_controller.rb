@@ -14,7 +14,7 @@ module Panda
         # @type GET
         # @return ActiveRecord::Collection A list of all posts
         def index
-          posts = Panda::CMS::Post.with_user.ordered
+          posts = Panda::CMS::Post.with_author.ordered
           render :index, locals: {posts: posts}
         end
 
@@ -48,16 +48,12 @@ module Panda
         # POST /admin/posts
         def create
           @post = Panda::CMS::Post.new(post_params)
-
-          begin
-            @post.content = JSON.parse(post_params[:content])
-          rescue
-            @post.content = post_params[:content]
-          end
+          @post.user_id = current_user.id
+          @post.content = parse_content(post_params[:content]) # Parse the content before saving
 
           if @post.save
             Rails.logger.debug "Post saved successfully"
-            redirect_to edit_admin_post_path(@post.admin_param), notice: "Post was successfully created."
+            redirect_to edit_admin_post_path(@post.admin_param), success: "The post was successfully created!"
           else
             Rails.logger.debug "Post save failed: #{@post.errors.full_messages.inspect}"
             flash.now[:error] = @post.errors.full_messages.join(", ")
@@ -69,11 +65,14 @@ module Panda
         # @type PATCH/PUT
         # @return
         def update
-          Rails.logger.debug "Updating post with params: #{post_params.inspect}"
           Rails.logger.debug "Current content: #{post.content.inspect}"
           Rails.logger.debug "New content from params: #{post_params[:content].inspect}"
 
-          if post.update(post_params)
+          # Parse the content before updating
+          update_params = post_params
+          update_params[:content] = parse_content(post_params[:content])
+          update_params[:user_id] = current_user.id
+          if post.update(update_params)
             Rails.logger.debug "Post updated successfully"
             add_breadcrumb post.title, edit_admin_post_path(post.admin_param)
             redirect_to edit_admin_post_path(post.admin_param),
@@ -136,9 +135,32 @@ module Panda
             :slug,
             :status,
             :published_at,
-            :user_id,
+            :author_id,
             :content
           )
+        end
+
+        def parse_content(content)
+          return {} if content.blank?
+
+          begin
+            # If content is already a hash, return it
+            return content if content.is_a?(Hash)
+
+            # If it's a string, try to parse it as JSON
+            parsed = JSON.parse(content)
+
+            # Ensure we have a hash with expected structure
+            if parsed.is_a?(Hash) && parsed["blocks"].is_a?(Array)
+              parsed
+            else
+              # If structure is invalid, return empty blocks structure
+              {"blocks" => []}
+            end
+          rescue JSON::ParserError => e
+            Rails.logger.error "Failed to parse post content: #{e.message}"
+            {"blocks" => []}
+          end
         end
       end
     end
