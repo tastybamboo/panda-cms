@@ -36,11 +36,11 @@ RELEASE_VERSION=0.6.2
 To release the gem **to this version number**, run:
 
 ```
+git checkout -b release/v$RELEASE_VERSION
 gem bump --no-commit --version $RELEASE_VERSION
 bundle update
 git commit -am "Release $RELEASE_VERSION"
 git tag -a $RELEASE_VERSION -m "Release $RELEASE_VERSION"
-git checkout -b release/v$RELEASE_VERSION
 git push origin release/v$RELEASE_VERSION
 gem tag
 gem release panda-cms -v $RELEASE_VERSION -g

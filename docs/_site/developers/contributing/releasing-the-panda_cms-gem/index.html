@@ -2,11 +2,11 @@
 </code></pre></div></div><h3 id="releasing-a-new-version-of-the-panda-cms-gem"> <a href="#releasing-a-new-version-of-the-panda-cms-gem" class="anchor-heading" aria-labelledby="releasing-a-new-version-of-the-panda-cms-gem"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> Releasing a new version of the <code class="language-plaintext highlighter-rouge">panda-cms</code> gem</h3><p>With no staged changes, to set the next version number, run:</p><div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>RELEASE_VERSION=$(gem bump --pretend --no-commit | awk '{ print $4 }' | tr -d '[:space:]')
 echo $RELEASE_VERSION
 </code></pre></div></div><p>This should output the next patch release version.</p><p>You can also set <code class="language-plaintext highlighter-rouge">RELEASE_VERSION</code> manually:</p><div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>RELEASE_VERSION=0.6.2
-</code></pre></div></div><p>To release the gem <strong>to this version number</strong>, run:</p><div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>gem bump --no-commit --version $RELEASE_VERSION
+</code></pre></div></div><p>To release the gem <strong>to this version number</strong>, run:</p><div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git checkout -b release/v$RELEASE_VERSION
+gem bump --no-commit --version $RELEASE_VERSION
 bundle update
 git commit -am "Release $RELEASE_VERSION"
 git tag -a $RELEASE_VERSION -m "Release $RELEASE_VERSION"
-git checkout -b release/v$RELEASE_VERSION
 git push origin release/v$RELEASE_VERSION
 gem tag
 gem release panda-cms -v $RELEASE_VERSION -g
