@@ -86,6 +86,7 @@ jobs:
           PT_SILENCE_AR_COMPAT_WARNING: true
           # CUPRITE_DEBUG: "true"
         run: |
+          bundle exec rails db:drop
           bundle exec rails db:setup
           xvfb-run -a bundle exec rspec --tag ~skip -f j -o tmp/rspec_results.json -f p
       - name: Keep screenshots from failed system tests
