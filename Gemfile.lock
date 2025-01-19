@@ -1,8 +1,8 @@
 GIT
   remote: https://github.com/tastybamboo/panda-core.git
-  revision: 67e281d659647b8527594d2eb0294b010782c347
+  revision: c92c2609b633e3d06bca24b05ef37caa3d6e293a
   specs:
-    panda-core (0.1.9)
+    panda-core (0.1.11)
       activestorage-office-previewer
       awesome_nested_set (~> 3.7)
       aws-sdk-s3 (~> 1)
@@ -12,12 +12,19 @@ GIT
       faraday-retry (~> 2)
       image_processing (~> 1.2)
       importmap-rails (~> 2)
+      lookbook
       omniauth (~> 2.1)
-      paper_trail (~> 16)
+      omniauth-github (~> 2.0)
+      omniauth-google-oauth2 (~> 1.1)
+      omniauth-microsoft_graph (~> 2.0)
+      omniauth-rails_csrf_protection (~> 1.0)
+      paper_trail
+      pg (~> 1.5)
       propshaft (~> 1.1)
-      rails (>= 8.0)
+      rails (>= 7.0)
       redis
       silencer (~> 2.0)
+      sqlite3
       stimulus-rails (~> 1.3)
       tailwindcss-rails (~> 3)
       turbo-rails (~> 2.0)
@@ -224,7 +231,7 @@ GEM
     hashie (5.0.0)
     htmlbeautifier (1.4.3)
     htmlentities (4.3.4)
-    i18n (1.14.6)
+    i18n (1.14.7)
       concurrent-ruby (~> 1.0)
     image_processing (1.13.0)
       mini_magick (>= 4.9.5, < 5)
@@ -466,6 +473,14 @@ GEM
     snaky_hash (2.0.1)
       hashie
       version_gem (~> 1.1, >= 1.1.1)
+    sqlite3 (2.5.0-aarch64-linux-gnu)
+    sqlite3 (2.5.0-aarch64-linux-musl)
+    sqlite3 (2.5.0-arm-linux-gnu)
+    sqlite3 (2.5.0-arm-linux-musl)
+    sqlite3 (2.5.0-arm64-darwin)
+    sqlite3 (2.5.0-x86_64-darwin)
+    sqlite3 (2.5.0-x86_64-linux-gnu)
+    sqlite3 (2.5.0-x86_64-linux-musl)
     standard (1.44.0)
       language_server-protocol (~> 3.17.0.2)
       lint_roller (~> 1.0)
