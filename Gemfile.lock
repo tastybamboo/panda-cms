@@ -33,7 +33,7 @@ GIT
 PATH
   remote: .
   specs:
-    panda-cms (0.7.2)
+    panda-cms (0.7.3)
       groupdate
       invisible_captcha
       panda-core
