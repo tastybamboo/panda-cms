@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/tastybamboo/panda-core.git
-  revision: c92c2609b633e3d06bca24b05ef37caa3d6e293a
+  revision: 85974319e175ecd4534caa17b29118f180dfa702
   specs:
     panda-core (0.1.11)
       activestorage-office-previewer
