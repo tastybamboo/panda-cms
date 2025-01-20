@@ -1,3 +1,7 @@
+require "rubygems"
+require "panda/core"
+require "panda/cms/railtie"
+
 require "rails/all"
 require "rails/generators"
 require "rails/generators/test_case"
