@@ -16,9 +16,6 @@
             <%= view_context.capture(row, &column.cell) %>
           </div>
         <% end %>
-        <div class="table-cell py-5 px-3 h-20 text-sm align-middle whitespace-nowrap border-b border-mid/20">
-          <%= button_to "Delete", view_context.admin_post_path(row), method: :delete, class: "btn btn-danger", data: { confirm: "Are you sure?" } %>
-        </div>
       </div>
     <% end %>
   </div>

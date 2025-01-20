@@ -1,14 +1,8 @@
-require "dry-configurable"
-require "importmap-rails"
-require "lookbook"
-require "omniauth"
-require "omniauth/rails_csrf_protection"
-require "omniauth/strategies/microsoft_graph"
-require "omniauth/strategies/google_oauth2"
-require "omniauth/strategies/github"
-require "paper_trail"
-require "view_component"
-require "zeitwerk"
+require "rubygems"
+require "panda/core"
+require "panda/cms/railtie"
+
+require "capybara/rspec"
 
 module Panda
   module CMS

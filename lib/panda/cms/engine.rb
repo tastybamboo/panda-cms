@@ -1,19 +1,12 @@
-require "importmap-rails"
-require "turbo-rails"
-require "stimulus-rails"
-require "view_component"
-
+require "rubygems"
 require "panda/core"
 require "panda/cms/railtie"
-
-require "omniauth"
-require "omniauth/rails_csrf_protection"
 
 module Panda
   module CMS
     class Engine < ::Rails::Engine
       isolate_namespace Panda::CMS
-      engine_name "panda_cms"
+      engine_name "panda-cms"
 
       # Add services directory to autoload paths
       config.autoload_paths += %W[
