@@ -5,7 +5,6 @@ module Panda
     module Admin
       class FormsController < ApplicationController
         before_action :set_initial_breadcrumb, only: %i[index show]
-        # before_action :set_paper_trail_whodunnit, only: %i[create update]
         before_action :authenticate_admin_user!
 
         # Lists all forms

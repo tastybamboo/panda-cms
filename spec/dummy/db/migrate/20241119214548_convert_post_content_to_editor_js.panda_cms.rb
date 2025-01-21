@@ -17,20 +17,20 @@ class ConvertPostContentToEditorJs < ActiveRecord::Migration[7.1]
         ]
       }
 
-      post.update_column(:content, editor_content)
+      post.update_column(:post_content, editor_content)
     end
   end
 
   def down
     Panda::CMS::Post.find_each do |post|
-      next if post.content.blank?
+      next if post.post_content.blank?
 
       # Extract plain text from EditorJS format
-      plain_text = post.content["blocks"]
+      plain_text = post.post_content["blocks"]
         &.map { |block| block["data"]["text"] }
         &.join("\n")
 
-      post.update_column(:content, plain_text)
+      post.update_column(:post_content, plain_text)
     end
   end
 end

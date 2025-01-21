@@ -2,5 +2,5 @@
   <% component.with_heading(text: "Edit Post", level: 1) do |heading| %>
   <% end %>
 
-  <%= render "form", post: post, url: url, method: :patch %>
+  <%= render "form", post: post, url: admin_post_path(post), method: :patch %>
 <% end %>

@@ -42,7 +42,7 @@ RSpec.describe "Editing a post", type: :system do
     visit edit_admin_post_path(post.admin_param)
     expect(page).to have_css("[data-controller='editor-form'] .codex-editor")
 
-    fill_in "post[title]", with: ""
+    fill_in "Title", with: ""
     click_button "Update Post"
 
     expect(page).to have_content("Title can't be blank")

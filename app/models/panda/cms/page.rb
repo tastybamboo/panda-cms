@@ -7,15 +7,9 @@ module Panda
       self.table_name = "panda_cms_pages"
       self.implicit_order_column = "lft"
 
-      has_paper_trail versions: {
-        class_name: "Panda::CMS::PageVersion"
-      }
-
-      after_save :after_save
-
-      belongs_to :template, foreign_key: :panda_cms_template_id, class_name: "Panda::CMS::Template", inverse_of: :pages, optional: false, counter_cache: :pages_count
-      has_many :blocks, through: :template
-      has_many :block_contents, foreign_key: :panda_cms_page_id, class_name: "Panda::CMS::BlockContent", inverse_of: :page
+      belongs_to :template, class_name: "Panda::CMS::Template", foreign_key: :panda_cms_template_id
+      has_many :block_contents, class_name: "Panda::CMS::BlockContent", foreign_key: :panda_cms_page_id, dependent: :destroy
+      has_many :blocks, through: :block_contents
       has_many :menu_items, foreign_key: :panda_cms_page_id, class_name: "Panda::CMS::MenuItem", inverse_of: :page
       has_many :menus, through: :menu_items
       has_many :menus_of_parent, through: :parent, source: :menus
@@ -44,6 +38,9 @@ module Panda
         archived: "archived"
       }
 
+      # Callbacks
+      after_save :handle_after_save
+
       #
       # Update any menus which include this page or its parent as a menu item
       #
@@ -63,7 +60,7 @@ module Panda
       # @return nil
       # @visibility private
       #
-      def after_save
+      def handle_after_save
         generate_content_blocks
         update_existing_menu_items
         update_auto_menus

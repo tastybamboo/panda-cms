@@ -6,6 +6,11 @@ module Panda
 
       validates :status_code, presence: true
       validates :visits, presence: true
+      validates :origin_path, presence: true
+      validates :destination_path, presence: true
+
+      validates :origin_path, format: {with: /\A\/.*\z/, message: "must start with a forward slash"}
+      validates :destination_path, format: {with: /\A\/.*\z/, message: "must start with a forward slash"}
     end
   end
 end

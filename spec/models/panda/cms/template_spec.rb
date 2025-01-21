@@ -54,7 +54,7 @@ RSpec.describe Panda::CMS::Template, type: :model do
 
     before do
       homepage_template.update!(max_uses: 1)
-      different_page_template.update!(max_uses: 3, pages_count: 3)
+      different_page_template.update!(max_uses: 3, pages_count: 2)
     end
 
     describe ".available" do

@@ -76,14 +76,18 @@ module Panda
 
       def record_visit
         RecordVisitJob.perform_later(
-          url: request.url,
+          path: request.path,
+          user_id: Current.user&.id,
+          redirect_id: @redirect&.id,
+          panda_cms_page_id: Current.page&.id,
           user_agent: request.user_agent,
-          referrer: request.referrer,
           ip_address: request.remote_ip,
-          page_id: Panda::CMS::Current.page&.id,
-          current_user_id: current_user&.id,
-          params: params.to_unsafe_h.except(:controller, :action, :path),
-          visited_at: Time.zone.now
+          referer: request.referer,
+          utm_source: params[:utm_source],
+          utm_medium: params[:utm_medium],
+          utm_campaign: params[:utm_campaign],
+          utm_term: params[:utm_term],
+          utm_content: params[:utm_content]
         )
       end
 

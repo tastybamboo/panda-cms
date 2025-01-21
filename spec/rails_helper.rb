@@ -123,4 +123,9 @@ RSpec.configure do |config|
   end
 
   OmniAuth.config.test_mode = true
+
+  config.before(:suite) do
+    # Load seeds before running the test suite
+    Rails.application.load_seed
+  end
 end

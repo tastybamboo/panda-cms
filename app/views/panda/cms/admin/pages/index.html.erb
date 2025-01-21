@@ -12,7 +12,7 @@
         </div>
       <% end %>
       <% table.column("Status") { |page| render Panda::CMS::Admin::TagComponent.new(status: page.status) } %>
-      <% table.column("Last Updated") { |page| render Panda::CMS::Admin::UserActivityComponent.new(whodunnit_to: page)} %>
+      <% table.column("Last Updated") { |page| render Panda::CMS::Admin::UserActivityComponent.new(model: page) } %>
     <% end %>
   <% else %>
     <div class="p-6 bg-error/10 text-error rounded-lg">

@@ -8,24 +8,13 @@ module Panda
         attr_accessor :time
         attr_accessor :user
 
-        # @param whodunnit_to [ActiveRecord::Base] Model instance to which the user activity is related
-        def initialize(whodunnit_to: nil, at: nil, user: nil)
-          if whodunnit_to
-            @model = whodunnit_to
-            whodunnit_id = @model.versions&.last&.whodunnit
-            if whodunnit_id
-              @user = User.find(whodunnit_id)
-              @time = @model.updated_at
-            end
-          elsif user.is_a?(::Panda::CMS::User) && at.is_a?(::ActiveSupport::TimeWithZone)
-            @user = user
-            @time = at
-          end
-
-          if !@time
-            @user = nil
-            @time = nil
-          end
+        # @param model [ActiveRecord::Base] Model instance to which the user activity is related
+        # @param at [ActiveSupport::TimeWithZone] Time of the activity
+        # @param user [Panda::CMS::User] User who performed the activity
+        def initialize(model: nil, at: nil, user: nil)
+          @model = model
+          @user = user if user.is_a?(::Panda::CMS::User)
+          @time = at if at.is_a?(::ActiveSupport::TimeWithZone)
         end
       end
     end

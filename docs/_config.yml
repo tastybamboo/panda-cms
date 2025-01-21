@@ -117,3 +117,7 @@ callouts:
   warning:
     title: Warning
     color: red
+
+# https://github.com/just-the-docs/just-the-docs/issues/1541
+sass:
+  quiet_deps: true

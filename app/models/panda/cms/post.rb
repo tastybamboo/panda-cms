@@ -10,12 +10,10 @@ module Panda
 
       self.table_name = "panda_cms_posts"
 
-      has_paper_trail versions: {
-        class_name: "Panda::CMS::PostVersion"
-      }
-
       belongs_to :user, class_name: "Panda::CMS::User"
-      belongs_to :author, class_name: "Panda::CMS::User"
+      belongs_to :author, class_name: "Panda::CMS::User", optional: true
+      has_many :block_contents, as: :blockable, dependent: :destroy
+      has_many :blocks, through: :block_contents
 
       validates :title, presence: true
       validates :slug,

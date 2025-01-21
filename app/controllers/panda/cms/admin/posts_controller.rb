@@ -7,7 +7,6 @@ module Panda
     module Admin
       class PostsController < ApplicationController
         before_action :set_initial_breadcrumb, only: %i[index new edit create update]
-        before_action :set_paper_trail_whodunnit, only: %i[create update]
         before_action :authenticate_admin_user!
 
         # Get all posts
@@ -29,20 +28,7 @@ module Panda
         # @type GET
         def edit
           add_breadcrumb post.title, edit_admin_post_path(post.admin_param)
-
-          # Get the latest version's content or fall back to post's content
-          preserved_content = if post.versions.exists?
-            reified_post = post.versions.last.reify
-            reified_post&.content || post.content
-          else
-            post.content
-          end
-
-          render :edit, locals: {
-            post: post,
-            url: admin_post_path(post.admin_param),
-            preserved_content: preserved_content
-          }
+          render :edit, locals: {post: post}
         end
 
         # POST /admin/posts
@@ -53,7 +39,8 @@ module Panda
 
           if @post.save
             Rails.logger.debug "Post saved successfully"
-            redirect_to edit_admin_post_path(@post.admin_param), success: "The post was successfully created!"
+            flash[:success] = "The post was successfully created!"
+            redirect_to edit_admin_post_path(@post.admin_param), status: :see_other
           else
             Rails.logger.debug "Post save failed: #{@post.errors.full_messages.inspect}"
             flash.now[:error] = @post.errors.full_messages.join(", ")
@@ -75,17 +62,15 @@ module Panda
           if post.update(update_params)
             Rails.logger.debug "Post updated successfully"
             add_breadcrumb post.title, edit_admin_post_path(post.admin_param)
-            redirect_to edit_admin_post_path(post.admin_param),
-              status: :see_other,
-              flash: {success: "The post was successfully updated!"}
+            flash[:success] = "The post was successfully updated!"
+            redirect_to edit_admin_post_path(post.admin_param), status: :see_other
           else
             Rails.logger.debug "Post update failed: #{post.errors.full_messages.inspect}"
             Rails.logger.debug "Preserving content: #{post_params[:content].inspect}"
-            flash[:error] = post.errors.full_messages.join(", ")
             add_breadcrumb post.title.presence || "Edit Post", edit_admin_post_path(post.admin_param)
+            flash.now[:error] = post.errors.full_messages.join(", ")
             render :edit, locals: {
               post: post,
-              url: admin_post_path(post.admin_param),
               preserved_content: post_params[:content]
             }, status: :unprocessable_entity
           end

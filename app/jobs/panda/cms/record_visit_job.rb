@@ -4,26 +4,32 @@ module Panda
       queue_as :default
 
       def perform(
-        url: nil,
+        path:,
+        user_id: nil,
+        redirect_id: nil,
+        panda_cms_page_id: nil,
         user_agent: nil,
-        referrer: nil,
         ip_address: nil,
-        page_id: nil,
-        current_user_id: nil,
-        params: [],
-        visited_at: nil,
-        redirect_id: nil
+        referer: nil,
+        utm_source: nil,
+        utm_medium: nil,
+        utm_campaign: nil,
+        utm_term: nil,
+        utm_content: nil
       )
         Panda::CMS::Visit.create!(
-          url: url,
-          user_agent: user_agent,
-          referrer: referrer,
-          ip_address: ip_address,
-          page_id: page_id,
+          path: path,
+          user_id: user_id,
           redirect_id: redirect_id,
-          user_id: current_user_id,
-          params: params,
-          visited_at: visited_at
+          panda_cms_page_id: panda_cms_page_id,
+          user_agent: user_agent,
+          ip_address: ip_address,
+          referer: referer,
+          utm_source: utm_source,
+          utm_medium: utm_medium,
+          utm_campaign: utm_campaign,
+          utm_term: utm_term,
+          utm_content: utm_content
         )
       end
     end

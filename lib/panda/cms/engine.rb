@@ -1,12 +1,14 @@
 require "rubygems"
 require "panda/core"
+require "panda/core/engine"
 require "panda/cms/railtie"
+
+require "invisible_captcha"
 
 module Panda
   module CMS
     class Engine < ::Rails::Engine
       isolate_namespace Panda::CMS
-      engine_name "panda-cms"
 
       # Add services directory to autoload paths
       config.autoload_paths += %W[
@@ -14,7 +16,7 @@ module Panda
       ]
 
       # Basic session setup only
-      initializer "panda.cms.session", before: :load_config_initializers do |app|
+      initializer "panda_cms.session", before: :load_config_initializers do |app|
         if app.config.middleware.frozen?
           app.config.middleware = app.config.middleware.dup
         end
@@ -37,7 +39,7 @@ module Panda
         g.templates.unshift File.expand_path("../../templates", __FILE__)
       end
 
-      # Make files in public available to the main app (e.g. /panda-cms-assets/favicon.ico)
+      # Make files in public available to the main app (e.g. /panda_cms-assets/favicon.ico)
       config.app_middleware.use(
         Rack::Static,
         urls: ["/panda-cms-assets"],
@@ -47,7 +49,7 @@ module Panda
       # Custom error handling
       # config.exceptions_app = Panda::CMS::ExceptionsApp.new(exceptions_app: routes)
 
-      initializer "panda.cms.assets" do |app|
+      initializer "panda_cms.assets" do |app|
         if Rails.configuration.respond_to?(:assets)
           # Add JavaScript paths
           app.config.assets.paths << root.join("app/javascript")
@@ -65,7 +67,7 @@ module Panda
       end
 
       # Add importmap paths from the engine
-      initializer "panda.cms.importmap", before: "importmap" do |app|
+      initializer "panda_cms.importmap", before: "importmap" do |app|
         if app.config.respond_to?(:importmap)
           # Create a new array if frozen
           if app.config.importmap.paths.frozen?

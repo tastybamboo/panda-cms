@@ -1,4 +1,14 @@
 <%= panda_cms_form_with model: post, url: url, method: post.persisted? ? :put : :post do |f| %>
+  <% if post.errors.any? %>
+    <div class="mb-4 p-4 bg-red-50 border border-red-200 rounded-md">
+      <div class="text-sm text-red-600">
+        <% post.errors.full_messages.each do |message| %>
+          <p><%= message %></p>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
   <div data-controller="slug" data-slug-add-date-prefix-value="true">
     <%= f.text_field :title,
         class: "block w-full rounded-md border-0 p-2 text-gray-900 ring-1 ring-inset ring-mid placeholder:text-gray-300 focus:ring-1 focus:ring-inset focus:ring-dark sm:leading-6 hover:pointer",

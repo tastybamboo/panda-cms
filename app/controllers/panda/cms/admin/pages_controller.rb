@@ -5,7 +5,6 @@ module Panda
     module Admin
       class PagesController < ApplicationController
         before_action :set_initial_breadcrumb, only: %i[index edit new create update]
-        before_action :set_paper_trail_whodunnit, only: %i[create update]
         before_action :authenticate_admin_user!
 
         # Lists all pages which can be managed by the administrator
@@ -76,7 +75,10 @@ module Panda
 
         def setup_new_page_form(page:)
           add_breadcrumb "Add Page", new_admin_page_path
-          {page: page}
+          {
+            page: page,
+            available_templates: Panda::CMS::Template.available
+          }
         end
 
         # Only allow a list of trusted parameters through.
