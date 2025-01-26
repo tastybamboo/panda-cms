@@ -13,9 +13,7 @@
   <%= render Panda::CMS::Admin::PanelComponent.new do |panel| %>
     <% panel.with_heading(text: "Integrations") %>
 
-    <p class="text-base leading-loose"><i class="mr-2 text-active fa fa-check-circle"></i> <span class="font-medium">Honeybadger:</span> <%= is_defined?(Honeybadger) && Honeybadger.configuration.api_key.present? ? "Connected" : "Not Connected" %></p>
-    <p class="text-base leading-loose"><i class="mr-2 text-active fa fa-check-circle"></i> <span class="font-medium">AppSignal:</span> <%= is_defined?(AppSignal) && AppSignal.configuration.api_key.present? ? "Connected" : "Not Connected" %></p>
-    <p class="text-base leading-loose"><i class="mr-2 text-active fa fa-check-circle"></i> <span class="font-medium">Sentry:</span> <%= is_defined?(Sentry) && Sentry.configuration.dsn.present? ? "Connected" : "Not Connected" %></p>
+    <p class="text-base leading-loose"><i class="mr-2 text-active fa-brands fa-instagram"></i> <span class="font-medium">Instagram:</span> <%= Panda::CMS.config.instagram[:enabled] ? "Connected (@#{Panda::CMS.config.instagram[:username]})" : "Not Connected" %></p>
   <% end %>
 
   <div class="text-center mt-6 space-y-2">
