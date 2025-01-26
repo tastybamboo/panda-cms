@@ -142,7 +142,7 @@ module CupriteHelpers
     expected_url = parent_path.empty? ? "/#{slug}" : "#{parent_path}/#{slug}"
 
     # Add debug output
-    puts "[DEBUG] Waiting for URL field to have value: #{expected_url}"
+    puts_debug "Waiting for URL field to have value: #{expected_url}"
 
     # Wait longer for the value to appear
     wait_for_field_value("URL", expected_url, timeout: 10)

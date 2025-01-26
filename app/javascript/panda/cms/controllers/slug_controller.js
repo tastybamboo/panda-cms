@@ -17,7 +17,8 @@ export default class extends Controller {
     // Don't auto-generate on connect anymore
   }
 
-  generatePath() {
+  generatePath(event) {
+    // Prevent event object from being used as input
     const title = this.input_textTarget.value.trim();
     console.debug("[Panda CMS] Generating path from title:", title);
 
@@ -26,8 +27,8 @@ export default class extends Controller {
       return;
     }
 
-    // Only generate path if output is empty AND user has not manually edited it
-    if (!this.output_textTarget.value && !this.output_textTarget.dataset.userEdited) {
+    // Only generate path if output is empty OR user has not manually edited it
+    if (!this.output_textTarget.value || !this.output_textTarget.dataset.userEdited) {
       // Convert title to slug format
       const slug = this.createSlug(title);
       console.debug("[Panda CMS] Generated slug:", slug);
@@ -56,10 +57,19 @@ export default class extends Controller {
 
   setPrePath(slug = null) {
     try {
+      // Don't do anything if we're passed the event object
+      if (slug && typeof slug === 'object') {
+        slug = null;
+      }
+
       const match = this.input_selectTarget.options[this.input_selectTarget.selectedIndex].text.match(/.*\((.*)\)$/);
       if (match) {
         const parentPath = match[1].replace(/\/$/, ""); // Remove trailing slash if present
-        const currentSlug = slug || (this.input_textTarget.value ? this.createSlug(this.input_textTarget.value.trim()) : "");
+
+        // If we have a specific slug passed in, use it
+        // Otherwise only use the title-based slug if we have a title
+        const currentSlug = slug ||
+          (this.input_textTarget.value.trim() ? this.createSlug(this.input_textTarget.value.trim()) : "");
 
         // Set the full path including parent path
         this.output_textTarget.value = currentSlug
@@ -70,6 +80,8 @@ export default class extends Controller {
       }
     } catch (e) {
       console.error("[Panda CMS] Error setting pre-path:", e);
+      // Clear the output on error
+      this.output_textTarget.value = "";
     }
   }
 

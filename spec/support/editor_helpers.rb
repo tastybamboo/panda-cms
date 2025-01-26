@@ -448,22 +448,37 @@ module EditorHelpers
     path_field = find("#page_path", wait: 10)
 
     # Add debug output
-    puts "[DEBUG] Title entered: #{title}"
-    puts "[DEBUG] Expected slug: #{expected_slug}"
-    puts "[DEBUG] Current path value: #{path_field.value}"
+    puts_debug "Title entered: #{title}"
+    puts_debug "Expected slug: #{expected_slug}"
+    puts_debug "Current path value: #{path_field.value}"
+
+    # Get parent path if one is selected
+    parent_path = ""
+    if page.has_select?("Parent") && page.has_select?("Parent", selected: /.+/)
+      parent_text = page.find("select#page_parent_id option[selected]").text
+      if (match = parent_text.match(/.*\((.*)\)$/))
+        parent_path = match[1].sub(/\/$/, "") # Remove trailing slash
+      end
+    end
+
+    # Build full expected path
+    full_expected_path = parent_path.empty? ? "/#{expected_slug}" : "#{parent_path}/#{expected_slug}"
+    puts_debug "Full expected path: #{full_expected_path}"
 
     # Wait for the correct value with retries
     5.times do |i|
-      if path_field.value.end_with?("/#{expected_slug}")
+      if path_field.value == full_expected_path
         break
       else
-        puts "[DEBUG] Attempt #{i + 1}: Path not yet correct, waiting..."
+        puts "[DEBUG] Attempt #{i + 1}: Path not yet correct"
+        puts "[DEBUG] Current: #{path_field.value}"
+        puts "[DEBUG] Expected: #{full_expected_path}"
         sleep 0.5
         title_field.send_keys(:tab) # Retrigger blur event
       end
     end
 
-    expect(path_field.value).to match(/\/#{expected_slug}$/)
+    expect(path_field.value).to eq(full_expected_path)
   end
 
   private
