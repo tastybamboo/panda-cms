@@ -59,6 +59,9 @@ RSpec.describe Panda::CMS::Template, type: :model do
 
     describe ".available" do
       it "returns all templates with no max_uses or available capacity" do
+        # Create a page using the homepage template
+        create(:page, template: homepage_template, path: "/test")
+
         available = described_class.available
         expect(available).to include(page_template, different_page_template)
         expect(available).not_to include(homepage_template)

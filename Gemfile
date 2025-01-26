@@ -28,7 +28,6 @@ group :development, :test do
   gem "fasterer"
   gem "generator_spec"
   gem "listen"
-  gem "lookbook", "~> 2"
   gem "puma"
   gem "rake"
   gem "rspec"

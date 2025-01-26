@@ -25,7 +25,7 @@ RSpec.describe "Editing a post", type: :system do
     editor_input.set(content.to_json)
 
     click_button "Update Post"
-    expect(page).to have_text("The post was successfully updated")
+    expect(page).to have_css(".flash-message-text", text: "The post was successfully updated", wait: 5)
 
     post.reload
     blocks = post.content["blocks"]
@@ -45,6 +45,6 @@ RSpec.describe "Editing a post", type: :system do
     fill_in "Title", with: ""
     click_button "Update Post"
 
-    expect(page).to have_content("Title can't be blank")
+    expect(page).to have_css(".flash-message-text", text: "Title can't be blank", wait: 5)
   end
 end

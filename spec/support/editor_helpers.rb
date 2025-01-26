@@ -425,6 +425,47 @@ module EditorHelpers
     end
   end
 
+  def fill_in_title_and_wait_for_slug(title)
+    # Clear any existing value
+    title_field = find("#page_title")
+    title_field.click
+    title_field.send_keys([:control, "a"], :backspace)
+
+    # Type the title character by character
+    title.chars.each do |char|
+      title_field.send_keys(char)
+      sleep 0.1 # Increased delay between characters
+    end
+
+    # Ensure the full title is set
+    expect(title_field.value).to eq(title)
+
+    # Trigger blur event and wait for slug generation
+    title_field.send_keys(:tab)
+
+    # Wait for URL field to have expected value
+    expected_slug = title.parameterize
+    path_field = find("#page_path", wait: 10)
+
+    # Add debug output
+    puts "[DEBUG] Title entered: #{title}"
+    puts "[DEBUG] Expected slug: #{expected_slug}"
+    puts "[DEBUG] Current path value: #{path_field.value}"
+
+    # Wait for the correct value with retries
+    5.times do |i|
+      if path_field.value.end_with?("/#{expected_slug}")
+        break
+      else
+        puts "[DEBUG] Attempt #{i + 1}: Path not yet correct, waiting..."
+        sleep 0.5
+        title_field.send_keys(:tab) # Retrigger blur event
+      end
+    end
+
+    expect(path_field.value).to match(/\/#{expected_slug}$/)
+  end
+
   private
 
   def debug_editor_state(record = nil)

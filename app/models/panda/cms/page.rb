@@ -19,8 +19,9 @@ module Panda
 
       validates :path,
         presence: true,
-        uniqueness: true,
         format: {with: /\A\/.*\z/, message: "must start with a forward slash"}
+
+      validate :validate_unique_path_in_scope
 
       validates :parent,
         presence: true,
@@ -53,6 +54,21 @@ module Panda
       end
 
       private
+
+      def validate_unique_path_in_scope
+        # Skip validation if path is not present (other validations will catch this)
+        return if path.blank?
+
+        # Find any other pages with the same path
+        other_page = self.class.where(path: path).where.not(id: id).first
+
+        if other_page
+          # If there's another page with the same path, check if it has a different parent
+          if other_page.parent_id == parent_id
+            errors.add(:path, "has already been taken in this section")
+          end
+        end
+      end
 
       #
       # After save callbacks

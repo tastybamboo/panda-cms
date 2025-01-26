@@ -17,48 +17,48 @@ module Panda
               content_tag(:div, class: "flex flex-grow") do
                 content_tag(:span, class: "inline-flex items-center px-3 text-base border border-r-none rounded-s-md whitespace-nowrap break-keep") { options.dig(:data, :prefix) } +
                   super(attribute, options.reverse_merge(class: input_styles_prefix + " input-prefix rounded-l-none border-l-none"))
-              end
+              end + error_message(attribute)
           end
         else
           content_tag :div, class: container_styles do
-            label(attribute) + meta_text(options) + super(attribute, options.reverse_merge(class: input_styles))
+            label(attribute) + meta_text(options) + super(attribute, options.reverse_merge(class: input_styles)) + error_message(attribute)
           end
         end
       end
 
       def email_field(method, options = {})
         content_tag :div, class: container_styles do
-          label(method) + meta_text(options) + super(method, options.reverse_merge(class: input_styles))
+          label(method) + meta_text(options) + super(method, options.reverse_merge(class: input_styles)) + error_message(method)
         end
       end
 
       def datetime_field(method, options = {})
         content_tag :div, class: container_styles do
-          label(method) + meta_text(options) + super(method, options.reverse_merge(class: input_styles))
+          label(method) + meta_text(options) + super(method, options.reverse_merge(class: input_styles)) + error_message(method)
         end
       end
 
       def text_area(method, options = {})
         content_tag :div, class: container_styles do
-          label(method) + meta_text(options) + super(method, options.reverse_merge(class: input_styles))
+          label(method) + meta_text(options) + super(method, options.reverse_merge(class: input_styles)) + error_message(method)
         end
       end
 
       def password_field(attribute, options = {})
         content_tag :div, class: container_styles do
-          label(attribute) + meta_text(options) + super(attribute, options.reverse_merge(class: input_styles))
+          label(attribute) + meta_text(options) + super(attribute, options.reverse_merge(class: input_styles)) + error_message(attribute)
         end
       end
 
       def select(method, choices = nil, options = {}, html_options = {}, &block)
         content_tag :div, class: container_styles do
-          label(method) + meta_text(options) + super(method, choices, options, html_options.reverse_merge(class: select_styles)) + select_svg
+          label(method) + meta_text(options) + super(method, choices, options, html_options.reverse_merge(class: select_styles)) + select_svg + error_message(method)
         end
       end
 
       def collection_select(method, collection, value_method, text_method, options = {}, html_options = {})
         content_tag :div, class: container_styles do
-          label(method) + meta_text(options) + super(method, collection, value_method, text_method, options, html_options.reverse_merge(class: input_styles))
+          label(method) + meta_text(options) + super(method, collection, value_method, text_method, options, html_options.reverse_merge(class: input_styles)) + error_message(method)
         end
       end
 
@@ -228,6 +228,13 @@ module Panda
 
       def field_wrapper_styles
         "mt-1"
+      end
+
+      def error_message(attribute)
+        return unless object.respond_to?(:errors) && object.errors[attribute]&.any?
+        content_tag(:p, class: "mt-2 text-sm text-red-600") do
+          object.errors[attribute].join(", ")
+        end
       end
     end
   end

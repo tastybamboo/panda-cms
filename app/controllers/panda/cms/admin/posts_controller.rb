@@ -6,7 +6,7 @@ module Panda
   module CMS
     module Admin
       class PostsController < ApplicationController
-        before_action :set_initial_breadcrumb, only: %i[index new edit create update]
+        before_action :set_initial_breadcrumb, only: %i[index edit new create update]
         before_action :authenticate_admin_user!
 
         # Get all posts
@@ -62,7 +62,7 @@ module Panda
           if post.update(update_params)
             Rails.logger.debug "Post updated successfully"
             add_breadcrumb post.title, edit_admin_post_path(post.admin_param)
-            flash[:success] = "The post was successfully updated!"
+            flash[:success] = "The post was successfully updated"
             redirect_to edit_admin_post_path(post.admin_param), status: :see_other
           else
             Rails.logger.debug "Post update failed: #{post.errors.full_messages.inspect}"

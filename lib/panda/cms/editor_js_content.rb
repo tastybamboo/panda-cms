@@ -10,6 +10,27 @@ module Panda::CMS::EditorJsContent
     before_save :generate_cached_content
   end
 
+  def content=(value)
+    if value.is_a?(Hash)
+      super(value.to_json)
+    else
+      super
+    end
+  end
+
+  def content
+    value = super
+    if value.is_a?(String)
+      begin
+        JSON.parse(value)
+      rescue JSON::ParserError
+        value
+      end
+    else
+      value
+    end
+  end
+
   def generate_cached_content
     if content.is_a?(String)
       begin

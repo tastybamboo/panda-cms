@@ -38,8 +38,7 @@ RSpec.describe "When adding a page", type: :system, js: true do
 
     it "creates a new page with valid details and redirects to the page editor" do
       expect(page).to have_field("URL", with: "")
-      fill_in "Title", with: "New Test Page"
-      click_on_selectors "input#page_title", "input#page_path" # Manually trigger the URL autofill
+      trigger_slug_generation("New Test Page")
       expect(page).to have_field("URL", with: "/new-test-page")
       select "Page", from: "Template"
       click_button "Create Page"
@@ -51,8 +50,7 @@ RSpec.describe "When adding a page", type: :system, js: true do
 
     it "shows validation errors with a URL that has already been used" do
       expect(page).to have_field("URL", with: "")
-      fill_in "Title", with: "About Duplicate"
-      click_on_selectors "input#page_title", "input#page_path" # Manually trigger the URL autofill
+      trigger_slug_generation("About Duplicate")
       expect(page).to have_field("URL", with: "/about-duplicate")
       fill_in "URL", with: "/about"
       select "Page", from: "Template"
@@ -66,17 +64,15 @@ RSpec.describe "When adding a page", type: :system, js: true do
       expect(page).to have_field("URL", with: /\/about\/$/)
     end
 
-    xit "allows a page to have the same slug as another as long as the parent is different" do
+    it "allows a page to have the same slug as another as long as the parent is different" do
       expect(page).to have_field("URL", with: "")
       select "- About", from: "Parent"
-      click_on_selectors "input#page_title", "input#page_path" # Manually trigger the URL autofill
-      expect(page).to have_content page.current_url.gsub!("/admin/pages/new", "") + "/about"
-      fill_in "Title", with: "About"
-      expect(page).to have_field("URL", with: "/about")
+      trigger_slug_generation("About")
+      expect(page).to have_field("URL", with: "/about/about")
       select "Page", from: "Template"
       click_button "Create Page"
       expect(page).to_not have_content("URL has already been taken")
-      expect(page.current_path).to eq "/admin/pages"
+      expect(page).to_not have_content("URL has already been taken in this section")
 
       within_frame "editablePageFrame" do
         expect(page).to have_content("Basic Page Layout")
@@ -103,6 +99,10 @@ RSpec.describe "When adding a page", type: :system, js: true do
 
     it "shows validation errors with no URL" do
       fill_in "Title", with: "A Test Page"
+      # Trigger the URL autofill
+      click_on_selectors "input#page_title", "input#page_path"
+      # Then explicitly clear the URL
+      fill_in "URL", with: ""
       click_button "Create Page"
       expect(page).to have_content("URL can't be blank and must start with a forward slash")
     end
@@ -111,6 +111,53 @@ RSpec.describe "When adding a page", type: :system, js: true do
       click_button "Create Page"
       expect(page).to have_content("Title can't be blank")
       expect(page).to have_content("URL can't be blank and must start with a forward slash")
+    end
+
+    it "shows validation errors when adding a page with incorrect URL" do
+      login_as_admin
+      visit panda_cms.admin_pages_path
+      click_on "Add Page"
+
+      fill_in_title_and_wait_for_slug("Test Page")
+      fill_in "page_path", with: "no-forward-slash"
+      click_on "Create Page"
+
+      expect(page).to have_content("URL must start with a forward slash")
+    end
+
+    it "shows validation errors when adding a page with missing title input" do
+      login_as_admin
+      visit panda_cms.admin_pages_path
+      click_on "Add Page"
+
+      fill_in "page_path", with: "/test-page"
+      click_on "Create Page"
+
+      expect(page).to have_content("Title can't be blank")
+    end
+
+    it "shows validation errors when adding a page with missing URL input" do
+      login_as_admin
+      visit panda_cms.admin_pages_path
+      click_on "Add Page"
+
+      fill_in_title_and_wait_for_slug("Test Page")
+      fill_in "page_path", with: ""
+      click_on "Create Page"
+
+      expect(page).to have_content("URL can't be blank and must start with a forward slash")
+    end
+
+    it "shows validation errors when adding a page with invalid details" do
+      login_as_admin
+      visit panda_cms.admin_pages_path
+      click_on "Add Page"
+
+      fill_in_title_and_wait_for_slug("Test Page")
+      fill_in "page_path", with: "invalid-url"
+      click_on "Create Page"
+
+      expect(page).to have_content("URL must start with a forward slash")
     end
   end
 end

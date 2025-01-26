@@ -2,6 +2,7 @@ RSpec.shared_context "with standard pages" do
   before(:each) do
     homepage = create_homepage
     create_about_page(homepage)
+    Panda::CMS::Template.reset_counter_cache
   end
 
   def create_homepage

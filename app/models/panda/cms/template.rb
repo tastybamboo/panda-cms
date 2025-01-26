@@ -21,11 +21,15 @@ module Panda
 
       # Scopes
       scope :available, -> {
-        where("max_uses IS NULL OR pages_count < max_uses")
+        where("max_uses IS NULL OR (max_uses > 0 AND pages_count < max_uses)")
       }
 
       def self.default
         find_by(file_path: "layouts/page")
+      end
+
+      def self.reset_counter_cache
+        find_each { |template| template.update_column(:pages_count, template.pages.count) }
       end
 
       # Generate missing blocks for all templates

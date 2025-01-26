@@ -131,26 +131,19 @@ module Panda
             end
           end
 
-          # Add any remaining text as a final paragraph
-          if current_text.present?
-            # Split any remaining text on double line breaks
-            paragraphs = current_text.split(/\n\n+/).map(&:strip)
-            paragraphs.each do |paragraph|
-              blocks << create_paragraph_block(paragraph) if paragraph.present?
-            end
-          end
+          # Add any remaining text
+          blocks << create_paragraph_block(current_text) if current_text.present?
 
-          raise ConversionError, "No valid content blocks found" if blocks.empty?
-
+          # Return the complete EditorJS structure
           {
             "time" => Time.current.to_i * 1000,
             "blocks" => blocks,
             "version" => "2.28.2"
           }
-        rescue Nokogiri::SyntaxError => e
-          raise ConversionError, "Invalid HTML syntax: #{e.message}"
         rescue => e
-          raise ConversionError, "Conversion failed: #{e.message}"
+          Rails.logger.error "HTML to EditorJS conversion failed: #{e.message}"
+          Rails.logger.error e.backtrace.join("\n")
+          raise ConversionError, "Failed to convert HTML to EditorJS format: #{e.message}"
         end
       end
 
