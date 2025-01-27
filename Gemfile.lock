@@ -31,7 +31,9 @@ PATH
   remote: .
   specs:
     panda-cms (0.7.3)
+      down (~> 5.4)
       groupdate
+      http (~> 5.1)
       invisible_captcha
       panda-core
       pg
@@ -218,6 +220,9 @@ GEM
     debug_inspector (1.2.0)
     diff-lcs (1.5.1)
     docile (1.4.1)
+    domain_name (0.6.20240107)
+    down (5.4.2)
+      addressable (~> 2.8)
     drb (2.2.1)
     dry-configurable (1.3.0)
       dry-core (~> 1.1)
@@ -290,6 +295,9 @@ GEM
     ffi (1.17.1-x86_64-darwin)
     ffi (1.17.1-x86_64-linux-gnu)
     ffi (1.17.1-x86_64-linux-musl)
+    ffi-compiler (1.3.2)
+      ffi (>= 1.15.5)
+      rake
     fx (0.9.0)
       activerecord (>= 7.0)
       railties (>= 7.0)
@@ -306,6 +314,15 @@ GEM
     hashie (5.0.0)
     htmlbeautifier (1.4.3)
     htmlentities (4.3.4)
+    http (5.2.0)
+      addressable (~> 2.8)
+      base64 (~> 0.1)
+      http-cookie (~> 1.0)
+      http-form_data (~> 2.2)
+      llhttp-ffi (~> 0.5.0)
+    http-cookie (1.0.8)
+      domain_name (~> 0.5)
+    http-form_data (2.3.0)
     i18n (1.14.7)
       concurrent-ruby (~> 1.0)
     image_processing (1.13.0)
@@ -335,6 +352,9 @@ GEM
     listen (3.9.0)
       rb-fsevent (~> 0.10, >= 0.10.3)
       rb-inotify (~> 0.9, >= 0.9.10)
+    llhttp-ffi (0.5.0)
+      ffi-compiler (~> 1.0)
+      rake (~> 13.0)
     logger (1.6.5)
     logidze (1.3.1)
       activerecord (>= 6.0)

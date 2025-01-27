@@ -26,6 +26,8 @@ Gem::Specification.new do |spec|
   spec.add_dependency "pg"
   spec.add_dependency "sanitize"
   spec.add_dependency "groupdate"
+  spec.add_dependency "http", "~> 5.1"
+  spec.add_dependency "down", "~> 5.4"
 
   spec.post_install_message = "🐼 💜"
 end
