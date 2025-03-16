@@ -5,6 +5,7 @@ git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 gemspec
 
 gem "panda-core", github: "tastybamboo/panda-core"
+# gem "panda-core", path: "../panda-core"
 
 # Development and testing dependencies
 group :development, :test do

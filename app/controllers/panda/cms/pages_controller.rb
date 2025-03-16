@@ -81,15 +81,11 @@ module Panda
           path: request.path,
           user_id: Current.user&.id,
           redirect_id: @redirect&.id,
-          panda_cms_page_id: Current.page&.id,
+          page_id: Current.page&.id,
           user_agent: request.user_agent,
           ip_address: request.remote_ip,
-          referer: request.referer,
-          utm_source: params[:utm_source],
-          utm_medium: params[:utm_medium],
-          utm_campaign: params[:utm_campaign],
-          utm_term: params[:utm_term],
-          utm_content: params[:utm_content]
+          referer: request.referer, # TODO: Fix the naming of this column
+          params: request.parameters
         )
       end
 
@@ -102,6 +98,7 @@ module Panda
           )
         end
       end
+
     end
   end
 end
