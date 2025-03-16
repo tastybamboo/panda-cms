@@ -4,8 +4,6 @@ git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 # Specify your gem's dependencies in panda-cms.gemspec.
 gemspec
 
-gem "panda-core"
-
 # Development and testing dependencies
 group :development, :test do
   gem "annotaterb"

@@ -739,7 +739,6 @@ DEPENDENCIES
   omniauth-google-oauth2
   omniauth-microsoft_graph
   panda-cms!
-  panda-core
   puma
   rake
   rspec
