@@ -1,4 +1,4 @@
-# This migration comes from panda_cms (originally 20240120)
+# This migration comes from panda_cms (originally 20250120235542)
 class RemovePaperTrail < ActiveRecord::Migration[7.1]
   def up
     version_tables = %w[

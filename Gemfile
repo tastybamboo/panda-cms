@@ -29,11 +29,15 @@ group :development, :test do
   gem "fasterer"
   gem "generator_spec"
   gem "listen"
+  gem "omniauth-google-oauth2"
+  gem "omniauth-microsoft_graph"
+  gem "omniauth-github"
   gem "puma"
   gem "rake"
   gem "rspec"
   gem "rspec-core", "~> 3.13"
   gem "rspec-rails", "~> 7.1"
+  gem "rspec-github"
   gem "ruby-lsp"
   gem "shoulda-matchers"
   gem "simplecov", "~> 0.22"
@@ -51,8 +55,4 @@ group :development, :test do
 end
 
 group :test do
-  gem "rspec-github", require: false
-  gem "omniauth-google-oauth2"
-  gem "omniauth-microsoft_graph"
-  gem "omniauth-github"
 end

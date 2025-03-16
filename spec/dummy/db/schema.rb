@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_01_21_010244) do
+ActiveRecord::Schema[8.0].define(version: 2025_01_26_234001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -211,6 +211,17 @@ ActiveRecord::Schema[8.0].define(version: 2025_01_21_010244) do
     t.index ["panda_cms_page_id"], name: "index_panda_cms_visits_on_panda_cms_page_id"
     t.index ["redirect_id"], name: "index_panda_cms_visits_on_redirect_id"
     t.index ["user_id"], name: "index_panda_cms_visits_on_user_id"
+  end
+
+  create_table "panda_social_instagram_posts", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "instagram_id", null: false
+    t.text "caption"
+    t.datetime "posted_at", null: false
+    t.string "permalink"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["instagram_id"], name: "index_panda_social_instagram_posts_on_instagram_id", unique: true
+    t.index ["posted_at"], name: "index_panda_social_instagram_posts_on_posted_at"
   end
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"

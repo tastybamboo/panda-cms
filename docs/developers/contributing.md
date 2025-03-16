@@ -27,13 +27,13 @@ bundle config set panda.cms.local PATH_TO_PANDA_CMS_DIRECTORY
 ```
 
 ```ruby
-gem "panda_cms", github: "pandacms/panda_cms", branch: "main"
+gem "panda-cms", github: "tastybamboo/panda-cms", branch: "main"
 ```
 
 Alternatively, you may want to use a path to a folder on disk in the `Gemfile` itself:
 
 ```ruby
-gem "panda_cms", path: "../panda_cms"
+gem "panda-cms", path: "../panda-cms"
 ```
 
 ## Assets
@@ -68,14 +68,14 @@ lefthook install -f
 
 ## Tests
 
-To setup tests, from the `panda_cms/spec/dummy` directory, run:
+To setup tests, from the `panda-cms/spec/dummy` directory, run:
 
 ```bash
-RAILS_ENV=test rails db:create
-RAILS_ENV=test rails db:schema:load
+rails railties:install:migrations
+RAILS_ENV=test rails db:setup
 ```
 
-Then, for test runs, from the `panda_cms` directory, run:
+Then, for test runs, from the `panda-cms` directory, run:
 
 ```bash
 bundle exec rspec

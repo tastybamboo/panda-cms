@@ -1,5 +1,6 @@
-PATH
-  remote: ../panda-core
+GIT
+  remote: https://github.com/tastybamboo/panda-core.git
+  revision: a88e574e5308bfc1aed968a0d44135ae54399b74
   specs:
     panda-core (0.1.11)
       activestorage-office-previewer (~> 0.1)
