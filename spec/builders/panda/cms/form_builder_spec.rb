@@ -66,7 +66,7 @@ RSpec.describe Panda::CMS::FormBuilder do
 
     it "renders a button with custom block content" do
       allow(object).to receive(:persisted?).and_return(false)
-      allow(object).to receive(:class).and_return(OpenStruct.new(name: "TestClass"))
+      allow(object).to receive(:class).and_return(double(name: "TestClass"))
       result = builder.button { "Custom Content" }
       expect(result).to include("Custom Content")
       expect(result).not_to include("fa-circle-check")

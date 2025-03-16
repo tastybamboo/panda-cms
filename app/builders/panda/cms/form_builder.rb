@@ -1,5 +1,3 @@
-require "ostruct"
-
 module Panda
   module CMS
     class FormBuilder < ActionView::Helpers::FormBuilder
