@@ -79,6 +79,6 @@ test:
 #
 production:
   <<: *default
-  database: dummy_production
+  database: panda_cms_dummy_production
   username: dummy
   password: <%= ENV["DUMMY_DATABASE_PASSWORD"] %>
