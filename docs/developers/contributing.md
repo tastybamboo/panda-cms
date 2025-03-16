@@ -20,13 +20,7 @@ Panda Software Limited acknowledges that, except as explicitly described in this
 
 ## Developing
 
-Run the following command and ensure your Gemfile is setup as follows:
-
-```
-bundle config set panda_cms.local PATH_TO_PANDA_CMS_DIRECTORY
-```
-
-Alternatively, you may want to use a path to a folder on disk or to a Git branch in the `Gemfile` itself:
+You may want to use a path to a folder on disk or to a Git branch in the `Gemfile` itself:
 
 ```ruby
 gem "panda-cms", github: "tastybamboo/panda-cms", branch: "main"
@@ -36,10 +30,10 @@ gem "panda-cms", github: "tastybamboo/panda-cms", branch: "main"
 gem "panda-cms", path: "../panda-cms"
 ```
 
-If you are using `panda-core` locally, you will want to run the same command:
+If you have your Gemfile pointed at the github repository but want to use a local folder temporarily you can lean on Bundler's [local git repos](https://bundler.io/v1.12/man/bundle-config.1.html#LOCAL-GIT-REPOS) support by running
 
-```
-bundle config set panda_core.local PATH_TO_PANDA_CORE_DIRECTORY
+```bash
+bundle config local.panda-cms ../panda-cms
 ```
 
 ## Assets
