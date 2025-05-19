@@ -4,7 +4,7 @@ require "system_helper"
 RSpec.describe "Admin profile management", type: :system do
   before(:each) do
     login_as_admin
-    visit panda_cms.admin_edit_my_profile_path
+    visit panda_cms.edit_admin_my_profile_path
   end
 
   it "displays the profile form with current user information" do

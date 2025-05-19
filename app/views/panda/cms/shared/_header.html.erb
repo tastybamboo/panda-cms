@@ -1,5 +1,7 @@
 <!DOCTYPE html>
-<html data-theme="default" class="<%= html_class ||= "" %>">
+<html
+  data-theme="<%= Panda::CMS::Current&.user&.current_theme || "default" %>"
+  class="<%= html_class ||= "" %>">
   <head>
     <title><%= title_tag %></title>
     <%= csrf_meta_tags %>
@@ -11,5 +13,8 @@
     <%= render "panda/cms/shared/favicons" %>
     <%= yield :head %>
   </head>
-  <body class="overflow-hidden h-full">
+  <body
+    class="overflow-hidden h-full"
+    data-environment="<%= Rails.env %>"
+  >
     <%= render "panda/cms/admin/shared/flash" %>

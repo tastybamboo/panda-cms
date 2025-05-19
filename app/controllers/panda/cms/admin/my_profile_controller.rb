@@ -19,7 +19,7 @@ module Panda
         # @return void
         def update
           if current_user.update(user_params)
-            redirect_to admin_edit_my_profile_path, flash: { success: "Your profile has been updated successfully." }
+            redirect_to edit_admin_my_profile_path, flash: { success: "Your profile has been updated successfully." }
           else
             render :edit, locals: { user: current_user }, status: :unprocessable_entity
           end
@@ -28,7 +28,7 @@ module Panda
         private
 
         def set_initial_breadcrumb
-          add_breadcrumb "My Profile", admin_edit_my_profile_path
+          add_breadcrumb "My Profile", edit_admin_my_profile_path
         end
 
         # Only allow a list of trusted parameters through

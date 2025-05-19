@@ -137,7 +137,7 @@ end
 
 ```ruby
 # rails console
-provider = Panda::CMS.config.authentication.google
+provider = Panda::CMS.config.authentication[:google]
 provider.enabled?  # Check if provider is enabled
 provider.client_id # Verify credentials are loaded
 ```
