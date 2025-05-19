@@ -145,28 +145,6 @@ module Panda
         end
       end
 
-      def rich_text_area(method, options = {})
-        content_tag :div, class: container_styles do
-          label(method) + meta_text(options) + super(method, options.reverse_merge(class: textarea_styles))
-        end
-      end
-
-      def rich_text_field(method, options = {})
-        wrap_field(method, options) do
-          if defined?(ActionText)
-            # For test environment
-            if Rails.env.test?
-              # Just render a textarea for testing
-              text_area(method, options.reverse_merge(class: textarea_styles))
-            else
-              rich_text_area(method, options.reverse_merge(class: textarea_styles))
-            end
-          else
-            text_area(method, options.reverse_merge(class: textarea_styles))
-          end
-        end
-      end
-
       def meta_text(options)
         return unless options[:meta]
         @template.content_tag(:p, options[:meta], class: "block text-black/60 text-sm mb-2")
