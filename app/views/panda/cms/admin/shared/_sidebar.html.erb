@@ -23,7 +23,7 @@
       <% end %>
     </li>
     <li class="mt-auto">
-      <%= button_to '#', data: { turbo: false }, class: nav_highlight_colour_classes(request) + " w-full" do %>
+      <%= link_to edit_admin_my_profile_path, class: nav_highlight_colour_classes(request) + " w-full", title: "Edit my Profile" do %>
         <% if !current_user.image_url.to_s.empty? %>
           <span class="text-center"><img src="<%= current_user.image_url %>" class="w-auto h-7 rounded-full"></span>
         <% else %>
