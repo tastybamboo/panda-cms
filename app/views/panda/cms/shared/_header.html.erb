@@ -1,5 +1,7 @@
 <!DOCTYPE html>
-<html data-theme="default" class="<%= html_class ||= "" %>">
+<html
+  data-theme="<%= Panda::CMS::Current&.user&.current_theme || "default" %>"
+  class="<%= html_class ||= "" %>">
   <head>
     <title><%= title_tag %></title>
     <%= csrf_meta_tags %>
