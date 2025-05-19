@@ -7,8 +7,8 @@ const pandaCmsApplication = PandaCMSApplication.start()
 console.debug("[Panda CMS] Application started...")
 
 // Configure Stimulus development experience
-pandaCmsApplication.debug = false
-window.pandaCmsStimulus = pandaCmsApplication
+const railsEnv = document.body?.dataset?.environment || "production";
+pandaCmsApplication.debug = railsEnv === "development";
 
 console.debug("[Panda CMS] window.pandaCmsStimulus available...")
 
