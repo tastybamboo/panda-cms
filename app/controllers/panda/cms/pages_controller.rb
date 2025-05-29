@@ -69,21 +69,23 @@ module Panda
         # Ignore visits from bots (TODO: make this configurable)
         return true if /bot/i.match?(request.user_agent)
         # Ignore visits from Honeybadger
-        return true if request.headers.to_h.key? "Honeybadger-Token"
-
+        return true if request.headers.to_h.key?("Honeybadger-Token") || request.user_agent == "Honeybadger Uptime Check"
+        # Ignore visits where we're asking for PHP files
+        return true if request.path.ends_with?(".php")
+        # Otherwise, record the visit
         false
       end
 
       def record_visit
         RecordVisitJob.perform_later(
-          url: request.url,
+          path: request.path,
+          user_id: Current.user&.id,
+          redirect_id: @redirect&.id,
+          page_id: Current.page&.id,
           user_agent: request.user_agent,
-          referrer: request.referrer,
           ip_address: request.remote_ip,
-          page_id: Panda::CMS::Current.page&.id,
-          current_user_id: current_user&.id,
-          params: params.to_unsafe_h.except(:controller, :action, :path),
-          visited_at: Time.zone.now
+          referer: request.referer, # TODO: Fix the naming of this column
+          params: request.parameters
         )
       end
 

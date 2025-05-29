@@ -47,3 +47,8 @@ en:
         text: Menu Item
         external_url: External URL
         panda/cms_page_id: Page
+      panda/cms/user:
+        firstname: First Name
+        lastname: Last Name
+        email: Email Address
+        current_theme: Theme

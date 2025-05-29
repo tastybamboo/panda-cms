@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_01_07_052190) do
+ActiveRecord::Schema[8.0].define(version: 2025_05_04_221812) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -20,27 +20,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_01_07_052190) do
   create_enum "panda_cms_menu_kind", ["static", "auto"]
   create_enum "panda_cms_page_status", ["active", "draft", "hidden", "archived"]
   create_enum "panda_cms_post_status", ["active", "draft", "hidden", "archived"]
-
-  create_table "action_text_rich_text_versions", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.string "item_type", null: false
-    t.string "item_id", null: false
-    t.string "event", null: false
-    t.string "whodunnit"
-    t.jsonb "object"
-    t.jsonb "object_changes"
-    t.datetime "created_at"
-    t.index ["item_type", "item_id"], name: "index_action_text_rich_text_versions_on_item_type_and_item_id"
-  end
-
-  create_table "action_text_rich_texts", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.string "name", null: false
-    t.text "body"
-    t.string "record_type", null: false
-    t.uuid "record_id", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["record_type", "record_id", "name"], name: "index_action_text_rich_texts_uniqueness", unique: true
-  end
 
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
@@ -68,17 +47,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_01_07_052190) do
     t.bigint "blob_id", null: false
     t.string "variation_digest", null: false
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
-  end
-
-  create_table "panda_cms_block_content_versions", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.string "item_type", null: false
-    t.string "item_id", null: false
-    t.string "event", null: false
-    t.string "whodunnit"
-    t.jsonb "object"
-    t.jsonb "object_changes"
-    t.datetime "created_at"
-    t.index ["item_type", "item_id"], name: "idx_on_item_type_item_id_0679a5111f"
   end
 
   create_table "panda_cms_block_contents", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -149,17 +117,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_01_07_052190) do
     t.index ["start_page_id"], name: "index_panda_cms_menus_on_start_page_id"
   end
 
-  create_table "panda_cms_page_versions", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.string "item_type", null: false
-    t.string "item_id", null: false
-    t.string "event", null: false
-    t.string "whodunnit"
-    t.jsonb "object"
-    t.jsonb "object_changes"
-    t.datetime "created_at"
-    t.index ["item_type", "item_id"], name: "index_panda_cms_page_versions_on_item_type_and_item_id"
-  end
-
   create_table "panda_cms_pages", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "title"
     t.string "path"
@@ -177,17 +134,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_01_07_052190) do
     t.index ["parent_id"], name: "index_panda_cms_pages_on_parent_id"
     t.index ["rgt"], name: "index_panda_cms_pages_on_rgt"
     t.index ["status"], name: "index_panda_cms_pages_on_status"
-  end
-
-  create_table "panda_cms_post_versions", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.string "item_type", null: false
-    t.string "item_id", null: false
-    t.string "event", null: false
-    t.string "whodunnit"
-    t.jsonb "object"
-    t.jsonb "object_changes"
-    t.datetime "created_at"
-    t.index ["item_type", "item_id"], name: "index_panda_cms_post_versions_on_item_type_and_item_id"
   end
 
   create_table "panda_cms_posts", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -221,17 +167,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_01_07_052190) do
     t.index ["origin_panda_cms_page_id"], name: "index_panda_cms_redirects_on_origin_panda_cms_page_id"
   end
 
-  create_table "panda_cms_template_versions", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.string "item_type", null: false
-    t.string "item_id", null: false
-    t.string "event", null: false
-    t.string "whodunnit"
-    t.jsonb "object"
-    t.jsonb "object_changes"
-    t.datetime "created_at"
-    t.index ["item_type", "item_id"], name: "index_panda_cms_template_versions_on_item_type_and_item_id"
-  end
-
   create_table "panda_cms_templates", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "name"
     t.string "file_path"
@@ -249,6 +184,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_01_07_052190) do
     t.boolean "admin", default: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "current_theme", default: "default"
   end
 
   create_table "panda_cms_visits", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -266,6 +202,17 @@ ActiveRecord::Schema[8.0].define(version: 2025_01_07_052190) do
     t.index ["page_id"], name: "index_panda_cms_visits_on_page_id"
     t.index ["redirect_id"], name: "index_panda_cms_visits_on_redirect_id"
     t.index ["user_id"], name: "index_panda_cms_visits_on_user_id"
+  end
+
+  create_table "panda_social_instagram_posts", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "instagram_id", null: false
+    t.text "caption"
+    t.datetime "posted_at", null: false
+    t.string "permalink"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["instagram_id"], name: "index_panda_social_instagram_posts_on_instagram_id", unique: true
+    t.index ["posted_at"], name: "index_panda_social_instagram_posts_on_posted_at"
   end
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"

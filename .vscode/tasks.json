@@ -1,123 +1,123 @@
-{
-  "version": "2.0.0",
-  "tasks": [
-    {
-      "label": "bundle install",
-      "type": "shell",
-      "command": "bundle",
-      "args": [
-        "install"
-      ],
-      "options": {
-        "cwd": "${workspaceFolder}"
-      },
-      "group": {
-        "kind": "none"
-      },
-      "presentation": {
-        "reveal": "silent",
-        "revealProblems": "onProblem",
-        "panel": "dedicated",
-        "close": true
-      },
-      "problemMatcher": []
-    },
-    {
-      "label": "bundle update",
-      "type": "shell",
-      "command": "bundle update",
-      "options": {
-        "cwd": "${workspaceFolder}"
-      },
-      "group": {
-        "kind": "none"
-      },
-      "presentation": {
-        "reveal": "silent",
-        "revealProblems": "onProblem",
-        "panel": "dedicated",
-        "close": true
-      },
-      "problemMatcher": []
-    },
-    {
-      "label": "Run bin/dev",
-      "type": "shell",
-      "command": "bundle exec rails app:panda:cms:watch_admin",
-      "options": {
-        "cwd": "${workspaceFolder}"
-      },
-      "group": {
-        "kind": "none"
-      },
-      "presentation": {
-        "reveal": "never",
-        "revealProblems": "onProblem",
-        "panel": "dedicated",
-        "focus": false
-      },
-      "runOptions": {
-        "runOn": "folderOpen"
-      }
-    },
-    {
-      "label": "Run YARD server",
-      "type": "shell",
-      "command": "bundle exec yard server --reload",
-      "options": {
-        "cwd": "${workspaceFolder}"
-      },
-      "group": {
-        "kind": "none"
-      },
-      "presentation": {
-        "reveal": "never",
-        "revealProblems": "onProblem",
-        "panel": "dedicated",
-        "focus": false
-      },
-      "runOptions": {
-        "runOn": "folderOpen"
-      }
-    },
-    {
-      "label": "Run documentation server",
-      "type": "shell",
-      "command": "bundle exec jekyll serve",
-      "options": {
-        "cwd": "${workspaceFolder}/docs"
-      },
-      "group": {
-        "kind": "none"
-      },
-      "presentation": {
-        "reveal": "never",
-        "revealProblems": "onProblem",
-        "panel": "dedicated",
-        "focus": false
-      },
-      "runOptions": {
-        "runOn": "folderOpen"
-      }
-    },
-    {
-      "label": "Run tests",
-      "type": "shell",
-      "command": "bundle exec rspec",
-      "options": {
-        "cwd": "${workspaceFolder}"
-      },
-      "group": {
-        "kind": "none"
-      },
-      "presentation": {
-        "revealProblems": "onProblem",
-        "panel": "dedicated",
-        "close": false,
-        "showReuseMessage": false,
-        "focus": false
-      },
-      "problemMatcher": []
-    }
-  ]
-}
+// {
+//   "version": "2.0.0",
+//   "tasks": [
+//     {
+//       "label": "bundle install",
+//       "type": "shell",
+//       "command": "bundle",
+//       "args": [
+//         "install"
+//       ],
+//       "options": {
+//         "cwd": "${workspaceFolder}"
+//       },
+//       "group": {
+//         "kind": "none"
+//       },
+//       "presentation": {
+//         "reveal": "silent",
+//         "revealProblems": "onProblem",
+//         "panel": "dedicated",
+//         "close": true
+//       },
+//       "problemMatcher": []
+//     },
+//     {
+//       "label": "bundle update",
+//       "type": "shell",
+//       "command": "bundle update",
+//       "options": {
+//         "cwd": "${workspaceFolder}"
+//       },
+//       "group": {
+//         "kind": "none"
+//       },
+//       "presentation": {
+//         "reveal": "silent",
+//         "revealProblems": "onProblem",
+//         "panel": "dedicated",
+//         "close": true
+//       },
+//       "problemMatcher": []
+//     },
+//     {
+//       "label": "Run bin/dev",
+//       "type": "shell",
+//       "command": "bundle exec rails app:panda:cms:watch_admin",
+//       "options": {
+//         "cwd": "${workspaceFolder}"
+//       },
+//       "group": {
+//         "kind": "none"
+//       },
+//       "presentation": {
+//         "reveal": "never",
+//         "revealProblems": "onProblem",
+//         "panel": "dedicated",
+//         "focus": false
+//       },
+//       "runOptions": {
+//         "runOn": "folderOpen"
+//       }
+//     },
+//     {
+//       "label": "Run YARD server",
+//       "type": "shell",
+//       "command": "bundle exec yard server --reload",
+//       "options": {
+//         "cwd": "${workspaceFolder}"
+//       },
+//       "group": {
+//         "kind": "none"
+//       },
+//       "presentation": {
+//         "reveal": "never",
+//         "revealProblems": "onProblem",
+//         "panel": "dedicated",
+//         "focus": false
+//       },
+//       "runOptions": {
+//         "runOn": "folderOpen"
+//       }
+//     },
+//     {
+//       "label": "Run documentation server",
+//       "type": "shell",
+//       "command": "bundle exec jekyll serve",
+//       "options": {
+//         "cwd": "${workspaceFolder}/docs"
+//       },
+//       "group": {
+//         "kind": "none"
+//       },
+//       "presentation": {
+//         "reveal": "never",
+//         "revealProblems": "onProblem",
+//         "panel": "dedicated",
+//         "focus": false
+//       },
+//       "runOptions": {
+//         "runOn": "folderOpen"
+//       }
+//     },
+//     {
+//       "label": "Run tests",
+//       "type": "shell",
+//       "command": "bundle exec rspec",
+//       "options": {
+//         "cwd": "${workspaceFolder}"
+//       },
+//       "group": {
+//         "kind": "none"
+//       },
+//       "presentation": {
+//         "revealProblems": "onProblem",
+//         "panel": "dedicated",
+//         "close": false,
+//         "showReuseMessage": false,
+//         "focus": false
+//       },
+//       "problemMatcher": []
+//     }
+//   ]
+// }

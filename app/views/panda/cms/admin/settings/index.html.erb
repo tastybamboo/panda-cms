@@ -12,6 +12,8 @@
 
   <%= render Panda::CMS::Admin::PanelComponent.new do |panel| %>
     <% panel.with_heading(text: "Integrations") %>
+
+    <p class="text-base leading-loose"><i class="mr-2 text-active fa-brands fa-instagram"></i> <span class="font-medium">Instagram:</span> <%= Panda::CMS.config.instagram[:enabled] ? "Connected (@#{Panda::CMS.config.instagram[:username]})" : "Not Connected" %></p>
   <% end %>
 
   <div class="text-center mt-6 space-y-2">

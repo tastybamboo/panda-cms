@@ -5,7 +5,6 @@ module Panda
     module Admin
       class PagesController < ApplicationController
         before_action :set_initial_breadcrumb, only: %i[index edit new create update]
-        before_action :set_paper_trail_whodunnit, only: %i[create update]
         before_action :authenticate_admin_user!
 
         # Lists all pages which can be managed by the administrator
@@ -34,11 +33,19 @@ module Panda
         # POST /admin/pages
         def create
           page = Panda::CMS::Page.new(page_params)
+
+          # Normalize empty path to nil so presence validation triggers
+          page.path = nil if page.path.blank?
+
+          # Set the full path before validation if we have a parent
+          if page.parent && page.parent.path != "/" && page.path.present?
+            page.path = page.parent.path + page.path
+          end
+
           if page.save
-            page.update(path: page.parent.path + page.path) unless page.parent.path == "/"
             redirect_to edit_admin_page_path(page), notice: "The page was successfully created."
           else
-            flash[:error] = "There was an error creating the page."
+            flash.now[:error] = page.errors.full_messages.to_sentence
             locals = setup_new_page_form(page: page)
             render :new, locals: locals, status: :unprocessable_entity
           end
@@ -76,7 +83,10 @@ module Panda
 
         def setup_new_page_form(page:)
           add_breadcrumb "Add Page", new_admin_page_path
-          {page: page}
+          {
+            page: page,
+            available_templates: Panda::CMS::Template.available
+          }
         end
 
         # Only allow a list of trusted parameters through.

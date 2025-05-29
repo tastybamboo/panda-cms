@@ -1182,10 +1182,6 @@ a.block-link:after {
   pointer-events: none;
 }
 
-.pointer-events-auto {
-  pointer-events: auto;
-}
-
 .visible {
   visibility: visible;
 }
@@ -1250,8 +1246,8 @@ a.block-link:after {
   z-index: 10;
 }
 
-.z-50 {
-  z-index: 50;
+.z-\[9999\] {
+  z-index: 9999;
 }
 
 .col-span-3 {

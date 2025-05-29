@@ -4,13 +4,8 @@ module Panda
     class Template < ApplicationRecord
       self.table_name = "panda_cms_templates"
 
-      # Enables versioning for the Template model using the `has_paper_trail` gem.
-      has_paper_trail versions: {
-        class_name: "Panda::CMS::TemplateVersion"
-      }
-
       # Associations
-      has_many :pages, class_name: "Panda::CMS::Page", dependent: :restrict_with_error, inverse_of: :template, foreign_key: :panda_cms_template_id
+      has_many :pages, class_name: "Panda::CMS::Page", dependent: :restrict_with_error, inverse_of: :template, foreign_key: :panda_cms_template_id, counter_cache: :pages_count
       has_many :blocks, class_name: "Panda::CMS::Block", dependent: :restrict_with_error, inverse_of: :template, foreign_key: :panda_cms_template_id
       has_many :block_contents, through: :blocks
 
@@ -26,11 +21,15 @@ module Panda
 
       # Scopes
       scope :available, -> {
-        where("max_uses IS NULL OR (pages_count IS NOT NULL AND pages_count < max_uses)")
+        where("max_uses IS NULL OR (max_uses > 0 AND pages_count < max_uses)")
       }
 
       def self.default
         find_by(file_path: "layouts/page")
+      end
+
+      def self.reset_counter_cache
+        find_each { |template| template.update_column(:pages_count, template.pages.count) }
       end
 
       # Generate missing blocks for all templates

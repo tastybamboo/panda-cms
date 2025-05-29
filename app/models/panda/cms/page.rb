@@ -7,15 +7,9 @@ module Panda
       self.table_name = "panda_cms_pages"
       self.implicit_order_column = "lft"
 
-      has_paper_trail versions: {
-        class_name: "Panda::CMS::PageVersion"
-      }
-
-      after_save :after_save
-
-      belongs_to :template, foreign_key: :panda_cms_template_id, class_name: "Panda::CMS::Template", inverse_of: :pages, optional: false, counter_cache: :pages_count
-      has_many :blocks, through: :template
-      has_many :block_contents, foreign_key: :panda_cms_page_id, class_name: "Panda::CMS::BlockContent", inverse_of: :page
+      belongs_to :template, class_name: "Panda::CMS::Template", foreign_key: :panda_cms_template_id
+      has_many :block_contents, class_name: "Panda::CMS::BlockContent", foreign_key: :panda_cms_page_id, dependent: :destroy
+      has_many :blocks, through: :block_contents
       has_many :menu_items, foreign_key: :panda_cms_page_id, class_name: "Panda::CMS::MenuItem", inverse_of: :page
       has_many :menus, through: :menu_items
       has_many :menus_of_parent, through: :parent, source: :menus
@@ -25,8 +19,9 @@ module Panda
 
       validates :path,
         presence: true,
-        uniqueness: true,
         format: {with: /\A\/.*\z/, message: "must start with a forward slash"}
+
+      validate :validate_unique_path_in_scope
 
       validates :parent,
         presence: true,
@@ -44,6 +39,9 @@ module Panda
         archived: "archived"
       }
 
+      # Callbacks
+      after_save :handle_after_save
+
       #
       # Update any menus which include this page or its parent as a menu item
       #
@@ -57,13 +55,28 @@ module Panda
 
       private
 
+      def validate_unique_path_in_scope
+        # Skip validation if path is not present (other validations will catch this)
+        return if path.blank?
+
+        # Find any other pages with the same path
+        other_page = self.class.where(path: path).where.not(id: id).first
+
+        if other_page
+          # If there's another page with the same path, check if it has a different parent
+          if other_page.parent_id == parent_id
+            errors.add(:path, "has already been taken in this section")
+          end
+        end
+      end
+
       #
       # After save callbacks
       #
       # @return nil
       # @visibility private
       #
-      def after_save
+      def handle_after_save
         generate_content_blocks
         update_existing_menu_items
         update_auto_menus

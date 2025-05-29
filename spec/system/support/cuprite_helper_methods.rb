@@ -97,6 +97,54 @@ module CupriteHelpers
   def click_on_selectors(*css_selectors)
     css_selectors.each do |selector|
       page.driver.browser.at_css(selector).click
+      sleep 0.1 # Add a small delay to allow JavaScript to run
     end
+  end
+
+  # Wait for a field to have a specific value
+  # @param field_name [String] The field name or label
+  # @param value [String] The expected value
+  # @param timeout [Integer] Maximum time to wait in seconds (default: 5)
+  def wait_for_field_value(field_name, value, timeout: 5)
+    start_time = Time.now
+    while Time.now - start_time < timeout
+      return true if page.has_field?(field_name, with: value)
+      sleep 0.1
+    end
+    false
+  end
+
+  # Trigger slug generation and wait for the result
+  def trigger_slug_generation(title)
+    # First clear any existing value
+    find("input#page_title").set("")
+
+    # Type the title character by character to simulate real typing
+    title.each_char do |char|
+      find("input#page_title").send_keys(char)
+      sleep 0.05 # Small delay between characters
+    end
+
+    # Now trigger the blur event
+    find("input#page_title").send_keys(:tab)
+
+    # Get parent path if one is selected
+    parent_path = ""
+    if page.has_select?("Parent") && page.has_select?("Parent", selected: /.+/)
+      parent_text = page.find("select#page_parent_id option[selected]").text
+      if parent_text =~ /.*\((.*)\)$/
+        parent_path = $1.sub(/\/$/, "") # Remove trailing slash if present
+      end
+    end
+
+    # Wait for the expected URL to appear
+    slug = title.downcase.gsub(/[^a-z0-9]+/, "-").gsub(/^-+|-+$/, "")
+    expected_url = parent_path.empty? ? "/#{slug}" : "#{parent_path}/#{slug}"
+
+    # Add debug output
+    puts_debug "Waiting for URL field to have value: #{expected_url}"
+
+    # Wait longer for the value to appear
+    wait_for_field_value("URL", expected_url, timeout: 10)
   end
 end

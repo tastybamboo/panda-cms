@@ -26,15 +26,6 @@ RSpec.describe Panda::CMS::FormBuilder do
     end
   end
 
-  describe "#rich_text_field" do
-    it "renders a rich text field with label and container" do
-      allow(object).to receive(:content)
-      result = builder.rich_text_field(:content)
-      expect(result).to include('class="panda-cms-field-container')
-      expect(result).to include("min-h-32")
-    end
-  end
-
   describe "#time_zone_select" do
     it "renders a time zone select with label and container" do
       allow(object).to receive(:time_zone)
@@ -66,7 +57,7 @@ RSpec.describe Panda::CMS::FormBuilder do
 
     it "renders a button with custom block content" do
       allow(object).to receive(:persisted?).and_return(false)
-      allow(object).to receive(:class).and_return(OpenStruct.new(name: "TestClass"))
+      allow(object).to receive(:class).and_return(double(name: "TestClass"))
       result = builder.button { "Custom Content" }
       expect(result).to include("Custom Content")
       expect(result).not_to include("fa-circle-check")

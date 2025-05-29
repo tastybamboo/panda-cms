@@ -4,26 +4,24 @@ module Panda
       queue_as :default
 
       def perform(
-        url: nil,
-        user_agent: nil,
-        referrer: nil,
-        ip_address: nil,
+        path:,
+        user_id: nil,
+        redirect_id: nil,
         page_id: nil,
-        current_user_id: nil,
-        params: [],
-        visited_at: nil,
-        redirect_id: nil
+        user_agent: nil,
+        ip_address: nil,
+        referer: nil,
+        params: []
       )
         Panda::CMS::Visit.create!(
-          url: url,
-          user_agent: user_agent,
-          referrer: referrer,
-          ip_address: ip_address,
-          page_id: page_id,
+          url: path,
+          user_id: user_id,
           redirect_id: redirect_id,
-          user_id: current_user_id,
-          params: params,
-          visited_at: visited_at
+          page_id: page_id,
+          user_agent: user_agent,
+          ip_address: ip_address,
+          referrer: referer, # TODO: Fix the naming of this column
+          params: params
         )
       end
     end

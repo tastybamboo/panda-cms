@@ -18,6 +18,19 @@ module Panda
     setting :editor_js_tools, default: []
     setting :editor_js_tool_config, default: {}
 
+    setting :instagram, default: {
+      enabled: false,
+      username: nil,
+      access_token: nil
+    }
+
+    setting :analytics, default: {
+      google_analytics: {
+        enabled: false,
+        tracking_id: nil
+      }
+    }
+
     def self.root_path
       config.admin_path
     end

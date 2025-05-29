@@ -36,15 +36,12 @@ RSpec.describe Panda::CMS::User, type: :model do
   end
 
   describe ".for_select_list" do
-    before do
-      create(:user, firstname: "Alice", lastname: "Smith")
-      create(:user, firstname: "Bob", lastname: "Jones")
-    end
-
     it "returns users formatted for select list" do
+      alice = create(:user, firstname: "Alice", lastname: "Smith")
+
       select_list = described_class.for_select_list
       expect(select_list).to be_an(Array)
-      expect(select_list.first).to contain_exactly("Alice Smith", an_instance_of(String))
+      expect(select_list).to include(["Alice Smith", alice.id])
     end
   end
 end

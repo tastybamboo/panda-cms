@@ -6,10 +6,6 @@ require "capybara/rspec"
 Dir[File.join(__dir__, "system/support/**/*.rb")].sort.each { |file| require file }
 
 RSpec.configure do |config|
-  config.before(:each, type: :system) do
-    driven_by :better_cuprite
-  end
-
   config.before(:suite) do
     # Clean up old screenshots
     FileUtils.rm_rf(Rails.root.join("tmp", "capybara"))

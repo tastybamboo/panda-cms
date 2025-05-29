@@ -44,8 +44,8 @@ For initial setup, run:
 
 ```shell
 bundle install
-rails generate panda-cms:install
-rails panda-cms:install:migrations
+rails generate panda_cms:install
+rails panda_cms:install:migrations
 rails db:seed
 ```
 
@@ -57,7 +57,7 @@ If you don't want to use GitHub to login (or are at a URL other than http://loca
 
 This is a non-exhuastive list (there will be many more):
 
-* To date, this has only been tested with Rails 7.1 and 7.2.
+* To date, this has only been tested with Rails 7.1, 7.2 and 8.0
 * There may be conflicts if you're not using Tailwind CSS on the frontend. Please report this.
 
 ## Contributing
@@ -70,4 +70,4 @@ See our [Contributing Guidelines](https://docs.pandacms.io/developers/contributi
 
 The gem is available as open source under the terms of the [BSD-3-Clause License](https://opensource.org/licenses/bsd-3-clause).
 
-Copyright © 2024, Panda Software Limited.
+Copyright © 2024 - 2025, Panda Software Limited.

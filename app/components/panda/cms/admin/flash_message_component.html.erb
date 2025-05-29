@@ -1,4 +1,4 @@
-<div class="fixed top-2 right-2 z-50 p-2 space-y-4 w-full max-w-sm pointer-events-none sm:items-end"
+<div class="fixed top-2 right-2 z-[9999] p-2 space-y-4 w-full max-w-sm sm:items-end"
      data-controller="alert"
      <% if @temporary %> data-alert-dismiss-after-value="3000"<% end %>
      data-transition-enter="ease-in-out duration-500"
@@ -7,7 +7,7 @@
      data-transition-leave="ease-in-out duration-500"
      data-transition-leave-from="translate-x-0 opacity-100"
      data-transition-leave-to="translate-x-full opacity-0">
-  <div class="overflow-hidden w-full max-w-sm bg-white rounded-lg ring-1 ring-black ring-opacity-5 shadow-lg pointer-events-auto">
+  <div class="overflow-hidden w-full max-w-sm bg-white rounded-lg ring-1 ring-black ring-opacity-5 shadow-lg">
     <div class="p-4">
       <div class="flex items-start">
         <div class="flex-shrink-0">

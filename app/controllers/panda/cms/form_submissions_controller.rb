@@ -1,6 +1,8 @@
 module Panda
   module CMS
     class FormSubmissionsController < ApplicationController
+      invisible_captcha only: [:create]
+
       def create
         vars = params.except(:authenticity_token, :controller, :action, :id)
 

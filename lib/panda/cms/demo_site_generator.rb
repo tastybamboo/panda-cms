@@ -34,10 +34,31 @@ module Panda
       #
       # @return [Hash] A hash containing the created pages
       def create_pages
-        @pages[:home] = Panda::CMS::Page.find_or_create_by({path: "/", title: "Home", template: @templates[:homepage]})
-        @pages[:about] = Panda::CMS::Page.find_or_create_by({path: "/about", title: "About", template: @templates[:page], parent: @pages[:home]})
-        @pages[:not_found] = Panda::CMS::Page.find_or_create_by({path: "/404", title: "Page Not Found", template: @templates[:page], parent: @pages[:home], status: "hidden"})
-        @pages[:internal_error] = Panda::CMS::Page.find_or_create_by({path: "/500", title: "Internal Server Error", template: @templates[:page], parent: @pages[:home], status: "hidden"})
+        @pages[:home] = Panda::CMS::Page.find_or_create_by({
+          path: "/",
+          title: "Home",
+          panda_cms_template_id: @templates[:homepage].id
+        })
+        @pages[:about] = Panda::CMS::Page.find_or_create_by({
+          path: "/about",
+          title: "About",
+          panda_cms_template_id: @templates[:page].id,
+          parent: @pages[:home]
+        })
+        @pages[:not_found] = Panda::CMS::Page.find_or_create_by({
+          path: "/404",
+          title: "Page Not Found",
+          panda_cms_template_id: @templates[:page].id,
+          parent: @pages[:home],
+          status: "hidden"
+        })
+        @pages[:internal_error] = Panda::CMS::Page.find_or_create_by({
+          path: "/500",
+          title: "Internal Server Error",
+          panda_cms_template_id: @templates[:page].id,
+          parent: @pages[:home],
+          status: "hidden"
+        })
 
         Panda::CMS::Page.reset_column_information
         Panda::CMS::Page.rebuild!
