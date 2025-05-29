@@ -269,7 +269,6 @@ module EditorHelpers
       end
     end
 
-
     expect(found).to be(true), "Expected to find '#{text}' in editor content"
   end
 

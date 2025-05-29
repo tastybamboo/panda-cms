@@ -87,6 +87,7 @@ jobs:
           cd spec/dummy
           bundle exec rails db:drop
           bundle exec rails db:setup
+          bundle exec rails db:migrate
           cd ../../
           xvfb-run -a bundle exec rspec --tag ~skip -f j -o tmp/rspec_results.json -f p
       - name: Keep screenshots from failed system tests
