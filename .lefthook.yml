@@ -1,30 +1,25 @@
 ---
 assert_lefthook_installed: true
 colors: true
-files: git diff --name-only main
-pre-commit: ["seclint"]
-seclint:
-  commands:
-    brakeman:
+pre-commit:
+  jobs:
+    - name: brakeman
       run: brakeman --no-pager --no-progress --quiet
-    broken-links:
-      # Exclude links to GitHub private repositories for now
-      run: lychee . --exclude http://localhost:3000 --exclude file://
-    bundle-audit:
+    - name: broken-links
+      run: lychee . --exclude http://localhost:3000 --exclude https://portal.azure.com  --exclude file://
+    - name: bundle-audit
       run: bundle exec bundle-audit --update
-    bundle-outdated:
+    - name: bundle-outdated
       run: bundle outdated --strict
-    erblint:
+    - name: erblint
       run: bundle exec erb_lint app/views --lint-all
-    fasterer:
+    - name: fasterer
       run: bundle exec fasterer
-    rustywind:
+    - name: rustywind
       run: rustywind .
-    standardrb:
+    - name: standardrb
       run: bundle exec standardrb
-    yamllint:
+    - name: yamllint
       run: yamllint -c .yamllint .
-    zeitwork:
+    - name: zeitwork
       run: rake app:zeitwerk:check
-  name: Security & Linters
-  parallel: true

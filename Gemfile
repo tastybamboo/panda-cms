@@ -19,6 +19,7 @@ group :development, :test do
   gem "danger-rubocop"
   gem "danger-simplecov_json"
   gem "danger-todoist"
+  gem "database_cleaner-active_record"
   gem "debug"
   gem "erb_lint"
   gem "factory_bot_rails"

@@ -21,14 +21,14 @@ RSpec.describe "Editor.js resources", type: :system do
 
     # Directly attempt to load each Editor.js script
     scripts = [
-      '/panda-cms-assets/editor-js/core/editorjs.min.js',
-      '/panda-cms-assets/editor-js/plugins/paragraph.min.js',
-      '/panda-cms-assets/editor-js/plugins/header.min.js',
-      '/panda-cms-assets/editor-js/plugins/nested-list.min.js',
-      '/panda-cms-assets/editor-js/plugins/quote.min.js',
-      '/panda-cms-assets/editor-js/plugins/simple-image.min.js',
-      '/panda-cms-assets/editor-js/plugins/table.min.js',
-      '/panda-cms-assets/editor-js/plugins/embed.min.js'
+      "/panda-cms-assets/editor-js/core/editorjs.min.js",
+      "/panda-cms-assets/editor-js/plugins/paragraph.min.js",
+      "/panda-cms-assets/editor-js/plugins/header.min.js",
+      "/panda-cms-assets/editor-js/plugins/nested-list.min.js",
+      "/panda-cms-assets/editor-js/plugins/quote.min.js",
+      "/panda-cms-assets/editor-js/plugins/simple-image.min.js",
+      "/panda-cms-assets/editor-js/plugins/table.min.js",
+      "/panda-cms-assets/editor-js/plugins/embed.min.js"
     ]
 
     # Load each script sequentially
@@ -53,7 +53,7 @@ RSpec.describe "Editor.js resources", type: :system do
     sleep(2)
 
     # Check which JavaScript objects are available
-    result = page.evaluate_script(<<~JS)
+    page.evaluate_script(<<~JS)
       (function() {
         var objects = {
           editorjs: typeof EditorJS !== 'undefined',

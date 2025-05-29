@@ -3,7 +3,7 @@ module Panda
     class MinimalTestSeed
       def self.load
         # Create a single admin user if it doesn't exist
-        unless Panda::CMS::User.exists?(email: 'admin@example.com')
+        unless Panda::CMS::User.exists?(email: "admin@example.com")
           Panda::CMS::User.create!(
             firstname: "Admin",
             lastname: "User",
@@ -14,7 +14,7 @@ module Panda
         end
 
         # Create a regular user if it doesn't exist
-        unless Panda::CMS::User.exists?(email: 'regular@example.com')
+        unless Panda::CMS::User.exists?(email: "regular@example.com")
           Panda::CMS::User.create!(
             firstname: "Regular",
             lastname: "User",
@@ -25,18 +25,18 @@ module Panda
         end
 
         # Create a minimal homepage if none exists
-        unless Panda::CMS::Page.exists?(path: '/')
+        unless Panda::CMS::Page.exists?(path: "/")
           # Create a minimal template first if needed
           template = Panda::CMS::Template.find_or_create_by!(
-            name: 'Minimal Test Template',
-            description: 'A minimal template for tests',
-            html: '<html><body><header>{{header}}</header><main>{{main}}</main><footer>{{footer}}</footer></body></html>'
+            name: "Minimal Test Template",
+            description: "A minimal template for tests",
+            html: "<html><body><header>{{header}}</header><main>{{main}}</main><footer>{{footer}}</footer></body></html>"
           )
 
           # Create the homepage
           Panda::CMS::Page.create!(
-            title: 'Home',
-            path: '/',
+            title: "Home",
+            path: "/",
             template: template,
             published: true
           )

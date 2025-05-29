@@ -40,16 +40,6 @@ RSpec.describe "Adding a post", type: :system do
     add_editor_list(["Item 1", "Item 2"])
     add_editor_quote("Test quote", "Test caption")
 
-    puts_debug "\n=== Debug: Content before submission ==="
-    puts_debug "Editor exists: #{page.evaluate_script('typeof window.editor !== "undefined" && window.editor !== null')}"
-    puts_debug "\nVisible content in editor:"
-    all(".ce-block").each_with_index do |block, index|
-      puts_debug "Block #{index + 1}:"
-      puts_debug "Text: #{block.text}"
-      puts_debug "Classes: #{block["class"]}"
-    end
-    puts_debug "=== End Debug ===\n"
-
     click_button "Create Post"
 
     expect(page).to have_content("Title can't be blank", wait: 1)

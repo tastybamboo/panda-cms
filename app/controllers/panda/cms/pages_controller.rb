@@ -69,7 +69,7 @@ module Panda
         # Ignore visits from bots (TODO: make this configurable)
         return true if /bot/i.match?(request.user_agent)
         # Ignore visits from Honeybadger
-        return true if request.headers.to_h.key? "Honeybadger-Token" || request.user_agent == "Honeybadger Uptime Check"
+        return true if request.headers.to_h.key?("Honeybadger-Token") || request.user_agent == "Honeybadger Uptime Check"
         # Ignore visits where we're asking for PHP files
         return true if request.path.ends_with?(".php")
         # Otherwise, record the visit
@@ -98,7 +98,6 @@ module Panda
           )
         end
       end
-
     end
   end
 end

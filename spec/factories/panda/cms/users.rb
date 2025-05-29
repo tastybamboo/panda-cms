@@ -1,6 +1,6 @@
 FactoryBot.define do
   factory :panda_cms_user, class: "Panda::CMS::User", aliases: [:user] do
-    sequence(:email) { |n| "user#{n}@example.com" }
+    sequence(:email) { |n| "#{firstname}_#{lastname}_#{n}@example.com" }
     firstname { "John" }
     lastname { "Doe" }
     image_url { "https://example.com/avatar.jpg" }

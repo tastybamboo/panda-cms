@@ -11,7 +11,7 @@ module Panda
         # @type GET
         # @return void
         def edit
-          render :edit, locals: { user: current_user }
+          render :edit, locals: {user: current_user}
         end
 
         # Updates the current user's profile
@@ -19,9 +19,9 @@ module Panda
         # @return void
         def update
           if current_user.update(user_params)
-            redirect_to edit_admin_my_profile_path, flash: { success: "Your profile has been updated successfully." }
+            redirect_to edit_admin_my_profile_path, flash: {success: "Your profile has been updated successfully."}
           else
-            render :edit, locals: { user: current_user }, status: :unprocessable_entity
+            render :edit, locals: {user: current_user}, status: :unprocessable_entity
           end
         end
 

@@ -22,6 +22,7 @@ abort("The Rails environment is running in production mode!") if Rails.env.produ
 require "rspec/rails"
 
 # Add additional requires below this line. Rails is not loaded until this point!
+require "database_cleaner/active_record"
 require "shoulda/matchers"
 require "capybara"
 require "capybara/rspec"
@@ -100,7 +101,7 @@ RSpec.configure do |config|
   # Print the 10 slowest examples and example groups at the
   # end of the spec run, to help surface which specs are running
   # particularly slow.
-  # config.profile_examples = 10
+  config.profile_examples = 10
 
   # Run specs in random order to surface order dependencies. If you find an
   # order dependency and want to debug it, you can fix the order by providing
@@ -117,8 +118,8 @@ RSpec.configure do |config|
     end
   end
 
-  config.include ViewComponent::TestHelpers, type: :view_component
-  config.include Capybara::RSpecMatchers, type: :view_component
+  # config.include ViewComponent::TestHelpers, type: :view_component
+  # config.include Capybara::RSpecMatchers, type: :view_component
   config.include FactoryBot::Syntax::Methods
 
   if defined?(Bullet) && Bullet.enable?
@@ -135,7 +136,13 @@ RSpec.configure do |config|
   OmniAuth.config.test_mode = true
 
   config.before(:suite) do
-    # Load seeds before running the test suite
+    DatabaseCleaner.clean_with :transaction
     Rails.application.load_seed
+  end
+
+  config.around(:each) do |example|
+    DatabaseCleaner.cleaning do
+      example.run
+    end
   end
 end

@@ -32,10 +32,10 @@ RSpec.describe "Admin profile management", type: :system do
 
     expect(page).to have_content("Your profile has been updated successfully")
     expect(page).to have_select("Theme", selected: "Sky")
-    
+
     # Wait for theme to be applied
     using_wait_time(5) do
-      expect(page.find('html')['data-theme']).to eq("sky")
+      expect(page.find("html")["data-theme"]).to eq("sky")
     end
   end
 

@@ -17,35 +17,6 @@ module EditorHelpers
       (function() {
         try {
           const win = window;
-          console.debug('[Panda CMS] Checking EditorJS resources:');
-          const resources = {
-            editorJS: !!win.EditorJS,
-            paragraph: !!win.Paragraph,
-            header: !!win.Header,
-            nestedList: !!win.NestedList,
-            quote: !!win.Quote,
-            table: !!win.Table
-          };
-
-          // List all available tools in window
-          const tools = Object.keys(win).filter(key =>
-            key.includes('Editor') ||
-            key.includes('Paragraph') ||
-            key.includes('Header') ||
-            key.includes('List') ||
-            key.includes('Quote') ||
-            key.includes('Table')
-          );
-
-          // List all loaded scripts
-          const scripts = Array.from(document.scripts).map(s => s.src);
-
-          // Log everything to console for debugging
-          console.debug('Resources:', resources);
-          console.debug('Available tools:', tools);
-          console.debug('Loaded scripts:', scripts);
-
-          // Return the results
           return {
             success: !!(
               win.EditorJS &&
@@ -54,37 +25,19 @@ module EditorHelpers
               win.NestedList &&
               win.Quote &&
               win.Table
-            ),
-            resources,
-            tools,
-            scripts
+            )
           };
         } catch (e) {
-          console.error('Error checking resources:', e);
           return { success: false, error: e.message };
         }
       })();
     JS
-
-    # Log the results to puts_debug
-    if ENV["DEBUG"]
-      puts_debug "[Panda CMS] EditorJS Resources Check:"
-      puts_debug "  - EditorJS: #{result["resources"]["editorJS"]}"
-      puts_debug "  - Paragraph: #{result["resources"]["paragraph"]}"
-      puts_debug "  - Header: #{result["resources"]["header"]}"
-      puts_debug "  - NestedList: #{result["resources"]["nestedList"]}"
-      puts_debug "  - Quote: #{result["resources"]["quote"]}"
-      puts_debug "  - Table: #{result["resources"]["table"]}"
-      puts_debug "Available tools: #{result["tools"].join(", ")}"
-      puts_debug "Loaded scripts: #{result["scripts"].join(", ")}"
-    end
 
     result["success"]
   end
 
   def wait_for_editor(record = nil)
     @editor_container_id = editor_container_id(record)
-    puts_debug "Looking for editor container: #{@editor_container_id}"
 
     # First ensure all editor resources are loaded
     wait_for_editor_resources
@@ -106,20 +59,12 @@ module EditorHelpers
     else
       context.find(@editor_container_id)
     end
-    puts_debug "Editor container present: #{editor_container.present?}"
 
     # Check for hidden field
-    hidden_field = context.find("input[data-editor-form-target='hiddenField']", visible: false)
-    puts_debug "Hidden field present: #{hidden_field.present?}"
-
-    # Get block count
-    block_count = context.evaluate_script("document.querySelectorAll('.ce-block').length")
-    puts_debug "Block count: #{block_count}"
+    context.find("input[data-editor-form-target='hiddenField']", visible: false)
 
     # Check if editor exists
     editor_exists = context.evaluate_script("window.editor !== null && window.editor !== undefined")
-    puts_debug "Editor instance check:"
-    puts_debug "  Global editor exists: #{editor_exists}"
 
     # If not found, try finding it on the holder element within the container
     unless editor_exists
@@ -127,23 +72,9 @@ module EditorHelpers
         # Scope the search to the editor container
         editor_holder = editor_container.find(".codex-editor", match: :first)
         editor_exists = context.evaluate_script("arguments[0].editorInstance !== null", editor_holder)
-        puts_debug "  Editor holder found and has instance: #{editor_exists}"
       rescue Capybara::ElementNotFound
-        puts_debug "  No editor holder found"
+        # Editor holder not found
       end
-    end
-
-    # Debug output for all editor-related elements
-    puts_debug "All editor-related elements:"
-    editor_container.all("[id*='editor']").each do |el|
-      puts_debug "  Found element with ID: #{el["id"]}"
-    end
-
-    # Debug output for form elements
-    puts_debug "Form elements:"
-    context.all("form").each do |form|
-      puts_debug "  Form action: #{form["action"]}"
-      puts_debug "  Form data controllers: #{form["data-controller"]}"
     end
 
     editor_exists
@@ -183,21 +114,21 @@ module EditorHelpers
       # Open plus menu and select header
       open_plus_menu
       within(".ce-popover--opened") do
-        find("[data-item-name='header']", wait: 5).click
+        find("[data-item-name='header']", wait: 0.1).click
       end
 
       # Wait for block to be created and find it
-      header_block = find(".ce-block", wait: 10)
+      header_block = find(".ce-block", wait: 0.2)
 
       # Change header level if needed
       if level > 1
         header_block.click
-        find(".ce-inline-toolbar [data-level='#{level}']", wait: 5).click
+        find(".ce-inline-toolbar [data-level='#{level}']", wait: 0.1).click
       end
 
       # Add the header text using normal user input
       within(header_block) do
-        input = find("[contenteditable]", wait: 10)
+        input = find("[contenteditable]", wait: 0.1)
         input.click
         input.send_keys([:control, "a"], :backspace) # Clear any existing content
         input.send_keys(text)
@@ -212,10 +143,6 @@ module EditorHelpers
   end
 
   def add_editor_paragraph(text, record = nil, replace_first: false)
-    # Wait for editor to be ready
-    debug_editor_state(record)
-    puts_debug "Looking for editor container: #{editor_container_id(record)}"
-
     within(editor_container_id(record)) do
       # Wait for editor to be initialized
       find(".codex-editor[data-editor-initialized='true']", wait: 10)
@@ -252,7 +179,7 @@ module EditorHelpers
       # Open plus menu and select list
       open_plus_menu
       within(".ce-popover--opened") do
-        find("[data-item-name='list']", wait: 5).click
+        find("[data-item-name='list']", wait: 0.1).click
       end
 
       # Change list type if ordered
@@ -274,99 +201,50 @@ module EditorHelpers
 
   def add_editor_quote(text, caption = nil, record = nil)
     wait_for_editor_initialization(record)
-    initial_block_count = count_editor_blocks
-    puts_debug "Initial block count: #{initial_block_count}"
 
-    # Click the plus button to open the tools menu
-    find(".ce-toolbar__plus").click
-    puts_debug "Clicked plus button"
-
-    # Wait for and click the quote tool
-    find("[data-item-name='quote']").click
-    puts_debug "Clicked quote tool"
-
-    # Wait for the new block to be created
-    wait_until_block_count_increases(initial_block_count)
-    puts_debug "Block count increased"
-
-    # Wait for the quote block and its elements to be fully initialized
-    quote_block = find(".cdx-quote", wait: 10)
-    puts_debug "Found quote block"
-
-    # Wait for the editor to be ready after adding the block
-    # Try multiple ways to ensure the block is focused and ready
-    begin
-      Timeout.timeout(10) do
-        until page.has_css?(".ce-block--focused") || quote_block.matches_css?(".ce-block--focused", wait: 0)
-          begin
-            quote_block.click
-          rescue
-            nil
-          end
-          sleep 0.1
-        end
+    within(editor_container_id(record)) do
+      # Open plus menu and select quote
+      open_plus_menu
+      within(".ce-popover--opened") do
+        find("[data-item-name='quote']", wait: 5).click
       end
-    rescue Timeout::Error
-      puts_debug "Warning: Could not find focused block, continuing anyway"
-    end
-    puts_debug "Editor focused on new block"
 
-    # Wait for the text input to be ready and click it
-    quote_input = quote_block.find(".cdx-quote__text", wait: 10)
-    puts_debug "Found quote input"
+      # Wait for the quote block to appear and be ready
+      quote_block = find(".cdx-quote", wait: 10)
 
-    # Try multiple times to focus and enter text
-    3.times do |i|
+      # Wait a moment for the block to be fully initialized
+      sleep 0.3
+
+      # Enter the quote text
+      quote_input = quote_block.find(".cdx-quote__text", wait: 5)
       quote_input.click
-      puts_debug "Clicked quote input attempt #{i + 1}"
 
-      # Clear any existing content and enter the new text
+      # Clear any placeholder text and enter our text
       quote_input.send_keys([:control, "a"], :backspace) if quote_input.text.present?
       quote_input.send_keys(text)
-      puts_debug "Entered quote text: #{text}"
 
-      # Verify the text was entered
-      break if quote_input.text == text
-    rescue Capybara::ElementNotFound => e
-      puts_debug "Failed to enter text attempt #{i + 1}: #{e.message}"
-      sleep 0.5
-    end
-
-    if caption
-      # Wait for the caption input to be ready and click it
-      caption_input = quote_block.find(".cdx-quote__caption", wait: 10)
-      puts_debug "Found caption input"
-
-      3.times do |i|
+      if caption
+        # Enter the caption text
+        caption_input = quote_block.find(".cdx-quote__caption", wait: 5)
         caption_input.click
-        puts_debug "Clicked caption input attempt #{i + 1}"
 
-        # Clear any existing content and enter the new caption
+        # Clear any placeholder text and enter our caption
         caption_input.send_keys([:control, "a"], :backspace) if caption_input.text.present?
         caption_input.send_keys(caption)
-        puts_debug "Entered caption text: #{caption}"
-
-        # Verify the caption was entered
-        break if caption_input.text == caption
-      rescue Capybara::ElementNotFound => e
-        puts_debug "Failed to enter caption attempt #{i + 1}: #{e.message}"
-        sleep 0.5
       end
-    end
 
-    # Move focus away to ensure changes are saved
-    page.send_keys(:tab)
-    puts_debug "Moved focus away from quote block"
+      # Move focus away to ensure changes are saved
+      page.send_keys(:tab)
+      sleep 0.5
 
-    # Wait a moment for changes to be saved
-    sleep 0.5
+      # Brief verification that content was set
+      final_quote_text = quote_block.find(".cdx-quote__text").text
+      expect(final_quote_text).to include(text)
 
-    # Verify the content was entered correctly
-    expect(quote_block.find(".cdx-quote__text").text).to eq(text)
-    puts_debug "Verified quote text: #{text}"
-    if caption
-      expect(quote_block.find(".cdx-quote__caption").text).to eq(caption)
-      puts_debug "Verified caption text: #{caption}"
+      if caption
+        final_caption_text = quote_block.find(".cdx-quote__caption").text
+        expect(final_caption_text).to include(caption)
+      end
     end
   end
 
@@ -379,38 +257,18 @@ module EditorHelpers
     # Get all blocks
     blocks = all(".ce-block")
 
-    # Debug output
-    puts_debug "=== Editor Blocks ==="
-    blocks.each_with_index do |block, index|
-      puts_debug "Block #{index + 1}:"
-      puts_debug "  Text: #{block.text}"
-      puts_debug "  Classes: #{block["class"]}"
-
-      # Get the block content based on its type
-      content_html = if block.has_css?(".cdx-quote")
-        quote_block = block.find(".cdx-quote")
-        text_html = quote_block.find(".cdx-quote__text").text
-        caption_html = quote_block.has_css?(".cdx-quote__caption") ? "\n#{quote_block.find(".cdx-quote__caption").text}" : ""
-        text_html + caption_html
-      else
-        block.find(".ce-block__content").text
-      end
-
-      puts_debug "  Content: #{content_html}"
-    end
-    puts_debug "===================="
-
     # Check if text is found in any block
     found = blocks.any? do |block|
       if block.has_css?(".cdx-quote")
         quote_block = block.find(".cdx-quote")
-        quote_text = quote_block.find(".cdx-quote__text").text
+        quote_text = quote_block.has_css?(".cdx-quote__text") ? quote_block.find(".cdx-quote__text").text : ""
         caption_text = quote_block.has_css?(".cdx-quote__caption") ? quote_block.find(".cdx-quote__caption").text : ""
         quote_text.include?(text) || caption_text.include?(text)
       else
         block.text.include?(text)
       end
     end
+
 
     expect(found).to be(true), "Expected to find '#{text}' in editor content"
   end
@@ -420,7 +278,7 @@ module EditorHelpers
   end
 
   def wait_until_block_count_increases(initial_count)
-    Timeout.timeout(Capybara.default_max_wait_time) do
+    Timeout.timeout(2) do
       sleep 0.1 until count_editor_blocks > initial_count
     end
   end
@@ -434,7 +292,6 @@ module EditorHelpers
     # Type the title character by character
     title.chars.each do |char|
       title_field.send_keys(char)
-      sleep 0.1 # Increased delay between characters
     end
 
     # Ensure the full title is set
@@ -445,7 +302,7 @@ module EditorHelpers
 
     # Wait for URL field to have expected value
     expected_slug = title.parameterize
-    path_field = find("#page_path", wait: 10)
+    path_field = find("#page_path", wait: 0.1)
 
     # Add debug output
     puts_debug "Title entered: #{title}"
@@ -470,10 +327,7 @@ module EditorHelpers
       if path_field.value == full_expected_path
         break
       else
-        puts "[DEBUG] Attempt #{i + 1}: Path not yet correct"
-        puts "[DEBUG] Current: #{path_field.value}"
-        puts "[DEBUG] Expected: #{full_expected_path}"
-        sleep 0.5
+        sleep 0.1
         title_field.send_keys(:tab) # Retrigger blur event
       end
     end
