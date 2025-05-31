@@ -2,8 +2,6 @@ require "rubygems"
 require "panda/core"
 require "panda/cms/railtie"
 
-require "capybara/rspec"
-
 module Panda
   module CMS
     extend Dry::Configurable
