@@ -1,6 +1,7 @@
 require "system_helper"
 
 RSpec.describe "Admin dashboard", type: :system do
+  fixtures :panda_cms_users
   context "when not logged in" do
     it "redirects to login page" do
       visit "/admin"

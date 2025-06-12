@@ -1,0 +1,15 @@
+<%= render Panda::CMS::Admin::ContainerComponent.new do |component| %>
+  <% component.with_heading(text: "Add Page", level: 1) do |heading| %>
+  <% end %>
+  <%= panda_cms_form_with model: page, url: admin_pages_path, method: :post do |f| %>
+    <% options = nested_set_options(Panda::CMS::Page, page) { |i| "#{"-" * i.level} #{i.title} (#{i.path})" } %>
+    <div data-controller="slug">
+      <input type="hidden" value="<%= Panda::CMS::Current.root %>" data-slug-target="existing_root">
+      <%= f.select :parent_id, options, {}, { "data-slug-target": "input_select", "data-action": "change->slug#setPrePath" } %>
+      <%= f.text_field :title, { data: { "slug-target": "input_text", action: "focusout->slug#generatePath" } } %>
+      <%= f.text_field :path, { data: { prefix: Panda::CMS::Current.root, "slug-target": "output_text" } } %>
+      <%= f.collection_select :panda_cms_template_id, Panda::CMS::Template.available, :id, :name %>
+      <%= f.button %>
+    </div>
+  <% end %>
+<% end %>

@@ -2,7 +2,7 @@
 
 require "rails_helper"
 
-RSpec.describe Panda::CMS::HtmlToEditorJsConverter do
+RSpec.describe Panda::CMS::HtmlToEditorJsConverter, :editorjs do
   describe ".convert" do
     subject(:convert) { described_class.convert(html) }
 

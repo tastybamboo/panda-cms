@@ -1,6 +1,6 @@
 require "rails_helper"
 
-RSpec.describe Panda::CMS::EditorJs::Blocks::Image do
+RSpec.describe Panda::CMS::EditorJs::Blocks::Image, :editorjs do
   include EditorJsHelper
 
   let(:image_with_caption) do

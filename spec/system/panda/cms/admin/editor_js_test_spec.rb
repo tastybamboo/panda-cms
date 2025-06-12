@@ -1,6 +1,7 @@
 require "system_helper"
 
-RSpec.describe "Editor.js resources", type: :system do
+RSpec.describe "Editor.js resources", type: :system, editorjs: true do
+  fixtures :panda_cms_users
   it "can load Editor.js resources properly" do
     login_as_admin
 

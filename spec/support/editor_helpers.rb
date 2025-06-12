@@ -334,6 +334,22 @@ module EditorHelpers
     expect(path_field.value).to eq(full_expected_path)
   end
 
+  # Helper method for triggering slug generation in forms
+  def trigger_slug_generation(title)
+    fill_in "Title", with: title
+    # Trigger blur event to generate slug
+    find("#page_title").send_keys(:tab)
+    sleep 0.2 # Give time for JS to run
+  end
+
+  # Helper for clicking on multiple selectors
+  def click_on_selectors(*selectors)
+    selectors.each do |selector|
+      find(selector).click
+      sleep 0.1
+    end
+  end
+
   private
 
   def debug_editor_state(record = nil)

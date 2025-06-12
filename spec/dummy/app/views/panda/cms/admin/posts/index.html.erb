@@ -1,0 +1,20 @@
+<%= render Panda::CMS::Admin::ContainerComponent.new do |component| %>
+  <% component.with_heading(text: "Posts", level: 1) do |heading| %>
+    <% heading.with_button(action: :add, text: "Add Post", link: new_admin_post_path) %>
+  <% end %>
+
+  <%= render Panda::CMS::Admin::TableComponent.new(term: "post", rows: posts) do |table| %>
+    <% table.column("Title") do |post| %>
+      <div>
+        <%= link_to post.title, edit_admin_post_path(post.admin_param), class: "block h-full w-full" %>
+        <span class="block text-xs text-black/60">
+          <%= CGI.unescape("#{Panda::CMS.config.posts[:prefix]}#{post.slug}") %>
+        </span>
+      </div>
+    <% end %>
+    <% table.column("Status") { |post| render Panda::CMS::Admin::TagComponent.new(status: post.status) } %>
+    <% table.column("Published") { |post| render Panda::CMS::Admin::UserActivityComponent.new(at: post.published_at, user: post.author)} %>
+    <% table.column("Last Updated") { |post| render Panda::CMS::Admin::UserActivityComponent.new(at: post.updated_at)} %>
+  <% end %>
+
+<% end %>

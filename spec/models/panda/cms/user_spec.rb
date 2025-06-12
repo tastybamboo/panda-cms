@@ -1,6 +1,7 @@
 require "rails_helper"
 
 RSpec.describe Panda::CMS::User, type: :model do
+  fixtures :panda_cms_users
   describe "validations" do
     it { should validate_presence_of(:firstname) }
     it { should validate_presence_of(:lastname) }
@@ -10,38 +11,41 @@ RSpec.describe Panda::CMS::User, type: :model do
 
   describe "email" do
     it "downcases email before saving" do
-      user = create(:user, email: "TEST@EXAMPLE.COM")
+      user = Panda::CMS::User.create!(
+        firstname: "Test",
+        lastname: "User",
+        email: "TEST@EXAMPLE.COM",
+        admin: false
+      )
       expect(user.email).to eq("test@example.com")
     end
   end
 
   describe "#is_admin?" do
-    let(:user) { build(:user) }
-
     it "returns the admin status" do
-      user.admin = true
-      expect(user.is_admin?).to be true
+      admin_user = panda_cms_users(:admin_user)
+      regular_user = panda_cms_users(:regular_user)
 
-      user.admin = false
-      expect(user.is_admin?).to be false
+      expect(admin_user.is_admin?).to be true
+      expect(regular_user.is_admin?).to be false
     end
   end
 
   describe "#name" do
-    let(:user) { build(:user, firstname: "John", lastname: "Doe") }
-
     it "returns the full name" do
-      expect(user.name).to eq("John Doe")
+      admin_user = panda_cms_users(:admin_user)
+
+      expect(admin_user.name).to eq("Admin User")
     end
   end
 
   describe ".for_select_list" do
     it "returns users formatted for select list" do
-      alice = create(:user, firstname: "Alice", lastname: "Smith")
+      admin_user = panda_cms_users(:admin_user)
 
       select_list = described_class.for_select_list
       expect(select_list).to be_an(Array)
-      expect(select_list).to include(["Alice Smith", alice.id])
+      expect(select_list).to include(["Admin User", admin_user.id])
     end
   end
 end

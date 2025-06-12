@@ -1,6 +1,6 @@
 require "rails_helper"
 
-RSpec.describe Panda::CMS::EditorJs::Blocks::Base do
+RSpec.describe Panda::CMS::EditorJs::Blocks::Base, :editorjs do
   let(:test_data) { {"text" => "<script>alert('xss')</script>Safe content"} }
   let(:test_options) { {custom: "option"} }
 

@@ -1,0 +1,11 @@
+# Menus for Panda CMS
+
+main_menu:
+  name: "Main Menu"
+  created_at: 2025-01-01 00:00:00
+  updated_at: 2025-01-01 00:00:00
+
+footer_menu:
+  name: "Footer Menu"
+  created_at: 2025-01-01 00:00:00
+  updated_at: 2025-01-01 00:00:00

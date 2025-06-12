@@ -1,6 +1,6 @@
 require "rails_helper"
 
-RSpec.describe Panda::CMS::EditorJsContent do
+RSpec.describe Panda::CMS::EditorJsContent, :editorjs do
   let(:test_class) do
     Class.new do
       include ActiveModel::Validations

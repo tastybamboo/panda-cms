@@ -1,6 +1,6 @@
 require "rails_helper"
 
-RSpec.describe Panda::CMS::EditorJs::Renderer do
+RSpec.describe Panda::CMS::EditorJs::Renderer, :editorjs do
   include EditorJsHelper
 
   let(:complex_content) do

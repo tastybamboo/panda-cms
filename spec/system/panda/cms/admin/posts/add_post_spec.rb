@@ -2,6 +2,7 @@ require "system_helper"
 
 RSpec.describe "Adding a post", type: :system do
   include EditorHelpers
+  fixtures :panda_cms_users
 
   before do
     login_as_admin
@@ -10,7 +11,7 @@ RSpec.describe "Adding a post", type: :system do
     wait_for_editor
   end
 
-  it "creates a new post with EditorJS content and maintains content after update" do
+  it "creates a new post with EditorJS content and maintains content after update", :editorjs do
     fill_in "Title", with: "Test Post"
     fill_in "URL", with: "/#{Time.current.strftime("%Y/%m")}/test-post"
 

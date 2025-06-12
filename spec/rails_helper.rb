@@ -50,6 +50,40 @@ FactoryBot.definition_file_paths = [
 ]
 FactoryBot.reload
 
+# Configure fixtures
+# We support both fixtures and factories in tests
+ActiveRecord::FixtureSet.context_class.send :include, ActiveSupport::Testing::TimeHelpers
+
+# Configure fixture set class name mapping for namespaced models
+# This tells Rails which model class to use for each fixture file
+module PandaCmsFixtures
+  def self.get_class_name(fixture_set_name)
+    case fixture_set_name
+    when "panda_cms_users" then "Panda::CMS::User"
+    when "panda_cms_posts" then "Panda::CMS::Post"
+    when "panda_cms_pages" then "Panda::CMS::Page"
+    when "panda_cms_templates" then "Panda::CMS::Template"
+    when "panda_cms_blocks" then "Panda::CMS::Block"
+    when "panda_cms_block_contents" then "Panda::CMS::BlockContent"
+    when "panda_cms_menus" then "Panda::CMS::Menu"
+    when "panda_cms_menu_items" then "Panda::CMS::MenuItem"
+    end
+  end
+end
+
+# Override ActiveRecord::FixtureSet to use our mapping
+class ActiveRecord::FixtureSet
+  alias_method :original_model_class, :model_class
+
+  def model_class
+    if klass = PandaCmsFixtures.get_class_name(@name)
+      klass.constantize
+    else
+      original_model_class
+    end
+  end
+end
+
 Shoulda::Matchers.configure do |config|
   config.integrate do |with|
     with.test_framework :rspec
@@ -89,6 +123,9 @@ RSpec.configure do |config|
   # Allow using focus keywords "f... before a specific test"
   config.filter_run_when_matching :focus
 
+  # Exclude EditorJS tests by default unless specifically requested
+  config.filter_run_excluding :editorjs unless ENV["INCLUDE_EDITORJS"] == "true"
+
   # Log examples to allow using --only-failures and --next-failure
   config.example_status_persistence_file_path = "spec/examples.txt"
 
@@ -120,6 +157,16 @@ RSpec.configure do |config|
 
   # config.include ViewComponent::TestHelpers, type: :view_component
   # config.include Capybara::RSpecMatchers, type: :view_component
+  # Configure fixtures path and enable fixtures
+  config.fixture_paths = [File.expand_path("../fixtures", __FILE__)]
+  config.use_transactional_fixtures = true
+  # Don't load fixtures globally - let tests specify what they need
+  # config.global_fixtures = :all
+
+  # Include fixture helpers
+  config.include FixtureHelpers
+
+  # Still include FactoryBot for legacy tests that haven't been converted yet
   config.include FactoryBot::Syntax::Methods
 
   if defined?(Bullet) && Bullet.enable?
@@ -136,13 +183,14 @@ RSpec.configure do |config|
   OmniAuth.config.test_mode = true
 
   config.before(:suite) do
-    DatabaseCleaner.clean_with :transaction
-    Rails.application.load_seed
+    DatabaseCleaner.clean_with :truncation
   end
 
-  config.around(:each) do |example|
-    DatabaseCleaner.cleaning do
-      example.run
-    end
-  end
+  # Don't use DatabaseCleaner around each test when using transactional fixtures
+  # The transactional fixtures handle the cleanup automatically
+  # config.around(:each) do |example|
+  #   DatabaseCleaner.cleaning do
+  #     example.run
+  #   end
+  # end
 end

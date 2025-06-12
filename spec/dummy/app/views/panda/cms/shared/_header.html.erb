@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html
+  data-theme="<%= Panda::CMS::Current&.user&.current_theme || "default" %>"
+  class="<%= html_class ||= "" %>">
+  <head>
+    <title><%= title_tag %></title>
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <script src="https://kit.fontawesome.com/7835d81e75.js" defer="true" crossorigin="anonymous"></script>
+    <script async src="https://ga.jspm.io/npm:es-module-shims@1.10.0/dist/es-module-shims.js" defer="true" crossorigin="anonymous"></script>
+    <%= stylesheet_link_tag "panda.cms", "data-turbo-track": "reload", media: "all" %>
+    <%= render "panda/cms/shared/importmap" %>
+    <%= render "panda/cms/shared/favicons" %>
+    <%= yield :head %>
+  </head>
+  <body class="overflow-hidden h-full" data-environment="<%= Rails.env %>">
+    <%= render "panda/cms/admin/shared/flash" %>

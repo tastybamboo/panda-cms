@@ -1,14 +1,15 @@
 require "system_helper"
 
 RSpec.describe "Editing a post", type: :system do
+  fixtures :panda_cms_users, :panda_cms_posts
+
   before do
     login_as_admin
-    @other_admin = create(:panda_cms_user, admin: true)
   end
 
-  let!(:post) { create(:panda_cms_post, title: "Original Post Title") }
+  let(:post) { panda_cms_posts(:first_post) }
 
-  it "updates an existing post" do
+  it "updates an existing post", :editorjs do
     visit edit_admin_post_path(post.admin_param)
     expect(page).to have_css("[data-controller='editor-form'] .codex-editor")
 

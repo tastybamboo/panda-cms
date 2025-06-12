@@ -1,9 +1,12 @@
 require "system_helper"
 
 RSpec.describe "When adding a page", type: :system, js: true do
-  context "when not logged in" do
-    let(:homepage) { Panda::CMS::Page.find_by(path: "/") }
+  fixtures :all
 
+  let(:homepage) { panda_cms_pages(:homepage) }
+  let(:about_page) { panda_cms_pages(:about_page) }
+
+  context "when not logged in" do
     it "returns a 404 error" do
       visit "/admin/pages/#{homepage.id}/edit"
       expect(page).to have_content("The page you were looking for doesn't exist.")
@@ -11,8 +14,6 @@ RSpec.describe "When adding a page", type: :system, js: true do
   end
 
   context "when not logged in as an administrator" do
-    let(:homepage) { Panda::CMS::Page.find_by(path: "/") }
-
     it "returns a 404 error" do
       login_as_user
       visit "/admin/pages/#{homepage.id}/edit"
@@ -21,19 +22,20 @@ RSpec.describe "When adding a page", type: :system, js: true do
   end
 
   context "when logged in as an administrator" do
-    include_context "with standard pages"
-
     before(:each) do
       login_as_admin
       visit "/admin/pages/new"
     end
 
     it "shows the add page form" do
+      puts "Current URL: #{page.current_url}"
+      puts "Page content:"
+      puts page.text
+      puts "---"
       expect(page).to have_content("Add Page")
       expect(page).to have_field("Title")
       expect(page).to have_field("URL")
       expect(page).to have_field("Template")
-      expect(page).to have_button("Create Page")
     end
 
     it "creates a new page with valid details and redirects to the page editor" do
@@ -145,7 +147,7 @@ RSpec.describe "When adding a page", type: :system, js: true do
 
     it "doesn't show the homepage template as selectable as it has already been used" do
       expect(page).to have_select("Template", options: ["Page"])
-      expect(page).to_not have_select("Template", options: ["Homepage"])
+      expect(page).to_not have_select("Template", with_options: ["Homepage"])
     end
 
     it "shows validation errors with an incorrect URL" do

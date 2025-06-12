@@ -1,0 +1,109 @@
+# Block Contents for Panda CMS
+
+about_page_plain_text:
+  block: plain_text_block
+  page: about_page
+  content: "Here is some plain text content for the about page."
+  created_at: 2025-01-01 00:00:00
+  updated_at: 2025-01-01 00:00:00
+
+about_page_html_code:
+  block: html_code_block
+  page: about_page
+  content: "<p><strong>Here is some HTML code.</strong></p>"
+  cached_content: "<p><strong>Here is some HTML code.</strong></p>"
+  created_at: 2025-01-01 00:00:00
+  updated_at: 2025-01-01 00:00:00
+
+about_page_main_content:
+  block: main_content_block
+  page: about_page
+  content: |-
+    {
+      "time": 1640995200000,
+      "blocks": [
+        {
+          "type": "paragraph",
+          "data": {
+            "text": "This is the main content of the about page"
+          }
+        }
+      ],
+      "version": "2.30.7",
+      "source": "editorJS"
+    }
+  cached_content: "<p>This is the main content of the about page</p>"
+  created_at: 2025-01-01 00:00:00
+  updated_at: 2025-01-01 00:00:00
+
+services_page_plain_text:
+  block: plain_text_block
+  page: services_page
+  content: "Services page plain text content."
+  created_at: 2025-01-01 00:00:00
+  updated_at: 2025-01-01 00:00:00
+
+services_page_html_code:
+  block: html_code_block
+  page: services_page
+  content: "<div class='services'><h3>Our Services</h3></div>"
+  cached_content: "<div class='services'><h3>Our Services</h3></div>"
+  created_at: 2025-01-01 00:00:00
+  updated_at: 2025-01-01 00:00:00
+
+services_page_main_content:
+  block: main_content_block
+  page: services_page
+  content: |-
+    {
+      "time": 1640995200000,
+      "blocks": [
+        {
+          "type": "paragraph",
+          "data": {
+            "text": "We offer a wide range of professional services."
+          }
+        }
+      ],
+      "version": "2.30.7",
+      "source": "editorJS"
+    }
+  cached_content: "<p>We offer a wide range of professional services.</p>"
+  created_at: 2025-01-01 00:00:00
+  updated_at: 2025-01-01 00:00:00
+
+about_team_page_plain_text:
+  block: plain_text_block
+  page: about_team_page
+  content: "Meet our amazing team members."
+  created_at: 2025-01-01 00:00:00
+  updated_at: 2025-01-01 00:00:00
+
+about_team_page_html_code:
+  block: html_code_block
+  page: about_team_page
+  content: "<div class='team-grid'><p>Team member profiles coming soon!</p></div>"
+  cached_content: "<div class='team-grid'><p>Team member profiles coming soon!</p></div>"
+  created_at: 2025-01-01 00:00:00
+  updated_at: 2025-01-01 00:00:00
+
+about_team_page_main_content:
+  block: main_content_block
+  page: about_team_page
+  content: |-
+    {
+      "time": 1640995200000,
+      "blocks": [
+        {
+          "type": "paragraph",
+          "data": {
+            "text": "Our team is composed of talented individuals who are passionate about delivering excellent results."
+          }
+        }
+      ],
+      "version": "2.30.7",
+      "source": "editorJS"
+    }
+  cached_content: "<p>Our team is composed of talented individuals who are passionate about delivering excellent results.</p>"
+  created_at: 2025-01-01 00:00:00
+  updated_at: 2025-01-01 00:00:00

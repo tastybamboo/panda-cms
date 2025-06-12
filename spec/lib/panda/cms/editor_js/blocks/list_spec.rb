@@ -1,6 +1,6 @@
 require "rails_helper"
 
-RSpec.describe Panda::CMS::EditorJs::Blocks::List do
+RSpec.describe Panda::CMS::EditorJs::Blocks::List, :editorjs do
   include EditorJsHelper
 
   let(:ordered_list) do

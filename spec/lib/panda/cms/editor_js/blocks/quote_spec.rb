@@ -1,6 +1,6 @@
 require "rails_helper"
 
-RSpec.describe Panda::CMS::EditorJs::Blocks::Quote do
+RSpec.describe Panda::CMS::EditorJs::Blocks::Quote, :editorjs do
   include EditorJsHelper
 
   let(:quote_with_caption) do

@@ -1,0 +1,28 @@
+<% breadcrumb_styles = "text-black/60 hover:text-black/80" %>
+
+<div class="flex mt-1 -mb-1">
+  <nav aria-label="Breadcrumb" id="panda-breadcrumbs" class="grow">
+    <ol role="list" class="px-4 w-full sm:px-6">
+      <li class="inline-block">
+        <a href="/admin" class="<%= breadcrumb_styles %>">
+          <i class="fa fa-regular fa-house"></i>
+          <span class="sr-only">Home</span>
+        </a>
+      </li>
+      <% breadcrumbs.each do |crumb| %>
+        <li class="inline-block">
+          <i class="fa fa-regular fa-chevron-right font-light <%= breadcrumb_styles %> py-5 px-2"></i>
+          <a href="<%= crumb.path %>" class="text-sm font-normal <%= breadcrumb_styles %>"><%= crumb.name %></a>
+        </li>
+      <% end %>
+    </ol>
+  </nav>
+
+  <% if content_for :sidebar %>
+    <div class="pt-4 pr-8 text-black/80" tabindex="-1">
+      <a href="#" id="slideover-toggle" data-action="click->toggle#toggle touch->toggle#toggle" class="text-sm font-light">
+        <i class="mr-1 fa-light fa-gear"></i> <%= yield :sidebar_title %>
+      </a>
+    </div>
+  <% end %>
+</div>

@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Test Page</title>
+</head>
+<body>
+  <h1><%= @page.title %></h1>
+  <h2>Basic Page Layout</h2>
+  <%= render Panda::CMS::TextComponent.new(key: :plain_text) %>
+  <%= render Panda::CMS::CodeComponent.new(key: :html_code) %>
+  <%= render Panda::CMS::RichTextComponent.new(key: :main_content) %>
+  <%= yield %>
+</body>
+</html>
