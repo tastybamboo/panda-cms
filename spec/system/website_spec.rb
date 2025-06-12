@@ -1,7 +1,10 @@
+# frozen_string_literal: true
+
 require "system_helper"
 
 RSpec.describe "Website" do
-  include_context "with standard pages"
+  fixtures :all
+
   it "shows the homepage with rich text blocks and rendered JS" do
     visit "/"
 

@@ -1,9 +1,11 @@
+# frozen_string_literal: true
+
 require "rails_helper"
 
 RSpec.describe Panda::CMS::Post, type: :model do
   fixtures :panda_cms_users
   describe "editor content", :editorjs do
-    let(:post) {
+    let(:post) do
       Panda::CMS::Post.create!(
         title: "Test Post",
         slug: "/test-post",
@@ -11,7 +13,7 @@ RSpec.describe Panda::CMS::Post, type: :model do
         author: panda_cms_users(:admin_user),
         status: "active"
       )
-    }
+    end
 
     it "stores and caches EditorJS content" do
       editor_content = {

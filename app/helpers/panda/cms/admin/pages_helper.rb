@@ -1,6 +1,10 @@
+# frozen_string_literal: true
+
 module Panda
   module CMS
-    module Admin::PagesHelper
+    module Admin
+      module PagesHelper
+      end
     end
   end
 end

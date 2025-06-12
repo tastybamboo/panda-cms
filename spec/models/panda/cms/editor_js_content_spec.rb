@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "rails_helper"
 
 RSpec.describe Panda::CMS::EditorJsContent, :editorjs do
@@ -11,6 +13,7 @@ RSpec.describe Panda::CMS::EditorJsContent, :editorjs do
       end
 
       attr_accessor :content, :cached_content
+
       include Panda::CMS::EditorJsContent
     end
   end

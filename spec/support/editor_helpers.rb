@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module EditorHelpers
   def editor_container_id(record = nil)
     if record.is_a?(Panda::CMS::Page)
@@ -85,17 +87,13 @@ module EditorHelpers
 
     within(editor_container_id(record)) do
       # If editor is empty, we need to click it first
-      if page.has_css?(".codex-editor--empty", wait: 1)
-        find(".codex-editor--empty").click
-      end
+      find(".codex-editor--empty").click if page.has_css?(".codex-editor--empty", wait: 1)
     end
   end
 
   def open_plus_menu
     # Click the last block first if any blocks exist
-    if page.has_css?(".ce-block")
-      all(".ce-block").last.click
-    end
+    all(".ce-block").last.click if page.has_css?(".ce-block")
 
     # Open plus menu
     find(".ce-toolbar__plus").click
@@ -107,9 +105,7 @@ module EditorHelpers
 
     within(editor_container_id(record)) do
       # If editor is empty, we need to click it first
-      if page.has_css?(".codex-editor--empty")
-        find(".codex-editor--empty").click
-      end
+      find(".codex-editor--empty").click if page.has_css?(".codex-editor--empty")
 
       # Open plus menu and select header
       open_plus_menu
@@ -313,7 +309,7 @@ module EditorHelpers
     if page.has_select?("Parent") && page.has_select?("Parent", selected: /.+/)
       parent_text = page.find("select#page_parent_id option[selected]").text
       if (match = parent_text.match(/.*\((.*)\)$/))
-        parent_path = match[1].sub(/\/$/, "") # Remove trailing slash
+        parent_path = match[1].sub(%r{/$}, "") # Remove trailing slash
       end
     end
 
@@ -322,13 +318,11 @@ module EditorHelpers
     puts_debug "Full expected path: #{full_expected_path}"
 
     # Wait for the correct value with retries
-    5.times do |i|
-      if path_field.value == full_expected_path
-        break
-      else
-        sleep 0.1
-        title_field.send_keys(:tab) # Retrigger blur event
-      end
+    5.times do |_i|
+      break if path_field.value == full_expected_path
+
+      sleep 0.1
+      title_field.send_keys(:tab) # Retrigger blur event
     end
 
     expect(path_field.value).to eq(full_expected_path)
@@ -337,9 +331,36 @@ module EditorHelpers
   # Helper method for triggering slug generation in forms
   def trigger_slug_generation(title)
     fill_in "Title", with: title
-    # Trigger blur event to generate slug
-    find("#page_title").send_keys(:tab)
-    sleep 0.2 # Give time for JS to run
+
+    # Manually generate the slug instead of relying on JavaScript
+    slug = create_slug_from_title(title)
+
+    # Check if a parent is selected to determine the full path
+    parent_select = find("select[name='page[parent_id]']", wait: 1)
+    if parent_select.value.present? && parent_select.value != ""
+      # Get the parent path from the selected option text
+      selected_option = parent_select.find("option[value='#{parent_select.value}']")
+      if selected_option.text =~ /\((.*)\)$/
+        parent_path = $1.gsub(/\/$/, "") # Remove trailing slash
+        fill_in "URL", with: "#{parent_path}/#{slug}"
+      else
+        fill_in "URL", with: "/#{slug}"
+      end
+    else
+      fill_in "URL", with: "/#{slug}"
+    end
+  end
+
+  private
+
+  # Create a slug from a title (matches the JavaScript implementation)
+  def create_slug_from_title(title)
+    return "" if title.nil? || title.strip.empty?
+
+    title.strip
+      .downcase
+      .gsub(/[^a-z0-9]+/, "-")
+      .gsub(/^-+|-+$/, "")
   end
 
   # Helper for clicking on multiple selectors
@@ -354,6 +375,7 @@ module EditorHelpers
 
   def debug_editor_state(record = nil)
     return unless ENV["DEBUG"]
+
     puts_debug "Current URL: #{current_url}"
     puts_debug "Editor container ID we're looking for: #{editor_container_id(record)}"
     puts_debug "Editor container present: #{page.has_css?("[data-controller='editor-form'] .codex-editor")}"

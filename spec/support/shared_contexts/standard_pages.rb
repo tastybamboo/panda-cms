@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 RSpec.shared_context "with standard pages" do
   before(:each) do
     # Skip redirect creation during test data setup
@@ -11,56 +13,56 @@ RSpec.shared_context "with standard pages" do
   end
 
   # Define let! variables so they're accessible in tests
-  let!(:homepage_template) {
+  let!(:homepage_template) do
     @homepage_template ||= Panda::CMS::Template.find_or_create_by!(
       name: "Homepage",
       file_path: "layouts/homepage",
       max_uses: 1
     )
-  }
+  end
 
-  let!(:page_template) {
+  let!(:page_template) do
     @page_template ||= Panda::CMS::Template.find_or_create_by!(
       name: "Page",
       file_path: "layouts/page"
     )
-  }
+  end
 
-  let!(:different_page_template) {
+  let!(:different_page_template) do
     @different_page_template ||= Panda::CMS::Template.find_or_create_by!(
       name: "Different Page",
       file_path: "layouts/different_page",
       max_uses: 3,
       pages_count: 2
     )
-  }
+  end
 
-  let!(:admin_user) {
+  let!(:admin_user) do
     @admin_user ||= Panda::CMS::User.find_or_create_by!(email: "admin@example.com") do |user|
       user.firstname = "Admin"
       user.lastname = "User"
       user.admin = true
     end
-  }
+  end
 
-  let!(:regular_user) {
+  let!(:regular_user) do
     @regular_user ||= Panda::CMS::User.find_or_create_by!(email: "user@example.com") do |user|
       user.firstname = "Regular"
       user.lastname = "User"
       user.admin = false
     end
-  }
+  end
 
-  let!(:homepage) {
+  let!(:homepage) do
     @homepage ||= Panda::CMS::Page.find_or_create_by!(
       path: "/",
       title: "Home",
       template: homepage_template,
       status: "active"
     )
-  }
+  end
 
-  let!(:about_page) {
+  let!(:about_page) do
     @about_page ||= Panda::CMS::Page.find_or_create_by!(
       path: "/about",
       title: "About",
@@ -68,9 +70,9 @@ RSpec.shared_context "with standard pages" do
       parent: homepage,
       status: "active"
     )
-  }
+  end
 
-  let!(:services_page) {
+  let!(:services_page) do
     @services_page ||= Panda::CMS::Page.find_or_create_by!(
       path: "/services",
       title: "Services",
@@ -78,9 +80,9 @@ RSpec.shared_context "with standard pages" do
       parent: homepage,
       status: "active"
     )
-  }
+  end
 
-  let!(:about_team_page) {
+  let!(:about_team_page) do
     @about_team_page ||= Panda::CMS::Page.find_or_create_by!(
       path: "/about/team",
       title: "Team",
@@ -88,9 +90,9 @@ RSpec.shared_context "with standard pages" do
       parent: about_page,
       status: "active"
     )
-  }
+  end
 
-  let!(:custom_page) {
+  let!(:custom_page) do
     @custom_page ||= Panda::CMS::Page.find_or_create_by!(
       path: "/custom-page",
       title: "Custom Page",
@@ -98,7 +100,7 @@ RSpec.shared_context "with standard pages" do
       parent: homepage,
       status: "active"
     )
-  }
+  end
 
   def create_standard_test_data
     # Create templates first
@@ -175,13 +177,13 @@ RSpec.shared_context "with standard pages" do
 
     # Find block contents and add sample content
     plain_text_content = about_page.block_contents.joins(:block).find_by(panda_cms_blocks: {key: "plain_text"})
-    plain_text_content.update!(content: "Here is some plain text content") if plain_text_content
+    plain_text_content&.update!(content: "Here is some plain text content")
 
     html_code_content = about_page.block_contents.joins(:block).find_by(panda_cms_blocks: {key: "html_code"})
-    html_code_content.update!(
+    html_code_content&.update!(
       content: "<p><strong>Here is some HTML code.</strong></p>",
       cached_content: "<p><strong>Here is some HTML code.</strong></p>"
-    ) if html_code_content
+    )
 
     main_content_content = about_page.block_contents.joins(:block).find_by(panda_cms_blocks: {key: "main_content"})
     if main_content_content
@@ -206,27 +208,27 @@ RSpec.shared_context "with standard pages" do
 
     # Add content to homepage blocks
     homepage = Panda::CMS::Page.find_by(path: "/")
-    if homepage
-      hero_content = homepage.block_contents.joins(:block).find_by(panda_cms_blocks: {key: "hero_content"})
-      if hero_content
-        editor_js_content = {
-          "time" => Time.current.to_i * 1000,
-          "blocks" => [
-            {
-              "type" => "paragraph",
-              "data" => {
-                "text" => "I like ice cream!"
-              }
-            }
-          ],
-          "version" => "2.30.7",
-          "source" => "editorJS"
+    return unless homepage
+
+    hero_content = homepage.block_contents.joins(:block).find_by(panda_cms_blocks: {key: "hero_content"})
+    return unless hero_content
+
+    editor_js_content = {
+      "time" => Time.current.to_i * 1000,
+      "blocks" => [
+        {
+          "type" => "paragraph",
+          "data" => {
+            "text" => "I like ice cream!"
+          }
         }
-        hero_content.update!(
-          content: editor_js_content,
-          cached_content: "<p>I like ice cream!</p>"
-        )
-      end
-    end
+      ],
+      "version" => "2.30.7",
+      "source" => "editorJS"
+    }
+    hero_content.update!(
+      content: editor_js_content,
+      cached_content: "<p>I like ice cream!</p>"
+    )
   end
 end

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "system_helper"
 
 RSpec.describe "Editing a post", type: :system do

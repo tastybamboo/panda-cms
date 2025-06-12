@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Set OmniAuth test mode and failure condition
 OmniAuth.config.test_mode = true
 OmniAuth.config.on_failure = proc { |env|
@@ -21,7 +23,7 @@ module OmniAuthHelpers
 
     Rails.application.env_config["omniauth.auth"] = OmniAuth.config.mock_auth[:google]
     visit "/admin/auth/google/callback"
-    sleep(0.5)  # Ensure callback is processed
+    sleep(0.5) # Ensure callback is processed
   end
 
   def manual_login_with_google(user)

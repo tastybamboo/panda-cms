@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "rails_helper"
 
 RSpec.describe Panda::CMS::EditorJs::Blocks::Image, :editorjs do
@@ -22,19 +24,19 @@ RSpec.describe Panda::CMS::EditorJs::Blocks::Image, :editorjs do
   it "renders image with all options correctly" do
     rendered = described_class.new(image_with_caption).render
     expect(normalize_html(rendered)).to eq(normalize_html(
-      '<figure class="prose border bg-gray-100 w-full">' \
-        '<img src="/path/to/image.jpg" alt="Beautiful sunset" />' \
-        "<figcaption>Beautiful sunset</figcaption>" \
-      "</figure>"
-    ))
+                                             '<figure class="prose border bg-gray-100 w-full">' \
+                                               '<img src="/path/to/image.jpg" alt="Beautiful sunset" />' \
+                                               "<figcaption>Beautiful sunset</figcaption>" \
+                                             "</figure>"
+                                           ))
   end
 
   it "renders simple image correctly" do
     rendered = described_class.new(simple_image).render
     expect(normalize_html(rendered)).to eq(normalize_html(
-      '<figure class="prose">' \
-        '<img src="/path/to/image.jpg" alt="" />' \
-      "</figure>"
-    ))
+                                             '<figure class="prose">' \
+                                               '<img src="/path/to/image.jpg" alt="" />' \
+                                             "</figure>"
+                                           ))
   end
 end

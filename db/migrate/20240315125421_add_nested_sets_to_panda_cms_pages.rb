@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class AddNestedSetsToPandaCMSPages < ActiveRecord::Migration[7.1]
   def self.up
     Panda::CMS::Page.where(parent_id: 0).update_all(parent_id: nil)

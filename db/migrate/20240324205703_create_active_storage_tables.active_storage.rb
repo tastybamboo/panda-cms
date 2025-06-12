@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # This migration comes from active_storage (originally 20170806125915)
 class CreateActiveStorageTables < ActiveRecord::Migration[7.0]
   def change
@@ -33,7 +35,8 @@ class CreateActiveStorageTables < ActiveRecord::Migration[7.0]
         t.datetime :created_at, null: false
       end
 
-      t.index [:record_type, :record_id, :name, :blob_id], name: :index_active_storage_attachments_uniqueness, unique: true
+      t.index %i[record_type record_id name blob_id], name: :index_active_storage_attachments_uniqueness,
+        unique: true
       t.foreign_key :active_storage_blobs, column: :blob_id
     end
 
@@ -41,7 +44,7 @@ class CreateActiveStorageTables < ActiveRecord::Migration[7.0]
       t.belongs_to :blob, null: false, index: false, type: foreign_key_type
       t.string :variation_digest, null: false
 
-      t.index [:blob_id, :variation_digest], name: :index_active_storage_variant_records_uniqueness, unique: true
+      t.index %i[blob_id variation_digest], name: :index_active_storage_variant_records_uniqueness, unique: true
       t.foreign_key :active_storage_blobs, column: :blob_id
     end
   end

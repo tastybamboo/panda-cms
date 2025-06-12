@@ -1,11 +1,13 @@
+# frozen_string_literal: true
+
 module Panda
   module CMS
     class PagesController < ApplicationController
       include ActionView::Helpers::TagHelper
 
-      before_action :check_login_required, only: [:root, :show]
-      before_action :handle_redirects, only: [:root, :show]
-      after_action :record_visit, only: [:root, :show], unless: :ignore_visit?
+      before_action :check_login_required, only: %i[root show]
+      before_action :handle_redirects, only: %i[root show]
+      after_action :record_visit, only: %i[root show], unless: :ignore_visit?
 
       def root
         params[:path] = ""
@@ -14,15 +16,13 @@ module Panda
 
       def show
         page = if @overrides&.dig(:page_path_match)
-          Panda::CMS::Page.find_by(path: @overrides.dig(:page_path_match))
+          Panda::CMS::Page.find_by(path: @overrides[:page_path_match])
         else
-          Panda::CMS::Page.find_by(path: "/" + params[:path].to_s)
+          Panda::CMS::Page.find_by(path: "/#{params[:path]}")
         end
 
         Panda::CMS::Current.page = page || Panda::CMS::Page.find_by(path: "/404")
-        if @overrides
-          Panda::CMS::Current.page.title = @overrides&.dig(:title) || page.title
-        end
+        Panda::CMS::Current.page.title = @overrides&.dig(:title) || page.title if @overrides
 
         layout = page&.template&.file_path
 
@@ -42,36 +42,39 @@ module Panda
       private
 
       def handle_redirects
-        current_path = "/" + params[:path].to_s
+        current_path = "/#{params[:path]}"
         redirect = Panda::CMS::Redirect.find_by(origin_path: current_path)
 
-        if redirect
-          redirect.increment!(:visits)
+        return unless redirect
 
-          # Check if the destination is also a redirect
-          next_redirect = Panda::CMS::Redirect.find_by(origin_path: redirect.destination_path)
-          if next_redirect
-            next_redirect.increment!(:visits)
-            redirect_to next_redirect.destination_path, status: redirect.status_code and return
-          end
+        redirect.increment!(:visits)
 
-          redirect_to redirect.destination_path, status: redirect.status_code and return
+        # Check if the destination is also a redirect
+        next_redirect = Panda::CMS::Redirect.find_by(origin_path: redirect.destination_path)
+        if next_redirect
+          next_redirect.increment!(:visits)
+          redirect_to next_redirect.destination_path, status: redirect.status_code and return
         end
+
+        redirect_to redirect.destination_path, status: redirect.status_code and return
       end
 
       def check_login_required
-        if Panda::CMS.config.require_login_to_view && !user_signed_in?
-          redirect_to panda_cms_maintenance_path and return
-        end
+        return unless Panda::CMS.config.require_login_to_view && !user_signed_in?
+
+        redirect_to panda_cms_maintenance_path and return
       end
 
       def ignore_visit?
         # Ignore visits from bots (TODO: make this configurable)
         return true if /bot/i.match?(request.user_agent)
         # Ignore visits from Honeybadger
-        return true if request.headers.to_h.key?("Honeybadger-Token") || request.user_agent == "Honeybadger Uptime Check"
+        if request.headers.to_h.key?("Honeybadger-Token") || request.user_agent == "Honeybadger Uptime Check"
+          return true
+        end
         # Ignore visits where we're asking for PHP files
         return true if request.path.ends_with?(".php")
+
         # Otherwise, record the visit
         false
       end
@@ -90,13 +93,13 @@ module Panda
       end
 
       def create_redirect_if_path_changed
-        if path_changed? && path_was.present?
-          Panda::CMS::Redirect.create!(
-            origin_path: path_was,
-            destination_path: path,
-            status_code: 301
-          )
-        end
+        return unless path_changed? && path_was.present?
+
+        Panda::CMS::Redirect.create!(
+          origin_path: path_was,
+          destination_path: path,
+          status_code: 301
+        )
       end
     end
   end

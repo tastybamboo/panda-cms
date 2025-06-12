@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module FixtureHelpers
   # Map of fixture method names to model classes
   FIXTURE_MODELS = {
@@ -9,7 +11,7 @@ module FixtureHelpers
     panda_cms_menus: Panda::CMS::Menu,
     panda_cms_menu_items: Panda::CMS::MenuItem,
     panda_cms_posts: Panda::CMS::Post
-  }
+  }.freeze
 
   # Dynamically handle fixture access methods
   def method_missing(method_name, *args, &block)

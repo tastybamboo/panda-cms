@@ -1,7 +1,9 @@
+# frozen_string_literal: true
+
 require "system_helper"
 
 RSpec.describe "When following redirects", type: :system do
-  include_context "with standard pages"
+  fixtures :all
 
   let(:about_page) { Panda::CMS::Page.find_by(path: "/about") }
   let!(:redirect) do

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # panda-cms/spec/system/panda/cms/admin/my_profile_spec.rb
 require "system_helper"
 

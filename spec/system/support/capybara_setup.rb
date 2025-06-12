@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # # Allow multiple threads for Puma
 # ENV["RAILS_MAX_THREADS"] = "4"
 # ENV["WEB_CONCURRENCY"] = "0"  # Keep workers at 0
@@ -52,7 +54,7 @@ Capybara.default_normalize_ws = true
 
 # Where to store system tests artifacts (e.g. screenshots, downloaded files, etc.).
 # It could be useful to be able to configure this path from the outside (e.g., on CI).
-Capybara.save_path = ENV.fetch("CAPYBARA_ARTIFACTS") { "./tmp/capybara" }
+Capybara.save_path = ENV.fetch("CAPYBARA_ARTIFACTS", "./tmp/capybara")
 
 # Disable animation so we're not waiting for it
 Capybara.disable_animation = true
@@ -70,7 +72,7 @@ Capybara.singleton_class.prepend(Module.new do
 end)
 
 Capybara.server_host = "127.0.0.1"
-Capybara.server_port = 3001
+Capybara.server_port = 3002
 
 RSpec.configure do |config|
   config.before(:each, type: :system) do

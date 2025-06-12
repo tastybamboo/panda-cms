@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class FerrumLogger
   def puts(log_str)
     return unless ENV["DEBUG"]
@@ -22,6 +24,7 @@ class FerrumLogger
           next if arg["value"].to_s.start_with?("[Panda CMS]")
           # Skip any values that look like raw JSON
           next if arg["value"].to_s.strip.start_with?("{", "[")
+
           Kernel.puts "[DEBUG] #{arg["value"]}"
         when "object"
           # Skip object output to avoid raw JSON

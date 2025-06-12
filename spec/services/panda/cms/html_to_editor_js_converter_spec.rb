@@ -17,7 +17,7 @@ RSpec.describe Panda::CMS::HtmlToEditorJsConverter, :editorjs do
     context "with existing EditorJS content" do
       let(:html) do
         {
-          "time" => 1234567890,
+          "time" => 1_234_567_890,
           "blocks" => [
             {
               "type" => "paragraph",

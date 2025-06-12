@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "rubygems"
 require "panda/core"
 require "panda/cms/railtie"

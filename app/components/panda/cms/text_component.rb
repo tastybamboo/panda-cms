@@ -25,10 +25,10 @@ module Panda
         content_tag(:span, @content, @options, false) # Don't escape the content
       rescue
         if !Rails.env.production? || is_defined?(Sentry)
-          raise Panda::CMS::MissingBlockError.new("Block with key #{@key} not found for page #{Current.page.title}")
-        else
-          false
+          raise Panda::CMS::MissingBlockError, "Block with key #{@key} not found for page #{Current.page.title}"
         end
+
+        false
       end
 
       #
@@ -45,11 +45,10 @@ module Panda
       def before_render
         @editable &&= params[:embed_id].present? && params[:embed_id] == Current.page.id
 
-        block = Panda::CMS::Block.find_by(kind: KIND, key: @key, panda_cms_template_id: Current.page.panda_cms_template_id)
+        block = Panda::CMS::Block.find_by(kind: KIND, key: @key,
+          panda_cms_template_id: Current.page.panda_cms_template_id)
 
-        if block.nil?
-          return false
-        end
+        return false if block.nil?
 
         block_content = block.block_contents.find_by(panda_cms_page_id: Current.page.id)
         plain_text = block_content&.content.to_s

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "rails_helper"
 
 RSpec.describe Panda::CMS::Template, type: :model do
@@ -43,12 +45,12 @@ RSpec.describe Panda::CMS::Template, type: :model do
     end
 
     context "template file existence" do
-      let(:template) {
+      let(:template) do
         Panda::CMS::Template.new(
           name: "Test Template",
           file_path: "layouts/page"
         )
-      }
+      end
 
       before do
         allow(File).to receive(:file?).and_return(false)

@@ -12,9 +12,7 @@ module Panda
 
       KIND = "rich_text"
 
-      attr_accessor :editable
-      attr_accessor :content
-      attr_accessor :options
+      attr_accessor :editable, :content, :options
 
       def initialize(key: :text_component, text: "Lorem ipsum...", editable: true, **options)
         @key = key
@@ -27,7 +25,8 @@ module Panda
       def before_render
         @editable &&= params[:embed_id].present? && params[:embed_id] == Current.page.id && Current.user.admin?
 
-        block = Panda::CMS::Block.find_by(kind: "rich_text", key: @key, panda_cms_template_id: Current.page.panda_cms_template_id)
+        block = Panda::CMS::Block.find_by(kind: "rich_text", key: @key,
+          panda_cms_template_id: Current.page.panda_cms_template_id)
         raise ComponentError, "Block not found for key: #{@key}" unless block
 
         block_content = block.block_contents.find_by(panda_cms_page_id: Current.page.id)
@@ -65,7 +64,7 @@ module Panda
                     # Ensure the content is properly structured
                     {
                       "time" => parsed["time"] || Time.current.to_i * 1000,
-                      "blocks" => parsed["blocks"].map { |block|
+                      "blocks" => parsed["blocks"].map do |block|
                         {
                           "type" => block["type"],
                           "data" => block["data"].merge(
@@ -73,7 +72,7 @@ module Panda
                           ),
                           "tunes" => block["tunes"]
                         }.compact
-                      },
+                      end,
                       "version" => parsed["version"] || "2.28.2"
                     }
                   else

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "rubygems"
 require "panda/core"
 require "panda/cms/railtie"
@@ -17,7 +19,7 @@ require "turbo-rails"
 
 ENV["RAILS_ENV"] ||= "test"
 
-require File.expand_path("../dummy/config/environment", __FILE__)
+require File.expand_path("dummy/config/environment", __dir__)
 abort("The Rails environment is running in production mode!") if Rails.env.production?
 require "rspec/rails"
 
@@ -27,9 +29,7 @@ require "shoulda/matchers"
 require "capybara"
 require "capybara/rspec"
 require "view_component/test_helpers"
-require "faker"
 require "puma"
-require "factory_bot_rails"
 
 # Ensures that the test database schema matches the current schema file.
 # If there are pending migrations it will invoke `db:test:prepare` to
@@ -43,12 +43,6 @@ end
 
 # Load support files first
 Dir[Rails.root.join("../support/**/*.rb")].sort.each { |f| require f }
-
-# Configure FactoryBot
-FactoryBot.definition_file_paths = [
-  File.join(File.dirname(__FILE__), "factories")
-]
-FactoryBot.reload
 
 # Configure fixtures
 # We support both fixtures and factories in tests
@@ -72,14 +66,16 @@ module PandaCmsFixtures
 end
 
 # Override ActiveRecord::FixtureSet to use our mapping
-class ActiveRecord::FixtureSet
-  alias_method :original_model_class, :model_class
+module ActiveRecord
+  class FixtureSet
+    alias_method :original_model_class, :model_class
 
-  def model_class
-    if klass = PandaCmsFixtures.get_class_name(@name)
-      klass.constantize
-    else
-      original_model_class
+    def model_class
+      if (klass = PandaCmsFixtures.get_class_name(@name))
+        klass.constantize
+      else
+        original_model_class
+      end
     end
   end
 end
@@ -158,16 +154,13 @@ RSpec.configure do |config|
   # config.include ViewComponent::TestHelpers, type: :view_component
   # config.include Capybara::RSpecMatchers, type: :view_component
   # Configure fixtures path and enable fixtures
-  config.fixture_paths = [File.expand_path("../fixtures", __FILE__)]
+  config.fixture_paths = [File.expand_path("fixtures", __dir__)]
   config.use_transactional_fixtures = true
-  # Don't load fixtures globally - let tests specify what they need
-  # config.global_fixtures = :all
+  # Load fixtures globally for all tests
+  config.global_fixtures = :all
 
   # Include fixture helpers
   config.include FixtureHelpers
-
-  # Still include FactoryBot for legacy tests that haven't been converted yet
-  config.include FactoryBot::Syntax::Methods
 
   if defined?(Bullet) && Bullet.enable?
     config.before(:each) do

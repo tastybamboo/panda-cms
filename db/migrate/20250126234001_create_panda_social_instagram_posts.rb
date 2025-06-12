@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class CreatePandaSocialInstagramPosts < ActiveRecord::Migration[7.1]
   def change
     create_table :panda_social_instagram_posts, id: :uuid do |t|

@@ -37,6 +37,7 @@ second_post:
   status: "draft"
   user: regular_user
   author: admin_user
+  published_at: null
   content: |-
     {
       "time": <%= (Time.current.to_i * 1000) %>,

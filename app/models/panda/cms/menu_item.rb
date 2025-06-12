@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "awesome_nested_set"
 
 module Panda
@@ -8,8 +10,10 @@ module Panda
       self.implicit_order_column = "lft"
       self.table_name = "panda_cms_menu_items"
 
-      belongs_to :menu, foreign_key: :panda_cms_menu_id, class_name: "Panda::CMS::Menu", inverse_of: :menu_items, touch: true
-      belongs_to :page, foreign_key: :panda_cms_page_id, class_name: "Panda::CMS::Page", inverse_of: :menu_items, optional: true
+      belongs_to :menu, foreign_key: :panda_cms_menu_id, class_name: "Panda::CMS::Menu", inverse_of: :menu_items,
+        touch: true
+      belongs_to :page, foreign_key: :panda_cms_page_id, class_name: "Panda::CMS::Page", inverse_of: :menu_items,
+        optional: true
 
       validates :text, presence: true, uniqueness: {scope: :panda_cms_menu_id, case_sensitive: false}
       validates :page, presence: true, unless: -> { external_url.present? }
@@ -48,10 +52,10 @@ module Panda
           errors.add(:external_url, "must be a valid page or external link, neither are set")
         end
 
-        if !page.nil? && !external_url.nil?
-          errors.add(:page, "must be a valid page or external link, both are set")
-          errors.add(:external_url, "must be a valid page or external link, both are set")
-        end
+        return unless !page.nil? && !external_url.nil?
+
+        errors.add(:page, "must be a valid page or external link, both are set")
+        errors.add(:external_url, "must be a valid page or external link, both are set")
       end
     end
   end

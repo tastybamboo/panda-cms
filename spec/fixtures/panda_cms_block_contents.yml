@@ -107,3 +107,54 @@ about_team_page_main_content:
   cached_content: "<p>Our team is composed of talented individuals who are passionate about delivering excellent results.</p>"
   created_at: 2025-01-01 00:00:00
   updated_at: 2025-01-01 00:00:00
+
+# Block contents for homepage
+homepage_hero_content:
+  block: hero_content_block
+  page: homepage
+  content: |-
+    {
+      "time": 1640995200000,
+      "blocks": [
+        {
+          "type": "paragraph",
+          "data": {
+            "text": "I like ice cream!"
+          }
+        }
+      ],
+      "version": "2.30.7",
+      "source": "editorJS"
+    }
+  cached_content: "<p>I like ice cream!</p>"
+  created_at: 2025-01-01 00:00:00
+  updated_at: 2025-01-01 00:00:00
+
+# Block contents for custom page
+custom_page_sidebar:
+  block: sidebar_block
+  page: custom_page
+  content: "This is sidebar content for the custom page."
+  created_at: 2025-01-01 00:00:00
+  updated_at: 2025-01-01 00:00:00
+
+custom_page_content:
+  block: content_block
+  page: custom_page
+  content: |-
+    {
+      "time": 1640995200000,
+      "blocks": [
+        {
+          "type": "paragraph",
+          "data": {
+            "text": "This is the main content area for the custom page."
+          }
+        }
+      ],
+      "version": "2.30.7",
+      "source": "editorJS"
+    }
+  cached_content: "<p>This is the main content area for the custom page.</p>"
+  created_at: 2025-01-01 00:00:00
+  updated_at: 2025-01-01 00:00:00

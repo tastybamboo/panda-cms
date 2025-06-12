@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "system_helper"
 
 RSpec.describe "Admin dashboard", type: :system do

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "rails_helper"
 
 # Helper methods for testing
@@ -65,7 +67,7 @@ RSpec.describe Panda::CMS::Page, type: :model do
         # If no homepage exists, try to create one
         page = Panda::CMS::Page.new(
           title: "Test Root",
-          path: "/",  # Root pages are allowed without parent only for path "/"
+          path: "/", # Root pages are allowed without parent only for path "/"
           panda_cms_template_id: template.id,
           parent: nil,
           status: "active"
@@ -91,7 +93,7 @@ RSpec.describe Panda::CMS::Page, type: :model do
       stub_redirect_creation
     end
 
-    let(:root_page) {
+    let(:root_page) do
       # For root pages, we need to skip validations since
       # there's already a homepage with path "/"
       page = Panda::CMS::Page.new(
@@ -102,9 +104,9 @@ RSpec.describe Panda::CMS::Page, type: :model do
       )
       page.save(validate: false)
       page
-    }
+    end
 
-    let(:parent_page) {
+    let(:parent_page) do
       Panda::CMS::Page.find_or_create_by!(
         path: "/test-root/parent",
         title: "Parent",
@@ -112,9 +114,9 @@ RSpec.describe Panda::CMS::Page, type: :model do
         parent: root_page,
         status: "active"
       )
-    }
+    end
 
-    let(:mid_level_page) {
+    let(:mid_level_page) do
       Panda::CMS::Page.find_or_create_by!(
         path: "/test-root/parent/mid-level",
         title: "Mid Level",
@@ -122,7 +124,7 @@ RSpec.describe Panda::CMS::Page, type: :model do
         parent: parent_page,
         status: "active"
       )
-    }
+    end
 
     context "when creating a page with parent path already included" do
       it "does not duplicate the parent path" do
@@ -136,10 +138,8 @@ RSpec.describe Panda::CMS::Page, type: :model do
         )
 
         # Simulate controller logic
-        if page.parent && page.parent.path != "/" && page.path.present?
-          unless page.path.start_with?(page.parent.path)
-            page.path = page.parent.path + page.path
-          end
+        if page.parent && page.parent.path != "/" && page.path.present? && !page.path.start_with?(page.parent.path)
+          page.path = page.parent.path + page.path
         end
 
         expect(page.path).to eq("/test-root/parent/nested-page")
@@ -159,10 +159,8 @@ RSpec.describe Panda::CMS::Page, type: :model do
         )
 
         # Simulate controller logic
-        if page.parent && page.parent.path != "/" && page.path.present?
-          unless page.path.start_with?(page.parent.path)
-            page.path = page.parent.path + page.path
-          end
+        if page.parent && page.parent.path != "/" && page.path.present? && !page.path.start_with?(page.parent.path)
+          page.path = page.parent.path + page.path
         end
 
         expect(page.path).to eq("/test-root/parent/nested-page")
@@ -182,10 +180,8 @@ RSpec.describe Panda::CMS::Page, type: :model do
         )
 
         # Simulate controller logic
-        if page.parent && page.parent.path != "/" && page.path.present?
-          unless page.path.start_with?(page.parent.path)
-            page.path = page.parent.path + page.path
-          end
+        if page.parent && page.parent.path != "/" && page.path.present? && !page.path.start_with?(page.parent.path)
+          page.path = page.parent.path + page.path
         end
 
         expect(page.path).to eq("/test-root/parent/mid-level/deep-page")
@@ -202,7 +198,7 @@ RSpec.describe Panda::CMS::Page, type: :model do
       stub_redirect_creation
     end
 
-    let(:root_page) {
+    let(:root_page) do
       # For root pages, we need to skip validations
       page = Panda::CMS::Page.new(
         path: "/validation-test",
@@ -212,9 +208,9 @@ RSpec.describe Panda::CMS::Page, type: :model do
       )
       page.save(validate: false)
       page
-    }
+    end
 
-    let(:section_a) {
+    let(:section_a) do
       Panda::CMS::Page.find_or_create_by!(
         path: "/validation-test/section-a",
         title: "Section A",
@@ -222,9 +218,9 @@ RSpec.describe Panda::CMS::Page, type: :model do
         parent: root_page,
         status: "active"
       )
-    }
+    end
 
-    let(:section_b) {
+    let(:section_b) do
       Panda::CMS::Page.find_or_create_by!(
         path: "/validation-test/section-b",
         title: "Section B",
@@ -232,10 +228,10 @@ RSpec.describe Panda::CMS::Page, type: :model do
         parent: root_page,
         status: "active"
       )
-    }
+    end
 
     # Create a team page under section A
-    let!(:team_under_section_a) {
+    let!(:team_under_section_a) do
       Panda::CMS::Page.find_or_create_by!(
         path: "/validation-test/section-a/team",
         title: "Team A",
@@ -243,7 +239,7 @@ RSpec.describe Panda::CMS::Page, type: :model do
         parent: section_a,
         status: "active"
       )
-    }
+    end
 
     it "allows same slug in different parent contexts" do
       # Should allow team page under section B
@@ -288,7 +284,7 @@ RSpec.describe Panda::CMS::Page, type: :model do
     before do
       stub_redirect_creation
     end
-    let(:test_root) {
+    let(:test_root) do
       # For root pages, we need to skip validations
       page = Panda::CMS::Page.new(
         path: "/callback-test",
@@ -298,7 +294,7 @@ RSpec.describe Panda::CMS::Page, type: :model do
       )
       page.save(validate: false)
       page
-    }
+    end
 
     describe "#generate_content_blocks" do
       # Test the logic of the method without relying on database operations

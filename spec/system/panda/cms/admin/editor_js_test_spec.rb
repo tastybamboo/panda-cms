@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "system_helper"
 
 RSpec.describe "Editor.js resources", type: :system, editorjs: true do

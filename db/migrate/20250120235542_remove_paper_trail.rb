@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class RemovePaperTrail < ActiveRecord::Migration[7.1]
   def up
     version_tables = %w[
@@ -11,9 +13,7 @@ class RemovePaperTrail < ActiveRecord::Migration[7.1]
     ]
 
     version_tables.each do |table|
-      if table_exists?(table)
-        drop_table table
-      end
+      drop_table table if table_exists?(table)
     end
   end
 
@@ -36,7 +36,8 @@ class RemovePaperTrail < ActiveRecord::Migration[7.1]
       t.string :foreign_type
     end
     add_index :panda_cms_version_associations, [:version_id]
-    add_index :panda_cms_version_associations, [:foreign_key_name, :foreign_key_id, :foreign_type], name: "index_version_associations_on_foreign_key"
+    add_index :panda_cms_version_associations, %i[foreign_key_name foreign_key_id foreign_type],
+      name: "index_version_associations_on_foreign_key"
 
     # Model-specific version tables
     %w[template page block_content post action_text_rich_text].each do |model|

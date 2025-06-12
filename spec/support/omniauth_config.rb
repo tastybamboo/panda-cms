@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Configure OmniAuth for testing
 OmniAuth.config.test_mode = true
 

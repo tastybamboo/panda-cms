@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "htmlentities"
 require "json"
 
@@ -77,11 +79,12 @@ module Panda
 
             if current_data.dig("pages", path, "contents", key).nil?
               raise "Unknown page 1" if page.nil?
+
               block = Panda::CMS::Block.find_or_create_by(key: key, template: page.template) do |block_meta|
                 block_meta.name = key.titleize
               end
 
-              if !block
+              unless block
                 debug[:error] << "Error creating block '#{key.titleize}' on page '#{page.title}'"
                 next
               end
@@ -104,6 +107,7 @@ module Panda
             elsif content != current_data["pages"][path]["contents"][key]["content"]
               # Content has changed
               raise "Unknown page 2" if page.nil?
+
               block = Panda::CMS::Block.find_by(key: key, template: page.template)
               if Panda::CMS::BlockContent.find_by(page: page, block: block)&.update(content: content)
                 debug[:success] << "Updated '#{key.titleize}' content on page '#{page.title}'"
@@ -143,7 +147,8 @@ module Panda
         end
 
         # TODO: Eventually set the position of the block in the template, and then order from there rather than the name?
-        Panda::CMS::BlockContent.includes(:block, page: [:template]).order("panda_cms_pages.lft ASC, panda_cms_blocks.key ASC").each do |block_content|
+        Panda::CMS::BlockContent.includes(:block,
+          page: [:template]).order("panda_cms_pages.lft ASC, panda_cms_blocks.key ASC").each do |block_content|
           item = data["pages"][block_content.page.path] ||= {}
           item["title"] = block_content.page.title
           item["template"] = block_content.page.template.name

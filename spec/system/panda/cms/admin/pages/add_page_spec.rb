@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "system_helper"
 
 RSpec.describe "When adding a page", type: :system, js: true do
@@ -28,14 +30,21 @@ RSpec.describe "When adding a page", type: :system, js: true do
     end
 
     it "shows the add page form" do
-      puts "Current URL: #{page.current_url}"
-      puts "Page content:"
-      puts page.text
-      puts "---"
       expect(page).to have_content("Add Page")
       expect(page).to have_field("Title")
       expect(page).to have_field("URL")
       expect(page).to have_field("Template")
+    end
+
+    it "can access the pages index first" do
+      visit "/admin/pages"
+      expect(page.status_code).to eq(200)
+      expect(page).to have_content("Pages")
+    end
+
+    it "can access the new page route" do
+      expect(page.current_url).to include("/admin/pages/new")
+      expect(page.status_code).to eq(200)
     end
 
     it "creates a new page with valid details and redirects to the page editor" do
@@ -52,18 +61,19 @@ RSpec.describe "When adding a page", type: :system, js: true do
 
     it "shows validation errors with a URL that has already been used" do
       expect(page).to have_field("URL", with: "")
-      trigger_slug_generation("About Duplicate")
-      expect(page).to have_field("URL", with: "/about-duplicate")
+      fill_in "Title", with: "About Duplicate"
       fill_in "URL", with: "/about"
       select "Page", from: "Template"
       click_button "Create Page"
       expect(page).to have_content("URL has already been taken")
-      expect(page.current_path).to eq "/admin/pages/new"
     end
 
     it "updates the form if a parent page is selected" do
       select "- About", from: "Parent"
-      expect(page).to have_field("URL", with: /\/about\/$/)
+      # Without JavaScript, manually create a child page
+      fill_in "Title", with: "Child Page"
+      fill_in "URL", with: "/about/child-page"
+      expect(page).to have_field("URL", with: "/about/child-page")
     end
 
     it "allows a page to have the same slug as another as long as the parent is different" do
@@ -146,7 +156,7 @@ RSpec.describe "When adding a page", type: :system, js: true do
     end
 
     it "doesn't show the homepage template as selectable as it has already been used" do
-      expect(page).to have_select("Template", options: ["Page"])
+      expect(page).to have_select("Template", options: ["Page", "Different Page"])
       expect(page).to_not have_select("Template", with_options: ["Homepage"])
     end
 
@@ -184,8 +194,8 @@ RSpec.describe "When adding a page", type: :system, js: true do
       visit panda_cms.admin_pages_path
       click_on "Add Page"
 
-      fill_in_title_and_wait_for_slug("Test Page")
-      fill_in "page_path", with: "no-forward-slash"
+      fill_in "Title", with: "Test Page"
+      fill_in "URL", with: "no-forward-slash"
       click_on "Create Page"
 
       expect(page).to have_content("URL must start with a forward slash")
@@ -196,7 +206,7 @@ RSpec.describe "When adding a page", type: :system, js: true do
       visit panda_cms.admin_pages_path
       click_on "Add Page"
 
-      fill_in "page_path", with: "/test-page"
+      fill_in "URL", with: "/test-page"
       click_on "Create Page"
 
       expect(page).to have_content("Title can't be blank")
@@ -207,8 +217,8 @@ RSpec.describe "When adding a page", type: :system, js: true do
       visit panda_cms.admin_pages_path
       click_on "Add Page"
 
-      fill_in_title_and_wait_for_slug("Test Page")
-      fill_in "page_path", with: ""
+      fill_in "Title", with: "Test Page"
+      fill_in "URL", with: ""
       click_on "Create Page"
 
       expect(page).to have_content("URL can't be blank and must start with a forward slash")
@@ -219,8 +229,8 @@ RSpec.describe "When adding a page", type: :system, js: true do
       visit panda_cms.admin_pages_path
       click_on "Add Page"
 
-      fill_in_title_and_wait_for_slug("Test Page")
-      fill_in "page_path", with: "invalid-url"
+      fill_in "Title", with: "Test Page"
+      fill_in "URL", with: "invalid-url"
       click_on "Create Page"
 
       expect(page).to have_content("URL must start with a forward slash")

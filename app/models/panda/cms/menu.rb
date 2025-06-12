@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Panda
   module CMS
     class Menu < ApplicationRecord
@@ -5,13 +7,16 @@ module Panda
 
       after_save :generate_auto_menu_items, if: -> { kind == "auto" }
 
-      has_many :menu_items, -> { order(lft: :asc) }, foreign_key: :panda_cms_menu_id, class_name: "Panda::CMS::MenuItem", inverse_of: :menu
-      belongs_to :start_page, class_name: "Panda::CMS::Page", foreign_key: "start_page_id", inverse_of: :page_menu, optional: true
+      has_many :menu_items, lambda {
+        order(lft: :asc)
+      }, foreign_key: :panda_cms_menu_id, class_name: "Panda::CMS::MenuItem", inverse_of: :menu
+      belongs_to :start_page, class_name: "Panda::CMS::Page", foreign_key: "start_page_id", inverse_of: :page_menu,
+        optional: true
 
       accepts_nested_attributes_for :menu_items, reject_if: :all_blank, allow_destroy: true
 
       validates :name, presence: true, uniqueness: {case_sensitive: false}
-      validates :kind, presence: true, inclusion: {in: ["static", "auto"]}
+      validates :kind, presence: true, inclusion: {in: %w[static auto]}
       validate :validate_start_page
 
       def generate_auto_menu_items
@@ -30,9 +35,7 @@ module Panda
       def generate_menu_items(parent_menu_item:, parent_page:)
         parent_page.children.where(status: [:active]).each do |page|
           menu_item = menu_items.create(text: page.title, panda_cms_page_id: page.id, parent: parent_menu_item)
-          if page.children
-            generate_menu_items(parent_menu_item: menu_item, parent_page: page)
-          end
+          generate_menu_items(parent_menu_item: menu_item, parent_page: page) if page.children
         end
       end
 
@@ -43,9 +46,9 @@ module Panda
       # @visibility private
       #
       def validate_start_page
-        if kind == "auto" && start_page.nil?
-          errors.add(:start_page, "can't be blank")
-        end
+        return unless kind == "auto" && start_page.nil?
+
+        errors.add(:start_page, "can't be blank")
       end
     end
   end

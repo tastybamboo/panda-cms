@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # RSpec.configure do |config|
 #   config.before(:suite) do
 #     # We can use webpack-dev-server for tests, too!

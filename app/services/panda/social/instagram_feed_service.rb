@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "http"
 require "down"
 
@@ -5,7 +7,7 @@ module Panda
   module Social
     class InstagramFeedService
       GRAPH_API_VERSION = "v19.0"
-      GRAPH_API_BASE_URL = "https://graph.instagram.com/#{GRAPH_API_VERSION}"
+      GRAPH_API_BASE_URL = "https://graph.instagram.com/#{GRAPH_API_VERSION}".freeze
 
       def initialize(access_token)
         @access_token = access_token
