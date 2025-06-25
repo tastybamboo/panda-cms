@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class CreatePandaCMSRedirects < ActiveRecord::Migration[7.1]
   def change
     create_table :panda_cms_redirects, id: :uuid do |t|

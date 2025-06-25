@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class FixPandaCMSVisitsColumnNames < ActiveRecord::Migration[7.1]
   def change
     change_table :panda_cms_visits do |t|

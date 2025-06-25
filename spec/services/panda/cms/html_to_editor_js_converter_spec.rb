@@ -2,7 +2,7 @@
 
 require "rails_helper"
 
-RSpec.describe Panda::CMS::HtmlToEditorJsConverter do
+RSpec.describe Panda::CMS::HtmlToEditorJsConverter, :editorjs do
   describe ".convert" do
     subject(:convert) { described_class.convert(html) }
 
@@ -17,7 +17,7 @@ RSpec.describe Panda::CMS::HtmlToEditorJsConverter do
     context "with existing EditorJS content" do
       let(:html) do
         {
-          "time" => 1234567890,
+          "time" => 1_234_567_890,
           "blocks" => [
             {
               "type" => "paragraph",

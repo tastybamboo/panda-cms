@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class CreatePandaCMSPosts < ActiveRecord::Migration[7.1]
   def change
     create_table :panda_cms_post_tags, id: :uuid do |t|
@@ -20,7 +22,7 @@ class CreatePandaCMSPosts < ActiveRecord::Migration[7.1]
       t.index :slug, unique: true
     end
 
-    create_enum :panda_cms_post_status, ["active", "draft", "hidden", "archived"]
+    create_enum :panda_cms_post_status, %w[active draft hidden archived]
     add_column :panda_cms_posts, :status, :panda_cms_post_status, default: "draft", null: false
     add_index :panda_cms_posts, :status
   end

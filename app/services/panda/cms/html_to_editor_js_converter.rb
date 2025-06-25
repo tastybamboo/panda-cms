@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Panda
   module CMS
     class HtmlToEditorJsConverter
@@ -54,7 +56,7 @@ module Panda
                     }
                   when "p"
                     text = process_inline_elements(child)
-                    paragraphs = text.split(/<br\s*\/?>\s*<br\s*\/?>/).map(&:strip)
+                    paragraphs = text.split(%r{<br\s*/?>\s*<br\s*/?>}).map(&:strip)
                     paragraphs.each do |paragraph|
                       blocks << create_paragraph_block(paragraph) if paragraph.present?
                     end
@@ -86,7 +88,7 @@ module Panda
               else
                 # Handle p with nested content
                 text = process_inline_elements(node)
-                paragraphs = text.split(/<br\s*\/?>\s*<br\s*\/?>/).map(&:strip)
+                paragraphs = text.split(%r{<br\s*/?>\s*<br\s*/?>}).map(&:strip)
                 paragraphs.each do |paragraph|
                   blocks << create_paragraph_block(paragraph) if paragraph.present?
                 end

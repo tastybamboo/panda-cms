@@ -1,5 +1,7 @@
-<% if user.is_a?(Panda::CMS::User) %>
+<% if user.is_a?(Panda::CMS::User) && time %>
   <%= render Panda::CMS::Admin::UserDisplayComponent.new(user: user, metadata: "#{time_ago_in_words(time)} ago") %>
+<% elsif user.is_a?(Panda::CMS::User) %>
+  <%= render Panda::CMS::Admin::UserDisplayComponent.new(user: user, metadata: "Not published") %>
 <% elsif time %>
   <div class="text-black/60"><%= time_ago_in_words(time) %> ago</div>
 <% end %>

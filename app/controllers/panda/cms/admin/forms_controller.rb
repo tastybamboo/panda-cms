@@ -38,8 +38,6 @@ module Panda
           add_breadcrumb "Forms", admin_forms_path
         end
 
-        private
-
         # Only allow a list of trusted parameters through
         # @type private
         # @return ActionController::StrongParameters

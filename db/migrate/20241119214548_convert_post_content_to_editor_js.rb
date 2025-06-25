@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class ConvertPostContentToEditorJs < ActiveRecord::Migration[7.1]
   def up
     Panda::CMS::Post.find_each do |post|

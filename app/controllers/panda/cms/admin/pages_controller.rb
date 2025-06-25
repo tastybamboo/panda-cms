@@ -38,11 +38,9 @@ module Panda
           page.path = nil if page.path.blank?
 
           # Set the full path before validation if we have a parent
-          if page.parent && page.parent.path != "/" && page.path.present?
+          if page.parent && page.parent.path != "/" && page.path.present? && !page.path.start_with?(page.parent.path)
             # Only prepend parent path if it's not already included
-            unless page.path.start_with?(page.parent.path)
-              page.path = page.parent.path + page.path
-            end
+            page.path = page.parent.path + page.path
           end
 
           if page.save

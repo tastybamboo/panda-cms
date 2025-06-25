@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Set OmniAuth test mode and failure condition
 OmniAuth.config.test_mode = true
 OmniAuth.config.on_failure = proc { |env|
@@ -21,7 +23,7 @@ module OmniAuthHelpers
 
     Rails.application.env_config["omniauth.auth"] = OmniAuth.config.mock_auth[:google]
     visit "/admin/auth/google/callback"
-    sleep(0.5)  # Ensure callback is processed
+    sleep(0.5) # Ensure callback is processed
   end
 
   def manual_login_with_google(user)
@@ -86,23 +88,13 @@ module OmniAuthHelpers
   end
 
   def admin_user
-    Panda::CMS::User.find_or_create_by!(
-      firstname: "Admin",
-      lastname: "User",
-      email: "admin@example.com",
-      admin: true,
-      image_url: "/panda-cms-assets/panda-nav.png"
-    )
+    # Use fixture user instead of creating new one
+    Panda::CMS::User.find_by!(email: "admin@example.com")
   end
 
   def regular_user
-    Panda::CMS::User.find_or_create_by!(
-      firstname: "Regular",
-      lastname: "User",
-      email: "regular@example.com",
-      admin: false,
-      image_url: "/panda-cms-assets/panda-nav.png"
-    )
+    # Use fixture user instead of creating new one
+    Panda::CMS::User.find_by!(email: "user@example.com")
   end
 end
 

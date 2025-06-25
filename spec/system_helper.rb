@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Load general RSpec Rails configuration
 require "rails_helper"
 require "capybara/rspec"

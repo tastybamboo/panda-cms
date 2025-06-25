@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "sanitize"
 
 module Panda
@@ -60,6 +62,7 @@ module Panda
               # Only allow the exact valid content we expect
               valid_content = '<figure class="text-left"><blockquote><p>Valid HTML</p></blockquote><figcaption>Valid caption</figcaption></figure>'
               return html if html.strip == valid_content.strip
+
               return ""
             end
 

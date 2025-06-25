@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class CreatePandaCMSForms < ActiveRecord::Migration[7.1]
   def change
     create_table :panda_cms_forms, id: :uuid do |t|

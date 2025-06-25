@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class CreatePandaCMSPageVersions < ActiveRecord::Migration[7.1]
   def change
     create_table :panda_cms_page_versions, id: :uuid do |t|

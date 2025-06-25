@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Panda
   module CMS
     # Represents a template in the Panda CMS application.
@@ -5,8 +7,10 @@ module Panda
       self.table_name = "panda_cms_templates"
 
       # Associations
-      has_many :pages, class_name: "Panda::CMS::Page", dependent: :restrict_with_error, inverse_of: :template, foreign_key: :panda_cms_template_id, counter_cache: :pages_count
-      has_many :blocks, class_name: "Panda::CMS::Block", dependent: :restrict_with_error, inverse_of: :template, foreign_key: :panda_cms_template_id
+      has_many :pages, class_name: "Panda::CMS::Page", dependent: :restrict_with_error, inverse_of: :template,
+        foreign_key: :panda_cms_template_id, counter_cache: :pages_count
+      has_many :blocks, class_name: "Panda::CMS::Block", dependent: :restrict_with_error, inverse_of: :template,
+        foreign_key: :panda_cms_template_id
       has_many :block_contents, through: :blocks
 
       # Validations
@@ -15,12 +19,12 @@ module Panda
       validates :file_path,
         presence: true,
         uniqueness: true,
-        format: {with: /\Alayouts\/.*\z/, message: "must be a valid layout file path"}
+        format: {with: %r{\Alayouts/.*\z}, message: "must be a valid layout file path"}
 
       validate :validate_template_file_exists
 
       # Scopes
-      scope :available, -> {
+      scope :available, lambda {
         where("max_uses IS NULL OR (max_uses > 0 AND pages_count < max_uses)")
       }
 
@@ -43,7 +47,7 @@ module Panda
             # Matches:
             # Panda::CMS::RichTextComponent.new(key: :value)
             # Panda::CMS::RichTextComponent.new key: :value, key: value
-            line.match(/Panda::CMS::([a-zA-Z]+)Component\.new[ \(]+([^\)]+)[\)]*/) do |match|
+            line.match(/Panda::CMS::([a-zA-Z]+)Component\.new[ (]+([^)]+)\)*/) do |match|
               # Extract the hash values
               template_path = file.gsub("app/views/", "").gsub(".html.erb", "")
               template_name = template_path.gsub("layouts/", "").titleize
@@ -68,7 +72,8 @@ module Panda
                 # Create the block if it doesn't exist
                 # TODO: +/- the output if it's created or removed
                 begin
-                  block = Panda::CMS::Block.find_or_create_by!(template: template, kind: block_kind, key: block_name) do |block|
+                  block = Panda::CMS::Block.find_or_create_by!(template: template, kind: block_kind,
+                    key: block_name) do |block|
                     block.name = block_name.titleize
                   end
                 rescue ActiveRecord::RecordInvalid => e
@@ -108,7 +113,7 @@ module Panda
           # Extract the file path from the Rails root
           file_path = file.to_s.sub("#{Rails.root}/app/views/", "").sub(".html.erb", "")
 
-          next if file_path == "layouts/application" || file_path == "layouts/mailer"
+          next if ["layouts/application", "layouts/mailer"].include?(file_path)
 
           # Find or create the template based on the file path
           find_or_create_by(file_path: file_path) do |t|

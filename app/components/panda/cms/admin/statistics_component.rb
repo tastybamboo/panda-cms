@@ -4,8 +4,7 @@ module Panda
   module CMS
     module Admin
       class StatisticsComponent < ViewComponent::Base
-        attr_reader :metric
-        attr_reader :value
+        attr_reader :metric, :value
 
         def initialize(metric:, value:)
           @metric = metric

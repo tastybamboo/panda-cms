@@ -1,6 +1,8 @@
+# frozen_string_literal: true
+
 require "rails_helper"
 
-RSpec.describe Panda::CMS::EditorJsContent do
+RSpec.describe Panda::CMS::EditorJsContent, :editorjs do
   let(:test_class) do
     Class.new do
       include ActiveModel::Validations
@@ -11,6 +13,7 @@ RSpec.describe Panda::CMS::EditorJsContent do
       end
 
       attr_accessor :content, :cached_content
+
       include Panda::CMS::EditorJsContent
     end
   end

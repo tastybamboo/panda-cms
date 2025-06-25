@@ -1,10 +1,12 @@
-require_relative "boot"
+# frozen_string_literal: true
 
-require "rails/all"
+require_relative 'boot'
+
+require 'rails/all'
 
 # Require the gems listed in Gemfile
 Bundler.require(*Rails.groups)
-require "panda/cms"
+require 'panda/cms'
 
 module Dummy
   class Application < Rails::Application
@@ -24,7 +26,7 @@ module Dummy
     # These settings can be overridden in specific environments using the files
     # in config/environments, which are processed later.
     #
-    config.time_zone = "Europe/London"
+    config.time_zone = 'Europe/London'
     # config.eager_load_paths << Rails.root.join("extras")
 
     config.active_support.to_time_preserves_timezone = :zone
@@ -32,7 +34,7 @@ module Dummy
     config.generators do |g|
       g.system_tests = nil
       g.test_framework :rspec, fixture: true
-      g.fixture_replacement :factory_bot, dir: "spec/factories"
+      g.fixture_replacement nil
     end
   end
 end

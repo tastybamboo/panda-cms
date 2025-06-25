@@ -29,13 +29,14 @@ module Panda
           output = output.html_safe
           base_heading_styles = "flex pt-1 text-black mb-5 -mt-1"
 
-          if level == 1
+          case level
+          when 1
             content_tag(:h1, output, class: [base_heading_styles, "text-2xl font-medium", @additional_styles])
-          elsif level == 2
+          when 2
             content_tag(:h2, output, class: [base_heading_styles, "text-xl font-medium", @additional_styles])
-          elsif level == 3
+          when 3
             content_tag(:h3, output, class: [base_heading_styles, "text-xl", "font-light", @additional_styles])
-          elsif level == :panel
+          when :panel
             content_tag(:h3, output, class: ["text-base font-medium p-4 text-white"])
           end
         end

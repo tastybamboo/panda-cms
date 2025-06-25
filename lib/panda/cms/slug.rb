@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Panda
   module CMS
     class Slug
@@ -13,7 +15,7 @@ module Panda
         # Replace & with "and"
         string = string.gsub("&", "and")
         # Remove special characters
-        string = string.gsub(/[\!\@\£\$\%\^\&\*\(\)\+\=\{\}\[\]\:\;\"\'\|\\\`\<\>\?\,\.\/]+/, "")
+        string = string.gsub(%r{[!@£\\\^\[\]/]+}, "")
         # Replace any whitespace character with -
         string = string.gsub(/[^\w\s-]/, "-")
         # Replace multiple occurences of _ and - with -

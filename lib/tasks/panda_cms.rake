@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "tailwindcss-rails"
 require "tailwindcss/ruby"
 require "shellwords"
@@ -34,7 +36,7 @@ namespace :panda do
   end
 end
 
-task default: [:spec, :panda, :cms]
+task default: %i[spec panda cms]
 
 def run_tailwind(root_path:, input_path: nil, output_path: nil, config_path: nil, watch: false, minify: true)
   config_path ||= root_path.join("config/tailwind.config.js")

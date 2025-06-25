@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "awesome_nested_set"
 
 module Panda
@@ -8,7 +10,8 @@ module Panda
       self.implicit_order_column = "lft"
 
       belongs_to :template, class_name: "Panda::CMS::Template", foreign_key: :panda_cms_template_id
-      has_many :block_contents, class_name: "Panda::CMS::BlockContent", foreign_key: :panda_cms_page_id, dependent: :destroy
+      has_many :block_contents, class_name: "Panda::CMS::BlockContent", foreign_key: :panda_cms_page_id,
+        dependent: :destroy
       has_many :blocks, through: :block_contents
       has_many :menu_items, foreign_key: :panda_cms_page_id, class_name: "Panda::CMS::MenuItem", inverse_of: :page
       has_many :menus, through: :menu_items
@@ -19,7 +22,7 @@ module Panda
 
       validates :path,
         presence: true,
-        format: {with: /\A\/.*\z/, message: "must start with a forward slash"}
+        format: {with: %r{\A/.*\z}, message: "must start with a forward slash"}
 
       validate :validate_unique_path_in_scope
 
@@ -62,12 +65,11 @@ module Panda
         # Find any other pages with the same path
         other_page = self.class.where(path: path).where.not(id: id).first
 
-        if other_page
-          # If there's another page with the same path, check if it has a different parent
-          if other_page.parent_id == parent_id
-            errors.add(:path, "has already been taken in this section")
-          end
-        end
+        return unless other_page
+        # If there's another page with the same path, check if it has a different parent
+        return unless other_page.parent_id == parent_id
+
+        errors.add(:path, "has already been taken in this section")
       end
 
       #
@@ -88,10 +90,10 @@ module Panda
         page_existing_block_ids = block_contents.map { |bc| bc.block.id }
         required_block_ids = template_block_ids - page_existing_block_ids
 
-        if required_block_ids.count > 0
-          required_block_ids.each do |block_id|
-            Panda::CMS::BlockContent.find_or_create_by!(page: self, panda_cms_block_id: block_id, content: "")
-          end
+        return unless required_block_ids.count.positive?
+
+        required_block_ids.each do |block_id|
+          Panda::CMS::BlockContent.find_or_create_by!(page: self, panda_cms_block_id: block_id, content: "")
         end
       end
 

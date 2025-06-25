@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Panda
   module CMS
     module EditorJs
@@ -23,7 +25,7 @@ module Panda
             index = 0
 
             while index < content.length
-              rows << if index == 0 && with_headings
+              rows << if index.zero? && with_headings
                 render_header_row(content[index])
               else
                 render_data_row(content[index])

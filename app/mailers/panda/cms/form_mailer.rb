@@ -1,10 +1,12 @@
+# frozen_string_literal: true
+
 module Panda
   module CMS
     class FormMailer < Panda::CMS::ApplicationMailer
       def notification_email(form:, form_submission:)
         # TODO: Handle fields named just "name", and "email" better
         @submission_data = form_submission.data
-        @sender_name = @submission_data["first_name"].to_s + " " + @submission_data["last_name"].to_s
+        @sender_name = "#{@submission_data["first_name"]} #{@submission_data["last_name"]}"
         @sender_email = @submission_data["email"].to_s
 
         mail(

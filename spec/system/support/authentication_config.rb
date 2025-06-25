@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Configure authentication providers for all system tests
 RSpec.configure do |config|
   config.before(:each, type: :system) do

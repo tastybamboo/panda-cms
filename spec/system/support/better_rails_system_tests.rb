@@ -20,6 +20,7 @@ module BetterRailsSystemTests
   # That's where we use Capybara.last_used_session introduced before.
   def take_screenshot
     return super unless Capybara.last_used_session
+
     Capybara.using_session(Capybara.last_used_session) { super }
   end
 end
@@ -40,8 +41,33 @@ RSpec.configure do |config|
   # Means you don't have to set js: true in every system spec
   config.prepend_before(:each, type: :system) do
     driven_by :better_cuprite
-    # Load our seeds, but make sure to keep them lean!
-    Rails.application.load_seed
+    # Don't load seeds when using fixtures to avoid conflicts
+    # Rails.application.load_seed
+  end
+
+  # Set up Current attributes after Capybara is ready
+  config.before(:each, type: :system) do
+    # Wait for Capybara to be ready and set Current.root properly
+    if Capybara.current_session.server
+      host = Capybara.current_session.server.host
+      port = Capybara.current_session.server.port
+      Panda::CMS::Current.root = "http://#{host}:#{port}"
+    else
+      # Fallback if server isn't available yet
+      Panda::CMS::Current.root = "http://127.0.0.1:3001"
+    end
+
+    # Set other Current attributes that might be needed
+    Panda::CMS::Current.request_id = SecureRandom.uuid
+    Panda::CMS::Current.user_agent = "Test User Agent"
+    Panda::CMS::Current.ip_address = "127.0.0.1"
+    Panda::CMS::Current.page = nil
+    Panda::CMS::Current.user = nil
+
+    # Ensure templates have blocks generated if using fixtures
+    if defined?(Panda::CMS::Template) && Panda::CMS::Template.respond_to?(:generate_missing_blocks)
+      Panda::CMS::Template.generate_missing_blocks
+    end
   end
 
   # Enable automatic screenshots on failure

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # First, load Cuprite Capybara integration
 require "capybara/cuprite"
 require_relative "ferrum_logger"

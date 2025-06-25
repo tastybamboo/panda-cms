@@ -1,7 +1,10 @@
+# frozen_string_literal: true
+
 # panda-cms/spec/system/panda/cms/admin/my_profile_spec.rb
 require "system_helper"
 
 RSpec.describe "Admin profile management", type: :system do
+  fixtures :panda_cms_users
   before(:each) do
     login_as_admin
     visit panda_cms.edit_admin_my_profile_path

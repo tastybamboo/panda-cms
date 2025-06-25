@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "awesome_nested_set"
 
 module Panda
@@ -47,11 +49,13 @@ module Panda
 
       def year
         return nil unless slug.match?(%r{\A/\d{4}/})
+
         slug.split("/")[1]
       end
 
       def month
         return nil unless slug.match?(%r{\A/\d{4}/\d{2}/})
+
         slug.split("/")[2]
       end
 
@@ -96,13 +100,13 @@ module Panda
         self.slug = CGI.unescape(slug.strip.gsub(%r{^/+|/+$}, ""))
 
         # Handle the case where we already have a properly formatted slug
-        if slug.match?(%r{\A\d{4}/\d{2}/[^/]+\z})
-          return self.slug = "/#{slug}"
-        end
+        return self.slug = "/#{slug}" if slug.match?(%r{\A\d{4}/\d{2}/[^/]+\z})
 
         # Handle the case where we have a date-prefixed slug (from JS)
-        if (match = slug.match(%r{\A(\d{4})-(\d{2})-(.+)\z}))
-          year, month, base_slug = match[1], match[2], match[3]
+        if (match = slug.match(/\A(\d{4})-(\d{2})-(.+)\z/))
+          year = match[1]
+          month = match[2]
+          base_slug = match[3]
           return self.slug = "/#{year}/#{month}/#{base_slug}"
         end
 

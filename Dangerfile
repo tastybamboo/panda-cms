@@ -1,21 +1,19 @@
+# frozen_string_literal: true
+
 # Sometimes its a README fix, or something like that - which isn't relevant for
 # including in a CHANGELOG for example
 has_app_changes = !git.modified_files.grep(/lib/).empty?
 has_test_changes = !git.modified_files.grep(/spec/).empty?
 is_version_bump = git.modified_files.sort == ["CHANGELOG.md", "lib/panda/cms/version.rb"].sort
 
-if has_app_changes && !has_test_changes && !is_version_bump
-  warn("Tests were not updated", sticky: false)
-end
+warn("Tests were not updated", sticky: false) if has_app_changes && !has_test_changes && !is_version_bump
 
 # Thanks other people!
 message(":tada:") if is_version_bump && github.pr_author != "jfi"
 
 # Mainly to encourage writing up some reasoning about the PR, rather than
 # just leaving a title
-if github.pr_body.length < 5
-  fail "Please provide a summary in the Pull Request description"
-end
+raise "Please provide a summary in the Pull Request description" if github.pr_body.length < 5
 
 # Make it more obvious that a PR is a work in progress and shouldn't be merged yet
 warn("PR is classed as Work in Progress") if github.pr_title.include? "[WIP]"
@@ -24,8 +22,8 @@ warn("PR is classed as Work in Progress") if github.pr_title.include? "[WIP]"
 warn("Big PR") if git.lines_of_code > 500
 
 # Don't let testing shortcuts get into master by accident
-fail("fdescribe left in tests") if `grep -r fdescribe spec/ `.length > 1
-fail("fit left in tests") if `grep -r fit spec/ `.length > 1
+raise("fdescribe left in tests") if `grep -r fdescribe spec/ `.length > 1
+raise("fit left in tests") if `grep -r fit spec/ `.length > 1
 
 # Lint using reek
 reek.lint

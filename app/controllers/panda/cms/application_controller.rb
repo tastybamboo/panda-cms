@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Panda
   module CMS
     class ApplicationController < ::ActionController::Base
@@ -41,7 +43,10 @@ module Panda
       end
 
       def authenticate_admin_user!
-        redirect_to root_path, flash: {error: "Please login to view this!"} unless user_signed_in? && current_user.admin?
+        return if user_signed_in? && current_user.admin?
+
+        redirect_to root_path,
+          flash: {error: "Please login to view this!"}
       end
 
       # Required for paper_trail and seems as good as convention these days

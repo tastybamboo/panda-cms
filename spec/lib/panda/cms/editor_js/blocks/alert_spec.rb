@@ -1,6 +1,8 @@
+# frozen_string_literal: true
+
 require "rails_helper"
 
-RSpec.describe Panda::CMS::EditorJs::Blocks::Alert do
+RSpec.describe Panda::CMS::EditorJs::Blocks::Alert, :editorjs do
   include EditorHelpers
 
   let(:alert_primary) do
@@ -20,18 +22,18 @@ RSpec.describe Panda::CMS::EditorJs::Blocks::Alert do
   it "renders primary alert correctly" do
     rendered = described_class.new(alert_primary).render
     expect(normalize_html(rendered)).to eq(normalize_html(
-      '<div class="bg-blue-100 text-blue-800 p-4 mb-4 rounded-lg">' \
-        "This is an important message" \
-      "</div>"
-    ))
+                                             '<div class="bg-blue-100 text-blue-800 p-4 mb-4 rounded-lg">' \
+                                               "This is an important message" \
+                                             "</div>"
+                                           ))
   end
 
   it "renders warning alert correctly" do
     rendered = described_class.new(alert_warning).render
     expect(normalize_html(rendered)).to eq(normalize_html(
-      '<div class="bg-yellow-100 text-yellow-800 p-4 mb-4 rounded-lg">' \
-        "Warning! Something needs attention" \
-      "</div>"
-    ))
+                                             '<div class="bg-yellow-100 text-yellow-800 p-4 mb-4 rounded-lg">' \
+                                               "Warning! Something needs attention" \
+                                             "</div>"
+                                           ))
   end
 end

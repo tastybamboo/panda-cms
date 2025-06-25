@@ -17,15 +17,19 @@ module Panda
         @options[:id] ||= "code-#{key.to_s.dasherize}"
         @editable = editable
 
-        raise BlockError.new("Key 'code' is not allowed for CodeComponent") if key == :code
+        raise BlockError, "Key 'code' is not allowed for CodeComponent" if key == :code
       end
 
       def call
         # TODO: For the non-editable version, grab this from a cache or similar?
-        block = Panda::CMS::Block.find_by(kind: KIND, key: @key, panda_cms_template_id: Current.page.panda_cms_template_id)
+        block = Panda::CMS::Block.find_by(kind: KIND, key: @key,
+          panda_cms_template_id: Current.page.panda_cms_template_id)
 
         if block.nil?
-          raise Panda::CMS::MissingBlockError.new("Block with key #{@key} not found for page #{Current.page.title}") unless Rails.env.production?
+          unless Rails.env.production?
+            raise Panda::CMS::MissingBlockError, "Block with key #{@key} not found for page #{Current.page.title}"
+          end
+
           return false
         end
 
@@ -58,7 +62,7 @@ module Panda
 
       def is_embedded?
         # TODO: Check security on this - embed_id should match something?
-        request.params.dig(:embed_id).present?
+        request.params[:embed_id].present?
       end
     end
   end

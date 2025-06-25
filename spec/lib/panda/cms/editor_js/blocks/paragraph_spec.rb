@@ -1,6 +1,8 @@
+# frozen_string_literal: true
+
 require "rails_helper"
 
-RSpec.describe Panda::CMS::EditorJs::Blocks::Paragraph do
+RSpec.describe Panda::CMS::EditorJs::Blocks::Paragraph, :editorjs do
   include EditorJsHelper
 
   let(:simple_paragraph) do

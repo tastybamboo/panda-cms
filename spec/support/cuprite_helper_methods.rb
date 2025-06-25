@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module CupriteHelpers
   def pause
     page.driver.debug(binding)
@@ -5,6 +7,7 @@ module CupriteHelpers
 
   def debug_page_state
     return unless ENV["DEBUG"]
+
     puts_debug "Current Path: #{page.current_path}"
     puts_debug "Page Title: #{page.title}"
 

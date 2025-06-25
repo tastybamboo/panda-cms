@@ -1,11 +1,13 @@
+# frozen_string_literal: true
+
 require "rails_helper"
 
-RSpec.describe Panda::CMS::EditorJs::Renderer do
+RSpec.describe Panda::CMS::EditorJs::Renderer, :editorjs do
   include EditorJsHelper
 
   let(:complex_content) do
     {
-      "time" => 1730070062274,
+      "time" => 1_730_070_062_274,
       "blocks" => [
         {
           "id" => "EBYBrK_4CA",
@@ -451,7 +453,7 @@ RSpec.describe Panda::CMS::EditorJs::Renderer do
               animate: true,
               data: {controller: "block", action: "hover->block#highlight"}
             },
-            transforms: ["mentions", "emoji"],
+            transforms: %w[mentions emoji],
             footer: {
               enabled: true,
               class: "block-footer",
@@ -507,6 +509,7 @@ RSpec.describe Panda::CMS::EditorJs::Renderer do
 
           def trigger_hooks(event, content)
             return content unless options[:hooks]&.[](event)
+
             options[:hooks][event].call(content)
           end
 
@@ -598,7 +601,7 @@ RSpec.describe Panda::CMS::EditorJs::Renderer do
         ],
         author: "John Doe",
         category: "Technology",
-        tags: ["web", "design", "ruby"]
+        tags: %w[web design ruby]
       ).render
 
       expect(rendered).to include('class="blog-layout modern"')

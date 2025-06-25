@@ -4,9 +4,7 @@ module Panda
   module CMS
     module Admin
       class UserActivityComponent < ViewComponent::Base
-        attr_accessor :model
-        attr_accessor :time
-        attr_accessor :user
+        attr_accessor :model, :time, :user
 
         # @param model [ActiveRecord::Base] Model instance to which the user activity is related
         # @param at [ActiveSupport::TimeWithZone] Time of the activity

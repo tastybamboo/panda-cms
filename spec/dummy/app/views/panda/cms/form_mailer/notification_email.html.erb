@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+  </head>
+  <body>
+    <% @submission_data.each do |field, value| %>
+    <p><strong><%= field %>:</strong> <%= value %></p>
+    <% end %>
+  </body>
+</html>

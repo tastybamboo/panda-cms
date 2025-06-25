@@ -1,0 +1,24 @@
+# Templates for Panda CMS
+
+homepage_template:
+  name: "Homepage"
+  file_path: "layouts/homepage"
+  max_uses: 1
+  pages_count: 1
+  created_at: 2025-01-01 00:00:00
+  updated_at: 2025-01-01 00:00:00
+
+page_template:
+  name: "Page"
+  file_path: "layouts/page"
+  pages_count: 3
+  created_at: 2025-01-01 00:00:00
+  updated_at: 2025-01-01 00:00:00
+
+different_page_template:
+  name: "Different Page"
+  file_path: "layouts/different_page"
+  max_uses: 3
+  pages_count: 1
+  created_at: 2025-01-01 00:00:00
+  updated_at: 2025-01-01 00:00:00

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class AddMaxUsesToPandaCMSTemplate < ActiveRecord::Migration[7.1]
   def change
     add_column :panda_cms_templates, :max_uses, :integer, null: true, default: nil

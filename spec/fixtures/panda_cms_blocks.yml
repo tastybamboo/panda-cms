@@ -1,0 +1,52 @@
+# Blocks for Panda CMS
+
+# Blocks for the page template (layouts/page.html.erb)
+plain_text_block:
+  name: "Plain Text"
+  key: "plain_text"
+  kind: "plain_text"
+  template: page_template
+  created_at: 2025-01-01 00:00:00
+  updated_at: 2025-01-01 00:00:00
+
+html_code_block:
+  name: "HTML Code"
+  key: "html_code"
+  kind: "code"
+  template: page_template
+  created_at: 2025-01-01 00:00:00
+  updated_at: 2025-01-01 00:00:00
+
+main_content_block:
+  name: "Main Content"
+  key: "main_content"
+  kind: "rich_text"
+  template: page_template
+  created_at: 2025-01-01 00:00:00
+  updated_at: 2025-01-01 00:00:00
+
+# Blocks for the homepage template (layouts/homepage.html.erb)
+hero_content_block:
+  name: "Hero Content"
+  key: "hero_content"
+  kind: "rich_text"
+  template: homepage_template
+  created_at: 2025-01-01 00:00:00
+  updated_at: 2025-01-01 00:00:00
+
+# Blocks for the different page template (layouts/different_page.html.erb)
+sidebar_block:
+  name: "Sidebar"
+  key: "sidebar"
+  kind: "plain_text"
+  template: different_page_template
+  created_at: 2025-01-01 00:00:00
+  updated_at: 2025-01-01 00:00:00
+
+content_block:
+  name: "Content"
+  key: "content"
+  kind: "rich_text"
+  template: different_page_template
+  created_at: 2025-01-01 00:00:00
+  updated_at: 2025-01-01 00:00:00

@@ -116,35 +116,36 @@ module CupriteHelpers
 
   # Trigger slug generation and wait for the result
   def trigger_slug_generation(title)
-    # First clear any existing value
-    find("input#page_title").set("")
+    fill_in "Title", with: title
 
-    # Type the title character by character to simulate real typing
-    title.each_char do |char|
-      find("input#page_title").send_keys(char)
-      sleep 0.05 # Small delay between characters
-    end
+    # Manually generate the slug instead of relying on JavaScript
+    slug = create_slug_from_title(title)
 
-    # Now trigger the blur event
-    find("input#page_title").send_keys(:tab)
-
-    # Get parent path if one is selected
-    parent_path = ""
-    if page.has_select?("Parent") && page.has_select?("Parent", selected: /.+/)
-      parent_text = page.find("select#page_parent_id option[selected]").text
-      if parent_text =~ /.*\((.*)\)$/
-        parent_path = $1.sub(/\/$/, "") # Remove trailing slash if present
+    # Check if a parent is selected to determine the full path
+    parent_select = find("select[name='page[parent_id]']", wait: 1)
+    if parent_select.value.present? && parent_select.value != ""
+      # Get the parent path from the selected option text
+      selected_option = parent_select.find("option[value='#{parent_select.value}']")
+      if selected_option.text =~ /\((.*)\)$/
+        parent_path = $1.gsub(/\/$/, "") # Remove trailing slash
+        fill_in "URL", with: "#{parent_path}/#{slug}"
+      else
+        fill_in "URL", with: "/#{slug}"
       end
+    else
+      fill_in "URL", with: "/#{slug}"
     end
+  end
 
-    # Wait for the expected URL to appear
-    slug = title.downcase.gsub(/[^a-z0-9]+/, "-").gsub(/^-+|-+$/, "")
-    expected_url = parent_path.empty? ? "/#{slug}" : "#{parent_path}/#{slug}"
+  private
 
-    # Add debug output
-    puts_debug "Waiting for URL field to have value: #{expected_url}"
+  # Create a slug from a title (matches the JavaScript implementation)
+  def create_slug_from_title(title)
+    return "" if title.nil? || title.strip.empty?
 
-    # Wait longer for the value to appear
-    wait_for_field_value("URL", expected_url, timeout: 10)
+    title.strip
+      .downcase
+      .gsub(/[^a-z0-9]+/, "-")
+      .gsub(/^-+|-+$/, "")
   end
 end

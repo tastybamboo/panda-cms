@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 namespace :panda do
   namespace :cms do
     desc "Copy any missing migrations from panda-cms to the host application"

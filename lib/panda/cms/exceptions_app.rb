@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # https://guides.rubyonrails.org/configuring.html#config-exceptions-app
 module Panda
   module CMS

@@ -1,6 +1,9 @@
+# frozen_string_literal: true
+
 class CreatePandaCMSBlocks < ActiveRecord::Migration[7.1]
   def change
-    create_enum :panda_cms_block_kind, ["plain_text", "rich_text", "image", "video", "audio", "file", "code", "iframe", "quote", "list", "table", "form"]
+    create_enum :panda_cms_block_kind,
+      %w[plain_text rich_text image video audio file code iframe quote list table form]
 
     create_table :panda_cms_blocks, id: :uuid do |t|
       t.enum :kind, enum_type: :panda_cms_block_kind, default: "plain_text", null: false
