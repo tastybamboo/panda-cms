@@ -21,8 +21,6 @@ Panda::CMS::Engine.routes.draw do
         get "bulk_editor", to: "bulk_editor#new"
         post "bulk_editor", to: "bulk_editor#create"
       end
-
-      mount Lookbook::Engine, at: "/lookbook" if Rails.env.development?
     end
 
     get Panda::CMS.route_namespace, to: "admin/dashboard#show", as: :admin_dashboard

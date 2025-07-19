@@ -68,7 +68,7 @@ See our [Contributing Guidelines](https://docs.pandacms.io/developers/contributi
 
 ### Testing
 
-Panda CMS uses RSpec for testing. 
+Panda CMS uses RSpec for testing.
 
 #### Using Fixtures
 
@@ -79,6 +79,7 @@ We encourage using fixtures for tests instead of factories for consistent test d
 3. Use helper methods to create test templates with mocked file validation
 
 Example fixture format:
+
 ```yaml
 # spec/fixtures/panda_cms_pages.yml
 home_page:
@@ -91,6 +92,7 @@ home_page:
 ```
 
 Example test using fixtures:
+
 ```ruby
 # Access fixture using table name and record name
 page = panda_cms_pages(:home_page)
@@ -103,4 +105,4 @@ When testing models with file validations or complex callbacks, use the helper m
 
 The gem is available as open source under the terms of the [BSD-3-Clause License](https://opensource.org/licenses/bsd-3-clause).
 
-Copyright © 2024 - 2025, Panda Software Limited.
+Copyright © 2024 - 2025, Otaina Limited.

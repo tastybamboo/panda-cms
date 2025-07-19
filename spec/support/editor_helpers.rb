@@ -55,6 +55,8 @@ module EditorHelpers
   end
 
   def wait_for_editor_in_context(context)
+    puts "DEBUG: Looking for editor container: #{@editor_container_id}" if ENV["DEBUG"]
+
     # First find the editor container
     editor_container = if @editor_container_id.start_with?("#")
       context.find("##{@editor_container_id.sub("#", "")}")
@@ -62,32 +64,156 @@ module EditorHelpers
       context.find(@editor_container_id)
     end
 
-    # Check for hidden field
-    context.find("input[data-editor-form-target='hiddenField']", visible: false)
+    puts "DEBUG: Found editor container" if ENV["DEBUG"]
 
-    # Check if editor exists
-    editor_exists = context.evaluate_script("window.editor !== null && window.editor !== undefined")
+    # For page editing (iframe context), we don't have a form with hidden field
+    # Instead, we check for the editable div with data-controller="editor-js"
+    if @editor_container_id == 'div[data-editable-kind="rich_text"]'
+      puts "DEBUG: In iframe context, looking for editor-js controller" if ENV["DEBUG"]
 
-    # If not found, try finding it on the holder element within the container
-    unless editor_exists
-      begin
-        # Scope the search to the editor container
-        editor_holder = editor_container.find(".codex-editor", match: :first)
-        editor_exists = context.evaluate_script("arguments[0].editorInstance !== null", editor_holder)
-      rescue Capybara::ElementNotFound
-        # Editor holder not found
+      # Wait for the iframe to load and the editor div to appear
+      max_wait_attempts = 100
+      wait_attempts = 0
+      editor_div = nil
+
+      while wait_attempts < max_wait_attempts && editor_div.nil?
+        begin
+          editor_div = context.find('div[data-controller="editor-js"]', wait: 1)
+          puts "DEBUG: Found editor div with data-controller" if ENV["DEBUG"]
+          break
+        rescue Capybara::ElementNotFound
+          wait_attempts += 1
+          sleep 0.2
+
+          # Debug iframe loading
+          if ENV["DEBUG"] && wait_attempts % 10 == 0
+            puts "DEBUG: Attempt #{wait_attempts}, checking iframe content..."
+            content = context.evaluate_script("document.body.innerHTML.length")
+            puts "DEBUG: Iframe content length: #{content}"
+          end
+        end
       end
-    end
 
-    editor_exists
+      if editor_div.nil?
+        puts "DEBUG: Could not find editor div after #{wait_attempts} attempts" if ENV["DEBUG"]
+        return false
+      end
+
+      # Debug current state
+      if ENV["DEBUG"]
+        puts "DEBUG: Editor div attributes:"
+        puts "  data-editable-initialized: #{editor_div['data-editable-initialized']}"
+        puts "  data-editor-js-initialized-value: #{editor_div['data-editor-js-initialized-value']}"
+
+        # Check what's in the DOM
+        html_content = context.evaluate_script("document.body.innerHTML")
+        puts "DEBUG: Page HTML length: #{html_content.length}"
+
+        # Check for script tags
+        scripts = context.evaluate_script("Array.from(document.scripts).map(s => s.src).filter(s => s)")
+        puts "DEBUG: Loaded scripts: #{scripts.join(', ')}"
+
+        # Check for EditorJS availability
+        editorjs_available = context.evaluate_script("typeof EditorJS !== 'undefined'")
+        puts "DEBUG: EditorJS available: #{editorjs_available}"
+      end
+
+      # Check if editor is initialized by specifically waiting for editorInstance on holder
+      max_attempts = 150
+      attempts = 0
+
+      while attempts < max_attempts
+        initialized = context.evaluate_script(<<~JS)
+          (function() {
+            const editorDiv = document.querySelector('[data-controller="editor-js"]');
+            if (!editorDiv) return false;
+
+            // Check if EditorJS resources are available
+            const hasEditorJS = typeof EditorJS !== 'undefined';
+            const hasTools = typeof Paragraph !== 'undefined' && typeof Header !== 'undefined';
+
+            if (!hasEditorJS || !hasTools) return false;
+
+            // The most reliable indicator is the editor instance on the holder
+            const holder = document.querySelector('.editor-js-holder');
+            if (!holder) return false;
+
+            // Check if the editor instance exists and has the save method
+            const hasEditorInstance = holder.editorInstance !== null &&
+                                    holder.editorInstance !== undefined &&
+                                    typeof holder.editorInstance.save === 'function';
+
+            return hasEditorInstance;
+          })();
+        JS
+
+        if ENV["DEBUG"] && attempts % 15 == 0
+          puts "DEBUG: Attempt #{attempts}, initialized: #{initialized}"
+        end
+
+        return true if initialized
+
+        attempts += 1
+        sleep 0.15
+      end
+
+      puts "DEBUG: Editor initialization failed after #{attempts} attempts" if ENV["DEBUG"]
+      return false
+    else
+      # For form context (posts, etc.), check for hidden field
+      context.find("input[data-editor-form-target='hiddenField']", visible: false)
+
+      # Check if editor exists
+      editor_exists = context.evaluate_script("window.editor !== null && window.editor !== undefined")
+
+      # If not found, try finding it on the holder element within the container
+      unless editor_exists
+        begin
+          # Scope the search to the editor container
+          editor_holder = editor_container.find(".codex-editor", match: :first)
+          editor_exists = context.evaluate_script("arguments[0].editorInstance !== null", editor_holder)
+        rescue Capybara::ElementNotFound
+          # Editor holder not found
+        end
+      end
+
+      editor_exists
+    end
   end
 
   def wait_for_editor_initialization(record = nil)
     wait_for_editor(record)
 
     within(editor_container_id(record)) do
-      # If editor is empty, we need to click it first
-      find(".codex-editor--empty").click if page.has_css?(".codex-editor--empty", wait: 1)
+      # Wait for the editor to be fully loaded
+      if record.is_a?(Panda::CMS::Page)
+        # For pages in iframe, wait for the editor div to be initialized
+        find('[data-controller="editor-js"]', wait: 10)
+
+        # Wait for editor to be ready
+        max_attempts = 50
+        attempts = 0
+
+        while attempts < max_attempts
+          ready = page.evaluate_script(<<~JS)
+            (function() {
+              const editorDiv = document.querySelector('[data-controller="editor-js"]');
+              return editorDiv && (
+                document.querySelector('.codex-editor') !== null ||
+                window.editor !== null && window.editor !== undefined
+              );
+            })();
+          JS
+
+          break if ready
+
+          attempts += 1
+          sleep 0.1
+        end
+      else
+        # For other contexts, check for empty editor
+        find(".codex-editor--empty").click if page.has_css?(".codex-editor--empty", wait: 1)
+      end
     end
   end
 
@@ -140,8 +266,37 @@ module EditorHelpers
 
   def add_editor_paragraph(text, record = nil, replace_first: false)
     within(editor_container_id(record)) do
-      # Wait for editor to be initialized
-      find(".codex-editor[data-editor-initialized='true']", wait: 10)
+      # Wait for editor to be initialized differently based on context
+      if record.is_a?(Panda::CMS::Page)
+        # For pages in iframe, wait for the editable div and codex editor
+        find('[data-controller="editor-js"]', wait: 10)
+
+        # Wait for codex editor to be ready
+        max_attempts = 50
+        attempts = 0
+
+        while attempts < max_attempts
+          editor_ready = page.evaluate_script(<<~JS)
+            (function() {
+              return document.querySelector('.codex-editor') !== null;
+            })();
+          JS
+
+          break if editor_ready
+
+          attempts += 1
+          sleep 0.1
+        end
+
+        # Click on the editor to activate it if it's empty
+        if page.has_css?('.codex-editor--empty', wait: 1)
+          find('.codex-editor--empty').click
+          sleep 0.2
+        end
+      else
+        # For other contexts, wait for the traditional editor
+        find(".codex-editor[data-editor-initialized='true']", wait: 10)
+      end
 
       if replace_first && page.has_css?(".ce-block")
         # Click the first paragraph to focus it
@@ -152,17 +307,35 @@ module EditorHelpers
         # Enter new content
         first_block.find("[contenteditable]").set(text)
       else
-        # Open the plus menu if we're adding a new block
-        unless page.has_css?(".ce-block") && find_all(".ce-block").count == 1 && find(".ce-block [contenteditable]").text.blank?
+        # For iframe context, we might need to create the first block
+        if record.is_a?(Panda::CMS::Page) && !page.has_css?(".ce-block")
+          # Wait for codex editor to be available and click to create first block
+          if page.has_css?('.codex-editor', wait: 5)
+            find('.codex-editor').click
+            sleep 0.5
+          elsif page.has_css?('.editor-js-holder', wait: 5)
+            find('.editor-js-holder').click
+            sleep 0.5
+          end
+        end
+
+        # Check if we need to add a new block or use existing empty one
+        if page.has_css?(".ce-block") && find_all(".ce-block").count == 1 && find(".ce-block [contenteditable]").text.blank?
+          # Use existing empty block
+          within(find(".ce-block")) do
+            find("[contenteditable]").set(text)
+          end
+        else
+          # Open the plus menu if we're adding a new block
           open_plus_menu
           within(".ce-popover--opened") do
             find("[data-item-name='paragraph']").click
           end
-        end
 
-        # Find the last block and enter text
-        within(all(".ce-block").last) do
-          find("[contenteditable]").set(text)
+          # Find the last block and enter text
+          within(all(".ce-block").last) do
+            find("[contenteditable]").set(text)
+          end
         end
       end
     end
@@ -247,8 +420,20 @@ module EditorHelpers
   def expect_editor_content_to_include(text, record = nil)
     wait_for_editor_initialization(record)
 
-    # Wait for blocks to be rendered
-    expect(page).to have_css(".ce-block")
+    # For iframe context, we need to wait a bit longer for content to be rendered
+    if record.is_a?(Panda::CMS::Page)
+      # Wait for the editor to have content with more patience
+      max_attempts = 50
+      attempts = 0
+
+      while attempts < max_attempts && !page.has_css?(".ce-block")
+        sleep 0.2
+        attempts += 1
+      end
+    end
+
+    # Wait for blocks to be rendered with more patience
+    expect(page).to have_css(".ce-block", wait: 10)
 
     # Get all blocks
     blocks = all(".ce-block")
@@ -265,7 +450,7 @@ module EditorHelpers
       end
     end
 
-    expect(found).to be(true), "Expected to find '#{text}' in editor content"
+    expect(found).to be(true), "Expected to find '#{text}' in editor content. Available blocks: #{blocks.map(&:text).join(', ')}"
   end
 
   def count_editor_blocks

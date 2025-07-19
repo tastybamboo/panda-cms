@@ -101,6 +101,9 @@ RSpec.configure do |config|
   # Add debug helper method globally
   config.include DebugHelpers
 
+  config.include ViewComponent::TestHelpers, type: :view_component
+  config.include Capybara::RSpecMatchers, type: :view_component
+
   # Use transactions, so we don't have to worry about cleaning up the database
   # The idea is to start each example with a clean database, create whatever data
   # is necessary for that example, and then remove that data by simply rolling
@@ -151,8 +154,6 @@ RSpec.configure do |config|
     end
   end
 
-  # config.include ViewComponent::TestHelpers, type: :view_component
-  # config.include Capybara::RSpecMatchers, type: :view_component
   # Configure fixtures path and enable fixtures
   config.fixture_paths = [File.expand_path("fixtures", __dir__)]
   config.use_transactional_fixtures = true
@@ -178,12 +179,4 @@ RSpec.configure do |config|
   config.before(:suite) do
     DatabaseCleaner.clean_with :truncation
   end
-
-  # Don't use DatabaseCleaner around each test when using transactional fixtures
-  # The transactional fixtures handle the cleanup automatically
-  # config.around(:each) do |example|
-  #   DatabaseCleaner.cleaning do
-  #     example.run
-  #   end
-  # end
 end

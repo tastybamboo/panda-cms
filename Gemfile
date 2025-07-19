@@ -54,3 +54,5 @@ end
 
 group :test do
 end
+
+gem "importmap-rails", "~> 2.1"

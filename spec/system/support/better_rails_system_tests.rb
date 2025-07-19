@@ -74,11 +74,31 @@ RSpec.configure do |config|
   config.after(:each, type: :system) do |example|
     if example.exception
       begin
+        # Wait for any pending JavaScript and network requests to complete
+        if page.driver.respond_to?(:browser) && page.driver.browser.respond_to?(:network)
+          page.driver.browser.network.wait_for_idle(timeout: 2) rescue nil
+        end
+
+        # Wait for DOM to be ready
+        sleep 0.5
+
+        # Ensure we have some content before taking screenshot
+        page_html = page.html rescue "<html><body>Error loading page</body></html>"
+        if page_html.length < 100
+          puts "Warning: Page content appears minimal (#{page_html.length} chars) when taking screenshot"
+        end
+
         # Use Capybara's save_screenshot method
         screenshot_path = Capybara.save_screenshot
-        puts "Screenshot saved to: #{screenshot_path}" if screenshot_path
+        if screenshot_path
+          puts "Screenshot saved to: #{screenshot_path}"
+          puts "Page title: #{page.title rescue 'N/A'}"
+          puts "Page content length: #{page_html.length} characters"
+        end
       rescue => e
         puts "Failed to capture screenshot: #{e.message}"
+        puts "Exception class: #{example.exception.class}"
+        puts "Exception message: #{example.exception.message}"
       end
     end
   end

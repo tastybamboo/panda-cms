@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-require "htmlentities"
 require "json"
 
 module Panda
