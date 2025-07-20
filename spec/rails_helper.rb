@@ -160,8 +160,8 @@ RSpec.configure do |config|
   # Load fixtures globally for all tests
   config.global_fixtures = :all
 
-  # Include fixture helpers
-  config.include FixtureHelpers
+  # Include fixture helpers (removed non-existent FixtureHelpers module)
+  # config.include FixtureHelpers
 
   if defined?(Bullet) && Bullet.enable?
     config.before(:each) do

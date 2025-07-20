@@ -26,7 +26,26 @@ begin
   puts "Total users in database: #{user_count}"
 
   if user_count == 0
-    puts "⚠️  No users found - fixtures may not be loaded"
+    puts "⚠️  No users found - attempting to load fixtures..."
+
+    # Try to load fixtures manually
+    begin
+      require 'active_record/fixtures'
+      fixture_path = File.expand_path("../spec/fixtures", __dir__)
+      puts "Loading fixtures from: #{fixture_path}"
+
+      if File.directory?(fixture_path)
+        ActiveRecord::FixtureSet.create_fixtures(fixture_path, ['panda_cms_users'])
+        puts "✅ Fixtures loaded successfully"
+
+        user_count = Panda::CMS::User.count
+        puts "Users after fixture loading: #{user_count}"
+      else
+        puts "❌ Fixture directory not found: #{fixture_path}"
+      end
+    rescue => fixture_error
+      puts "❌ Error loading fixtures: #{fixture_error.message}"
+    end
   else
     puts "✅ Users found in database"
   end
