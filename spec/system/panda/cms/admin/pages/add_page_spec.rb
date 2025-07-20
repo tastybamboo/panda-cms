@@ -79,6 +79,70 @@ RSpec.describe "When adding a page", type: :system, js: true do
       end
     end
 
+    context "when creating nested pages" do
+      it "correctly generates slugs for second-level pages without path duplication" do
+        # Create a first-level page
+        trigger_slug_generation("First Level Page")
+        expect(page).to have_field("URL", with: "/first-level-page")
+        select "Page", from: "Template"
+        click_button "Create Page"
+
+        within_frame "editablePageFrame" do
+          expect(page).to have_content("Basic Page Layout")
+        end
+
+        # Now create a second-level page under the first-level page
+        visit "/admin/pages/new"
+        select "- First Level Page", from: "Parent"
+        trigger_slug_generation("Second Level Page")
+        expect(page).to have_field("URL", with: "/first-level-page/second-level-page")
+        select "Page", from: "Template"
+        click_button "Create Page"
+
+        # Verify the page was created with the correct path
+        expect(page).to_not have_content("URL has already been taken")
+        within_frame "editablePageFrame" do
+          expect(page).to have_content("Basic Page Layout")
+        end
+
+        # Verify the actual path stored in the database
+        second_level_page = Panda::CMS::Page.find_by(title: "Second Level Page")
+        expect(second_level_page.path).to eq("/first-level-page/second-level-page")
+      end
+
+      it "correctly generates slugs for third-level pages without path duplication" do
+        # Create a first-level page
+        trigger_slug_generation("Level One")
+        select "Page", from: "Template"
+        click_button "Create Page"
+
+        # Create a second-level page
+        visit "/admin/pages/new"
+        select "- Level One", from: "Parent"
+        trigger_slug_generation("Level Two")
+        select "Page", from: "Template"
+        click_button "Create Page"
+
+        # Create a third-level page
+        visit "/admin/pages/new"
+        select "-- Level Two", from: "Parent"
+        trigger_slug_generation("Level Three")
+        expect(page).to have_field("URL", with: "/level-one/level-two/level-three")
+        select "Page", from: "Template"
+        click_button "Create Page"
+
+        # Verify the page was created successfully
+        expect(page).to_not have_content("URL has already been taken")
+        within_frame "editablePageFrame" do
+          expect(page).to have_content("Basic Page Layout")
+        end
+
+        # Verify the actual path stored in the database
+        third_level_page = Panda::CMS::Page.find_by(title: "Level Three")
+        expect(third_level_page.path).to eq("/level-one/level-two/level-three")
+      end
+    end
+
     it "doesn't show the homepage template as selectable as it has already been used" do
       expect(page).to have_select("Template", options: ["Page"])
       expect(page).to_not have_select("Template", options: ["Homepage"])
