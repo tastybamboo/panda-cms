@@ -157,8 +157,22 @@ module Panda
         end
 
         def importmap_available?
-          defined?(Rails.application.importmap) &&
-          Rails.application.importmap.entries.any? { |entry| entry.name.include?('panda') }
+          return false unless defined?(Rails.application.importmap)
+
+          begin
+            # Rails 8+ uses a different API for accessing importmap entries
+            if Rails.application.importmap.respond_to?(:to_json)
+              importmap_json = JSON.parse(Rails.application.importmap.to_json)
+              importmap_json.any? { |name, _| name.include?('panda') }
+            elsif Rails.application.importmap.respond_to?(:entries)
+              Rails.application.importmap.entries.any? { |entry| entry.name.include?('panda') }
+            else
+              false
+            end
+          rescue => e
+            Rails.logger.debug "[Panda CMS] Could not check importmap: #{e.message}"
+            false
+          end
         end
 
         def engine_assets_available?
