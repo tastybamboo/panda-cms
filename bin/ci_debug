@@ -3,6 +3,7 @@
 
 # CI Debug Script for Panda CMS
 # This script helps diagnose test failures in CI by checking the environment setup
+# Usage: bundle exec rails runner bin/ci_debug
 
 puts "=== CI Debug Script for Panda CMS ==="
 puts "Time: #{Time.now}"
@@ -11,16 +12,8 @@ puts "Rails env: #{ENV['RAILS_ENV']}"
 puts "GitHub Actions: #{ENV['GITHUB_ACTIONS']}"
 puts
 
-# Load Rails environment
-begin
-  require_relative "spec/rails_helper"
-  puts "✅ Rails environment loaded successfully"
-rescue => e
-  puts "❌ Failed to load Rails environment: #{e.message}"
-  puts "Backtrace: #{e.backtrace.first(3)}"
-  exit 1
-end
-
+# Rails environment is already loaded by 'rails runner'
+puts "✅ Rails environment loaded by rails runner"
 puts
 
 # Check database connectivity
