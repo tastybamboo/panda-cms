@@ -113,7 +113,7 @@ RSpec.describe "Admin profile management", type: :system do
 
     # Debug form details before submission
     if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
-      form = page.find('form')
+      form = page.find('form[data-controller="theme-form"]')
       puts "[DEBUG] Form action: #{form[:action]}"
       puts "[DEBUG] Form method: #{form[:method]}"
       puts "[DEBUG] Form data-controller: #{form[:'data-controller']}"
