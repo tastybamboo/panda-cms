@@ -206,6 +206,238 @@ end
 
 puts
 
+# Check JavaScript and asset loading
+puts "=== JavaScript & Asset Loading Check ==="
+begin
+  # Check if importmap files exist
+  importmap_path = Rails.root.join("config", "importmap.rb")
+  if File.exist?(importmap_path)
+    puts "✅ Importmap config exists: #{importmap_path}"
+
+    # Load and check importmap content
+    importmap_content = File.read(importmap_path)
+    if importmap_content.include?("application")
+      puts "✅ Application entry found in importmap"
+    else
+      puts "❌ Application entry NOT found in importmap"
+    end
+  else
+    puts "❌ Importmap config NOT found: #{importmap_path}"
+  end
+
+  # Check JavaScript application files
+  js_app_path = Rails.root.join("app", "javascript", "application.js")
+  if File.exist?(js_app_path)
+    puts "✅ JavaScript application file exists: #{js_app_path}"
+
+    js_content = File.read(js_app_path)
+    if js_content.include?("@hotwired/stimulus") || js_content.include?("controllers")
+      puts "✅ Stimulus/controllers import found in application.js"
+    else
+      puts "❌ Stimulus/controllers import NOT found in application.js"
+      puts "  Content preview: #{js_content[0..200]}..."
+    end
+  else
+    puts "❌ JavaScript application file NOT found: #{js_app_path}"
+  end
+
+  # Check Stimulus controllers in both dummy app and main app
+  dummy_controllers_path = Rails.root.join("app", "javascript", "controllers")
+  main_controllers_path = Rails.root.join("..", "..", "app", "javascript", "panda", "cms", "controllers")
+
+  controller_files = []
+
+  # Check dummy app controllers
+  if File.directory?(dummy_controllers_path)
+    puts "✅ Dummy app Stimulus controllers directory exists: #{dummy_controllers_path}"
+    dummy_files = Dir.glob(File.join(dummy_controllers_path, "**/*.js"))
+    controller_files.concat(dummy_files)
+    puts "Dummy app controller files: #{dummy_files.size}"
+  else
+    puts "❌ Dummy app Stimulus controllers directory NOT found: #{dummy_controllers_path}"
+  end
+
+  # Check main app controllers (engine)
+  engine_controllers_path = Rails.root.join("..", "..", "app", "javascript", "panda", "cms", "controllers")
+  if File.directory?(engine_controllers_path)
+    puts "✅ Engine Stimulus controllers directory exists: #{engine_controllers_path}"
+    engine_files = Dir.glob(File.join(engine_controllers_path, "**/*.js"))
+    controller_files.concat(engine_files)
+    puts "Engine controller files: #{engine_files.size}"
+  else
+    puts "❌ Engine Stimulus controllers directory NOT found: #{engine_controllers_path}"
+  end
+
+  puts "Total Stimulus controller files found: #{controller_files.size}"
+
+  # Look for theme-form controller specifically
+  theme_controller = controller_files.find { |f| f.include?("theme") }
+  if theme_controller
+    puts "✅ Theme controller found: #{File.basename(theme_controller)}"
+    puts "  Location: #{theme_controller}"
+  else
+    puts "❌ Theme controller NOT found"
+    puts "  Available controllers: #{controller_files.map { |f| File.basename(f) }.join(', ')}"
+  end
+
+  # Check if assets are precompiled in production-like environments
+  if Rails.env.production? || ENV['RAILS_ENV'] == 'production'
+    manifest_path = Rails.root.join("public", "assets", ".sprockets-manifest-*.json")
+    manifest_files = Dir.glob(manifest_path)
+
+    if manifest_files.any?
+      puts "✅ Asset manifest found (precompiled assets)"
+    else
+      puts "❌ Asset manifest NOT found (assets may not be precompiled)"
+    end
+  end
+
+  # Check CSS files
+  css_path = Rails.root.join("app", "assets", "stylesheets", "application.css")
+  if File.exist?(css_path)
+    puts "✅ Application CSS exists: #{css_path}"
+  else
+    puts "❌ Application CSS NOT found: #{css_path}"
+  end
+
+  # Check engine asset integration
+  puts "--- Engine Asset Integration ---"
+
+  # Check if the Panda CMS engine JavaScript is being loaded
+  engine_js_path = Rails.root.join("..", "..", "app", "javascript", "panda", "cms", "application.js")
+  if File.exist?(engine_js_path)
+    puts "✅ Engine JavaScript exists: #{engine_js_path}"
+
+    engine_js_content = File.read(engine_js_path)
+    if engine_js_content.include?("stimulus") || engine_js_content.include?("controllers")
+      puts "✅ Engine JavaScript includes Stimulus setup"
+    else
+      puts "❌ Engine JavaScript missing Stimulus setup"
+    end
+  else
+    puts "❌ Engine JavaScript NOT found: #{engine_js_path}"
+  end
+
+  # Check if engine controllers are being registered
+  engine_controllers_index = Rails.root.join("..", "..", "app", "javascript", "panda", "cms", "controllers", "index.js")
+  if File.exist?(engine_controllers_index)
+    puts "✅ Engine controllers index exists"
+
+    index_content = File.read(engine_controllers_index)
+    if index_content.include?("theme_form_controller") || index_content.include?("theme-form")
+      puts "✅ Theme form controller registered in engine index"
+    else
+      puts "❌ Theme form controller NOT registered in engine index"
+      puts "  Index content preview: #{index_content[0..200]}..."
+    end
+  else
+    puts "❌ Engine controllers index NOT found: #{engine_controllers_index}"
+  end
+
+  # Check importmap integration for engine assets
+  if File.exist?(importmap_path)
+    importmap_content = File.read(importmap_path)
+    if importmap_content.include?("panda") || importmap_content.include?("cms")
+      puts "✅ Panda CMS assets referenced in importmap"
+    else
+      puts "❌ Panda CMS assets NOT referenced in importmap"
+    end
+  end
+
+  puts "✅ Asset loading checks complete"
+rescue => e
+  puts "❌ Asset loading check error: #{e.message}"
+end
+
+puts
+
+# Check Rails asset pipeline and JavaScript execution
+puts "=== Rails Asset Pipeline & JavaScript Execution Check ==="
+begin
+  # Check if Rails application can compile assets
+  puts "Rails env: #{Rails.env}"
+  puts "Asset pipeline enabled: #{Rails.application.config.assets.enabled}"
+
+  # Check asset host configuration
+  asset_host = Rails.application.config.asset_host
+  puts "Asset host: #{asset_host || 'default'}"
+
+  # Check if we can generate asset URLs
+  begin
+    if defined?(ActionController::Base)
+      controller = ActionController::Base.new
+      controller.request = ActionDispatch::Request.new({})
+
+      app_js_path = Rails.application.assets&.find_asset('application.js')&.logical_path rescue nil
+      if app_js_path
+        puts "✅ application.js asset found in pipeline"
+      else
+        puts "❌ application.js asset NOT found in pipeline"
+      end
+
+      app_css_path = Rails.application.assets&.find_asset('application.css')&.logical_path rescue nil
+      if app_css_path
+        puts "✅ application.css asset found in pipeline"
+      else
+        puts "❌ application.css asset NOT found in pipeline"
+      end
+    end
+  rescue => asset_error
+    puts "⚠️  Asset pipeline check failed: #{asset_error.message}"
+  end
+
+  # Test if we can create a simple Capybara session for JS testing
+  if defined?(Capybara)
+    puts "Capybara available: true"
+    puts "JavaScript driver: #{Capybara.javascript_driver}"
+
+    # Check if browser can execute JavaScript
+    begin
+      Capybara.current_session.driver.browser.execute_script("return 'JS Working'") rescue nil
+      puts "✅ JavaScript execution capability detected"
+    rescue => js_error
+      puts "❌ JavaScript execution test failed: #{js_error.message}"
+    end
+  else
+    puts "❌ Capybara not available"
+  end
+
+  # Check Stimulus-specific setup in both locations
+  dummy_stimulus_app_path = Rails.root.join("app", "javascript", "controllers", "application.js")
+  main_stimulus_app_path = Rails.root.join("..", "..", "app", "javascript", "panda", "cms", "controllers", "index.js")
+
+  stimulus_found = false
+
+  # Check dummy app
+  if File.exist?(dummy_stimulus_app_path)
+    puts "✅ Dummy app Stimulus application controller exists"
+    content = File.read(dummy_stimulus_app_path)
+    if content.include?("Application.start")
+      puts "✅ Stimulus application.start() found in dummy app"
+      stimulus_found = true
+    end
+  end
+
+  # Check engine controllers index
+  engine_stimulus_index = Rails.root.join("..", "..", "app", "javascript", "panda", "cms", "controllers", "index.js")
+  if File.exist?(engine_stimulus_index)
+    puts "✅ Engine Stimulus controllers index exists"
+    content = File.read(engine_stimulus_index)
+    puts "Engine controllers index content preview: #{content[0..100]}..."
+    stimulus_found = true
+  end
+
+  unless stimulus_found
+    puts "❌ Stimulus application setup NOT found in either location"
+  end
+
+  puts "✅ Asset pipeline & JS execution checks complete"
+rescue => e
+  puts "❌ Asset pipeline & JS execution check error: #{e.message}"
+end
+
+puts
+
 # Check for common CI issues
 puts "=== CI Environment Check ==="
 puts "Headless mode: #{ENV['HEADLESS']}"
@@ -222,3 +454,4 @@ puts "1. Race conditions between tests"
 puts "2. Session state not being properly reset"
 puts "3. JavaScript/browser timing issues"
 puts "4. Database transaction isolation problems"
+puts "5. Asset compilation or JavaScript loading issues"

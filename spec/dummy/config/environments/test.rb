@@ -74,10 +74,6 @@ Rails.application.configure do
   # Raise error when a before_action's only/except options reference missing actions
   config.action_controller.raise_on_missing_callback_actions = true
 
-  config.importmap.paths << Panda::CMS::Engine.root.join('config/importmap.rb')
-  config.importmap.cache_sweepers << Panda::CMS::Engine.root.join('app/javascript')
-  config.importmap.cache_sweepers << Rails.application.root.join('vendor/javascript')
-
   # Configure OmniAuth for testing
   config.after_initialize do
     if defined?(OmniAuth)

@@ -91,16 +91,56 @@ RSpec.describe "Admin profile management", type: :system do
 
   it "allows changing theme preference" do
     puts "[DEBUG] === STARTING TEST: allows changing theme preference ===" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
+    puts "[DEBUG] Current path at start: #{page.current_path}" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
+    puts "[DEBUG] Page content length at start: #{page.html.length}" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
 
     # Wait for JavaScript/Stimulus controllers to be ready
+    puts "[DEBUG] Waiting for Stimulus controller..." if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
     expect(page).to have_css('[data-controller="theme-form"]', wait: ci_long_wait_time)
+    puts "[DEBUG] Stimulus controller found" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
 
     # Wait for Theme select field to be ready (extra long waits for this problematic field)
+    puts "[DEBUG] Waiting for Theme select field..." if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
     expect(page).to have_select("Theme", wait: ci_long_wait_time)
     puts "[DEBUG] Theme select field is ready" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
 
+    puts "[DEBUG] About to select Sky from Theme" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
     select "Sky", from: "Theme"
+    puts "[DEBUG] Selected Sky from Theme" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
+
+    puts "[DEBUG] About to submit form - Current path: #{page.current_path}" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
+    puts "[DEBUG] About to submit form - Page content length: #{page.html.length}" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
+
+    # Debug form details before submission
+    if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
+      form = page.find('form')
+      puts "[DEBUG] Form action: #{form[:action]}"
+      puts "[DEBUG] Form method: #{form[:method]}"
+      puts "[DEBUG] Form data-controller: #{form[:'data-controller']}"
+      csrf_token = page.find('input[name="authenticity_token"]', visible: false)[:value] rescue "Not found"
+      puts "[DEBUG] CSRF token present: #{csrf_token != 'Not found'}"
+    end
+
     click_button "Update Profile"
+    puts "[DEBUG] Clicked Update Profile button" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
+
+    # Wait a moment for the form submission to process
+    sleep(2)
+
+    puts "[DEBUG] After form submission - Current path: #{page.current_path}" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
+    puts "[DEBUG] After form submission - Current URL: #{page.current_url}" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
+    puts "[DEBUG] After form submission - Page title: #{page.title}" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
+    puts "[DEBUG] After form submission - Page content length: #{page.html.length}" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
+    puts "[DEBUG] After form submission - Response status: #{page.status_code}" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
+
+    # Check if we're on a blank page
+    if page.html.length < 100
+      puts "[DEBUG] BLANK PAGE DETECTED after form submission!" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
+      puts "[DEBUG] Page HTML: #{page.html}" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
+    end
+
+    puts "[DEBUG] Looking for success message..." if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
+    puts "[DEBUG] Page text contains: #{page.text[0..200]}..." if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
 
     expect(page).to have_content("Your profile has been updated successfully")
     expect(page).to have_select("Theme", selected: "Sky")

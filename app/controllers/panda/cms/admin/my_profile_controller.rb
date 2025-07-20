@@ -18,9 +18,16 @@ module Panda
         # @type PATCH/PUT
         # @return void
         def update
+          puts "[DEBUG] MyProfile update - params: #{user_params.inspect}" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
+          puts "[DEBUG] MyProfile update - current user before: #{current_user.inspect}" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
+
           if current_user.update(user_params)
-            redirect_to edit_admin_my_profile_path, flash: {success: "Your profile has been updated successfully."}
+            puts "[DEBUG] MyProfile update SUCCESS - setting flash message" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
+            flash[:success] = "Your profile has been updated successfully."
+            puts "[DEBUG] MyProfile update - flash set to: #{flash.inspect}" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
+            redirect_to edit_admin_my_profile_path
           else
+            puts "[DEBUG] MyProfile update FAILED - errors: #{current_user.errors.full_messages}" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
             render :edit, locals: {user: current_user}, status: :unprocessable_entity
           end
         end

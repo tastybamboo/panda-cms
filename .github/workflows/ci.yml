@@ -70,6 +70,7 @@ jobs:
           sudo apt-get install -y xvfb libvips
           export DISPLAY=':99.0'
           Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
+
       - name: "Setup Ruby"
         uses: "ruby/setup-ruby@v1"
         with:
@@ -91,7 +92,22 @@ jobs:
           GITHUB_ACTIONS: "true"
         run: |
           bundle exec rails runner bin/ci_debug
-      - name: "Run tests"
+      - name: "Compile test assets"
+        env:
+          DATABASE_URL: "postgres://postgres:password@localhost:5432/test"
+          RAILS_ENV: "test"
+        run: |
+          # Compile assets for GitHub-style distribution testing
+          bundle exec rake panda_cms:assets:compile
+
+          # Copy compiled assets to public directory for testing
+          mkdir -p public/panda-cms-assets/test
+          cp tmp/panda_cms_assets/* public/panda-cms-assets/test/ || true
+
+          echo "Assets available for testing:"
+          ls -la public/panda-cms-assets/test/ || echo "No compiled assets found"
+
+      - name: "Run tests with GitHub asset simulation"
         env:
           DATABASE_URL: "postgres://postgres:password@localhost:5432/test"
           REDIS_URL: "redis://localhost:6379/0"
@@ -102,6 +118,7 @@ jobs:
           PT_SILENCE_AR_COMPAT_WARNING: true
           CUPRITE_DEBUG: "true"
           GITHUB_ACTIONS: "true"
+          PANDA_CMS_USE_GITHUB_ASSETS: "true"
         run: |
           mkdir -p tmp
           set -o pipefail

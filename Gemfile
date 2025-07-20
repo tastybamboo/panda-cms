@@ -26,10 +26,12 @@ group :development, :test do
   gem "erb_lint"
   gem "fasterer"
   gem "generator_spec"
+  gem "importmap-rails", ">= 2"
   gem "listen"
   gem "omniauth-github"
   gem "omniauth-google-oauth2"
   gem "omniauth-microsoft_graph"
+  gem "propshaft"
   gem "puma"
   gem "rake"
   gem "rspec"
@@ -55,4 +57,6 @@ end
 group :test do
 end
 
-gem "importmap-rails", "~> 2.1"
+gem "rbnacl", "~> 7.1"
+gem "tzinfo-data", "~> 1.2025"
+gem "msgpack", "~> 1.8"

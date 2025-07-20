@@ -1,0 +1,172 @@
+JSON Coverage report generated for RSpec to /Users/james/Projects/panda-cms/spec/dummy/coverage.         3 / 22 LOC (13.64%) covered.
+Run options:
+  include {full_description: /allows\ changing\ theme\ preference/}
+  exclude {editorjs: true}
+
+Randomized with seed 38754
+
+Admin profile management
+[DEBUG] Starting test: Admin profile management allows changing theme preference
+[DEBUG] Database user count: 2
+[DEBUG] Starting login_as_admin
+[DEBUG] Found admin user: admin@example.com (ID: 8f481fcb-d9c8-55d7-ba17-5ea5d9ed8b7a)
+[DEBUG] Admin user found: admin@example.com, admin: true
+[DEBUG] About to visit callback URL
+[DEBUG] Mock auth set up: #<OmniAuth::AuthHash::InfoHash email="admin@example.com" name="Admin User">
+[DEBUG] Sessions#create started
+[DEBUG] Request env omniauth.auth: #<OmniAuth::AuthHash credentials=#<OmniAuth::AuthHash expires_at=2025-07-27 18:30:27.754976 +0100 token="mock_token"> info=#<OmniAuth::AuthHash::InfoHash email="admin@example.com" name="Admin User"> provider="google" uid="8f481fcb-d9c8-55d7-ba17-5ea5d9ed8b7a">
+[DEBUG] Provider: google
+[DEBUG] User info: #<OmniAuth::AuthHash::InfoHash email="admin@example.com" name="Admin User">
+[DEBUG] User lookup for email 'admin@example.com': found (ID: 8f481fcb-d9c8-55d7-ba17-5ea5d9ed8b7a)
+[DEBUG] Authentication successful for user: admin@example.com
+[DEBUG] Session user_id set to: 8f481fcb-d9c8-55d7-ba17-5ea5d9ed8b7a
+[DEBUG] Current.user set to: admin@example.com
+[DEBUG] Redirecting to: /admin
+[DEBUG] AdminConstraint#current_user - Looking up user ID: 8f481fcb-d9c8-55d7-ba17-5ea5d9ed8b7a
+[DEBUG] AdminConstraint#current_user - Found user: admin@example.com
+[DEBUG] AdminConstraint#matches? - User ID from session: 8f481fcb-d9c8-55d7-ba17-5ea5d9ed8b7a
+[DEBUG] AdminConstraint#matches? - Current user: admin@example.com
+[DEBUG] AdminConstraint#matches? - User present: true
+[DEBUG] AdminConstraint#matches? - User admin: true
+[DEBUG] AdminConstraint#matches? - Final result: true
+[DEBUG] https://example.com/avatar.jpg - Failed to load resource: the server responded with a status of 404 ()
+[DEBUG] application #starting
+[DEBUG] details:
+[DEBUG] console.groupEnd
+[DEBUG] alert #initialize
+[DEBUG] details:
+[DEBUG] console.groupEnd
+[DEBUG] alert #connect
+[DEBUG] details:
+[DEBUG] console.groupEnd
+[DEBUG] dashboard #initialize
+[DEBUG] details:
+[DEBUG] console.groupEnd
+[DEBUG] dashboard #connect
+[DEBUG] details:
+[DEBUG] console.groupEnd
+[DEBUG] application #start
+[DEBUG] details:
+[DEBUG] console.groupEnd
+[DEBUG] After visiting callback - Current path: /admin
+[DEBUG] Page status: 200
+[DEBUG] Page title: Dashboard · Demo Site
+[DEBUG] Page content length: 598163
+[DEBUG] After login_with_google - Current path: /admin
+[DEBUG] Page content length: 616274
+[DEBUG] Looking for 'Dashboard' content...
+[DEBUG] Possible error page detected!
+[DEBUG] Page appears to be an error page (616274 chars)
+[DEBUG] Login completed successfully
+[DEBUG] About to visit profile page after login
+[DEBUG] Current path before profile visit: /admin
+[DEBUG] Session cookies: 1
+[DEBUG] Profile path resolved to: /admin/my_profile/edit
+[DEBUG] AdminConstraint#current_user - Looking up user ID: 8f481fcb-d9c8-55d7-ba17-5ea5d9ed8b7a
+[DEBUG] AdminConstraint#current_user - Found user: admin@example.com
+[DEBUG] AdminConstraint#matches? - User ID from session: 8f481fcb-d9c8-55d7-ba17-5ea5d9ed8b7a
+[DEBUG] AdminConstraint#matches? - Current user: admin@example.com
+[DEBUG] AdminConstraint#matches? - User present: true
+[DEBUG] AdminConstraint#matches? - User admin: true
+[DEBUG] AdminConstraint#matches? - Final result: true
+[DEBUG] application #starting
+[DEBUG] details:
+[DEBUG] console.groupEnd
+[DEBUG] theme-form #initialize
+[DEBUG] details:
+[DEBUG] console.groupEnd
+[DEBUG] theme-form #connect
+[DEBUG] details:
+[DEBUG] console.groupEnd
+[DEBUG] application #start
+[DEBUG] details:
+[DEBUG] console.groupEnd
+[DEBUG] https://example.com/avatar.jpg - Failed to load resource: the server responded with a status of 404 ()
+[DEBUG] After profile visit - Current path: /admin/my_profile/edit
+[DEBUG] After profile visit - Page content length: 597929
+[DEBUG] After profile visit - Page title: My Profile · Demo Site
+[DEBUG] === STARTING TEST: allows changing theme preference ===
+[DEBUG] Current path at start: /admin/my_profile/edit
+[DEBUG] Page content length at start: 616066
+[DEBUG] Waiting for Stimulus controller...
+[DEBUG] Stimulus controller found
+[DEBUG] Waiting for Theme select field...
+[DEBUG] Theme select field is ready
+[DEBUG] About to select Sky from Theme
+[DEBUG] theme-form #updateTheme
+[DEBUG] details:
+[DEBUG] console.groupEnd
+[DEBUG] Selected Sky from Theme
+[DEBUG] About to submit form - Current path: /admin/my_profile/edit
+[DEBUG] About to submit form - Page content length: 616062
+[DEBUG] AdminConstraint#current_user - Looking up user ID: 8f481fcb-d9c8-55d7-ba17-5ea5d9ed8b7a
+[DEBUG] AdminConstraint#current_user - Found user: admin@example.com
+[DEBUG] AdminConstraint#matches? - User ID from session: 8f481fcb-d9c8-55d7-ba17-5ea5d9ed8b7a
+[DEBUG] AdminConstraint#matches? - Current user: admin@example.com
+[DEBUG] AdminConstraint#matches? - User present: true
+[DEBUG] AdminConstraint#matches? - User admin: true
+[DEBUG] AdminConstraint#matches? - Final result: true
+[DEBUG] MyProfile update - params: #<ActionController::Parameters {"firstname" => "Admin", "lastname" => "User", "email" => "admin@example.com", "current_theme" => "sky"} permitted: true>
+[DEBUG] MyProfile update - current user before: #<Panda::CMS::User id: "8f481fcb-d9c8-55d7-ba17-5ea5d9ed8b7a", firstname: "Admin", lastname: "User", email: "admin@example.com", image_url: "https://example.com/avatar.jpg", admin: true, created_at: "2025-01-01 00:00:00.000000000 +0000", updated_at: "2025-01-01 00:00:00.000000000 +0000", current_theme: "default">
+[DEBUG] MyProfile update SUCCESS - setting flash message
+[DEBUG] MyProfile update - flash set to: #<ActionDispatch::Flash::FlashHash:0x0000000128071ad8 @discard=#<Set: {}>, @flashes={"success" => "Your profile has been updated successfully."}, @now=nil>
+[DEBUG] AdminConstraint#current_user - Looking up user ID: 8f481fcb-d9c8-55d7-ba17-5ea5d9ed8b7a
+[DEBUG] AdminConstraint#current_user - Found user: admin@example.com
+[DEBUG] AdminConstraint#matches? - User ID from session: 8f481fcb-d9c8-55d7-ba17-5ea5d9ed8b7a
+[DEBUG] AdminConstraint#matches? - Current user: admin@example.com
+[DEBUG] AdminConstraint#matches? - User present: true
+[DEBUG] AdminConstraint#matches? - User admin: true
+[DEBUG] AdminConstraint#matches? - Final result: true
+[DEBUG] Clicked Update Profile button
+[DEBUG] theme-form #disconnect
+[DEBUG] details:
+[DEBUG] console.groupEnd
+[DEBUG] alert #initialize
+[DEBUG] details:
+[DEBUG] console.groupEnd
+[DEBUG] alert #connect
+[DEBUG] details:
+[DEBUG] console.groupEnd
+[DEBUG] theme-form #initialize
+[DEBUG] details:
+[DEBUG] console.groupEnd
+[DEBUG] theme-form #connect
+[DEBUG] details:
+[DEBUG] console.groupEnd
+[DEBUG] https://example.com/avatar.jpg - Failed to load resource: the server responded with a status of 404 ()
+[DEBUG] After form submission - Current path: /admin/my_profile/edit
+[DEBUG] After form submission - Current URL: http://127.0.0.1:3002/admin/my_profile/edit
+[DEBUG] After form submission - Page title: My Profile · Demo Site
+[DEBUG] After form submission - Page content length: 617865
+[DEBUG] After form submission - Response status: 200
+[DEBUG] Looking for success message...
+[DEBUG] Page text contains: Success
+Your profile has been updated successfully.
+Close
+Demo Site
+Dashboard
+Pages
+Posts
+Forms
+Menus
+Settings
+Logout
+Admin User
+ v0.7.4 | License: Perpetual
+Home
+  My Profile
+My Profile
+First Name
+Las...
+  allows changing theme preference
+
+Top 1 slowest examples (6.05 seconds, 99.3% of total time):
+  Admin profile management allows changing theme preference
+    6.05 seconds ./spec/system/panda/cms/admin/my_profile_spec.rb:92
+
+Finished in 6.09 seconds (files took 4.12 seconds to load)
+1 example, 0 failures
+
+Randomized with seed 38754
+
+JSON Coverage report generated for RSpec to /Users/james/Projects/panda-cms/coverage.         1062 / 2137 LOC (49.7%) covered.
