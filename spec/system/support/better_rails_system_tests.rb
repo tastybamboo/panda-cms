@@ -108,7 +108,7 @@ RSpec.configure do |config|
 
         # Check session state
         if page.driver.respond_to?(:browser) && page.driver.browser.respond_to?(:cookies)
-          cookies = page.driver.browser.cookies rescue []
+          cookies = page.driver.browser.cookies.all rescue []
           puts "[DEBUG] Number of cookies: #{cookies.length}" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
           session_cookie = cookies.find { |cookie| cookie["name"].include?("session") } rescue nil
           puts "[DEBUG] Session cookie present: #{session_cookie ? 'yes' : 'no'}" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
