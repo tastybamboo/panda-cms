@@ -215,58 +215,10 @@ puts "CI: #{ENV['CI']}"
 puts "Test database URL: #{ENV['DATABASE_URL']}"
 
 puts
-# Check asset precompilation
-puts "\n=== Asset Precompilation Check ==="
-begin
-  # Check if assets directory exists
-  assets_dir = Rails.root.join("public", "assets")
-  if Dir.exist?(assets_dir)
-    puts "✅ Assets directory exists: #{assets_dir}"
 
-    # Check for compiled JavaScript files
-    js_files = Dir.glob(Rails.root.join("public", "assets", "**", "*.js"))
-    css_files = Dir.glob(Rails.root.join("public", "assets", "**", "*.css"))
-
-    puts "JavaScript files found: #{js_files.length}"
-    puts "CSS files found: #{css_files.length}"
-
-    if js_files.any?
-      puts "✅ JavaScript assets compiled"
-      puts "Sample JS files:"
-      js_files.first(3).each { |file| puts "  #{File.basename(file)}" }
-    else
-      puts "❌ No JavaScript assets found!"
-    end
-
-    if css_files.any?
-      puts "✅ CSS assets compiled"
-      puts "Sample CSS files:"
-      css_files.first(3).each { |file| puts "  #{File.basename(file)}" }
-    else
-      puts "❌ No CSS assets found!"
-    end
-
-    # Check manifest file
-    manifest_path = Rails.root.join("public", "assets", ".sprockets-manifest-*.json")
-    manifest_files = Dir.glob(manifest_path)
-    if manifest_files.any?
-      puts "✅ Asset manifest found"
-    else
-      puts "❌ No asset manifest found!"
-    end
-
-  else
-    puts "❌ Assets directory does not exist!"
-    puts "Assets may not have been precompiled"
-  end
-rescue => e
-  puts "❌ Error checking assets: #{e.message}"
-end
-
-puts "\n=== Debug Complete ==="
+puts "=== Debug Complete ==="
 puts "If all checks pass but tests still fail, the issue is likely:"
 puts "1. Race conditions between tests"
 puts "2. Session state not being properly reset"
 puts "3. JavaScript/browser timing issues"
 puts "4. Database transaction isolation problems"
-puts "5. Asset precompilation issues (check assets section above)"

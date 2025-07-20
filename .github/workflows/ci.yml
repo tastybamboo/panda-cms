@@ -83,9 +83,7 @@ jobs:
           RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
           PT_SILENCE_AR_COMPAT_WARNING: true
         run: |
-          bundle exec rails db:setup db:migrate
-          bundle exec rails db:fixtures:load
-          RAILS_ENV=production SECRET_KEY_BASE_DUMMY=1 bundle exec rails assets:precompile
+          bundle exec rails test:prepare
       - name: "Run environment debug script"
         env:
           DATABASE_URL: "postgres://postgres:password@localhost:5432/test"
@@ -107,7 +105,7 @@ jobs:
         run: |
           mkdir -p tmp
           set -o pipefail
-          xvfb-run -a bundle exec rspec spec/system/panda/cms/admin/my_profile_spec.rb --tag ~skip -f j -o tmp/rspec_results.json -f p 2>&1 | tee tmp/debug_output.log
+          xvfb-run -a bundle exec rails test:prepare && bundle exec rspec spec/system/panda/cms/admin/my_profile_spec.rb --tag ~skip -f j -o tmp/rspec_results.json -f p 2>&1 | tee tmp/debug_output.log
       - name: Keep screenshots from failed system tests
         uses: actions/upload-artifact@v4
         if: failure()

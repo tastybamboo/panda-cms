@@ -45,7 +45,6 @@ end
 Dir[Rails.root.join("../support/**/*.rb")].sort.each { |f| require f }
 
 # Configure fixtures
-# We support both fixtures and factories in tests
 ActiveRecord::FixtureSet.context_class.send :include, ActiveSupport::Testing::TimeHelpers
 
 # Configure fixture set class name mapping for namespaced models
@@ -159,9 +158,6 @@ RSpec.configure do |config|
   config.use_transactional_fixtures = true
   # Load fixtures globally for all tests
   config.global_fixtures = :all
-
-  # Include fixture helpers (removed non-existent FixtureHelpers module)
-  # config.include FixtureHelpers
 
   if defined?(Bullet) && Bullet.enable?
     config.before(:each) do
