@@ -8,13 +8,36 @@ RSpec.describe "Admin profile management", type: :system do
 
   before(:each) do
     login_as_admin
-    visit panda_cms.edit_admin_my_profile_path
+
+    puts "[DEBUG] About to visit profile page after login" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
+    puts "[DEBUG] Current path before profile visit: #{page.current_path}" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
+    puts "[DEBUG] Session cookies: #{page.driver.browser.cookies.all.length}" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
+
+    profile_path = panda_cms.edit_admin_my_profile_path
+    puts "[DEBUG] Profile path resolved to: #{profile_path}" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
+
+    visit profile_path
+
+    puts "[DEBUG] After profile visit - Current path: #{page.current_path}" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
+    puts "[DEBUG] After profile visit - Page content length: #{page.html.length}" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
+    puts "[DEBUG] After profile visit - Page title: #{page.title}" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
   end
 
   it "displays the profile form with current user information" do
     puts "[DEBUG] Starting test assertions - checking page state" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
     puts "[DEBUG] Current path: #{page.current_path}" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
     puts "[DEBUG] Page content length: #{page.html.length}" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
+
+    # Debug actual page content to see what's missing
+    puts "[DEBUG] Page HTML preview: #{page.html[0..500]}..." if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
+    puts "[DEBUG] Looking for 'My Profile' in page..." if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
+
+    if page.has_content?("My Profile", wait: 0)
+      puts "[DEBUG] 'My Profile' found!" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
+    else
+      puts "[DEBUG] 'My Profile' NOT found. Available text content:" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
+      puts "[DEBUG] #{page.text[0..1000]}" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
+    end
 
     expect(page).to have_content("My Profile")
     puts "[DEBUG] Found 'My Profile' content" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]

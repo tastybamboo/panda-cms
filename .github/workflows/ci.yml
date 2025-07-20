@@ -104,6 +104,7 @@ jobs:
           CUPRITE_DEBUG: "true"
           GITHUB_ACTIONS: "true"
         run: |
+          mkdir -p tmp
           xvfb-run -a bundle exec rspec spec/system/panda/cms/admin/my_profile_spec.rb:13 --tag ~skip -f j -o tmp/rspec_results.json -f p 2>&1 | tee tmp/debug_output.log
       - name: Keep screenshots from failed system tests
         uses: actions/upload-artifact@v4
