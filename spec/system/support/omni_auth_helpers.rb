@@ -151,7 +151,7 @@ RSpec.configure do |config|
       puts "[DEBUG] Page title: #{page.title}" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
       puts "[DEBUG] Page content length: #{page.html.length}" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
       puts "[DEBUG] Current user: #{Panda::CMS::Current.user&.email}" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
-      puts "[DEBUG] Session data: #{page.driver.browser.manage.all_cookies}" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
+      puts "[DEBUG] Session data: #{page.driver.browser.cookies}" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
 
       # Save debugging info to file for CI
       if ENV["GITHUB_ACTIONS"]

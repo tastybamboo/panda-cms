@@ -10,7 +10,7 @@ RSpec.describe "Admin profile management", type: :system do
 
     puts "[DEBUG] After login_as_admin, about to visit profile path" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
     puts "[DEBUG] Current path before profile visit: #{page.current_path}" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
-    puts "[DEBUG] Session cookies before profile visit: #{page.driver.browser.manage.all_cookies.length}" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
+    puts "[DEBUG] Session cookies before profile visit: #{page.driver.browser.cookies.length}" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
 
     # Debug route helper resolution
     profile_path = panda_cms.edit_admin_my_profile_path
