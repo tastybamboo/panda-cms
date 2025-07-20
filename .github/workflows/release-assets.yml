@@ -151,6 +151,20 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: "Publish release"
+        run: |
+          VERSION="v${{ steps.version.outputs.VERSION }}"
+          echo "Publishing release $VERSION..."
+
+          if gh release edit "$VERSION" --draft=false; then
+            echo "✅ Release published successfully"
+          else
+            echo "❌ Failed to publish release"
+            exit 1
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: "Verify uploaded assets"
         run: |
           VERSION="v${{ steps.version.outputs.VERSION }}"
@@ -187,18 +201,31 @@ jobs:
           BASE_URL="https://github.com/tastybamboo/panda-cms/releases/download/v${VERSION}/"
 
           echo "Testing asset accessibility..."
+          echo "Waiting for assets to become publicly available..."
+          sleep 10
 
-          # Test manifest accessibility
+          # Test manifest accessibility with retries
           MANIFEST_URL="${BASE_URL}manifest.json"
-          if curl -f -s "$MANIFEST_URL" > /dev/null; then
-            echo "✅ Manifest accessible at: $MANIFEST_URL"
-          else
-            echo "❌ Manifest not accessible at: $MANIFEST_URL"
-            exit 1
-          fi
+          echo "Testing manifest at: $MANIFEST_URL"
+
+          for i in {1..5}; do
+            if curl -f -s "$MANIFEST_URL" > /dev/null; then
+              echo "✅ Manifest accessible at: $MANIFEST_URL"
+              break
+            else
+              echo "⏳ Attempt $i/5: Manifest not yet accessible, waiting..."
+              if [ $i -eq 5 ]; then
+                echo "❌ Manifest not accessible after 5 attempts"
+                exit 1
+              fi
+              sleep 10
+            fi
+          done
 
           # Test JavaScript bundle accessibility
           JS_URL="${BASE_URL}panda-cms-${VERSION}.js"
+          echo "Testing JavaScript bundle at: $JS_URL"
+
           if curl -f -s "$JS_URL" > /dev/null; then
             echo "✅ JavaScript bundle accessible at: $JS_URL"
 
