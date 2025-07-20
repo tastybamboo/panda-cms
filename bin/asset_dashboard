@@ -1,0 +1,569 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# GitHub Asset Performance Dashboard
+#
+# This script provides a real-time dashboard view of GitHub-hosted asset performance
+# for Panda CMS. It displays current metrics, historical trends, and health status.
+#
+# Usage:
+#   ./bin/asset_dashboard                    # Show current dashboard
+#   ./bin/asset_dashboard --refresh N       # Auto-refresh every N seconds
+#   ./bin/asset_dashboard --history         # Show historical performance
+#   ./bin/asset_dashboard --compact         # Compact view
+#
+# Options:
+#   --refresh N     Auto-refresh dashboard every N seconds
+#   --history       Show historical performance data
+#   --compact       Show compact dashboard view
+#   --no-color      Disable colored output
+#   --export FILE   Export dashboard data to file
+#
+# Examples:
+#   ./bin/asset_dashboard --refresh 30
+#   ./bin/asset_dashboard --history --export performance_history.json
+#   ./bin/asset_dashboard --compact --no-color
+
+require 'optparse'
+require 'json'
+require 'time'
+require 'fileutils'
+
+class AssetDashboard
+  CACHE_DIR = 'tmp/asset_monitoring'
+  LOG_FILE = File.join(CACHE_DIR, 'performance.log')
+  BASELINE_FILE = File.join(CACHE_DIR, 'baseline.json')
+
+  # Color codes for terminal output
+  COLORS = {
+    red: "\e[31m",
+    green: "\e[32m",
+    yellow: "\e[33m",
+    blue: "\e[34m",
+    magenta: "\e[35m",
+    cyan: "\e[36m",
+    white: "\e[37m",
+    bold: "\e[1m",
+    reset: "\e[0m",
+    bg_red: "\e[41m",
+    bg_green: "\e[42m",
+    bg_yellow: "\e[43m"
+  }.freeze
+
+  def initialize(options = {})
+    @options = {
+      refresh: 0,
+      history: false,
+      compact: false,
+      no_color: false,
+      export: nil
+    }.merge(options)
+
+    @use_colors = !@options[:no_color] && $stdout.tty?
+    setup_monitoring_directory
+  end
+
+  def run
+    if @options[:refresh] > 0
+      run_auto_refresh
+    elsif @options[:history]
+      show_historical_dashboard
+    else
+      show_current_dashboard
+    end
+  end
+
+  private
+
+  def setup_monitoring_directory
+    FileUtils.mkdir_p(CACHE_DIR)
+  end
+
+  def run_auto_refresh
+    puts colorize("🔄 Auto-refreshing dashboard every #{@options[:refresh]} seconds", :cyan)
+    puts colorize("Press Ctrl+C to stop", :yellow)
+    puts ""
+
+    trap('INT') do
+      puts colorize("\n👋 Dashboard stopped", :yellow)
+      exit 0
+    end
+
+    loop do
+      clear_screen unless @options[:compact]
+      show_current_dashboard
+      puts colorize("\n⏱️  Next refresh in #{@options[:refresh]} seconds...", :blue)
+      sleep @options[:refresh]
+    end
+  end
+
+  def show_current_dashboard
+    puts generate_dashboard_header
+    puts ""
+
+    current_performance = get_current_performance
+    baseline_data = load_baseline_data
+
+    if current_performance
+      show_performance_overview(current_performance)
+      puts ""
+      show_asset_details(current_performance)
+      puts ""
+      show_performance_comparison(current_performance, baseline_data) if baseline_data
+      puts ""
+    else
+      puts colorize("❌ Unable to fetch current performance data", :red)
+    end
+
+    show_system_status
+    export_data(current_performance) if @options[:export]
+  end
+
+  def show_historical_dashboard
+    puts generate_dashboard_header
+    puts ""
+
+    historical_data = load_historical_data
+
+    if historical_data.empty?
+      puts colorize("📊 No historical data available", :yellow)
+      puts "Run monitoring first: ./bin/monitor_assets --continuous --interval 60"
+      return
+    end
+
+    show_historical_overview(historical_data)
+    puts ""
+    show_performance_trends(historical_data)
+    puts ""
+    show_availability_trends(historical_data)
+
+    export_data(historical_data) if @options[:export]
+  end
+
+  def generate_dashboard_header
+    timestamp = Time.now.strftime("%Y-%m-%d %H:%M:%S UTC")
+    version = detect_version
+
+    header = []
+    header << colorize("🐼 PANDA CMS ASSET PERFORMANCE DASHBOARD", :bold)
+    header << "─" * 50
+    header << "📅 #{timestamp}"
+    header << "🏷️  Version: #{version}"
+    header << "🌐 Base URL: https://github.com/tastybamboo/panda-cms/releases/download/v#{version}/"
+
+    header.join("\n")
+  end
+
+  def get_current_performance
+    begin
+      # Use the monitoring script to get current data
+      require_relative '../lib/panda/cms/asset_loader'
+
+      result = {}
+      version = detect_version
+      base_url = "https://github.com/tastybamboo/panda-cms/releases/download/v#{version}/"
+
+      assets = {
+        manifest: 'manifest.json',
+        javascript: "panda-cms-#{version}.js",
+        css: "panda-cms-#{version}.css"
+      }
+
+      assets.each do |name, filename|
+        url = base_url + filename
+        start_time = Time.now
+
+        begin
+          require 'net/http'
+          uri = URI(url)
+          response = Net::HTTP.get_response(uri)
+          end_time = Time.now
+
+          result[name] = {
+            success: response.is_a?(Net::HTTPSuccess),
+            response_time: (end_time - start_time),
+            status_code: response.code.to_i,
+            size: response.is_a?(Net::HTTPSuccess) ? response.body.length : 0,
+            url: url
+          }
+        rescue => e
+          result[name] = {
+            success: false,
+            error: e.message,
+            url: url
+          }
+        end
+      end
+
+      result[:timestamp] = Time.now.iso8601
+      result[:version] = version
+      result
+    rescue => e
+      puts colorize("Error fetching performance data: #{e.message}", :red)
+      nil
+    end
+  end
+
+  def show_performance_overview(data)
+    successful_assets = data.select { |k, v| k.is_a?(Symbol) && v.is_a?(Hash) && v[:success] }
+    total_assets = data.select { |k, v| k.is_a?(Symbol) && v.is_a?(Hash) }.size
+
+    puts colorize("📊 PERFORMANCE OVERVIEW", :bold)
+    puts "─" * 30
+
+    # Overall status
+    if successful_assets.size == total_assets
+      status_color = :green
+      status_icon = "🟢"
+      status_text = "ALL SYSTEMS OPERATIONAL"
+    elsif successful_assets.size > 0
+      status_color = :yellow
+      status_icon = "🟡"
+      status_text = "PARTIAL OUTAGE"
+    else
+      status_color = :red
+      status_icon = "🔴"
+      status_text = "SERVICE UNAVAILABLE"
+    end
+
+    puts colorize("#{status_icon} #{status_text}", status_color, :bold)
+    puts ""
+
+    # Metrics
+    if successful_assets.any?
+      avg_response_time = successful_assets.values.map { |v| v[:response_time] }.sum / successful_assets.size
+      total_size = successful_assets.values.map { |v| v[:size] || 0 }.sum
+
+      puts "⚡ Average Response Time: #{colorize(format_time(avg_response_time), performance_color(avg_response_time))}"
+      puts "📦 Total Asset Size: #{format_bytes(total_size)}"
+      puts "✅ Asset Availability: #{successful_assets.size}/#{total_assets} (#{(successful_assets.size.to_f / total_assets * 100).round(1)}%)"
+    end
+  end
+
+  def show_asset_details(data)
+    puts colorize("🎯 ASSET DETAILS", :bold)
+    puts "─" * 20
+
+    asset_names = { manifest: "Manifest", javascript: "JavaScript", css: "CSS" }
+
+    asset_names.each do |key, name|
+      asset_data = data[key]
+      next unless asset_data
+
+      if asset_data[:success]
+        response_time_color = performance_color(asset_data[:response_time])
+        size_info = asset_data[:size] ? " (#{format_bytes(asset_data[:size])})" : ""
+
+        puts "✅ #{name}: #{colorize(format_time(asset_data[:response_time]), response_time_color)}#{size_info}"
+      else
+        error_msg = asset_data[:error] || "HTTP #{asset_data[:status_code]}"
+        puts "❌ #{name}: #{colorize(error_msg, :red)}"
+      end
+    end
+  end
+
+  def show_performance_comparison(current_data, baseline_data)
+    return unless baseline_data && baseline_data['summary']
+
+    puts colorize("📈 PERFORMANCE COMPARISON", :bold)
+    puts "─" * 30
+
+    baseline_data['summary'].each do |asset, baseline_stats|
+      current_asset = current_data[asset.to_sym]
+      next unless current_asset && current_asset[:success]
+
+      baseline_avg = baseline_stats['avg_response_time']
+      current_time = current_asset[:response_time]
+
+      improvement = ((baseline_avg - current_time) / baseline_avg * 100).round(1)
+
+      if improvement > 10
+        trend = "📈 #{improvement}% faster"
+        color = :green
+      elsif improvement < -10
+        trend = "📉 #{(-improvement)}% slower"
+        color = :red
+      else
+        trend = "➡️ Similar (#{improvement > 0 ? '+' : ''}#{improvement}%)"
+        color = :yellow
+      end
+
+      puts "#{asset.capitalize}: #{colorize(trend, color)} (baseline: #{format_time(baseline_avg)})"
+    end
+  end
+
+  def show_system_status
+    puts colorize("🔧 SYSTEM STATUS", :bold)
+    puts "─" * 20
+
+    # Check if monitoring data exists
+    if File.exist?(LOG_FILE)
+      log_size = File.size(LOG_FILE)
+      log_age = Time.now - File.mtime(LOG_FILE)
+      puts "📊 Monitoring Log: #{format_bytes(log_size)} (#{format_duration(log_age)} old)"
+    else
+      puts "📊 Monitoring Log: #{colorize('Not found', :yellow)}"
+    end
+
+    # Check baseline data
+    if File.exist?(BASELINE_FILE)
+      baseline_age = Time.now - File.mtime(BASELINE_FILE)
+      puts "📏 Baseline Data: Available (#{format_duration(baseline_age)} old)"
+    else
+      puts "📏 Baseline Data: #{colorize('Not established', :yellow)}"
+    end
+
+    # Check GitHub API status (simple)
+    github_status = check_github_status
+    puts "🐙 GitHub Status: #{github_status}"
+  end
+
+  def show_historical_overview(data)
+    puts colorize("📊 HISTORICAL OVERVIEW", :bold)
+    puts "─" * 25
+
+    if data.empty?
+      puts colorize("No historical data available", :yellow)
+      return
+    end
+
+    time_range = "#{data.first['timestamp']} to #{data.last['timestamp']}"
+    puts "📅 Time Range: #{time_range}"
+    puts "📈 Data Points: #{data.length}"
+    puts ""
+
+    # Calculate overall statistics
+    successful_checks = data.count { |d| d.values.any? { |v| v.is_a?(Hash) && v['success'] } }
+    availability = (successful_checks.to_f / data.length * 100).round(2)
+
+    puts "✅ Overall Availability: #{availability}%"
+  end
+
+  def show_performance_trends(data)
+    puts colorize("📈 PERFORMANCE TRENDS", :bold)
+    puts "─" * 25
+
+    asset_names = { 'manifest' => 'Manifest', 'javascript' => 'JavaScript', 'css' => 'CSS' }
+
+    asset_names.each do |key, name|
+      asset_data = data.map { |d| d[key] }.compact.select { |d| d['success'] }
+      next if asset_data.empty?
+
+      response_times = asset_data.map { |d| d['total_response_time'] || d['response_time'] }.compact
+      next if response_times.empty?
+
+      avg_time = response_times.sum / response_times.length
+      min_time = response_times.min
+      max_time = response_times.max
+
+      puts "#{name}:"
+      puts "  Average: #{format_time(avg_time)}"
+      puts "  Range: #{format_time(min_time)} - #{format_time(max_time)}"
+      puts "  Trend: #{calculate_trend(response_times)}"
+      puts ""
+    end
+  end
+
+  def show_availability_trends(data)
+    puts colorize("📊 AVAILABILITY TRENDS", :bold)
+    puts "─" * 25
+
+    asset_names = { 'manifest' => 'Manifest', 'javascript' => 'JavaScript', 'css' => 'CSS' }
+
+    asset_names.each do |key, name|
+      total_checks = data.count { |d| d[key] }
+      successful_checks = data.count { |d| d[key] && d[key]['success'] }
+
+      if total_checks > 0
+        availability = (successful_checks.to_f / total_checks * 100).round(2)
+        availability_color = availability >= 99 ? :green : availability >= 95 ? :yellow : :red
+
+        puts "#{name}: #{colorize("#{availability}%", availability_color)} (#{successful_checks}/#{total_checks})"
+      end
+    end
+  end
+
+  def load_baseline_data
+    return nil unless File.exist?(BASELINE_FILE)
+    JSON.parse(File.read(BASELINE_FILE))
+  rescue => e
+    puts colorize("Warning: Could not load baseline data: #{e.message}", :yellow)
+    nil
+  end
+
+  def load_historical_data
+    return [] unless File.exist?(LOG_FILE)
+
+    data = []
+    File.readlines(LOG_FILE).each do |line|
+      begin
+        data << JSON.parse(line.strip)
+      rescue JSON::ParserError
+        # Skip invalid lines
+      end
+    end
+    data
+  rescue => e
+    puts colorize("Warning: Could not load historical data: #{e.message}", :yellow)
+    []
+  end
+
+  def check_github_status
+    begin
+      require 'net/http'
+      uri = URI('https://www.githubstatus.com/api/v2/status.json')
+      response = Net::HTTP.get_response(uri)
+
+      if response.is_a?(Net::HTTPSuccess)
+        status_data = JSON.parse(response.body)
+        status = status_data['status']['description']
+
+        case status_data['status']['indicator']
+        when 'none'
+          colorize("✅ #{status}", :green)
+        when 'minor'
+          colorize("🟡 #{status}", :yellow)
+        when 'major', 'critical'
+          colorize("🔴 #{status}", :red)
+        else
+          colorize("❓ #{status}", :blue)
+        end
+      else
+        colorize("❓ Unable to check", :yellow)
+      end
+    rescue
+      colorize("❓ Unable to check", :yellow)
+    end
+  end
+
+  def calculate_trend(values)
+    return "No data" if values.length < 2
+
+    # Simple linear trend calculation
+    n = values.length
+    sum_x = (0...n).sum
+    sum_y = values.sum
+    sum_xy = values.each_with_index.map { |y, x| x * y }.sum
+    sum_x_squared = (0...n).map { |x| x * x }.sum
+
+    slope = (n * sum_xy - sum_x * sum_y).to_f / (n * sum_x_squared - sum_x * sum_x)
+
+    if slope < -0.001
+      colorize("📉 Improving", :green)
+    elsif slope > 0.001
+      colorize("📈 Degrading", :red)
+    else
+      colorize("➡️ Stable", :blue)
+    end
+  end
+
+  def export_data(data)
+    File.write(@options[:export], JSON.pretty_generate(data))
+    puts colorize("📄 Data exported to: #{@options[:export]}", :green)
+  end
+
+  def detect_version
+    version_file = File.join(__dir__, '..', 'VERSION')
+    if File.exist?(version_file)
+      File.read(version_file).strip
+    else
+      '0.7.4' # fallback version
+    end
+  end
+
+  def performance_color(response_time)
+    case response_time
+    when 0..0.2
+      :green
+    when 0.2..0.5
+      :yellow
+    when 0.5..1.0
+      :magenta
+    else
+      :red
+    end
+  end
+
+  def format_time(seconds)
+    if seconds < 0.001
+      "#{(seconds * 1_000_000).round(0)}μs"
+    elsif seconds < 1
+      "#{(seconds * 1000).round(1)}ms"
+    else
+      "#{seconds.round(2)}s"
+    end
+  end
+
+  def format_bytes(bytes)
+    return '0 B' if bytes == 0
+
+    units = ['B', 'KB', 'MB', 'GB']
+    size = bytes.to_f
+    unit_index = 0
+
+    while size >= 1024 && unit_index < units.length - 1
+      size /= 1024
+      unit_index += 1
+    end
+
+    "#{size.round(1)} #{units[unit_index]}"
+  end
+
+  def format_duration(seconds)
+    if seconds < 60
+      "#{seconds.round(0)}s"
+    elsif seconds < 3600
+      "#{(seconds / 60).round(0)}m"
+    elsif seconds < 86400
+      "#{(seconds / 3600).round(1)}h"
+    else
+      "#{(seconds / 86400).round(1)}d"
+    end
+  end
+
+  def colorize(text, *colors)
+    return text unless @use_colors
+
+    color_codes = colors.map { |color| COLORS[color] }.join
+    "#{color_codes}#{text}#{COLORS[:reset]}"
+  end
+
+  def clear_screen
+    puts "\e[2J\e[H"
+  end
+end
+
+# Parse command line options
+options = {}
+OptionParser.new do |opts|
+  opts.banner = "Usage: #{$0} [options]"
+
+  opts.on("-r", "--refresh N", Integer, "Auto-refresh every N seconds") do |n|
+    options[:refresh] = n
+  end
+
+  opts.on("--history", "Show historical performance data") do
+    options[:history] = true
+  end
+
+  opts.on("-c", "--compact", "Show compact dashboard view") do
+    options[:compact] = true
+  end
+
+  opts.on("--no-color", "Disable colored output") do
+    options[:no_color] = true
+  end
+
+  opts.on("-e", "--export FILE", "Export dashboard data to file") do |file|
+    options[:export] = file
+  end
+
+  opts.on("-h", "--help", "Show this help") do
+    puts opts
+    exit
+  end
+end.parse!
+
+# Run the dashboard
+dashboard = AssetDashboard.new(options)
+dashboard.run

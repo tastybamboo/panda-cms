@@ -1,0 +1,506 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# GitHub Asset Performance Monitor
+#
+# This script monitors the performance of GitHub-hosted assets for Panda CMS.
+# It tracks response times, availability, and provides performance analytics.
+#
+# Usage:
+#   ./bin/monitor_assets                    # Single check
+#   ./bin/monitor_assets --continuous      # Continuous monitoring
+#   ./bin/monitor_assets --report          # Generate performance report
+#   ./bin/monitor_assets --baseline        # Establish baseline metrics
+#
+# Options:
+#   --continuous    Run continuous monitoring (ctrl+c to stop)
+#   --interval N    Check interval in seconds (default: 60)
+#   --report        Generate performance report from stored data
+#   --baseline      Run baseline performance test
+#   --verbose       Show detailed output
+#   --json          Output results in JSON format
+#   --log-file F    Write results to log file
+#
+# Examples:
+#   ./bin/monitor_assets --continuous --interval 30
+#   ./bin/monitor_assets --report --json > performance_report.json
+#   ./bin/monitor_assets --baseline --verbose
+
+require 'optparse'
+require 'json'
+require 'net/http'
+require 'uri'
+require 'benchmark'
+require 'fileutils'
+require 'time'
+
+class GitHubAssetMonitor
+  CACHE_DIR = 'tmp/asset_monitoring'
+  LOG_FILE = File.join(CACHE_DIR, 'performance.log')
+  BASELINE_FILE = File.join(CACHE_DIR, 'baseline.json')
+
+  def initialize(options = {})
+    @options = {
+      interval: 60,
+      verbose: false,
+      json_output: false,
+      log_file: nil,
+      continuous: false,
+      report: false,
+      baseline: false
+    }.merge(options)
+
+    setup_cache_directory
+    @version = detect_version
+    @base_url = "https://github.com/tastybamboo/panda-cms/releases/download/v#{@version}/"
+    @assets = {
+      manifest: 'manifest.json',
+      javascript: "panda-cms-#{@version}.js",
+      css: "panda-cms-#{@version}.css"
+    }
+  end
+
+  def run
+    if @options[:report]
+      generate_report
+    elsif @options[:baseline]
+      establish_baseline
+    elsif @options[:continuous]
+      run_continuous_monitoring
+    else
+      perform_single_check
+    end
+  end
+
+  private
+
+  def setup_cache_directory
+    FileUtils.mkdir_p(CACHE_DIR)
+  end
+
+  def detect_version
+    version_file = File.join(__dir__, '..', 'VERSION')
+    if File.exist?(version_file)
+      File.read(version_file).strip
+    else
+      '0.7.4' # fallback version
+    end
+  end
+
+  def perform_single_check
+    log_info "🐼 Panda CMS Asset Performance Check"
+    log_info "Version: #{@version}"
+    log_info "Base URL: #{@base_url}"
+    log_info ""
+
+    results = {}
+    total_time = Benchmark.realtime do
+      @assets.each do |name, filename|
+        results[name] = check_asset_performance(filename)
+      end
+    end
+
+    results[:total_time] = total_time
+    results[:timestamp] = Time.now.iso8601
+    results[:version] = @version
+
+    if @options[:json_output]
+      puts JSON.pretty_generate(results)
+    else
+      display_results(results)
+    end
+
+    log_performance_data(results) if @options[:log_file] || File.exist?(LOG_FILE)
+    results
+  end
+
+  def check_asset_performance(filename)
+    url = @base_url + filename
+    log_verbose "Testing: #{url}"
+
+    result = {
+      url: url,
+      filename: filename,
+      timestamp: Time.now.iso8601
+    }
+
+    # Measure total response time including redirects
+    total_time = Benchmark.realtime do
+      begin
+        response = fetch_with_redirects(url)
+        result.merge!(analyze_response(response, url))
+      rescue => e
+        result[:error] = e.message
+        result[:success] = false
+      end
+    end
+
+    result[:total_response_time] = total_time
+    log_verbose "  └─ #{result[:success] ? '✅' : '❌'} #{filename}: #{(total_time * 1000).round(2)}ms"
+
+    result
+  end
+
+  def fetch_with_redirects(url, limit = 5)
+    raise 'Too many redirects' if limit == 0
+
+    uri = URI(url)
+
+    response_time = Benchmark.realtime do
+      http = Net::HTTP.new(uri.host, uri.port)
+      http.use_ssl = true
+      http.open_timeout = 10
+      http.read_timeout = 30
+
+      @response = http.get(uri.path)
+    end
+
+    case @response
+    when Net::HTTPSuccess
+      @response.define_singleton_method(:response_time) { response_time }
+      @response
+    when Net::HTTPRedirection
+      fetch_with_redirects(@response['location'], limit - 1)
+    else
+      @response.define_singleton_method(:response_time) { response_time }
+      @response
+    end
+  end
+
+  def analyze_response(response, original_url)
+    result = {
+      success: response.is_a?(Net::HTTPSuccess),
+      status_code: response.code.to_i,
+      response_time: response.response_time,
+      redirected: response.uri.to_s != original_url
+    }
+
+    if result[:success]
+      result[:size] = response.body.length
+      result[:content_type] = response['content-type']
+      result[:cache_control] = response['cache-control']
+      result[:etag] = response['etag']
+      result[:last_modified] = response['last-modified']
+
+      # Calculate download speed
+      if result[:size] > 0 && response.response_time > 0
+        result[:download_speed_kbps] = (result[:size] / 1024.0) / response.response_time
+      end
+    else
+      result[:error] = "HTTP #{response.code} #{response.message}"
+    end
+
+    result
+  end
+
+  def display_results(results)
+    log_info "📊 Performance Results:"
+    log_info ""
+
+    @assets.each do |name, filename|
+      result = results[name]
+      if result[:success]
+        log_info "✅ #{name.to_s.capitalize} (#{filename})"
+        log_info "   Response Time: #{(result[:total_response_time] * 1000).round(2)}ms"
+        log_info "   Size: #{format_bytes(result[:size])}"
+        if result[:download_speed_kbps]
+          log_info "   Speed: #{result[:download_speed_kbps].round(2)} KB/s"
+        end
+        log_info "   Redirected: #{result[:redirected] ? 'Yes' : 'No'}"
+        log_info "   Cache: #{result[:cache_control] || 'None'}"
+      else
+        log_info "❌ #{name.to_s.capitalize} (#{filename})"
+        log_info "   Error: #{result[:error]}"
+      end
+      log_info ""
+    end
+
+    log_info "🕒 Total Check Time: #{(results[:total_time] * 1000).round(2)}ms"
+
+    # Performance assessment
+    assess_performance(results)
+  end
+
+  def assess_performance(results)
+    log_info "📈 Performance Assessment:"
+
+    successful_assets = results.select { |k, v| k != :total_time && k != :timestamp && k != :version && v[:success] }
+
+    if successful_assets.empty?
+      log_info "   🔴 CRITICAL: No assets accessible"
+      return
+    end
+
+    avg_response_time = successful_assets.values.map { |r| r[:total_response_time] }.sum / successful_assets.size
+    total_size = successful_assets.values.map { |r| r[:size] || 0 }.sum
+
+    log_info "   Average Response Time: #{(avg_response_time * 1000).round(2)}ms"
+    log_info "   Total Asset Size: #{format_bytes(total_size)}"
+
+    if avg_response_time < 0.5
+      log_info "   🟢 EXCELLENT: Very fast response times"
+    elsif avg_response_time < 1.0
+      log_info "   🟡 GOOD: Acceptable response times"
+    elsif avg_response_time < 2.0
+      log_info "   🟠 SLOW: Response times may impact performance"
+    else
+      log_info "   🔴 POOR: Slow response times detected"
+    end
+  end
+
+  def run_continuous_monitoring
+    log_info "🔄 Starting continuous monitoring (interval: #{@options[:interval]}s)"
+    log_info "Press Ctrl+C to stop"
+    log_info ""
+
+    trap('INT') do
+      log_info "\n👋 Stopping monitoring..."
+      exit 0
+    end
+
+    loop do
+      begin
+        results = perform_single_check
+        log_info "Next check in #{@options[:interval]} seconds..."
+        log_info "─" * 50
+        sleep @options[:interval]
+      rescue Interrupt
+        break
+      rescue => e
+        log_info "❌ Error during monitoring: #{e.message}"
+        sleep @options[:interval]
+      end
+    end
+  end
+
+  def establish_baseline
+    log_info "📏 Establishing baseline performance metrics..."
+    log_info "Running 10 test cycles to establish baseline..."
+    log_info ""
+
+    baseline_data = {
+      version: @version,
+      established_at: Time.now.iso8601,
+      cycles: [],
+      summary: {}
+    }
+
+    10.times do |i|
+      log_info "Cycle #{i + 1}/10..."
+      result = perform_single_check
+      baseline_data[:cycles] << result
+      sleep 2 # Brief pause between cycles
+    end
+
+    # Calculate baseline statistics
+    baseline_data[:summary] = calculate_baseline_summary(baseline_data[:cycles])
+
+    # Save baseline data
+    File.write(BASELINE_FILE, JSON.pretty_generate(baseline_data))
+
+    log_info ""
+    log_info "📊 Baseline Summary:"
+    display_baseline_summary(baseline_data[:summary])
+    log_info ""
+    log_info "✅ Baseline saved to: #{BASELINE_FILE}"
+  end
+
+  def calculate_baseline_summary(cycles)
+    summary = {}
+
+    @assets.each do |name, _|
+      asset_data = cycles.map { |c| c[name] }.select { |d| d[:success] }
+      next if asset_data.empty?
+
+      response_times = asset_data.map { |d| d[:total_response_time] }
+      sizes = asset_data.map { |d| d[:size] || 0 }
+
+      summary[name] = {
+        success_rate: (asset_data.length.to_f / cycles.length * 100).round(2),
+        avg_response_time: response_times.sum / response_times.length,
+        min_response_time: response_times.min,
+        max_response_time: response_times.max,
+        avg_size: sizes.sum / sizes.length,
+        total_tests: cycles.length
+      }
+    end
+
+    summary
+  end
+
+  def display_baseline_summary(summary)
+    summary.each do |asset, stats|
+      log_info "#{asset.to_s.capitalize}:"
+      log_info "  Success Rate: #{stats[:success_rate]}%"
+      log_info "  Avg Response: #{(stats[:avg_response_time] * 1000).round(2)}ms"
+      log_info "  Range: #{(stats[:min_response_time] * 1000).round(2)}-#{(stats[:max_response_time] * 1000).round(2)}ms"
+      log_info "  Avg Size: #{format_bytes(stats[:avg_size])}"
+      log_info ""
+    end
+  end
+
+  def generate_report
+    unless File.exist?(LOG_FILE)
+      log_info "❌ No performance data found. Run monitoring first."
+      return
+    end
+
+    log_info "📈 Generating performance report..."
+
+    # Read performance data
+    performance_data = []
+    File.readlines(LOG_FILE).each do |line|
+      begin
+        performance_data << JSON.parse(line.strip)
+      rescue JSON::ParserError
+        # Skip invalid lines
+      end
+    end
+
+    if performance_data.empty?
+      log_info "❌ No valid performance data found."
+      return
+    end
+
+    report = generate_performance_report(performance_data)
+
+    if @options[:json_output]
+      puts JSON.pretty_generate(report)
+    else
+      display_report(report)
+    end
+  end
+
+  def generate_performance_report(data)
+    report = {
+      generated_at: Time.now.iso8601,
+      data_points: data.length,
+      time_range: {
+        start: data.first['timestamp'],
+        end: data.last['timestamp']
+      },
+      assets: {}
+    }
+
+    @assets.each do |name, _|
+      asset_data = data.map { |d| d[name.to_s] }.compact.select { |d| d['success'] }
+      next if asset_data.empty?
+
+      response_times = asset_data.map { |d| d['total_response_time'] }
+
+      report[:assets][name] = {
+        total_checks: data.length,
+        successful_checks: asset_data.length,
+        success_rate: (asset_data.length.to_f / data.length * 100).round(2),
+        performance: {
+          avg_response_time: response_times.sum / response_times.length,
+          min_response_time: response_times.min,
+          max_response_time: response_times.max,
+          p95_response_time: percentile(response_times, 95),
+          p99_response_time: percentile(response_times, 99)
+        }
+      }
+    end
+
+    report
+  end
+
+  def display_report(report)
+    log_info "📊 Performance Report"
+    log_info "Generated: #{report[:generated_at]}"
+    log_info "Data Points: #{report[:data_points]}"
+    log_info "Time Range: #{report[:time_range][:start]} to #{report[:time_range][:end]}"
+    log_info ""
+
+    report[:assets].each do |asset, stats|
+      log_info "#{asset.to_s.capitalize} Asset:"
+      log_info "  Success Rate: #{stats[:success_rate]}% (#{stats[:successful_checks]}/#{stats[:total_checks]})"
+      log_info "  Average Response: #{(stats[:performance][:avg_response_time] * 1000).round(2)}ms"
+      log_info "  Min/Max: #{(stats[:performance][:min_response_time] * 1000).round(2)}/#{(stats[:performance][:max_response_time] * 1000).round(2)}ms"
+      log_info "  P95: #{(stats[:performance][:p95_response_time] * 1000).round(2)}ms"
+      log_info "  P99: #{(stats[:performance][:p99_response_time] * 1000).round(2)}ms"
+      log_info ""
+    end
+  end
+
+  def log_performance_data(results)
+    log_file = @options[:log_file] || LOG_FILE
+    File.open(log_file, 'a') do |f|
+      f.puts JSON.generate(results)
+    end
+  end
+
+  def percentile(array, p)
+    sorted = array.sort
+    index = (p / 100.0) * (sorted.length - 1)
+    lower = sorted[index.floor]
+    upper = sorted[index.ceil]
+    lower + (upper - lower) * (index - index.floor)
+  end
+
+  def format_bytes(bytes)
+    return '0 B' if bytes == 0
+
+    units = ['B', 'KB', 'MB', 'GB']
+    size = bytes.to_f
+    unit_index = 0
+
+    while size >= 1024 && unit_index < units.length - 1
+      size /= 1024
+      unit_index += 1
+    end
+
+    "#{size.round(2)} #{units[unit_index]}"
+  end
+
+  def log_info(message)
+    puts message
+  end
+
+  def log_verbose(message)
+    puts message if @options[:verbose]
+  end
+end
+
+# Parse command line options
+options = {}
+OptionParser.new do |opts|
+  opts.banner = "Usage: #{$0} [options]"
+
+  opts.on("-c", "--continuous", "Run continuous monitoring") do
+    options[:continuous] = true
+  end
+
+  opts.on("-i", "--interval N", Integer, "Check interval in seconds (default: 60)") do |n|
+    options[:interval] = n
+  end
+
+  opts.on("-r", "--report", "Generate performance report") do
+    options[:report] = true
+  end
+
+  opts.on("-b", "--baseline", "Establish baseline metrics") do
+    options[:baseline] = true
+  end
+
+  opts.on("-v", "--verbose", "Show detailed output") do
+    options[:verbose] = true
+  end
+
+  opts.on("-j", "--json", "Output results in JSON format") do
+    options[:json_output] = true
+  end
+
+  opts.on("-l", "--log-file FILE", "Write results to log file") do |file|
+    options[:log_file] = file
+  end
+
+  opts.on("-h", "--help", "Show this help") do
+    puts opts
+    exit
+  end
+end.parse!
+
+# Run the monitor
+monitor = GitHubAssetMonitor.new(options)
+monitor.run
