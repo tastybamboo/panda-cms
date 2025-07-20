@@ -24,6 +24,7 @@ RSpec.describe "Admin profile management", type: :system do
   end
 
   it "displays the profile form with current user information" do
+    puts "[DEBUG] === STARTING TEST: displays the profile form with current user information ===" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
     puts "[DEBUG] Starting test assertions - checking page state" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
     puts "[DEBUG] Current path: #{page.current_path}" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
     puts "[DEBUG] Page content length: #{page.html.length}" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
@@ -51,6 +52,7 @@ RSpec.describe "Admin profile management", type: :system do
   end
 
   it "allows updating profile information" do
+    puts "[DEBUG] === STARTING TEST: allows updating profile information ===" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
     puts "[DEBUG] Starting profile update test" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
     puts "[DEBUG] Current path before form interaction: #{page.current_path}" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
 
@@ -83,6 +85,7 @@ RSpec.describe "Admin profile management", type: :system do
   end
 
   it "allows changing theme preference" do
+    puts "[DEBUG] === STARTING TEST: allows changing theme preference ===" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
     select "Sky", from: "Theme"
     click_button "Update Profile"
 
@@ -96,6 +99,7 @@ RSpec.describe "Admin profile management", type: :system do
   end
 
   it "validates required fields" do
+    puts "[DEBUG] === STARTING TEST: validates required fields ===" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
     fill_in "First Name", with: ""
     fill_in "Last Name", with: ""
     fill_in "Email Address", with: ""
@@ -107,6 +111,7 @@ RSpec.describe "Admin profile management", type: :system do
   end
 
   it "maintains the selected theme when form submission fails" do
+    puts "[DEBUG] === STARTING TEST: maintains the selected theme when form submission fails ===" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
     fill_in "First Name", with: ""
     select "Sky", from: "Theme"
     click_button "Update Profile"
