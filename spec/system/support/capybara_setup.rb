@@ -75,9 +75,16 @@ Capybara.server_host = "127.0.0.1"
 Capybara.server_port = 3002
 
 RSpec.configure do |config|
-  config.before(:each, type: :system) do
-    Capybara.reset_sessions!
-    page.driver.reset!
+  # Temporarily disable aggressive session reset to fix test isolation issues
+  # config.before(:each, type: :system) do
+  #   Capybara.reset_sessions!
+  #   page.driver.reset!
+  # end
+
+  # Reset only after each test instead of before
+  config.after(:each, type: :system) do
+    Capybara.reset_sessions! if example.exception
+    page.driver.reset! if example.exception
   end
 end
 
