@@ -20,6 +20,19 @@ jobs:
     env:
       BUNDLE_PATH: "vendor/bundle"
       RAILS_ENV: test
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
       - uses: "actions/checkout@v4"
@@ -50,6 +63,7 @@ jobs:
       - name: "Setup dummy Rails environment"
         working-directory: spec/dummy
         env:
+          DATABASE_URL: "postgres://postgres:password@localhost:5432/test"
           RAILS_ENV: test
         run: |
           bundle exec rails db:create
@@ -58,6 +72,7 @@ jobs:
       - name: "Compile assets"
         working-directory: spec/dummy
         env:
+          DATABASE_URL: "postgres://postgres:password@localhost:5432/test"
           RAILS_ENV: test
         run: |
           bundle exec rake panda_cms:assets:compile
