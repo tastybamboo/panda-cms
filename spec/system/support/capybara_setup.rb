@@ -75,17 +75,8 @@ Capybara.server_host = "127.0.0.1"
 Capybara.server_port = 3002
 
 RSpec.configure do |config|
-  # Temporarily disable aggressive session reset to fix test isolation issues
-  # config.before(:each, type: :system) do
-  #   Capybara.reset_sessions!
-  #   page.driver.reset!
-  # end
-
-  # Reset only after each test instead of before
-  config.after(:each, type: :system) do
-    Capybara.reset_sessions! if example.exception
-    page.driver.reset! if example.exception
-  end
+  # Session reset removed - was causing authentication failures
+  # Tests should manage their own cleanup if needed
 end
 
 Panda::CMS.config.url = Capybara.app_host
