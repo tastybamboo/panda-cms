@@ -54,6 +54,15 @@ RSpec.describe "Admin profile management", type: :system do
     puts "[DEBUG] Starting profile update test" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
     puts "[DEBUG] Current path before form interaction: #{page.current_path}" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
 
+    # Debug available form fields before attempting to fill them
+    if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
+      puts "[DEBUG] Available form fields:"
+      page.all('input, select, textarea').each do |field|
+        puts "[DEBUG]   Field: name='#{field[:name]}', id='#{field[:id]}', type='#{field[:type]}'"
+      end
+      puts "[DEBUG] Looking for 'First Name' field..."
+    end
+
     fill_in "First Name", with: "Updated"
     puts "[DEBUG] Filled First Name field" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
 
