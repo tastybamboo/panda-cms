@@ -41,7 +41,7 @@ RSpec.describe "Editing a post", type: :system do
     )
   end
 
-  it "shows validation errors" do
+  it "shows validation errors", :editorjs do
     visit edit_admin_post_path(post.admin_param)
     expect(page).to have_css("[data-controller='editor-form'] .codex-editor")
 

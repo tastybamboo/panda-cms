@@ -27,6 +27,11 @@ RSpec.describe "When adding a page", type: :system, js: true do
     before(:each) do
       login_as_admin
       visit "/admin/pages/new"
+
+      # Wait for page to fully load
+      expect(page).to have_text("Add Page", wait: 10)
+      expect(page).to have_field("Title", wait: 5)
+      expect(page).to have_field("URL", wait: 5)
     end
 
     it "shows the add page form" do
@@ -69,6 +74,7 @@ RSpec.describe "When adding a page", type: :system, js: true do
     end
 
     it "updates the form if a parent page is selected" do
+      expect(page).to have_select("Parent", wait: 5)
       select "- About", from: "Parent"
       # Without JavaScript, manually create a child page
       fill_in "Title", with: "Child Page"
@@ -184,6 +190,7 @@ RSpec.describe "When adding a page", type: :system, js: true do
     end
 
     it "shows validation errors with invalid details" do
+      expect(page).to have_button("Create Page", wait: 5)
       click_button "Create Page"
       expect(page).to have_content("Title can't be blank")
       expect(page).to have_content("URL can't be blank and must start with a forward slash")
@@ -192,8 +199,10 @@ RSpec.describe "When adding a page", type: :system, js: true do
     it "shows validation errors when adding a page with incorrect URL" do
       login_as_admin
       visit panda_cms.admin_pages_path
+      expect(page).to have_link("Add Page", wait: 10)
       click_on "Add Page"
 
+      expect(page).to have_field("Title", wait: 5)
       fill_in "Title", with: "Test Page"
       fill_in "URL", with: "no-forward-slash"
       click_on "Create Page"
@@ -204,8 +213,10 @@ RSpec.describe "When adding a page", type: :system, js: true do
     it "shows validation errors when adding a page with missing title input" do
       login_as_admin
       visit panda_cms.admin_pages_path
+      expect(page).to have_link("Add Page", wait: 10)
       click_on "Add Page"
 
+      expect(page).to have_field("URL", wait: 5)
       fill_in "URL", with: "/test-page"
       click_on "Create Page"
 
@@ -215,8 +226,10 @@ RSpec.describe "When adding a page", type: :system, js: true do
     it "shows validation errors when adding a page with missing URL input" do
       login_as_admin
       visit panda_cms.admin_pages_path
+      expect(page).to have_link("Add Page", wait: 10)
       click_on "Add Page"
 
+      expect(page).to have_field("Title", wait: 5)
       fill_in "Title", with: "Test Page"
       fill_in "URL", with: ""
       click_on "Create Page"
@@ -227,8 +240,10 @@ RSpec.describe "When adding a page", type: :system, js: true do
     it "shows validation errors when adding a page with invalid details" do
       login_as_admin
       visit panda_cms.admin_pages_path
+      expect(page).to have_link("Add Page", wait: 10)
       click_on "Add Page"
 
+      expect(page).to have_field("Title", wait: 5)
       fill_in "Title", with: "Test Page"
       fill_in "URL", with: "invalid-url"
       click_on "Create Page"

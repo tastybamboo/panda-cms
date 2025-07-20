@@ -90,17 +90,30 @@ RSpec.configure do |config|
 
         # Check for specific error indicators
         if page_html.include?("error") || page_html.include?("exception") || page_html.include?("404") || page_html.include?("500")
+          if ENV['CI']
+            Rails.logger.debug "[Test Debug] Error page detected: #{page_html.length} chars"
+            Rails.logger.debug "[Test Debug] Page contains error indicators"
+          end
         end
 
         # Check for redirect or blank page indicators
         if page_html.length < 100
           puts "Warning: Page content appears minimal (#{page_html.length} chars) when taking screenshot"
+          if ENV['CI']
+            Rails.logger.debug "[Test Debug] Minimal content: '#{page_html[0, 100]}'"
+            Rails.logger.debug "[Test Debug] Current URL: #{current_url}"
+            Rails.logger.debug "[Test Debug] Current path: #{current_path}"
+          end
         end
 
         # Check session state
         if page.driver.respond_to?(:browser) && page.driver.browser.respond_to?(:cookies)
           cookies = page.driver.browser.cookies.all rescue []
           session_cookie = cookies.find { |cookie| cookie["name"].include?("session") } rescue nil
+          if ENV['CI']
+            Rails.logger.debug "[Test Debug] Session cookie present: #{!session_cookie.nil?}"
+            Rails.logger.debug "[Test Debug] Total cookies: #{cookies.length}"
+          end
         end
 
         # Use Capybara's save_screenshot method
@@ -110,16 +123,24 @@ RSpec.configure do |config|
           puts "Page title: #{page_title}"
           puts "Page content length: #{page_html.length} characters"
 
+          if ENV['CI']
+            Rails.logger.debug "[Test Debug] Screenshot saved: #{screenshot_path}"
+            Rails.logger.debug "[Test Debug] Page title: '#{page_title}'"
+            Rails.logger.debug "[Test Debug] Exception: #{example.exception.class} - #{example.exception.message}"
+          end
+
           # Save page HTML for debugging in CI
           if ENV["GITHUB_ACTIONS"]
             html_debug_path = screenshot_path.gsub('.png', '.html')
             File.write(html_debug_path, page_html)
+            puts "Page HTML saved to: #{html_debug_path}"
           end
         end
       rescue => e
         puts "Failed to capture screenshot: #{e.message}"
         puts "Exception class: #{example.exception.class}"
         puts "Exception message: #{example.exception.message}"
+        Rails.logger.debug "[Test Debug] Screenshot capture failed: #{e.message}" if ENV['CI']
       end
     end
   end

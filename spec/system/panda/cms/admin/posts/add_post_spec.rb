@@ -8,7 +8,16 @@ RSpec.describe "Adding a post", type: :system do
   before do
     login_as_admin
     visit panda_cms.admin_posts_path
+
+    # Wait for page to fully load and ensure "Add Post" link is present
+    expect(page).to have_text("Posts", wait: 10)
+    expect(page).to have_link("Add Post", wait: 10)
+
     click_link "Add Post"
+
+    # Wait for new page form to load
+    expect(page).to have_text("Add Post", wait: 10)
+    expect(page).to have_field("Title", wait: 5)
   end
 
   it "creates a new post with valid details" do
