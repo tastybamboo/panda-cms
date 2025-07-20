@@ -223,8 +223,6 @@ RSpec.describe "When editing a page", type: :system do
           })();
         JS
 
-        puts_debug "Editor.js resources status: #{resources_loaded}"
-
         expect(resources_loaded["all_loaded"]).to be true
         expect(resources_loaded["total_loaded"]).to eq(6)
       end
@@ -336,26 +334,6 @@ RSpec.describe "When editing a page", type: :system do
             return info;
           })();
         JS
-
-        puts_debug "=== Editor Initialization Debug Info ==="
-        puts_debug "Timestamp: #{debug_info["timestamp"]}"
-        puts_debug "URL: #{debug_info["url"]}"
-        puts_debug "Window Size: #{debug_info["windowSize"]["width"]}x#{debug_info["windowSize"]["height"]}"
-        puts_debug "Global Editor Exists: #{debug_info["editor"]["global_exists"]}"
-        puts_debug "EditorJS Class Exists: #{debug_info["editorjs"]["class_exists"]}"
-        puts_debug "DOM Elements:"
-        puts_debug "  - Editor Containers: #{debug_info["dom"]["editor_containers"]}"
-        puts_debug "  - Editor Holders: #{debug_info["dom"]["editor_holders"]}"
-        puts_debug "  - Editable Areas: #{debug_info["dom"]["editable_areas"]}"
-        puts_debug "Components:"
-        debug_info["components"].each do |name, status|
-          puts_debug "  - #{name}: exists=#{status["exists"]}, type=#{status["type"]}"
-        end
-        if debug_info["errors"].any?
-          puts_debug "Errors:"
-          debug_info["errors"].each { |error| puts_debug "  - #{error}" }
-        end
-        puts_debug "========================================"
 
         # Basic assertions
         expect(debug_info["dom"]["editable_areas"]).to be > 0

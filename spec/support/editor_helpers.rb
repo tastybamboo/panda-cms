@@ -485,9 +485,6 @@ module EditorHelpers
     path_field = find("#page_path", wait: 0.1)
 
     # Add debug output
-    puts_debug "Title entered: #{title}"
-    puts_debug "Expected slug: #{expected_slug}"
-    puts_debug "Current path value: #{path_field.value}"
 
     # Get parent path if one is selected
     parent_path = ""
@@ -500,7 +497,6 @@ module EditorHelpers
 
     # Build full expected path
     full_expected_path = parent_path.empty? ? "/#{expected_slug}" : "#{parent_path}/#{expected_slug}"
-    puts_debug "Full expected path: #{full_expected_path}"
 
     # Wait for the correct value with retries
     5.times do |_i|
@@ -561,40 +557,23 @@ module EditorHelpers
   def debug_editor_state(record = nil)
     return unless ENV["DEBUG"]
 
-    puts_debug "Current URL: #{current_url}"
-    puts_debug "Editor container ID we're looking for: #{editor_container_id(record)}"
-    puts_debug "Editor container present: #{page.has_css?("[data-controller='editor-form'] .codex-editor")}"
-    puts_debug "Hidden field present: #{page.has_css?("[data-editor-form-target='hiddenField']")}"
-    puts_debug "Block count: #{all(".ce-block").count}"
-
     # Debug editor instance
-    puts_debug "Editor instance check:"
     begin
       global_editor = page.evaluate_script('typeof window.editor !== "undefined" && window.editor !== null')
-      puts_debug "  Global editor exists: #{global_editor}"
 
       if page.has_css?(".editor-js-holder")
         holder = page.find(".editor-js-holder")
         holder_editor = page.evaluate_script("arguments[0].editorInstance !== null", holder)
-        puts_debug "  Holder editor exists: #{holder_editor}"
-      else
-        puts_debug "  No editor holder found"
       end
     rescue => e
-      puts_debug "  Error checking editor: #{e.message}"
     end
 
     # Debug all elements with ID containing 'editor'
-    puts_debug "All editor-related elements:"
     all("[id*='editor']").each do |el|
-      puts_debug "  Found element with ID: #{el["id"]}"
     end
 
     # Debug form elements
-    puts_debug "Form elements:"
     all("form").each do |form|
-      puts_debug "  Form action: #{form["action"]}"
-      puts_debug "  Form data controllers: #{form["data-controller"]}"
     end
   end
 end

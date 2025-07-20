@@ -86,19 +86,10 @@ Shoulda::Matchers.configure do |config|
   end
 end
 
-module DebugHelpers
-  def puts_debug(message)
-    puts "[DEBUG] #{message}" if ENV["DEBUG"]
-  end
-end
-
 RSpec.configure do |config|
   # URL helpers in tests would be nice to use
   config.include Rails.application.routes.url_helpers
   config.include Panda::CMS::Engine.routes.url_helpers
-
-  # Add debug helper method globally
-  config.include DebugHelpers
 
   config.include ViewComponent::TestHelpers, type: :view_component
   config.include Capybara::RSpecMatchers, type: :view_component

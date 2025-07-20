@@ -24,8 +24,6 @@ class FerrumLogger
           next if arg["value"].to_s.start_with?("[Panda CMS]")
           # Skip any values that look like raw JSON
           next if arg["value"].to_s.strip.start_with?("{", "[")
-
-          Kernel.puts "[DEBUG] #{arg["value"]}"
         when "object"
           # Skip object output to avoid raw JSON
           next
@@ -37,7 +35,6 @@ class FerrumLogger
 
     when "Log.entryAdded"
       message = "#{log_body["params"]["entry"]["url"]} - #{log_body["params"]["entry"]["text"]}"
-      Kernel.puts "[DEBUG] #{message}"
     end
   end
 end

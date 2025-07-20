@@ -8,12 +8,6 @@ RSpec.describe "Website" do
   it "shows the homepage with rich text blocks and rendered JS" do
     visit "/"
 
-    # Debug output for troubleshooting
-    puts_debug "Current URL: #{page.current_url}"
-    puts_debug "Page Title: #{page.title}"
-    puts_debug "Page HTML:"
-    puts_debug page.html
-
     # Wait for the layout to be visible
     expect(page).to have_content("Homepage Layout", wait: 1)
 

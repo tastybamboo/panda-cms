@@ -39,8 +39,6 @@ end
 # Configure Capybara to use :better_cuprite driver by default
 Capybara.default_driver = Capybara.javascript_driver = :better_cuprite
 
-puts "[DEBUG] Registering Cuprite with options: #{@cuprite_options.inspect}" if ENV["BROWSER_DEBUG"]
-
 RSpec.configure do |config|
   config.include CupriteHelpers, type: :system
 end
