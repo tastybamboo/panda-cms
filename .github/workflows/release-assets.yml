@@ -19,7 +19,7 @@ jobs:
       contents: write # Needed to upload release assets
     env:
       BUNDLE_PATH: "vendor/bundle"
-      RAILS_ENV: production
+      RAILS_ENV: test
 
     steps:
       - uses: "actions/checkout@v4"
@@ -49,12 +49,16 @@ jobs:
 
       - name: "Setup dummy Rails environment"
         working-directory: spec/dummy
+        env:
+          RAILS_ENV: test
         run: |
-          bundle exec rails db:create RAILS_ENV=production
-          bundle exec rails db:schema:load RAILS_ENV=production
+          bundle exec rails db:create
+          bundle exec rails db:schema:load
 
       - name: "Compile assets"
         working-directory: spec/dummy
+        env:
+          RAILS_ENV: test
         run: |
           bundle exec rake panda_cms:assets:compile
           echo "✅ Asset compilation complete"

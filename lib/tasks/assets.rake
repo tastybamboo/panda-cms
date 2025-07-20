@@ -5,6 +5,8 @@ namespace :panda_cms do
     desc "Compile Panda CMS assets for GitHub release distribution"
     task :compile do
       puts "🐼 Compiling Panda CMS assets..."
+      puts "Rails.root: #{Rails.root}"
+      puts "Working directory: #{Dir.pwd}"
 
       # Create output directory
       output_dir = Rails.root.join("tmp", "panda_cms_assets")
@@ -12,6 +14,7 @@ namespace :panda_cms do
 
       version = Panda::CMS::VERSION
       puts "Version: #{version}"
+      puts "Output directory: #{output_dir}"
 
       # Compile JavaScript bundle
       js_bundle = compile_javascript_bundle(version)
@@ -127,13 +130,23 @@ end
 private
 
 def compile_javascript_bundle(version)
+  # Find the engine root directory
+  engine_root = Rails.root.to_s.include?('spec/dummy') ? Rails.root.join('..', '..') : Rails.root.join('..')
+  puts "Engine root detected as: #{engine_root}"
+
   js_files = [
-    Rails.root.join("..", "..", "app", "javascript", "panda", "cms", "controllers", "dashboard_controller.js"),
-    Rails.root.join("..", "..", "app", "javascript", "panda", "cms", "controllers", "editor_form_controller.js"),
-    Rails.root.join("..", "..", "app", "javascript", "panda", "cms", "controllers", "editor_iframe_controller.js"),
-    Rails.root.join("..", "..", "app", "javascript", "panda", "cms", "controllers", "slug_controller.js"),
-    Rails.root.join("..", "..", "app", "javascript", "panda", "cms", "controllers", "theme_form_controller.js")
+    engine_root.join("app", "javascript", "panda", "cms", "controllers", "dashboard_controller.js"),
+    engine_root.join("app", "javascript", "panda", "cms", "controllers", "editor_form_controller.js"),
+    engine_root.join("app", "javascript", "panda", "cms", "controllers", "editor_iframe_controller.js"),
+    engine_root.join("app", "javascript", "panda", "cms", "controllers", "slug_controller.js"),
+    engine_root.join("app", "javascript", "panda", "cms", "controllers", "theme_form_controller.js")
   ]
+
+  puts "Looking for JavaScript files:"
+  js_files.each do |file|
+    exists = File.exist?(file)
+    puts "  #{file} - #{exists ? '✅' : '❌'}"
+  end
 
   bundle = []
   bundle << "// Panda CMS JavaScript Bundle v#{version}"
@@ -148,12 +161,18 @@ def compile_javascript_bundle(version)
   bundle << ""
 
   # Process each controller file
+  processed_files = 0
   js_files.each do |file_path|
-    next unless File.exist?(file_path)
+    unless File.exist?(file_path)
+      puts "Warning: Skipping missing file: #{file_path}"
+      next
+    end
 
     filename = File.basename(file_path, '.js')
     controller_name = filename.sub('_controller', '').tr('_', '-')
+    processed_files += 1
 
+    puts "Processing: #{filename} -> #{controller_name}"
     bundle << "// #{filename}"
 
     # Read and process the controller file
@@ -171,6 +190,8 @@ def compile_javascript_bundle(version)
     bundle << ""
   end
 
+  puts "Processed #{processed_files} JavaScript files"
+
   # Add TailwindCSS Stimulus Components registration
   bundle << "// TailwindCSS Stimulus Components (placeholder for CDN loading)"
   bundle << "// These will be loaded from CDN in the browser"
@@ -183,7 +204,11 @@ def compile_javascript_bundle(version)
 end
 
 def compile_css_bundle(version)
-  css_files = Dir.glob(Rails.root.join("..", "..", "app", "assets", "stylesheets", "**", "*.{css,scss}"))
+  # Find the engine root directory
+  engine_root = Rails.root.to_s.include?('spec/dummy') ? Rails.root.join('..', '..') : Rails.root.join('..')
+
+  css_files = Dir.glob(engine_root.join("app", "assets", "stylesheets", "**", "*.{css,scss}"))
+  puts "Found #{css_files.length} CSS files: #{css_files}"
 
   return nil if css_files.empty?
 
