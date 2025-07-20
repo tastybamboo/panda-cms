@@ -6,6 +6,10 @@ require "system_helper"
 RSpec.describe "Admin profile management", type: :system do
   fixtures :panda_cms_users
 
+  def ci_wait_time(local: 1, ci: 10)
+    ENV["GITHUB_ACTIONS"] ? ci : local
+  end
+
   before(:each) do
     login_as_admin
 
@@ -56,14 +60,11 @@ RSpec.describe "Admin profile management", type: :system do
     puts "[DEBUG] Starting profile update test" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
     puts "[DEBUG] Current path before form interaction: #{page.current_path}" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
 
-    # Debug available form fields before attempting to fill them
-    if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
-      puts "[DEBUG] Available form fields:"
-      page.all('input, select, textarea').each do |field|
-        puts "[DEBUG]   Field: name='#{field[:name]}', id='#{field[:id]}', type='#{field[:type]}'"
-      end
-      puts "[DEBUG] Looking for 'First Name' field..."
-    end
+    # Wait for form to be fully ready with all fields (longer waits in CI)
+    expect(page).to have_field("First Name", wait: ci_wait_time)
+    expect(page).to have_field("Last Name", wait: ci_wait_time)
+
+    puts "[DEBUG] Form fields are ready" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
 
     fill_in "First Name", with: "Updated"
     puts "[DEBUG] Filled First Name field" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
@@ -86,6 +87,11 @@ RSpec.describe "Admin profile management", type: :system do
 
   it "allows changing theme preference" do
     puts "[DEBUG] === STARTING TEST: allows changing theme preference ===" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
+
+    # Wait for Theme select field to be ready (longer waits in CI)
+    expect(page).to have_select("Theme", wait: ci_wait_time)
+    puts "[DEBUG] Theme select field is ready" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
+
     select "Sky", from: "Theme"
     click_button "Update Profile"
 
@@ -100,6 +106,12 @@ RSpec.describe "Admin profile management", type: :system do
 
   it "validates required fields" do
     puts "[DEBUG] === STARTING TEST: validates required fields ===" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
+
+    # Wait for form fields to be ready (longer waits in CI)
+    expect(page).to have_field("First Name", wait: ci_wait_time)
+    expect(page).to have_field("Last Name", wait: ci_wait_time)
+    expect(page).to have_field("Email Address", wait: ci_wait_time)
+
     fill_in "First Name", with: ""
     fill_in "Last Name", with: ""
     fill_in "Email Address", with: ""
@@ -112,6 +124,11 @@ RSpec.describe "Admin profile management", type: :system do
 
   it "maintains the selected theme when form submission fails" do
     puts "[DEBUG] === STARTING TEST: maintains the selected theme when form submission fails ===" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
+
+    # Wait for form fields to be ready (longer waits in CI)
+    expect(page).to have_field("First Name", wait: ci_wait_time)
+    expect(page).to have_select("Theme", wait: ci_wait_time)
+
     fill_in "First Name", with: ""
     select "Sky", from: "Theme"
     click_button "Update Profile"

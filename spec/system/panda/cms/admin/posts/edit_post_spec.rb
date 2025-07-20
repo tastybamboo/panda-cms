@@ -15,7 +15,7 @@ RSpec.describe "Editing a post", type: :system do
     visit edit_admin_post_path(post.admin_param)
     expect(page).to have_css("[data-controller='editor-form'] .codex-editor")
 
-    fill_in "post[title]", with: "Updated Test Post"
+    fill_in "Title", with: "Updated Test Post"
     editor_input = find("[data-editor-form-target='hiddenField']", visible: false)
 
     content = {
