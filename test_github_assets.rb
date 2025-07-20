@@ -1,6 +1,24 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
+# GitHub Asset Distribution Test Script
+#
+# This script tests the GitHub-based asset distribution system used by Panda CMS.
+# It verifies that assets are properly accessible from GitHub releases and that
+# the AssetLoader is functioning correctly.
+#
+# Usage:
+#   PANDA_CMS_USE_GITHUB_ASSETS=true bundle exec ruby test_github_assets.rb
+#
+# Expected behavior:
+#   - Detects GitHub asset mode is enabled
+#   - Generates correct asset URLs for current version
+#   - Tests HTTP accessibility of JavaScript and CSS assets
+#   - Follows GitHub redirects to CDN endpoints
+#   - Verifies asset loading completes successfully
+#
+# See docs/developers/github-asset-distribution.md for full documentation.
+#
 # Test script for GitHub asset loading
 require_relative 'spec/dummy/config/environment'
 require 'panda/cms/asset_loader'

@@ -12,6 +12,10 @@ Developer documentation is currently limited, but is in progress as we move towa
 
 - [Fixtures Migration Guide](developers/fixtures-migration.md) - Guide for migrating from factories to fixtures in tests
 
+### Asset Management
+
+- [GitHub Asset Distribution](developers/github-asset-distribution.md) - GitHub-based asset distribution system for CI and production
+
 ### Other Resources
 
 - [Editor.js Customization](developers/editor_js_customization.md)
