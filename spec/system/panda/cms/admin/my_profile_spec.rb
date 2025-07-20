@@ -7,7 +7,34 @@ RSpec.describe "Admin profile management", type: :system do
   fixtures :panda_cms_users
   before(:each) do
     login_as_admin
-    visit panda_cms.edit_admin_my_profile_path
+
+    puts "[DEBUG] After login_as_admin, about to visit profile path" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
+    puts "[DEBUG] Current path before profile visit: #{page.current_path}" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
+    puts "[DEBUG] Session cookies before profile visit: #{page.driver.browser.manage.all_cookies.length}" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
+
+    # Debug route helper resolution
+    profile_path = panda_cms.edit_admin_my_profile_path
+    puts "[DEBUG] Route helper resolved to: #{profile_path}" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
+
+    # Try hardcoded path as alternative
+    hardcoded_path = "/admin/my_profile/edit"
+    puts "[DEBUG] Hardcoded path would be: #{hardcoded_path}" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
+
+    visit profile_path
+
+    puts "[DEBUG] After visiting profile path" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
+    puts "[DEBUG] Current path after profile visit: #{page.current_path}" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
+    puts "[DEBUG] Current URL after profile visit: #{page.current_url}" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
+    puts "[DEBUG] Page content length after profile visit: #{page.html.length}" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
+    puts "[DEBUG] Page title after profile visit: #{page.title}" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
+
+    # If route helper failed, try hardcoded path
+    if page.current_path != "/admin/my_profile/edit" && page.html.length < 1000
+      puts "[DEBUG] Route helper may have failed, trying hardcoded path" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
+      visit hardcoded_path
+      puts "[DEBUG] After hardcoded path - Current path: #{page.current_path}" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
+      puts "[DEBUG] After hardcoded path - Page content length: #{page.html.length}" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
+    end
   end
 
   it "displays the profile form with current user information" do

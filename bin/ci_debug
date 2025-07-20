@@ -74,7 +74,12 @@ begin
   puts "Test mode: #{OmniAuth.config.test_mode}"
   puts "On failure: #{OmniAuth.config.on_failure}"
   puts "Mock auth strategies: #{OmniAuth.config.mock_auth.keys}"
-  puts "✅ OmniAuth configured"
+
+  if OmniAuth.config.test_mode
+    puts "✅ OmniAuth properly configured for testing"
+  else
+    puts "❌ OmniAuth test mode is disabled! Tests will fail."
+  end
 rescue => e
   puts "❌ OmniAuth error: #{e.message}"
 end
