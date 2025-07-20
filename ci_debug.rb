@@ -1,0 +1,206 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# CI Debug Script for Panda CMS
+# This script helps diagnose test failures in CI by checking the environment setup
+
+puts "=== CI Debug Script for Panda CMS ==="
+puts "Time: #{Time.now}"
+puts "Ruby version: #{RUBY_VERSION}"
+puts "Rails env: #{ENV['RAILS_ENV']}"
+puts "GitHub Actions: #{ENV['GITHUB_ACTIONS']}"
+puts
+
+# Load Rails environment
+begin
+  require_relative "spec/rails_helper"
+  puts "✅ Rails environment loaded successfully"
+rescue => e
+  puts "❌ Failed to load Rails environment: #{e.message}"
+  puts "Backtrace: #{e.backtrace.first(3)}"
+  exit 1
+end
+
+puts
+
+# Check database connectivity
+puts "=== Database Check ==="
+begin
+  ActiveRecord::Base.connection.execute("SELECT 1")
+  puts "✅ Database connection successful"
+
+  user_count = Panda::CMS::User.count
+  puts "Total users in database: #{user_count}"
+
+  if user_count == 0
+    puts "⚠️  No users found - fixtures may not be loaded"
+  else
+    puts "✅ Users found in database"
+  end
+
+  admin_user = Panda::CMS::User.find_by(email: "admin@example.com")
+  if admin_user
+    puts "✅ Admin user found:"
+    puts "  ID: #{admin_user.id}"
+    puts "  Email: #{admin_user.email}"
+    puts "  Name: #{admin_user.firstname} #{admin_user.lastname}"
+    puts "  Admin: #{admin_user.admin?}"
+  else
+    puts "❌ Admin user NOT found!"
+    available_emails = Panda::CMS::User.pluck(:email)
+    puts "Available user emails: #{available_emails.inspect}"
+  end
+rescue => e
+  puts "❌ Database error: #{e.message}"
+end
+
+puts
+
+# Check OmniAuth configuration
+puts "=== OmniAuth Configuration ==="
+begin
+  puts "Test mode: #{OmniAuth.config.test_mode}"
+  puts "On failure: #{OmniAuth.config.on_failure}"
+  puts "Mock auth strategies: #{OmniAuth.config.mock_auth.keys}"
+  puts "✅ OmniAuth configured"
+rescue => e
+  puts "❌ OmniAuth error: #{e.message}"
+end
+
+puts
+
+# Check Panda CMS authentication config
+puts "=== Panda CMS Authentication Config ==="
+begin
+  auth_config = Panda::CMS.config.authentication
+  puts "Authentication providers: #{auth_config.keys}"
+  auth_config.each do |provider, config|
+    puts "  #{provider}: enabled=#{config[:enabled]}, hidden=#{config[:hidden]}"
+  end
+  puts "✅ Panda CMS auth config loaded"
+rescue => e
+  puts "❌ Panda CMS auth config error: #{e.message}"
+end
+
+puts
+
+# Test mock auth setup
+puts "=== Mock Auth Test ==="
+begin
+  admin_user = Panda::CMS::User.find_by(email: "admin@example.com")
+  if admin_user
+    OmniAuth.config.mock_auth[:google] = OmniAuth::AuthHash.new({
+      provider: "google",
+      uid: admin_user.id,
+      info: {
+        email: admin_user.email,
+        name: "#{admin_user.firstname} #{admin_user.lastname}"
+      },
+      credentials: {
+        token: "mock_token",
+        expires_at: Time.now + 1.week
+      }
+    })
+    puts "✅ Mock auth set up successfully"
+    puts "Mock auth info: #{OmniAuth.config.mock_auth[:google].info.inspect}"
+  else
+    puts "❌ Cannot set up mock auth - no admin user"
+  end
+rescue => e
+  puts "❌ Mock auth setup error: #{e.message}"
+end
+
+puts
+
+# Test session creation logic
+puts "=== Session Creation Simulation ==="
+begin
+  admin_user = Panda::CMS::User.find_by(email: "admin@example.com")
+  if admin_user
+    # Simulate the SessionsController#create logic
+    user_info = {
+      "email" => admin_user.email,
+      "name" => "#{admin_user.firstname} #{admin_user.lastname}"
+    }
+
+    user = Panda::CMS::User.find_by(email: user_info["email"])
+
+    if user.nil?
+      puts "❌ User lookup failed"
+    elsif !user.admin?
+      puts "❌ User is not admin"
+    else
+      puts "✅ User lookup successful"
+      puts "✅ User is admin"
+      puts "Session would be created with user_id: #{user.id}"
+    end
+  else
+    puts "❌ No admin user to test with"
+  end
+rescue => e
+  puts "❌ Session creation test error: #{e.message}"
+end
+
+puts
+
+# Test admin constraint
+puts "=== Admin Constraint Test ==="
+begin
+  admin_user = Panda::CMS::User.find_by(email: "admin@example.com")
+  if admin_user
+    # Create a mock request with session
+    MockRequest = Struct.new(:session)
+    mock_request = MockRequest.new({ user_id: admin_user.id })
+
+    constraint = Panda::CMS::AdminConstraint.new(&:present?)
+    matches = constraint.matches?(mock_request)
+    current_user = constraint.current_user(mock_request)
+
+    puts "Admin constraint matches: #{matches}"
+    puts "Current user from constraint: #{current_user&.email || 'nil'}"
+
+    if matches
+      puts "✅ Admin constraint working correctly"
+    else
+      puts "❌ Admin constraint failing"
+    end
+  else
+    puts "❌ No admin user to test constraint with"
+  end
+rescue => e
+  puts "❌ Admin constraint test error: #{e.message}"
+end
+
+puts
+
+# Test Capybara configuration
+puts "=== Capybara Configuration ==="
+begin
+  puts "Default driver: #{Capybara.default_driver}"
+  puts "JavaScript driver: #{Capybara.javascript_driver}"
+  puts "Default max wait time: #{Capybara.default_max_wait_time}"
+  puts "App host: #{Capybara.app_host}"
+  puts "Server host: #{Capybara.server_host}"
+  puts "Server port: #{Capybara.server_port}"
+  puts "✅ Capybara configured"
+rescue => e
+  puts "❌ Capybara configuration error: #{e.message}"
+end
+
+puts
+
+# Check for common CI issues
+puts "=== CI Environment Check ==="
+puts "Headless mode: #{ENV['HEADLESS']}"
+puts "Display: #{ENV['DISPLAY']}"
+puts "GitHub Actions: #{ENV['GITHUB_ACTIONS']}"
+puts "CI: #{ENV['CI']}"
+puts "Test database URL: #{ENV['DATABASE_URL']}"
+
+puts
+puts "=== Debug Complete ==="
+puts "If all checks pass but tests still fail, the issue is likely:"
+puts "1. Race conditions between tests"
+puts "2. Session state not being properly reset"
+puts "3. JavaScript/browser timing issues"
+puts "4. Database transaction isolation problems"
