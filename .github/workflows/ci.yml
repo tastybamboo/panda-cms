@@ -85,6 +85,7 @@ jobs:
         run: |
           bundle exec rails db:setup db:migrate
           bundle exec rails db:fixtures:load
+          RAILS_ENV=production SECRET_KEY_BASE_DUMMY=1 bundle exec rails assets:precompile
       - name: "Run environment debug script"
         env:
           DATABASE_URL: "postgres://postgres:password@localhost:5432/test"

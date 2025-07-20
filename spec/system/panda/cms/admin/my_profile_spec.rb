@@ -10,6 +10,10 @@ RSpec.describe "Admin profile management", type: :system do
     ENV["GITHUB_ACTIONS"] ? ci : local
   end
 
+  def ci_long_wait_time(local: 2, ci: 20)
+    ENV["GITHUB_ACTIONS"] ? ci : local
+  end
+
   before(:each) do
     login_as_admin
 
@@ -88,8 +92,11 @@ RSpec.describe "Admin profile management", type: :system do
   it "allows changing theme preference" do
     puts "[DEBUG] === STARTING TEST: allows changing theme preference ===" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
 
-    # Wait for Theme select field to be ready (longer waits in CI)
-    expect(page).to have_select("Theme", wait: ci_wait_time)
+    # Wait for JavaScript/Stimulus controllers to be ready
+    expect(page).to have_css('[data-controller="theme-form"]', wait: ci_long_wait_time)
+
+    # Wait for Theme select field to be ready (extra long waits for this problematic field)
+    expect(page).to have_select("Theme", wait: ci_long_wait_time)
     puts "[DEBUG] Theme select field is ready" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
 
     select "Sky", from: "Theme"
@@ -107,10 +114,13 @@ RSpec.describe "Admin profile management", type: :system do
   it "validates required fields" do
     puts "[DEBUG] === STARTING TEST: validates required fields ===" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
 
-    # Wait for form fields to be ready (longer waits in CI)
-    expect(page).to have_field("First Name", wait: ci_wait_time)
-    expect(page).to have_field("Last Name", wait: ci_wait_time)
-    expect(page).to have_field("Email Address", wait: ci_wait_time)
+    # Wait for JavaScript/Stimulus controllers to be ready
+    expect(page).to have_css('[data-controller="theme-form"]', wait: ci_long_wait_time)
+
+    # Wait for form fields to be ready (extra long waits for this problematic test)
+    expect(page).to have_field("First Name", wait: ci_long_wait_time)
+    expect(page).to have_field("Last Name", wait: ci_long_wait_time)
+    expect(page).to have_field("Email Address", wait: ci_long_wait_time)
 
     fill_in "First Name", with: ""
     fill_in "Last Name", with: ""
