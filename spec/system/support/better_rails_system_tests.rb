@@ -103,7 +103,7 @@ RSpec.configure do |config|
         # Check for redirect or blank page indicators
         if page_html.length < 100
           puts "Warning: Page content appears minimal (#{page_html.length} chars) when taking screenshot"
-          puts "[DEBUG] Minimal page HTML: #{page_html}" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
+          puts "[DEBUG] Page appears minimal" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
         end
 
         # Check session state

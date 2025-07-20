@@ -29,14 +29,12 @@ RSpec.describe "Admin profile management", type: :system do
     puts "[DEBUG] Page content length: #{page.html.length}" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
 
     # Debug actual page content to see what's missing
-    puts "[DEBUG] Page HTML preview: #{page.html[0..500]}..." if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
     puts "[DEBUG] Looking for 'My Profile' in page..." if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
 
     if page.has_content?("My Profile", wait: 0)
       puts "[DEBUG] 'My Profile' found!" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
     else
-      puts "[DEBUG] 'My Profile' NOT found. Available text content:" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
-      puts "[DEBUG] #{page.text[0..1000]}" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
+      puts "[DEBUG] 'My Profile' NOT found. Text content length: #{page.text.length}" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
     end
 
     expect(page).to have_content("My Profile")

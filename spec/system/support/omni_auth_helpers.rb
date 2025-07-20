@@ -31,7 +31,7 @@ module OmniAuthHelpers
     puts "[DEBUG] After visiting callback - Current path: #{page.current_path}" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
     puts "[DEBUG] Page status: #{page.status_code}" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
     puts "[DEBUG] Page title: #{page.title}" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
-    puts "[DEBUG] Page content preview: #{page.html[0..200]}..." if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
+    puts "[DEBUG] Page content length: #{page.html.length}" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
 
     sleep(1.0) # Ensure callback is processed and any redirects complete
   end
@@ -102,7 +102,7 @@ module OmniAuthHelpers
     # Check if we're on an error page
     if page.html.include?("error") || page.html.include?("exception") || page.html.length < 100
       puts "[DEBUG] Possible error page detected!" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
-      puts "[DEBUG] Full page content: #{page.html}" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
+      puts "[DEBUG] Page appears to be an error page (#{page.html.length} chars)" if ENV["GITHUB_ACTIONS"] || ENV["DEBUG"]
     end
 
     # Try to navigate to admin if not already there
