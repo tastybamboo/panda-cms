@@ -14,13 +14,6 @@ module Panda
           user_info = request.env.dig("omniauth.auth", "info")
           provider = params[:provider].to_sym
 
-          if ENV["CI"]
-            Rails.logger.info "[AUTH DEBUG] Provider: #{provider}"
-            Rails.logger.info "[AUTH DEBUG] Provider enabled: #{Panda::CMS.config.authentication.dig(provider, :enabled)}"
-            Rails.logger.info "[AUTH DEBUG] User info: #{user_info.inspect}"
-            Rails.logger.info "[AUTH DEBUG] Full omniauth hash: #{request.env["omniauth.auth"].inspect}"
-          end
-
           unless Panda::CMS.config.authentication.dig(provider, :enabled)
             Rails.logger.error "Authentication provider '#{provider}' is not enabled"
             redirect_to admin_login_path, flash: {error: t("panda.cms.admin.sessions.create.error")}
@@ -28,10 +21,6 @@ module Panda
           end
 
           user = Panda::CMS::User.find_by(email: user_info["email"])
-
-          if ENV["CI"]
-            Rails.logger.info "[AUTH DEBUG] Found user: #{user.inspect}"
-          end
 
           if !user && Panda::CMS.config.authentication.dig(provider, :create_account_on_first_login)
             create_as_admin = Panda::CMS.config.authentication.dig(provider, :create_as_admin)
@@ -75,12 +64,6 @@ module Panda
           Panda::CMS::Current.user = user
 
           redirect_path = request.env["omniauth.origin"] || admin_dashboard_path
-          
-          if ENV["CI"]
-            Rails.logger.info "[AUTH DEBUG] Session user_id set to: #{session[:user_id]}"
-            Rails.logger.info "[AUTH DEBUG] Redirecting to: #{redirect_path}"
-          end
-          
           redirect_to redirect_path, flash: {success: t("panda.cms.admin.sessions.create.success")}
         rescue ::OmniAuth::Strategies::OAuth2::CallbackError => e
           Rails.logger.error "OAuth2 login callback error: #{e.message}"
@@ -90,7 +73,6 @@ module Panda
           redirect_to admin_login_path, flash: {error: t("panda.cms.admin.sessions.create.error")}
         rescue => e
           Rails.logger.error "Unknown login error: #{e.message}"
-          Rails.logger.error "Unknown login error backtrace: #{e.backtrace.join("\n")}" if ENV["CI"]
           redirect_to admin_login_path, flash: {error: t("panda.cms.admin.sessions.create.error")}
         end
 
