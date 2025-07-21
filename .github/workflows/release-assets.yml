@@ -1,7 +1,7 @@
 ---
 name: "Release Assets"
 
-on:
+"on": # yamllint disable-line rule:truthy
   release:
     types: [created, published]
   workflow_dispatch:

@@ -1,7 +1,7 @@
 ---
 name: "Asset Performance Monitoring"
 
-on:
+"on": # yamllint disable-line rule:truthy
   schedule:
     # Run every 6 hours
     - cron: "0 */6 * * *"
