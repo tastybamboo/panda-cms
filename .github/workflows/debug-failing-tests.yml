@@ -1,0 +1,98 @@
+---
+name: "Debug Failing Tests"
+
+"on": # yamllint disable-line rule:truthy
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  debug-specs:
+    name: "Debug Failing Specs"
+    runs-on: "ubuntu-latest"
+    permissions:
+      contents: read
+      pull-requests: write
+    env:
+      BUNDLE_PATH: "vendor/bundle"
+      RAILS_ENV: test
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: "actions/checkout@v4"
+      - name: "Update VERSION"
+        env:
+          VERSION: ${{ github.event.pull_request.head.sha }}
+        run: |
+          echo "${VERSION}" >> VERSION
+      - name: "Set timezone"
+        run: |
+          sudo timedatectl set-timezone Europe/London
+      - name: "Install xvfb"
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb libvips
+          export DISPLAY=':99.0'
+          Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
+
+      - name: "Setup Ruby"
+        uses: "ruby/setup-ruby@v1"
+        with:
+          bundler-cache: true
+      - name: "Setup test environment"
+        env:
+          DATABASE_URL: "postgres://postgres:password@localhost:5432/test"
+          REDIS_URL: "redis://localhost:6379/0"
+          RAILS_ENV: "test"
+          PG_USER: "postgres"
+          RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
+          PT_SILENCE_AR_COMPAT_WARNING: true
+        run: |
+          bundle exec rails db:create db:schema:load
+      - name: "Run focused failing tests"
+        env:
+          DATABASE_URL: "postgres://postgres:password@localhost:5432/test"
+          REDIS_URL: "redis://localhost:6379/0"
+          RAILS_ENV: "test"
+          PG_USER: "postgres"
+          PANDA_CMS_USE_GITHUB_ASSETS: "false"
+          CAPYBARA_ARTIFACTS: "../tmp/capybara"
+          RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
+          PT_SILENCE_AR_COMPAT_WARNING: true
+          CI: "true"
+        run: |
+          mkdir -p tmp
+          xvfb-run -a bundle exec rspec spec/system/panda/cms/admin/pages/add_page_spec.rb spec/system/panda/cms/admin/posts/add_post_spec.rb --format documentation --fail-fast
+      - name: Keep screenshots from failed system tests
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: debug-screenshots
+          path: ${{ github.workspace }}/spec/tmp/capybara
+          if-no-files-found: ignore
+      - name: Keep debug files from failed tests
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: debug-files
+          path: |
+            ${{ github.workspace }}/spec/tmp/capybara/*.html
+            ${{ github.workspace }}/spec/dummy/log/test.log
+            ${{ github.workspace }}/spec/tmp/capybara/**/*.png
+            ${{ github.workspace }}/spec/tmp/capybara/**/*.html
+            ${{ github.workspace }}/tmp/capybara/**/*.png
+            ${{ github.workspace }}/tmp/capybara/**/*.html
+          if-no-files-found: ignore
