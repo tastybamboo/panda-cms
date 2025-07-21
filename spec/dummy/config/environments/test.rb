@@ -16,6 +16,13 @@ Rails.application.configure do
       Bullet.bullet_logger = true
       Bullet.raise = false # raise an error if n+1 query occurs
     end
+    
+    # Add debugging for CI
+    if ENV["CI"]
+      puts "[Rails Init] Test environment initialized"
+      puts "[Rails Init] Asset pipeline enabled: #{config.assets.enabled rescue 'unknown'}"
+      puts "[Rails Init] Active Record connected: #{ActiveRecord::Base.connected? rescue 'unknown'}"
+    end
   end
 
   # Settings specified here will take precedence over those in config/application.rb.

@@ -25,7 +25,8 @@
       "Bash(RAILS_ENV=test CI=true PANDA_CMS_USE_GITHUB_ASSETS=false bundle exec rspec spec/system --exclude-pattern='**/editorjs/**' -f progress)",
       "Bash(RAILS_ENV=test CI=true PANDA_CMS_USE_GITHUB_ASSETS=false bundle exec rspec spec/system/panda/cms/admin/dashboard_spec.rb -f documentation)",
       "Bash(RAILS_ENV=test CI=true PANDA_CMS_USE_GITHUB_ASSETS=false bundle exec rspec spec/system/panda/cms/admin/dashboard_spec.rb -f progress)",
-      "Bash(RAILS_ENV=test CI=true PANDA_CMS_USE_GITHUB_ASSETS=false bundle exec rspec spec/system/panda/cms/admin/pages/edit_page_spec.rb -f progress --example \"shows the content of the page being edited\")"
+      "Bash(RAILS_ENV=test CI=true PANDA_CMS_USE_GITHUB_ASSETS=false bundle exec rspec spec/system/panda/cms/admin/pages/edit_page_spec.rb -f progress --example \"shows the content of the page being edited\")",
+      "Bash(RAILS_ENV=test CI=true PANDA_CMS_USE_GITHUB_ASSETS=false bundle exec rspec spec/system/panda/cms/admin/login_spec.rb::Admin authentication::where provider is::GitHub --example \"logs in admin successfully\")"
     ],
     "deny": []
   }
