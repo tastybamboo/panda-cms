@@ -7,7 +7,12 @@
       "Bash(timeout 30s bundle exec rspec spec/models/panda/cms/user_spec.rb --format documentation)",
       "Bash(gh run view:*)",
       "Bash(bundle exec:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(gh run watch:*)",
+      "Bash(gh run list:*)",
+      "Bash(gh api:*)"
     ],
     "deny": []
   }

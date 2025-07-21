@@ -83,6 +83,7 @@ module OmniAuthHelpers
     if ENV["CI"]
       puts "[DEBUG] About to visit GitHub callback for user: #{user.email}"
       puts "[DEBUG] Current URL before callback: #{current_url}"
+      puts "[DEBUG] GitHub enabled: #{Panda::CMS.config.authentication[:github][:enabled]}"
     end
     
     visit "/admin/auth/github/callback"
@@ -90,7 +91,30 @@ module OmniAuthHelpers
     if ENV["CI"]
       puts "[DEBUG] Current URL after callback: #{current_url}"
       puts "[DEBUG] Page title: #{page.title}"
-      puts "[DEBUG] Page has content: #{page.has_content?('Dashboard')}"
+      
+      # Check if we can access basic page properties without DOM queries
+      begin
+        puts "[DEBUG] Can get page source length: #{page.body.length}"
+      rescue => e
+        puts "[DEBUG] Failed to get page body: #{e.message}"
+      end
+      
+      # Try a simple browser command first
+      begin
+        puts "[DEBUG] Browser status: #{page.driver.browser.window_size}"
+      rescue => e
+        puts "[DEBUG] Browser error: #{e.message}"
+      end
+      
+      # NOW try the problematic DOM query that fails
+      begin
+        result = page.has_content?('Dashboard')
+        puts "[DEBUG] Page has content: #{result}"
+      rescue => e
+        puts "[DEBUG] DOM query failed: #{e.class}: #{e.message}"
+        puts "[DEBUG] Error backtrace: #{e.backtrace[0..3]}"
+      end
+      
       puts "[DEBUG] Page body preview: #{page.body[0..500]}"
       puts "[DEBUG] All text on page: #{page.all_text[0..1000]}" rescue puts "[DEBUG] Could not get page text"
     end
