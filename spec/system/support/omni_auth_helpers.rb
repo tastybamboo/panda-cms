@@ -8,7 +8,7 @@ OmniAuth.config.on_failure = proc { |env|
 
 module OmniAuthHelpers
   def login_with_google(user)
-    if ENV['CI']
+    if ENV["CI"]
       puts "[Auth Debug] Setting up Google OAuth mock for user: #{user.email}"
     end
 
@@ -27,22 +27,22 @@ module OmniAuthHelpers
 
     Rails.application.env_config["omniauth.auth"] = OmniAuth.config.mock_auth[:google]
 
-    if ENV['CI']
+    if ENV["CI"]
       puts "[Auth Debug] Visiting OAuth callback: /admin/auth/google/callback"
     end
 
     visit "/admin/auth/google/callback"
 
-    if ENV['CI']
+    if ENV["CI"]
       puts "[Auth Debug] After OAuth callback - path: #{page.current_path}, content length: #{page.body.length}"
       puts "[Auth Debug] Page title: '#{page.title}'"
     end
 
     sleep(1.0) # Ensure callback is processed and any redirects complete
 
-    if ENV['CI']
+    if ENV["CI"]
       puts "[Auth Debug] After sleep - path: #{page.current_path}"
-      puts "[Auth Debug] User signed in: #{page.body.include?('Dashboard') || page.current_path.include?('admin')}"
+      puts "[Auth Debug] User signed in: #{page.body.include?("Dashboard") || page.current_path.include?("admin")}"
     end
   end
 
@@ -79,7 +79,21 @@ module OmniAuthHelpers
     })
 
     Rails.application.env_config["omniauth.auth"] = OmniAuth.config.mock_auth[:github]
+    
+    if ENV["CI"]
+      puts "[DEBUG] About to visit GitHub callback for user: #{user.email}"
+      puts "[DEBUG] Current URL before callback: #{current_url}"
+    end
+    
     visit "/admin/auth/github/callback"
+    
+    if ENV["CI"]
+      puts "[DEBUG] Current URL after callback: #{current_url}"
+      puts "[DEBUG] Page title: #{page.title}"
+      puts "[DEBUG] Page has content: #{page.has_content?('Dashboard')}"
+      puts "[DEBUG] Page body preview: #{page.body[0..500]}"
+      puts "[DEBUG] All text on page: #{page.all_text[0..1000]}" rescue puts "[DEBUG] Could not get page text"
+    end
   end
 
   def login_with_microsoft(user)
@@ -100,7 +114,7 @@ module OmniAuthHelpers
   def login_as_admin(firstname: nil, lastname: nil, email: nil)
     user = admin_user
 
-    if ENV['CI']
+    if ENV["CI"]
       puts "[Auth Debug] Starting admin login for user: #{user.email}"
     end
 
@@ -108,13 +122,13 @@ module OmniAuthHelpers
 
     # Try to navigate to admin if not already there
     unless page.current_path == "/admin"
-      if ENV['CI']
+      if ENV["CI"]
         puts "[Auth Debug] Current path: #{page.current_path}, navigating to /admin"
       end
 
       visit "/admin"
 
-      if ENV['CI']
+      if ENV["CI"]
         puts "[Auth Debug] After /admin visit - path: #{page.current_path}, content length: #{page.body.length}"
         puts "[Auth Debug] Page title: '#{page.title}'"
 
@@ -136,7 +150,7 @@ module OmniAuthHelpers
     # Use fixture user instead of creating new one
     user = Panda::CMS::User.find_by(email: "admin@example.com")
     if user.nil?
-      if ENV['CI']
+      if ENV["CI"]
         puts "[Auth Debug] Admin user not found! Available users:"
         Panda::CMS::User.all.each do |u|
           puts "[Auth Debug]   - #{u.email} (admin: #{u.admin?})"
@@ -145,7 +159,7 @@ module OmniAuthHelpers
       raise "Admin user not found in database"
     end
 
-    if ENV['CI']
+    if ENV["CI"]
       puts "[Auth Debug] Found admin user: #{user.email} (admin: #{user.admin?})"
     end
 

@@ -41,7 +41,7 @@ namespace :panda_cms do
     end
 
     desc "Upload compiled assets to GitHub release"
-    task :upload => :compile do
+    task upload: :compile do
       version = Panda::CMS::VERSION
       output_dir = Rails.root.join("tmp", "panda_cms_assets")
 
@@ -87,26 +87,26 @@ namespace :panda_cms do
       manifest_url = "https://github.com/pandacms/panda-cms/releases/download/v#{version}/manifest.json"
 
       begin
-        require 'net/http'
-        require 'uri'
+        require "net/http"
+        require "uri"
 
         uri = URI(manifest_url)
         response = Net::HTTP.get_response(uri)
 
-        if response.code == '200'
+        if response.code == "200"
           manifest = JSON.parse(response.body)
           puts "✅ Downloaded manifest"
 
           # Download each file listed in manifest
-          manifest['files'].each do |file_info|
-            filename = file_info['filename']
+          manifest["files"].each do |file_info|
+            filename = file_info["filename"]
             file_url = "https://github.com/pandacms/panda-cms/releases/download/v#{version}/#{filename}"
 
             puts "Downloading #{filename}..."
             file_uri = URI(file_url)
             file_response = Net::HTTP.get_response(file_uri)
 
-            if file_response.code == '200'
+            if file_response.code == "200"
               File.write(output_dir.join(filename), file_response.body)
               puts "✅ Downloaded: #{filename}"
             else

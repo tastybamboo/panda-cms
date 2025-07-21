@@ -159,15 +159,15 @@ RSpec.describe "When editing a page", type: :system do
         JS
 
         # Verify all required components are present
-        expect(editor_setup['has_rich_text']).to be true
-        expect(editor_setup['has_editor_controller']).to be true
-        expect(editor_setup['has_codex_editor']).to be true
-        expect(editor_setup['has_editor_holder']).to be true
-        expect(editor_setup['editorjs_available']).to be true
-        expect(editor_setup['paragraph_available']).to be true
-        expect(editor_setup['header_available']).to be true
-        expect(editor_setup['nested_list_available']).to be true
-        expect(editor_setup['quote_available']).to be true
+        expect(editor_setup["has_rich_text"]).to be true
+        expect(editor_setup["has_editor_controller"]).to be true
+        expect(editor_setup["has_codex_editor"]).to be true
+        expect(editor_setup["has_editor_holder"]).to be true
+        expect(editor_setup["editorjs_available"]).to be true
+        expect(editor_setup["paragraph_available"]).to be true
+        expect(editor_setup["header_available"]).to be true
+        expect(editor_setup["nested_list_available"]).to be true
+        expect(editor_setup["quote_available"]).to be true
       end
     end
 
@@ -275,7 +275,7 @@ RSpec.describe "When editing a page", type: :system do
 
         # Test basic interaction with editor area (find the one within rich text component)
         within('[data-editable-kind="rich_text"]') do
-          editor_area = first('.codex-editor')
+          editor_area = first(".codex-editor")
           expect(editor_area).to be_visible
 
           # Click on the editor to activate it
@@ -283,7 +283,7 @@ RSpec.describe "When editing a page", type: :system do
         end
 
         # Verify editor responds to interaction (just check it's still there after click)
-        expect(page).to have_css('.codex-editor', wait: 2)
+        expect(page).to have_css(".codex-editor", wait: 2)
       end
     end
 

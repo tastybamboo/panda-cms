@@ -23,7 +23,7 @@ browser_options = {
 }
 
 # Add CI-specific browser options for better stability
-if ENV['CI']
+if ENV["CI"]
   browser_options.merge!({
     "disable-background-timer-throttling": nil,
     "disable-renderer-backgrounding": nil,
@@ -38,10 +38,10 @@ end
 @cuprite_options = {
   window_size: [1440, 1000],
   browser_options: browser_options,
-  process_timeout: ENV['CI'] ? 30 : 120,
-  timeout: ENV['CI'] ? 15 : 30,
+  process_timeout: ENV["CI"] ? 30 : 120,
+  timeout: ENV["CI"] ? 15 : 30,
   inspector: ENV["DEBUG"].in?(%w[y 1 yes true]),
-  logger: (ENV["DEBUG"].in?(%w[y 1 yes true]) || ENV['CI']) ? FerrumLogger.new : StringIO.new,
+  logger: (ENV["DEBUG"].in?(%w[y 1 yes true]) || ENV["CI"]) ? FerrumLogger.new : StringIO.new,
   slowmo: ENV.fetch("SLOWMO", 0).to_f,
   js_errors: true,
   headless: !ENV["HEADLESS"].in?(%w[n 0 no false]),
@@ -49,7 +49,7 @@ end
 }
 
 Capybara.register_driver(:better_cuprite) do |app|
-  if ENV['CI']
+  if ENV["CI"]
     Rails.logger.debug "[Cuprite Debug] Initializing browser with CI-specific options"
     Rails.logger.debug "[Cuprite Debug] Process timeout: #{@cuprite_options[:process_timeout]}"
     Rails.logger.debug "[Cuprite Debug] Timeout: #{@cuprite_options[:timeout]}"

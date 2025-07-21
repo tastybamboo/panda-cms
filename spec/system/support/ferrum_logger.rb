@@ -34,7 +34,7 @@ class FerrumLogger
       # noop, this is already logged because we have "js_errors: true" in cuprite.
 
     when "Log.entryAdded"
-      message = "#{log_body["params"]["entry"]["url"]} - #{log_body["params"]["entry"]["text"]}"
+      "#{log_body["params"]["entry"]["url"]} - #{log_body["params"]["entry"]["text"]}"
     end
   end
 end

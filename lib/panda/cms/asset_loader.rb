@@ -37,8 +37,8 @@ module Panda
         def use_github_assets?
           # Use GitHub assets in production or when explicitly enabled
           Rails.env.production? ||
-          ENV['PANDA_CMS_USE_GITHUB_ASSETS'] == 'true' ||
-          !development_assets_available?
+            ENV["PANDA_CMS_USE_GITHUB_ASSETS"] == "true" ||
+            !development_assets_available?
         end
 
         # Download assets from GitHub to local cache
@@ -163,9 +163,9 @@ module Panda
             # Rails 8+ uses a different API for accessing importmap entries
             if Rails.application.importmap.respond_to?(:to_json)
               importmap_json = JSON.parse(Rails.application.importmap.to_json)
-              importmap_json.any? { |name, _| name.include?('panda') }
+              importmap_json.any? { |name, _| name.include?("panda") }
             elsif Rails.application.importmap.respond_to?(:entries)
-              Rails.application.importmap.entries.any? { |entry| entry.name.include?('panda') }
+              Rails.application.importmap.entries.any? { |entry| entry.name.include?("panda") }
             else
               false
             end
@@ -195,9 +195,9 @@ module Panda
         end
 
         def download_github_assets(version, cache_dir)
-          require 'net/http'
-          require 'uri'
-          require 'json'
+          require "net/http"
+          require "uri"
+          require "json"
 
           version_dir = cache_dir.join(version)
           FileUtils.mkdir_p(version_dir)
@@ -211,8 +211,8 @@ module Panda
               manifest = JSON.parse(manifest_response.body)
 
               # Download each file
-              manifest['files'].each do |file_info|
-                filename = file_info['filename']
+              manifest["files"].each do |file_info|
+                filename = file_info["filename"]
                 file_url = "#{github_base_url(version)}#{filename}"
 
                 Rails.logger.debug "[Panda CMS] Downloading #{filename}..."
@@ -241,12 +241,12 @@ module Panda
         def fetch_url(url)
           uri = URI(url)
           http = Net::HTTP.new(uri.host, uri.port)
-          http.use_ssl = (uri.scheme == 'https')
+          http.use_ssl = (uri.scheme == "https")
           http.open_timeout = 10
           http.read_timeout = 30
 
           request = Net::HTTP::Get.new(uri)
-          request['User-Agent'] = "Panda-CMS/#{Panda::CMS::VERSION}"
+          request["User-Agent"] = "Panda-CMS/#{Panda::CMS::VERSION}"
 
           response = http.request(request)
 
@@ -257,7 +257,7 @@ module Panda
           )
         rescue => e
           Rails.logger.error "[Panda CMS] Network error: #{e.message}"
-          OpenStruct.new(success?: false, code: 'error', body: nil)
+          OpenStruct.new(success?: false, code: "error", body: nil)
         end
 
         def asset_integrity(version, filename)
@@ -267,10 +267,10 @@ module Panda
 
           begin
             manifest = JSON.parse(File.read(manifest_path))
-            file_info = manifest['files'].find { |f| f['filename'] == filename }
+            file_info = manifest["files"].find { |f| f["filename"] == filename }
             return nil unless file_info
 
-            "sha256-#{Base64.strict_encode64([file_info['sha256']].pack('H*'))}"
+            "sha256-#{Base64.strict_encode64([file_info["sha256"]].pack("H*"))}"
           rescue => e
             Rails.logger.warn "[Panda CMS] Error reading asset integrity: #{e.message}"
             nil
@@ -288,7 +288,7 @@ module Panda
             ActionView::Base.new.content_tag(name, content, options)
           else
             # Fallback implementation
-            attrs = options.map { |k, v| %{#{k}="#{v}"} }.join(' ')
+            attrs = options.map { |k, v| %(#{k}="#{v}") }.join(" ")
             if content.present?
               "<#{name} #{attrs}>#{content}</#{name}>"
             else
@@ -302,7 +302,7 @@ module Panda
             ActionView::Base.new.tag(name, options)
           else
             # Fallback implementation
-            attrs = options.map { |k, v| %{#{k}="#{v}"} }.join(' ')
+            attrs = options.map { |k, v| %(#{k}="#{v}") }.join(" ")
             "<#{name} #{attrs}>"
           end
         end

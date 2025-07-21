@@ -102,8 +102,8 @@ module EditorHelpers
       # Debug current state
       if ENV["DEBUG"]
         puts "DEBUG: Editor div attributes:"
-        puts "  data-editable-initialized: #{editor_div['data-editable-initialized']}"
-        puts "  data-editor-js-initialized-value: #{editor_div['data-editor-js-initialized-value']}"
+        puts "  data-editable-initialized: #{editor_div["data-editable-initialized"]}"
+        puts "  data-editor-js-initialized-value: #{editor_div["data-editor-js-initialized-value"]}"
 
         # Check what's in the DOM
         html_content = context.evaluate_script("document.body.innerHTML")
@@ -111,7 +111,7 @@ module EditorHelpers
 
         # Check for script tags
         scripts = context.evaluate_script("Array.from(document.scripts).map(s => s.src).filter(s => s)")
-        puts "DEBUG: Loaded scripts: #{scripts.join(', ')}"
+        puts "DEBUG: Loaded scripts: #{scripts.join(", ")}"
 
         # Check for EditorJS availability
         editorjs_available = context.evaluate_script("typeof EditorJS !== 'undefined'")
@@ -158,7 +158,7 @@ module EditorHelpers
       end
 
       puts "DEBUG: Editor initialization failed after #{attempts} attempts" if ENV["DEBUG"]
-      return false
+      false
     else
       # For form context (posts, etc.), check for hidden field
       context.find("input[data-editor-form-target='hiddenField']", visible: false)
@@ -210,9 +210,9 @@ module EditorHelpers
           attempts += 1
           sleep 0.1
         end
-      else
+      elsif page.has_css?(".codex-editor--empty", wait: 1)
         # For other contexts, check for empty editor
-        find(".codex-editor--empty").click if page.has_css?(".codex-editor--empty", wait: 1)
+        find(".codex-editor--empty").click
       end
     end
   end
@@ -289,8 +289,8 @@ module EditorHelpers
         end
 
         # Click on the editor to activate it if it's empty
-        if page.has_css?('.codex-editor--empty', wait: 1)
-          find('.codex-editor--empty').click
+        if page.has_css?(".codex-editor--empty", wait: 1)
+          find(".codex-editor--empty").click
           sleep 0.2
         end
       else
@@ -310,11 +310,11 @@ module EditorHelpers
         # For iframe context, we might need to create the first block
         if record.is_a?(Panda::CMS::Page) && !page.has_css?(".ce-block")
           # Wait for codex editor to be available and click to create first block
-          if page.has_css?('.codex-editor', wait: 5)
-            find('.codex-editor').click
+          if page.has_css?(".codex-editor", wait: 5)
+            find(".codex-editor").click
             sleep 0.5
-          elsif page.has_css?('.editor-js-holder', wait: 5)
-            find('.editor-js-holder').click
+          elsif page.has_css?(".editor-js-holder", wait: 5)
+            find(".editor-js-holder").click
             sleep 0.5
           end
         end
@@ -450,7 +450,7 @@ module EditorHelpers
       end
     end
 
-    expect(found).to be(true), "Expected to find '#{text}' in editor content. Available blocks: #{blocks.map(&:text).join(', ')}"
+    expect(found).to be(true), "Expected to find '#{text}' in editor content. Available blocks: #{blocks.map(&:text).join(", ")}"
   end
 
   def count_editor_blocks
@@ -559,13 +559,13 @@ module EditorHelpers
 
     # Debug editor instance
     begin
-      global_editor = page.evaluate_script('typeof window.editor !== "undefined" && window.editor !== null')
+      page.evaluate_script('typeof window.editor !== "undefined" && window.editor !== null')
 
       if page.has_css?(".editor-js-holder")
         holder = page.find(".editor-js-holder")
-        holder_editor = page.evaluate_script("arguments[0].editorInstance !== null", holder)
+        page.evaluate_script("arguments[0].editorInstance !== null", holder)
       end
-    rescue => e
+    rescue
     end
 
     # Debug all elements with ID containing 'editor'

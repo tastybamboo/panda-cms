@@ -76,21 +76,41 @@ RSpec.configure do |config|
       begin
         # Wait for any pending JavaScript and network requests to complete
         if page.driver.respond_to?(:browser) && page.driver.browser.respond_to?(:network)
-          page.driver.browser.network.wait_for_idle(timeout: 2) rescue nil
+          begin
+            page.driver.browser.network.wait_for_idle(timeout: 2)
+          rescue
+            nil
+          end
         end
 
         # Wait for DOM to be ready
         sleep 0.5
 
         # Get comprehensive page info
-        page_html = page.html rescue "<html><body>Error loading page</body></html>"
-        current_url = page.current_url rescue "unknown"
-        current_path = page.current_path rescue "unknown"
-        page_title = page.title rescue "N/A"
+        page_html = begin
+          page.html
+        rescue
+          "<html><body>Error loading page</body></html>"
+        end
+        current_url = begin
+          page.current_url
+        rescue
+          "unknown"
+        end
+        current_path = begin
+          page.current_path
+        rescue
+          "unknown"
+        end
+        page_title = begin
+          page.title
+        rescue
+          "N/A"
+        end
 
         # Check for specific error indicators
         if page_html.include?("error") || page_html.include?("exception") || page_html.include?("404") || page_html.include?("500")
-          if ENV['CI']
+          if ENV["CI"]
             Rails.logger.debug "[Test Debug] Error page detected: #{page_html.length} chars"
             Rails.logger.debug "[Test Debug] Page contains error indicators"
           end
@@ -99,7 +119,7 @@ RSpec.configure do |config|
         # Check for redirect or blank page indicators
         if page_html.length < 100
           puts "Warning: Page content appears minimal (#{page_html.length} chars) when taking screenshot"
-          if ENV['CI']
+          if ENV["CI"]
             Rails.logger.debug "[Test Debug] Minimal content: '#{page_html[0, 100]}'"
             Rails.logger.debug "[Test Debug] Current URL: #{current_url}"
             Rails.logger.debug "[Test Debug] Current path: #{current_path}"
@@ -108,9 +128,17 @@ RSpec.configure do |config|
 
         # Check session state
         if page.driver.respond_to?(:browser) && page.driver.browser.respond_to?(:cookies)
-          cookies = page.driver.browser.cookies.all rescue []
-          session_cookie = cookies.find { |cookie| cookie["name"].include?("session") } rescue nil
-          if ENV['CI']
+          cookies = begin
+            page.driver.browser.cookies.all
+          rescue
+            []
+          end
+          session_cookie = begin
+            cookies.find { |cookie| cookie["name"].include?("session") }
+          rescue
+            nil
+          end
+          if ENV["CI"]
             Rails.logger.debug "[Test Debug] Session cookie present: #{!session_cookie.nil?}"
             Rails.logger.debug "[Test Debug] Total cookies: #{cookies.length}"
           end
@@ -123,7 +151,7 @@ RSpec.configure do |config|
           puts "Page title: #{page_title}"
           puts "Page content length: #{page_html.length} characters"
 
-          if ENV['CI']
+          if ENV["CI"]
             Rails.logger.debug "[Test Debug] Screenshot saved: #{screenshot_path}"
             Rails.logger.debug "[Test Debug] Page title: '#{page_title}'"
             Rails.logger.debug "[Test Debug] Exception: #{example.exception.class} - #{example.exception.message}"
@@ -131,7 +159,7 @@ RSpec.configure do |config|
 
           # Save page HTML for debugging in CI
           if ENV["GITHUB_ACTIONS"]
-            html_debug_path = screenshot_path.gsub('.png', '.html')
+            html_debug_path = screenshot_path.gsub(".png", ".html")
             File.write(html_debug_path, page_html)
             puts "Page HTML saved to: #{html_debug_path}"
           end
@@ -140,7 +168,7 @@ RSpec.configure do |config|
         puts "Failed to capture screenshot: #{e.message}"
         puts "Exception class: #{example.exception.class}"
         puts "Exception message: #{example.exception.message}"
-        Rails.logger.debug "[Test Debug] Screenshot capture failed: #{e.message}" if ENV['CI']
+        Rails.logger.debug "[Test Debug] Screenshot capture failed: #{e.message}" if ENV["CI"]
       end
     end
   end

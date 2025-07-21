@@ -9,14 +9,12 @@ module Panda
 
       def matches?(request)
         user = current_user(request)
-        result = user.present? && user.admin? && @block&.call(user)
-        result
+        user.present? && user.admin? && @block&.call(user)
       end
 
       def current_user(request)
         user_id = request.session[:user_id]
-        user = User.find_by(id: user_id)
-        user
+        User.find_by(id: user_id)
       end
     end
   end

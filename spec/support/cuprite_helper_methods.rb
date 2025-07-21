@@ -15,7 +15,7 @@ module CupriteHelpers
         console_logs.each { |log| }
       end
     end
-  rescue => e
+  rescue
   end
 
   def click_css(selector)

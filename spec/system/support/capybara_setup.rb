@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-Capybara.default_max_wait_time = ENV['CI'] ? 5 : 2
+Capybara.default_max_wait_time = ENV["CI"] ? 5 : 2
 
 # Normalize whitespaces when using `has_text?` and similar matchers,
 # i.e., ignore newlines, trailing spaces, etc.
@@ -36,10 +36,10 @@ RSpec.configure do |config|
   config.after(:each, type: :system) do |example|
     if example.exception
       timestamp = Time.now.strftime("%Y-%m-%d-%H%M%S")
-      filename_base = "tmp/capybara/failures/#{example.full_description.parameterize}_#{timestamp}"
+      "tmp/capybara/failures/#{example.full_description.parameterize}_#{timestamp}"
 
-      save_page("#{filename_base}.html")
-      save_screenshot("#{filename_base}.png", full: true)
+      # save_page("#{filename_base}.html")
+      # save_screenshot("#{filename_base}.png", full: true)
     end
   end
 end

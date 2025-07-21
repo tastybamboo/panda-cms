@@ -89,7 +89,7 @@ module Panda
           "<!-- Version: #{version} -->",
           "<!-- Using GitHub assets: #{using_github} -->",
           "<!-- JavaScript URL: #{js_url} -->",
-          "<!-- CSS URL: #{css_url || 'none'} -->",
+          "<!-- CSS URL: #{css_url || "none"} -->",
           "<!-- Compiled at: #{Time.now.utc.iso8601} -->"
         ]
 
