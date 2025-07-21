@@ -31,3 +31,15 @@ Capybara.server_port = 3002
 
 Panda::CMS.config.url = Capybara.app_host
 Rails.application.routes.default_url_options[:host] = Capybara.app_host
+
+RSpec.configure do |config|
+  config.after(:each, type: :system) do |example|
+    if example.exception
+      timestamp = Time.now.strftime("%Y-%m-%d-%H%M%S")
+      filename_base = "tmp/capybara/failures/#{example.full_description.parameterize}_#{timestamp}"
+
+      save_page("#{filename_base}.html")
+      save_screenshot("#{filename_base}.png", full: true)
+    end
+  end
+end

@@ -113,4 +113,8 @@ jobs:
           path: |
             ${{ github.workspace }}/spec/tmp/capybara/*.html
             ${{ github.workspace }}/spec/dummy/log/test.log
+            ${{ github.workspace }}/spec/tmp/capybara/**/*.png
+            ${{ github.workspace }}/spec/tmp/capybara/**/*.html
+            ${{ github.workspace }}/tmp/capybara/**/*.png
+            ${{ github.workspace }}/tmp/capybara/**/*.html
           if-no-files-found: ignore
