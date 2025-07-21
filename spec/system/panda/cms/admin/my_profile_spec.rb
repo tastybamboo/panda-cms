@@ -17,8 +17,8 @@ RSpec.describe "Admin profile management", type: :system do
   before(:each) do
     login_as_admin
 
-    profile_path = panda_cms.edit_admin_my_profile_path
-    visit profile_path
+    visit "/admin/my_profile/edit"
+    expect(page).to have_content("My Profile", wait: 10)
   end
 
   it "displays the profile form with current user information" do

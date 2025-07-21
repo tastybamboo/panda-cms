@@ -12,7 +12,7 @@ RSpec.describe "Editing a post", type: :system do
   let(:post) { panda_cms_posts(:first_post) }
 
   it "updates an existing post", :editorjs do
-    visit edit_admin_post_path(post.admin_param)
+    visit "/admin/posts/#{post.id}/edit"
     expect(page).to have_css("[data-controller='editor-form'] .codex-editor")
 
     fill_in "Title", with: "Updated Test Post"
@@ -42,7 +42,7 @@ RSpec.describe "Editing a post", type: :system do
   end
 
   it "shows validation errors", :editorjs do
-    visit edit_admin_post_path(post.admin_param)
+    visit "/admin/posts/#{post.id}/edit"
     expect(page).to have_css("[data-controller='editor-form'] .codex-editor")
 
     fill_in "Title", with: ""

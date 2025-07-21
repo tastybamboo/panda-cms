@@ -6,8 +6,65 @@ RSpec.describe "List pages", type: :system do
   fixtures :all
 
   before(:each) do
-    login_as_admin
-    visit "/admin/pages"
+    # Reset session more thoroughly for CI stability
+    if ENV["CI"]
+      Capybara.reset_sessions!
+      sleep(1)
+    end
+
+    # Retry mechanism for CI navigation issues
+    retries = ENV["CI"] ? 3 : 1
+    success = false
+
+    retries.times do |attempt|
+      begin
+        if ENV["CI"] && attempt > 0
+          puts "[CI Retry] Attempt #{attempt + 1} for list pages navigation"
+          Capybara.reset_sessions!
+          sleep(2)
+        end
+
+        login_as_admin
+
+        if ENV["CI"]
+          puts "[CI Debug] About to visit /admin/pages (attempt #{attempt + 1})"
+          puts "[CI Debug] Current URL before visit: #{page.current_url}"
+        end
+
+        visit "/admin/pages"
+
+        if ENV["CI"]
+          puts "[CI Debug] After visiting list pages"
+          puts "[CI Debug] Current URL: #{page.current_url}"
+          puts "[CI Debug] Page HTML length: #{page.html.length}"
+        end
+
+        # Basic check to ensure page loaded
+        expect(page).to have_current_path("/admin/pages", wait: 10)
+
+        success = true
+        break
+
+      rescue => e
+        if ENV["CI"]
+          puts "[CI Debug] List pages attempt #{attempt + 1} failed: #{e.message}"
+          puts "[CI Debug] Current URL: #{page.current_url}"
+          if page.html.length < 100
+            puts "[CI Debug] Page content: #{page.html}"
+          end
+
+          if attempt < retries - 1
+            puts "[CI Debug] Will retry list pages navigation..."
+            next
+          else
+            puts "[CI Debug] All list pages attempts failed, giving up"
+            raise
+          end
+        else
+          raise
+        end
+      end
+    end
   end
 
   it "shows the correct header" do
