@@ -64,10 +64,8 @@ module CupriteHelpers
     page.driver.browser.network.wait_for_idle(timeout: timeout)
     true
   rescue Ferrum::TimeoutError
-    Rails.logger.debug "[Network Debug] Network idle timeout after #{timeout}s" if ENV["CI"]
     false
-  rescue => e
-    Rails.logger.debug "[Network Debug] Network idle error: #{e.message}" if ENV["CI"]
+  rescue
     false
   end
 
@@ -117,7 +115,6 @@ module CupriteHelpers
       return true if page.has_field?(field_name, with: value)
       sleep 0.1
     end
-    Rails.logger.debug "[Field Debug] Field '#{field_name}' didn't reach value '#{value}' after #{timeout}s" if ENV["CI"]
     false
   end
 
@@ -129,7 +126,6 @@ module CupriteHelpers
     slug = create_slug_from_title(title)
 
     # Wait for page to be fully loaded before manipulating form
-    wait_for_network_idle(timeout: 3) if ENV["CI"]
 
     # Check if a parent is selected to determine the full path
     parent_select = find("select[name='page[parent_id]']", wait: ENV["CI"] ? 5 : 1)

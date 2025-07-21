@@ -92,12 +92,12 @@ RSpec.configure do |config|
         rescue
           "<html><body>Error loading page</body></html>"
         end
-        current_url = begin
+        begin
           page.current_url
         rescue
           "unknown"
         end
-        current_path = begin
+        begin
           page.current_path
         rescue
           "unknown"
@@ -110,20 +110,12 @@ RSpec.configure do |config|
 
         # Check for specific error indicators
         if page_html.include?("error") || page_html.include?("exception") || page_html.include?("404") || page_html.include?("500")
-          if ENV["CI"]
-            Rails.logger.debug "[Test Debug] Error page detected: #{page_html.length} chars"
-            Rails.logger.debug "[Test Debug] Page contains error indicators"
-          end
+          # Error page detected
         end
 
         # Check for redirect or blank page indicators
         if page_html.length < 100
           puts "Warning: Page content appears minimal (#{page_html.length} chars) when taking screenshot"
-          if ENV["CI"]
-            Rails.logger.debug "[Test Debug] Minimal content: '#{page_html[0, 100]}'"
-            Rails.logger.debug "[Test Debug] Current URL: #{current_url}"
-            Rails.logger.debug "[Test Debug] Current path: #{current_path}"
-          end
         end
 
         # Check session state
@@ -133,14 +125,10 @@ RSpec.configure do |config|
           rescue
             []
           end
-          session_cookie = begin
+          begin
             cookies.find { |cookie| cookie["name"].include?("session") }
           rescue
             nil
-          end
-          if ENV["CI"]
-            Rails.logger.debug "[Test Debug] Session cookie present: #{!session_cookie.nil?}"
-            Rails.logger.debug "[Test Debug] Total cookies: #{cookies.length}"
           end
         end
 
@@ -150,12 +138,6 @@ RSpec.configure do |config|
           puts "Screenshot saved to: #{screenshot_path}"
           puts "Page title: #{page_title}"
           puts "Page content length: #{page_html.length} characters"
-
-          if ENV["CI"]
-            Rails.logger.debug "[Test Debug] Screenshot saved: #{screenshot_path}"
-            Rails.logger.debug "[Test Debug] Page title: '#{page_title}'"
-            Rails.logger.debug "[Test Debug] Exception: #{example.exception.class} - #{example.exception.message}"
-          end
 
           # Save page HTML for debugging in CI
           if ENV["GITHUB_ACTIONS"]
@@ -168,7 +150,6 @@ RSpec.configure do |config|
         puts "Failed to capture screenshot: #{e.message}"
         puts "Exception class: #{example.exception.class}"
         puts "Exception message: #{example.exception.message}"
-        Rails.logger.debug "[Test Debug] Screenshot capture failed: #{e.message}" if ENV["CI"]
       end
     end
   end

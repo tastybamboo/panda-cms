@@ -49,12 +49,6 @@ end
 }
 
 Capybara.register_driver(:better_cuprite) do |app|
-  if ENV["CI"]
-    Rails.logger.debug "[Cuprite Debug] Initializing browser with CI-specific options"
-    Rails.logger.debug "[Cuprite Debug] Process timeout: #{@cuprite_options[:process_timeout]}"
-    Rails.logger.debug "[Cuprite Debug] Timeout: #{@cuprite_options[:timeout]}"
-  end
-
   Capybara::Cuprite::Driver.new(app, **@cuprite_options)
 end
 

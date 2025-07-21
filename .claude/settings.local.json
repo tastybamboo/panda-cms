@@ -12,7 +12,10 @@
       "Bash(git push:*)",
       "Bash(gh run watch:*)",
       "Bash(gh run list:*)",
-      "Bash(gh api:*)"
+      "Bash(gh api:*)",
+      "Bash(PANDA_CMS_USE_GITHUB_ASSETS=false bundle exec rspec spec/system/panda/cms/admin/login_spec.rb::Admin authentication::where provider is::GitHub --format documentation)",
+      "Bash(PANDA_CMS_USE_GITHUB_ASSETS=false bundle exec rspec spec/system/panda/cms/admin/login_spec.rb --format documentation)",
+      "WebFetch(domain:github.com)"
     ],
     "deny": []
   }
