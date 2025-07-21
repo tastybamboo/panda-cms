@@ -7,7 +7,21 @@ RSpec.describe "Adding a post", type: :system do
 
   before do
     login_as_admin
+    
+    if ENV["CI"]
+      posts_path = panda_cms.admin_posts_path rescue "/admin/posts"
+      puts "[Route Debug] admin_posts_path resolved to: #{posts_path}"
+      puts "[Route Debug] Current path before visit: #{page.current_path}"
+      puts "[Route Debug] Current URL before visit: #{page.current_url}"
+    end
+    
     visit panda_cms.admin_posts_path
+
+    if ENV["CI"]
+      puts "[Route Debug] Current path after visit: #{page.current_path}"
+      puts "[Route Debug] Current URL after visit: #{page.current_url}"  
+      puts "[Route Debug] Page title after visit: #{page.title}"
+    end
 
     # Wait for page to fully load and ensure "Add Post" link is present
     expect(page).to have_text("Posts", wait: 10)
