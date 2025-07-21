@@ -38,8 +38,8 @@ end
 @cuprite_options = {
   window_size: [1440, 1000],
   browser_options: browser_options,
-  process_timeout: ENV['CI'] ? 180 : 120,
-  timeout: ENV['CI'] ? 60 : 30,
+  process_timeout: ENV['CI'] ? 30 : 120,
+  timeout: ENV['CI'] ? 15 : 30,
   inspector: ENV["DEBUG"].in?(%w[y 1 yes true]),
   logger: (ENV["DEBUG"].in?(%w[y 1 yes true]) || ENV['CI']) ? FerrumLogger.new : StringIO.new,
   slowmo: ENV.fetch("SLOWMO", 0).to_f,
