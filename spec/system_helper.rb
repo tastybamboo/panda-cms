@@ -19,6 +19,9 @@ RSpec.configure do |config|
       puts "CI Debug - Page count: #{Panda::CMS::Page.count rescue 'error'}"
       puts "CI Debug - PANDA_CMS_USE_GITHUB_ASSETS: #{ENV['PANDA_CMS_USE_GITHUB_ASSETS']}"
       puts "CI Debug - Rails root: #{Rails.root}"
+      puts "CI Debug - Capybara app_host: #{Capybara.app_host rescue 'not set'}"
+      puts "CI Debug - Capybara server_host: #{Capybara.server_host rescue 'not set'}"
+      puts "CI Debug - Capybara server_port: #{Capybara.server_port rescue 'not set'}"
     end
   end
 end

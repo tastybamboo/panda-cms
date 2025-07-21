@@ -27,7 +27,7 @@ Capybara.singleton_class.prepend(Module.new do
 end)
 
 Capybara.server_host = "127.0.0.1"
-Capybara.server_port = 3002
+# Let Capybara choose an available port automatically
 
 Panda::CMS.config.url = Capybara.app_host
 Rails.application.routes.default_url_options[:host] = Capybara.app_host
