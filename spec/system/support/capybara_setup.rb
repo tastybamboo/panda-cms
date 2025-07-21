@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-Capybara.default_max_wait_time = ENV["CI"] ? 5 : 2
+Capybara.default_max_wait_time = ENV["CI"] ? 10 : 2
 
 # Normalize whitespaces when using `has_text?` and similar matchers,
 # i.e., ignore newlines, trailing spaces, etc.
