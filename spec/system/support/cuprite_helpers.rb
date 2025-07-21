@@ -31,7 +31,11 @@ if ENV["CI"]
     "disable-features": "TranslateUI,VizDisplayCompositor",
     "no-zygote": nil,
     "single-process": nil,
-    "disable-ipc-flooding-protection": nil
+    "disable-ipc-flooding-protection": nil,
+    "disable-hang-monitor": nil,
+    "disable-prompt-on-repost": nil,
+    "disable-domain-reliability": nil,
+    "disable-component-extensions-with-background-pages": nil
   })
 end
 

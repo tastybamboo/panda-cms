@@ -23,6 +23,12 @@ module OmniAuthHelpers
 
     Rails.application.env_config["omniauth.auth"] = OmniAuth.config.mock_auth[:google]
     visit "/admin/auth/google/callback"
+    
+    # Wait for login to complete and redirect
+    if ENV["CI"]
+      sleep(2)
+      expect(page).to have_current_path("/admin", wait: 10)
+    end
   end
 
   def manual_login_with_google(user)

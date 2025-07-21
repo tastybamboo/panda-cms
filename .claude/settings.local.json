@@ -22,7 +22,9 @@
       "Bash(RAILS_ENV=test CI=true PANDA_CMS_USE_GITHUB_ASSETS=false bundle exec rspec spec/system/panda/cms/admin/login_spec.rb)",
       "Bash(RAILS_ENV=test bundle exec rails db:create db:schema:load)",
       "Bash(RAILS_ENV=test CI=true PANDA_CMS_USE_GITHUB_ASSETS=false bundle exec rspec spec/system/panda/cms/admin/login_spec.rb -f progress)",
-      "Bash(RAILS_ENV=test CI=true PANDA_CMS_USE_GITHUB_ASSETS=false bundle exec rspec spec/system --exclude-pattern='**/editorjs/**' -f progress)"
+      "Bash(RAILS_ENV=test CI=true PANDA_CMS_USE_GITHUB_ASSETS=false bundle exec rspec spec/system --exclude-pattern='**/editorjs/**' -f progress)",
+      "Bash(RAILS_ENV=test CI=true PANDA_CMS_USE_GITHUB_ASSETS=false bundle exec rspec spec/system/panda/cms/admin/dashboard_spec.rb -f documentation)",
+      "Bash(RAILS_ENV=test CI=true PANDA_CMS_USE_GITHUB_ASSETS=false bundle exec rspec spec/system/panda/cms/admin/dashboard_spec.rb -f progress)"
     ],
     "deny": []
   }
