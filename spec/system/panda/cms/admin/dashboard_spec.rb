@@ -22,15 +22,17 @@ RSpec.describe "Admin dashboard", type: :system do
   end
 
   context "when logged in as admin" do
-    before { login_as_admin }
+    before do
+      login_as_admin
+      visit "/admin"
+      expect(page).to have_current_path("/admin", wait: 10)
+    end
 
     it "shows the dashboard" do
-      visit "/admin"
       expect(page).to have_content("Dashboard")
     end
 
     it "displays the admin navigation" do
-      visit "/admin"
       expect(page).to have_link("Pages")
       expect(page).to have_link("Posts")
       expect(page).to have_link("Forms")

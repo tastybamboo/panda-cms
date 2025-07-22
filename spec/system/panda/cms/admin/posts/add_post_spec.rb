@@ -6,72 +6,9 @@ RSpec.describe "Adding a post", type: :system do
   fixtures :panda_cms_users
 
   before do
-    # Reset session more thoroughly for CI stability
-    if ENV["CI"]
-      Capybara.reset_sessions!
-      sleep(1)
-    end
-
-    # Retry mechanism for CI navigation issues
-    retries = ENV["CI"] ? 3 : 1
-    success = false
-
-    retries.times do |attempt|
-      begin
-        if ENV["CI"] && attempt > 0
-          puts "[CI Retry] Attempt #{attempt + 1} for posts navigation"
-          Capybara.reset_sessions!
-          sleep(2)
-        end
-
-        login_as_admin
-
-        if ENV["CI"]
-          puts "[CI Debug] About to visit /admin/posts (attempt #{attempt + 1})"
-          puts "[CI Debug] Current URL before visit: #{page.current_url}"
-        end
-
-        visit "/admin/posts"
-
-        if ENV["CI"]
-          puts "[CI Debug] After visiting /admin/posts"
-          puts "[CI Debug] Current URL: #{page.current_url}"
-          puts "[CI Debug] Page HTML length: #{page.html.length}"
-        end
-
-        # Wait for page to fully load and ensure "Add Post" link is present
-        expect(page).to have_text("Posts", wait: 15)
-        expect(page).to have_link("Add Post", wait: 10)
-
-        click_link "Add Post"
-
-        # Wait for new page form to load
-        expect(page).to have_text("Add Post", wait: 10)
-        expect(page).to have_field("Title", wait: 5)
-
-        success = true
-        break
-
-      rescue => e
-        if ENV["CI"]
-          puts "[CI Debug] Posts attempt #{attempt + 1} failed: #{e.message}"
-          puts "[CI Debug] Current URL: #{page.current_url}"
-          if page.html.length < 100
-            puts "[CI Debug] Page content: #{page.html}"
-          end
-
-          if attempt < retries - 1
-            puts "[CI Debug] Will retry posts navigation..."
-            next
-          else
-            puts "[CI Debug] All posts attempts failed, giving up"
-            raise
-          end
-        else
-          raise
-        end
-      end
-    end
+    login_as_admin
+    visit "/admin/posts"
+    click_link "Add Post"
   end
 
   it "creates a new post with valid details" do

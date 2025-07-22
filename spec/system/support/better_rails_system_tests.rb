@@ -116,13 +116,6 @@ RSpec.configure do |config|
         # Check for redirect or blank page indicators
         if page_html.length < 100
           puts "Warning: Page content appears minimal (#{page_html.length} chars) when taking screenshot"
-          if ENV["CI"]
-            puts "CI Debug - Current URL: #{page.current_url rescue 'unknown'}"
-            puts "CI Debug - Page status: #{page.status_code rescue 'unknown'}"
-            puts "CI Debug - Page HTML content: '#{page_html[0, 200]}'"
-            puts "CI Debug - Capybara server host: #{Capybara.server_host}"
-            puts "CI Debug - Capybara server port: #{Capybara.server_port}"
-          end
         end
 
         # Check session state

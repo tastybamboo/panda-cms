@@ -26,67 +26,8 @@ RSpec.describe "When adding a page", type: :system, js: true do
   context "when logged in as an administrator" do
     context "when using the add page form" do
       before(:each) do
-        # Reset session more thoroughly for CI stability
-        if ENV["CI"]
-          Capybara.reset_sessions!
-          sleep(1)
-        end
-
-        # Retry mechanism for CI navigation issues
-        retries = ENV["CI"] ? 3 : 1
-        success = false
-
-        retries.times do |attempt|
-          begin
-            if ENV["CI"] && attempt > 0
-              puts "[CI Retry] Attempt #{attempt + 1} for page navigation"
-              Capybara.reset_sessions!
-              sleep(2)
-            end
-
-            login_as_admin
-
-            if ENV["CI"]
-              puts "[CI Debug] About to visit /admin/pages/new (attempt #{attempt + 1})"
-              puts "[CI Debug] Current URL before visit: #{page.current_url}"
-            end
-
-            visit "/admin/pages/new"
-
-            if ENV["CI"]
-              puts "[CI Debug] After visiting /admin/pages/new"
-              puts "[CI Debug] Current URL: #{page.current_url}"
-              puts "[CI Debug] Page HTML length: #{page.html.length}"
-            end
-
-            # Try to verify page loaded successfully
-            expect(page).to have_text("Add Page", wait: 15)
-            expect(page).to have_field("Title", wait: 10)
-            expect(page).to have_field("URL", wait: 10)
-
-            success = true
-            break
-
-          rescue => e
-            if ENV["CI"]
-              puts "[CI Debug] Attempt #{attempt + 1} failed: #{e.message}"
-              puts "[CI Debug] Current URL: #{page.current_url}"
-              if page.html.length < 100
-                puts "[CI Debug] Page content: #{page.html}"
-              end
-
-              if attempt < retries - 1
-                puts "[CI Debug] Will retry..."
-                next
-              else
-                puts "[CI Debug] All attempts failed, giving up"
-                raise
-              end
-            else
-              raise
-            end
-          end
-        end
+        login_as_admin
+        visit "/admin/pages/new"
       end
 
       it "shows the add page form" do
@@ -248,66 +189,8 @@ RSpec.describe "When adding a page", type: :system, js: true do
 
     context "when navigating from pages index" do
       before(:each) do
-        # Reset session more thoroughly for CI stability
-        if ENV["CI"]
-          Capybara.reset_sessions!
-          sleep(1)
-        end
-
-        # Retry mechanism for CI navigation issues
-        retries = ENV["CI"] ? 3 : 1
-        success = false
-
-        retries.times do |attempt|
-          begin
-            if ENV["CI"] && attempt > 0
-              puts "[CI Retry] Attempt #{attempt + 1} for pages index navigation"
-              Capybara.reset_sessions!
-              sleep(2)
-            end
-
-            login_as_admin
-
-            if ENV["CI"]
-              puts "[CI Debug] About to visit /admin/pages (attempt #{attempt + 1})"
-              puts "[CI Debug] Current URL before visit: #{page.current_url}"
-            end
-
-            visit "/admin/pages"
-
-            if ENV["CI"]
-              puts "[CI Debug] After visiting /admin/pages"
-              puts "[CI Debug] Current URL: #{page.current_url}"
-              puts "[CI Debug] Page HTML length: #{page.html.length}"
-            end
-
-            # Try to verify page loaded successfully
-            expect(page).to have_content("Pages", wait: 15)
-            expect(page).to have_link("Add Page", wait: 10)
-
-            success = true
-            break
-
-          rescue => e
-            if ENV["CI"]
-              puts "[CI Debug] Navigation attempt #{attempt + 1} failed: #{e.message}"
-              puts "[CI Debug] Current URL: #{page.current_url}"
-              if page.html.length < 100
-                puts "[CI Debug] Page content: #{page.html}"
-              end
-
-              if attempt < retries - 1
-                puts "[CI Debug] Will retry navigation..."
-                next
-              else
-                puts "[CI Debug] All navigation attempts failed, giving up"
-                raise
-              end
-            else
-              raise
-            end
-          end
-        end
+        login_as_admin
+        visit "/admin/pages"
       end
 
       it "can access the pages index first" do

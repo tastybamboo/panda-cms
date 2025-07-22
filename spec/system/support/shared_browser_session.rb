@@ -9,13 +9,14 @@ module SharedBrowserSession
     end
 
     base.after(:each) do
-      # Just reset the session, don't restart browser
       Capybara.reset_sessions!
     end
 
     base.after(:all) do
       Capybara.current_driver = @__initial_driver
     end
+
+
   end
 end
 

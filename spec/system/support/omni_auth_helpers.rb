@@ -23,12 +23,6 @@ module OmniAuthHelpers
 
     Rails.application.env_config["omniauth.auth"] = OmniAuth.config.mock_auth[:google]
     visit "/admin/auth/google/callback"
-    
-    # Wait for login to complete and redirect
-    if ENV["CI"]
-      sleep(2)
-      expect(page).to have_current_path("/admin", wait: 10)
-    end
   end
 
   def manual_login_with_google(user)
@@ -86,24 +80,9 @@ module OmniAuthHelpers
     user = admin_user
     login_with_google(user)
 
-    if ENV["CI"]
-      puts "[Auth Debug] After login_with_google - path: #{page.current_path}"
-      puts "[Auth Debug] After login_with_google - URL: #{page.current_url}"
-      puts "[Auth Debug] After login_with_google - title: #{page.title}"
-    end
-
     # Try to navigate to admin if not already there
     unless page.current_path == "/admin"
-      if ENV["CI"]
-        puts "[Auth Debug] Navigating to /admin from: #{page.current_path}"
-      end
       visit "/admin"
-      
-      if ENV["CI"]
-        puts "[Auth Debug] After /admin visit - path: #{page.current_path}"
-        puts "[Auth Debug] After /admin visit - URL: #{page.current_url}"
-        puts "[Auth Debug] After /admin visit - title: #{page.title}"
-      end
     end
   end
 

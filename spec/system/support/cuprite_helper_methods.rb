@@ -60,7 +60,6 @@ module CupriteHelpers
   # @param timeout [Integer] Maximum time to wait in seconds (default: 5)
   # @return [Boolean] true if network is idle, false if timeout occurs
   def wait_for_network_idle(timeout: 5)
-    timeout = ENV["CI"] ? timeout * 2 : timeout
     page.driver.browser.network.wait_for_idle(timeout: timeout)
     true
   rescue Ferrum::TimeoutError
@@ -109,7 +108,6 @@ module CupriteHelpers
   # @param value [String] The expected value
   # @param timeout [Integer] Maximum time to wait in seconds (default: 5)
   def wait_for_field_value(field_name, value, timeout: 5)
-    timeout = ENV["CI"] ? timeout * 2 : timeout
     start_time = Time.now
     while Time.now - start_time < timeout
       return true if page.has_field?(field_name, with: value)
@@ -128,7 +126,7 @@ module CupriteHelpers
     # Wait for page to be fully loaded before manipulating form
 
     # Check if a parent is selected to determine the full path
-    parent_select = find("select[name='page[parent_id]']", wait: ENV["CI"] ? 5 : 1)
+    parent_select = find("select[name='page[parent_id]']", wait: 1)
     if parent_select.value.present? && parent_select.value != ""
       # Get the parent path from the selected option text
       selected_option = parent_select.find("option[value='#{parent_select.value}']")
