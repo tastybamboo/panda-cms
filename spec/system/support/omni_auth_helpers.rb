@@ -50,10 +50,14 @@ module OmniAuthHelpers
   def login_with_github(user)
     OmniAuth.config.mock_auth[:github] = OmniAuth::AuthHash.new({
       provider: "github",
-      uid: "123456",
+      uid: user.id,
       info: {
         email: user.email,
         name: "#{user.firstname} #{user.lastname}"
+      },
+      credentials: {
+        token: "mock_token",
+        expires_at: Time.now + 1.week
       }
     })
 
@@ -64,11 +68,15 @@ module OmniAuthHelpers
   def login_with_microsoft(user)
     OmniAuth.config.mock_auth[:microsoft] = OmniAuth::AuthHash.new({
       provider: "microsoft",
-      uid: "123456",
+      uid: user.id,
       info: {
         email: user.email,
         first_name: user.firstname,
         last_name: user.lastname
+      },
+      credentials: {
+        token: "mock_token",
+        expires_at: Time.now + 1.week
       }
     })
 
