@@ -114,18 +114,18 @@ module Panda
         end
 
         def github_javascript_url
-          version = `git rev-parse --short HEAD`.strip
+          version = asset_version
           "#{github_base_url(version)}panda-cms-#{version}.js"
         end
 
         def github_css_url
-          version = `git rev-parse --short HEAD`.strip
+          version = asset_version
           "#{github_base_url(version)}panda-cms-#{version}.css"
         end
 
         def development_javascript_url
           # Try cached assets first, then importmap
-          version = `git rev-parse --short HEAD`.strip
+          version = asset_version
           cached_path = "/panda-cms-assets/#{version}/panda-cms-#{version}.js"
 
           if cached_asset_exists?(cached_path)
@@ -137,7 +137,7 @@ module Panda
         end
 
         def development_css_url
-          version = `git rev-parse --short HEAD`.strip
+          version = asset_version
           cached_path = "/panda-cms-assets/#{version}/panda-cms-#{version}.css"
 
           if cached_asset_exists?(cached_path)
@@ -149,6 +149,16 @@ module Panda
 
         def github_base_url(version)
           "https://github.com/tastybamboo/panda-cms/releases/download/#{version}/"
+        end
+
+        def asset_version
+          # In test environment, use VERSION constant for consistency with compiled assets
+          # In other environments, use git SHA for dynamic versioning
+          if Rails.env.test?
+            Panda::CMS::VERSION
+          else
+            `git rev-parse --short HEAD`.strip
+          end
         end
 
         def development_assets_available?
