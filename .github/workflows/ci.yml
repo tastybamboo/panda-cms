@@ -61,6 +61,16 @@ jobs:
           VERSION: ${{ github.event.pull_request.head.sha }}
         run: |
           echo "${VERSION}" >> VERSION
+
+      - name: Set short git commit SHA
+        id: vars
+        run: |
+          calculatedSha=$(git rev-parse --short ${{ github.sha }})
+          echo "COMMIT_SHORT_SHA=$calculatedSha" >> $GITHUB_ENV
+      
+      - name: Confirm git commit SHA output
+        run: echo ${{ env.COMMIT_SHORT_SHA }}
+
       - name: "Set timezone"
         run: |
           sudo timedatectl set-timezone Europe/London
@@ -117,14 +127,14 @@ jobs:
             exit 1
           fi
 
-          if [ -f "panda-cms-${{ steps.version.outputs.VERSION }}.js" ]; then
+          if [ -f "panda-cms-${{ env.COMMIT_SHORT_SHA }}.js" ]; then
             echo "✅ JavaScript bundle exists"
-            echo "JavaScript bundle size: $(wc -c < panda-cms-${{ steps.version.outputs.VERSION }}.js) bytes"
+            echo "JavaScript bundle size: $(wc -c < panda-cms-${{ env.COMMIT_SHORT_SHA }}.js) bytes"
           else
             echo "❌ JavaScript bundle missing"
             exit 1
           fi
-              
+
       - name: "Run tests"
         env:
           DATABASE_URL: "postgres://postgres:password@localhost:5432/test"
