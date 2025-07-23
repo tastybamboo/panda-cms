@@ -1,16 +1,10 @@
 console.debug("[Panda CMS] Importing Panda CMS Stimulus Controller...")
 
-import { Application as PandaCMSApplication } from "@hotwired/stimulus"
+import { application } from "@hotwired/stimulus-loading"
 
-const pandaCmsApplication = PandaCMSApplication.start()
+console.debug("[Panda CMS] Using shared Stimulus application...")
 
-console.debug("[Panda CMS] Application started...")
-
-// Configure Stimulus development experience
-const railsEnv = document.body?.dataset?.environment || "production";
-pandaCmsApplication.debug = railsEnv === "development";
-
-console.debug("[Panda CMS] window.pandaCmsStimulus available...")
+const pandaCmsApplication = application
 
 console.debug("[Panda CMS] Registering controllers...")
 
