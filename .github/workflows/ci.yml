@@ -105,12 +105,11 @@ jobs:
           echo ""
           echo "Asset sizes:"
           du -h spec/dummy/tmp/panda_cms_assets/*
-          
+
       - name: "Move assets to public directory"
-        working-directory: spec/dummy
         run: |
-          mkdir -p public/panda_cms_assets
-          mv spec/dummy/tmp/panda_cms_assets/* public/panda_cms_assets/
+          mkdir -p spec/dummy/public/panda_cms_assets
+          mv spec/dummy/tmp/panda_cms_assets/* spec/dummy/public/panda_cms_assets/
           echo "✅ Assets moved to public directory"
 
       - name: "Run tests"
