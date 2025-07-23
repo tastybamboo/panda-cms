@@ -47,9 +47,11 @@ RSpec.describe "Adding a post", type: :system do
       # Check if the post was created
       expect(page.html).to include(unique_title)
     else
-      # Use string-based checks to avoid DOM node issues
+      # Check we're on the edit page (indicates successful creation and redirect)
+      expect(page.current_url).to match(%r{/admin/posts/[^/]+/edit})
+      # Check the page shows we're editing the created post
+      expect(page).to have_button("Update Post")
       html_content = page.html
-      expect(html_content).to include("The post was successfully created!")
       expect(html_content).to include(unique_title)
     end
 

@@ -9,6 +9,7 @@
   <section id="panda-main" class="flex flex-row h-full">
     <div class="flex-1 h-full" id="panda-cms-primary-content">
       <%= render "panda/cms/admin/shared/breadcrumbs" %>
+      <%= render "panda/cms/admin/shared/flash" %>
       <%= yield %>
     </div>
     <% if content_for :sidebar %>
