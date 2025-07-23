@@ -126,10 +126,14 @@ module Panda
         def development_javascript_url
           # Try cached assets first, then importmap
           version = asset_version
-          cached_path = "/panda-cms-assets/#{version}/panda-cms-#{version}.js"
+          # Try root level first (standalone bundle), then versioned directory
+          root_path = "/panda-cms-assets/panda-cms-#{version}.js"
+          versioned_path = "/panda-cms-assets/#{version}/panda-cms-#{version}.js"
 
-          if cached_asset_exists?(cached_path)
-            cached_path
+          if cached_asset_exists?(root_path)
+            root_path
+          elsif cached_asset_exists?(versioned_path)
+            versioned_path
           else
             # Fallback to importmap or engine asset
             "/assets/panda/cms/controllers/index.js"
@@ -138,10 +142,14 @@ module Panda
 
         def development_css_url
           version = asset_version
-          cached_path = "/panda-cms-assets/#{version}/panda-cms-#{version}.css"
+          # Try versioned directory first, then root level
+          versioned_path = "/panda-cms-assets/#{version}/panda-cms-#{version}.css"
+          root_path = "/panda-cms-assets/panda-cms-#{version}.css"
 
-          if cached_asset_exists?(cached_path)
-            cached_path
+          if cached_asset_exists?(versioned_path)
+            versioned_path
+          elsif cached_asset_exists?(root_path)
+            root_path
           else
             nil # No CSS in development mode typically
           end

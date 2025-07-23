@@ -50,7 +50,9 @@
       "Bash(git rev-parse:*)",
       "Bash(git tag:*)",
       "Bash(gh pr edit:*)",
-      "Bash(ruby:*)"
+      "Bash(ruby:*)",
+      "Bash(timeout 300 bundle exec rspec spec/system/ --exclude-pattern \"spec/**/*_editorjs_*\")",
+      "Bash(grep:*)"
     ],
     "deny": []
   }

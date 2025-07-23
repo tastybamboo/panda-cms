@@ -30,8 +30,14 @@ module Panda
 
           content_tag(:script, "", tag_options)
         else
-          # Development assets
-          javascript_include_tag(js_url, type: "module", defer: true)
+          # Development assets - check if it's a standalone bundle or importmap
+          if js_url.include?("panda-cms-assets")
+            # Standalone bundle - don't use type: "module"
+            javascript_include_tag(js_url, defer: true)
+          else
+            # Importmap asset - use type: "module"
+            javascript_include_tag(js_url, type: "module", defer: true)
+          end
         end
       end
 

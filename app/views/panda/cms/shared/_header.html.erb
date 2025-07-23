@@ -7,9 +7,17 @@
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
     <script src="https://kit.fontawesome.com/7835d81e75.js" defer="true" crossorigin="anonymous"></script>
-    <script async src="https://ga.jspm.io/npm:es-module-shims@1.10.0/dist/es-module-shims.js" defer="true" crossorigin="anonymous"></script>
     <%= stylesheet_link_tag "panda.cms", "data-turbo-track": "reload", media: "all" %>
-    <%= render "panda/cms/shared/importmap" %>
+    
+    <% if Panda::CMS::AssetLoader.use_github_assets? || Rails.env.test? %>
+      <!-- Using compiled Panda CMS assets -->
+      <%= panda_cms_complete_assets %>
+    <% else %>
+      <!-- Using development importmap assets -->
+      <script async src="https://ga.jspm.io/npm:es-module-shims@1.10.0/dist/es-module-shims.js" defer="true" crossorigin="anonymous"></script>
+      <%= render "panda/cms/shared/importmap" %>
+    <% end %>
+    
     <%= render "panda/cms/shared/favicons" %>
     <%= yield :head %>
   </head>
