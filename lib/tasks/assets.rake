@@ -36,8 +36,35 @@ namespace :panda_cms do
       File.write(manifest_file, JSON.pretty_generate(manifest))
       puts "✅ Manifest created: #{manifest_file}"
 
+      # Copy assets to test environment location for consistent testing
+      # Rails.root is the dummy app, so we need to go to its public directory
+      test_asset_dir = Rails.root.join("public", "panda-cms-assets")
+      FileUtils.mkdir_p(test_asset_dir)
+      
+      js_file_name = "panda-cms-#{version}.js"
+      css_file_name = "panda-cms-#{version}.css"
+      
+      # Copy JavaScript file
+      if File.exist?(output_dir.join(js_file_name))
+        FileUtils.cp(output_dir.join(js_file_name), test_asset_dir.join(js_file_name))
+        puts "✅ Copied JavaScript to test location: #{test_asset_dir.join(js_file_name)}"
+      end
+      
+      # Copy CSS file
+      if File.exist?(output_dir.join(css_file_name))
+        FileUtils.cp(output_dir.join(css_file_name), test_asset_dir.join(css_file_name))
+        puts "✅ Copied CSS to test location: #{test_asset_dir.join(css_file_name)}"
+      end
+      
+      # Copy manifest
+      if File.exist?(output_dir.join("manifest.json"))
+        FileUtils.cp(output_dir.join("manifest.json"), test_asset_dir.join("manifest.json"))
+        puts "✅ Copied manifest to test location: #{test_asset_dir.join('manifest.json')}"
+      end
+
       puts "🎉 Asset compilation complete!"
       puts "📁 Output directory: #{output_dir}"
+      puts "📁 Test assets directory: #{test_asset_dir}"
     end
 
     desc "Upload compiled assets to GitHub release"

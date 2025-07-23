@@ -52,7 +52,10 @@
       "Bash(gh pr edit:*)",
       "Bash(ruby:*)",
       "Bash(timeout 300 bundle exec rspec spec/system/ --exclude-pattern \"spec/**/*_editorjs_*\")",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(RAILS_ENV=test bundle exec rspec spec/system/panda/cms/admin/posts/add_post_spec.rb -v)",
+      "Bash(RAILS_ENV=test bundle exec rspec spec/system/panda/cms/admin/posts/add_post_spec.rb)",
+      "Bash(RAILS_ENV=test bundle exec rspec ../../spec/system/panda/cms/admin/posts/add_post_spec.rb)"
     ],
     "deny": []
   }

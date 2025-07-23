@@ -95,22 +95,19 @@ jobs:
           DATABASE_URL: "postgres://postgres:password@localhost:5432/test"
           RAILS_ENV: test
         run: |
-          bundle exec rake panda_cms:assets:compile
+          bundle exec rake app:panda_cms:assets:compile
           echo "✅ Asset compilation complete"
 
-      - name: "List compiled assets"
+      - name: "Verify compiled assets"
         run: |
-          echo "Compiled assets:"
+          echo "Compiled assets in tmp:"
           ls -la spec/dummy/tmp/panda_cms_assets/
           echo ""
+          echo "Assets copied to test location:"
+          ls -la spec/dummy/public/panda-cms-assets/
+          echo ""
           echo "Asset sizes:"
-          du -h spec/dummy/tmp/panda_cms_assets/*
-
-      - name: "Move assets to public directory"
-        run: |
-          mkdir -p spec/dummy/public/panda_cms_assets
-          mv spec/dummy/tmp/panda_cms_assets/* spec/dummy/public/panda_cms_assets/
-          echo "✅ Assets moved to public directory"
+          du -h spec/dummy/public/panda-cms-assets/*
 
       - name: "Run tests"
         env:

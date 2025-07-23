@@ -1,16 +1,16 @@
 {
   "version": "0.7.4",
-  "compiled_at": "2025-07-20T18:24:58Z",
+  "compiled_at": "2025-07-23T23:32:14Z",
   "files": [
     {
       "filename": "panda-cms-0.7.4.css",
-      "size": 5940,
-      "sha256": "2a6bdd8d56438a7d75fb6596d4f5d058e7a79ec4835bb0bfd91c4cc63cd2e14b"
+      "size": 548,
+      "sha256": "4a23ffa7a03f66b5ef13c2f0ccbf1209421d019b939f131cffe9fd817cb1eed5"
     },
     {
       "filename": "panda-cms-0.7.4.js",
-      "size": 32115,
-      "sha256": "7898235317c8a7f56f2028ec56e148ff9862e6c14cfe644f60188015ef78fae9"
+      "size": 6532,
+      "sha256": "8c14cc967893e67bc2f4f59ae330c670d1126702f867d54705ba971a3bb92780"
     }
   ],
   "cdn_base_url": "https://github.com/tastybamboo/panda-cms/releases/download/v0.7.4/",
