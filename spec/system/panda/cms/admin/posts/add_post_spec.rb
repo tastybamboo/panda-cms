@@ -34,7 +34,6 @@ RSpec.describe "Adding a post", type: :system do
       }
     ")
 
-    # Use normal button click with JavaScript submission
     click_button "Create Post"
     
     # Wait for redirect
@@ -69,7 +68,6 @@ RSpec.describe "Adding a post", type: :system do
     # Don't fill in title
     fill_in "post_slug", with: "/#{Time.current.strftime("%Y/%m")}/test-post"
 
-    # Use normal button click - validation errors should be handled by JavaScript
     click_button "Create Post"
 
     # Use string-based checks to avoid DOM node issues
