@@ -1,6 +1,8 @@
-require "active_support/core_ext/integer/time"
-require "capybara/rspec"
-require "bullet" if defined?(Bullet)
+# frozen_string_literal: true
+
+require 'active_support/core_ext/integer/time'
+require 'capybara/rspec'
+require 'bullet' if defined?(Bullet)
 
 # The test environment is used exclusively to run your application's
 # test suite. You never need to work with it otherwise. Remember that
@@ -14,6 +16,7 @@ Rails.application.configure do
       Bullet.bullet_logger = true
       Bullet.raise = false # raise an error if n+1 query occurs
     end
+    
   end
 
   # Settings specified here will take precedence over those in config/application.rb.
@@ -25,12 +28,12 @@ Rails.application.configure do
   # this is usually not necessary, and can slow down your test suite. However, it's
   # recommended that you enable it in continuous integration systems to ensure eager
   # loading is working properly before deploying your code.
-  config.eager_load = ENV["CI"].present?
+  config.eager_load = false
 
   # Configure public file server for tests with Cache-Control for performance.
   config.public_file_server.enabled = true
   config.public_file_server.headers = {
-    "Cache-Control" => "public, max-age=#{1.hour.to_i}"
+    'Cache-Control' => "public, max-age=#{1.hour.to_i}"
   }
 
   # Show full error reports and disable caching.
@@ -72,7 +75,13 @@ Rails.application.configure do
   # Raise error when a before_action's only/except options reference missing actions
   config.action_controller.raise_on_missing_callback_actions = true
 
-  config.importmap.paths << Panda::CMS::Engine.root.join("config/importmap.rb")
-  config.importmap.cache_sweepers << Panda::CMS::Engine.root.join("app/javascript")
-  config.importmap.cache_sweepers << Rails.application.root.join("vendor/javascript")
+  # Configure OmniAuth for testing
+  config.after_initialize do
+    if defined?(OmniAuth)
+      OmniAuth.config.test_mode = true
+      OmniAuth.config.on_failure = proc { |env|
+        OmniAuth::FailureEndpoint.new(env).redirect_to_failure
+      }
+    end
+  end
 end

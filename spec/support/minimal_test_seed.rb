@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Panda
   module CMS
     class MinimalTestSeed
@@ -25,22 +27,22 @@ module Panda
         end
 
         # Create a minimal homepage if none exists
-        unless Panda::CMS::Page.exists?(path: "/")
-          # Create a minimal template first if needed
-          template = Panda::CMS::Template.find_or_create_by!(
-            name: "Minimal Test Template",
-            description: "A minimal template for tests",
-            html: "<html><body><header>{{header}}</header><main>{{main}}</main><footer>{{footer}}</footer></body></html>"
-          )
+        return if Panda::CMS::Page.exists?(path: "/")
 
-          # Create the homepage
-          Panda::CMS::Page.create!(
-            title: "Home",
-            path: "/",
-            template: template,
-            published: true
-          )
-        end
+        # Create a minimal template first if needed
+        template = Panda::CMS::Template.find_or_create_by!(
+          name: "Minimal Test Template",
+          description: "A minimal template for tests",
+          html: "<html><body><header>{{header}}</header><main>{{main}}</main><footer>{{footer}}</footer></body></html>"
+        )
+
+        # Create the homepage
+        Panda::CMS::Page.create!(
+          title: "Home",
+          path: "/",
+          template: template,
+          published: true
+        )
       end
     end
   end

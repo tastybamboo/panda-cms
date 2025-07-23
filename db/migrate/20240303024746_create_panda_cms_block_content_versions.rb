@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class CreatePandaCMSBlockContentVersions < ActiveRecord::Migration[7.1]
   def change
     create_table :panda_cms_block_content_versions, id: :uuid do |t|

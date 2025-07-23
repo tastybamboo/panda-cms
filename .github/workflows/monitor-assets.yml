@@ -1,0 +1,264 @@
+---
+name: "Asset Performance Monitoring"
+
+"on": # yamllint disable-line rule:truthy
+  schedule:
+    # Run every 6 hours
+    - cron: "0 */6 * * *"
+  workflow_dispatch:
+    inputs:
+      monitoring_type:
+        description: "Type of monitoring to run"
+        required: true
+        default: "performance"
+        type: choice
+        options:
+          - performance
+          - baseline
+          - report
+      continuous_minutes:
+        description: "Minutes to run continuous monitoring (0 = single check)"
+        required: false
+        default: "0"
+        type: string
+
+jobs:
+  monitor-asset-performance:
+    name: "Monitor Asset Performance"
+    runs-on: "ubuntu-latest"
+    permissions:
+      contents: read
+    env:
+      MONITORING_TYPE: ${{ github.event.inputs.monitoring_type || 'performance' }}
+      CONTINUOUS_MINUTES: ${{ github.event.inputs.continuous_minutes || '0' }}
+
+    steps:
+      - uses: "actions/checkout@v4"
+
+      - name: "Setup Ruby"
+        uses: "ruby/setup-ruby@v1"
+        with:
+          bundler-cache: false
+          ruby-version: "3.2"
+
+      - name: "Create monitoring directories"
+        run: |
+          mkdir -p tmp/asset_monitoring
+          mkdir -p artifacts/monitoring
+
+      - name: "Run asset performance monitoring"
+        run: |
+          echo "🔍 Starting asset performance monitoring..."
+          echo "Monitoring type: $MONITORING_TYPE"
+          echo "Continuous minutes: $CONTINUOUS_MINUTES"
+          echo ""
+
+          case "$MONITORING_TYPE" in
+            "baseline")
+              echo "📏 Establishing performance baseline..."
+              ./bin/monitor_assets --baseline --verbose --json > artifacts/monitoring/baseline-$(date +%Y%m%d_%H%M%S).json
+              ;;
+            "report")
+              echo "📊 Generating performance report..."
+              if [ -f tmp/asset_monitoring/performance.log ]; then
+                ./bin/monitor_assets --report --json > artifacts/monitoring/report-$(date +%Y%m%d_%H%M%S).json
+              else
+                echo "⚠️ No performance data available for report"
+                ./bin/monitor_assets --json > artifacts/monitoring/single-check-$(date +%Y%m%d_%H%M%S).json
+              fi
+              ;;
+            "performance"|*)
+              if [ "$CONTINUOUS_MINUTES" = "0" ]; then
+                echo "📊 Running single performance check..."
+                ./bin/monitor_assets --verbose --json > artifacts/monitoring/performance-$(date +%Y%m%d_%H%M%S).json
+              else
+                echo "🔄 Running continuous monitoring for $CONTINUOUS_MINUTES minutes..."
+                timeout "${CONTINUOUS_MINUTES}m" ./bin/monitor_assets --continuous --interval 30 --verbose --log-file artifacts/monitoring/continuous-$(date +%Y%m%d_%H%M%S).log || true
+                echo "✅ Continuous monitoring completed"
+              fi
+              ;;
+          esac
+
+      - name: "Analyze performance results"
+        run: |
+          echo "📈 Performance Analysis Summary:"
+          echo ""
+
+          # Find the most recent monitoring result
+          LATEST_RESULT=$(find artifacts/monitoring -name "*.json" -type f | sort | tail -1)
+
+          if [ -n "$LATEST_RESULT" ] && [ -f "$LATEST_RESULT" ]; then
+            echo "📄 Latest result: $(basename $LATEST_RESULT)"
+            echo ""
+
+            # Extract key metrics using jq if available
+            if command -v jq > /dev/null 2>&1; then
+              echo "🎯 Key Metrics:"
+
+              # Check if this is a baseline result
+              if echo "$LATEST_RESULT" | grep -q "baseline"; then
+                echo "📏 Baseline Summary:"
+                jq -r '.summary | to_entries[] | "  \(.key): \(.value.success_rate)% success, \(.value.avg_response_time * 1000 | round)ms avg"' "$LATEST_RESULT" 2>/dev/null || echo "  Unable to parse baseline data"
+              else
+                echo "📊 Performance Check:"
+                jq -r 'to_entries[] | select(.key != "total_time" and .key != "timestamp" and .key != "version") | "  \(.key): \(if .value.success then "✅ \(.value.total_response_time * 1000 | round)ms" else "❌ \(.value.error)" end)"' "$LATEST_RESULT" 2>/dev/null || echo "  Unable to parse performance data"
+
+                echo ""
+                TOTAL_TIME=$(jq -r '.total_time * 1000 | round' "$LATEST_RESULT" 2>/dev/null || echo "unknown")
+                echo "  Total check time: ${TOTAL_TIME}ms"
+              fi
+            else
+              echo "📊 Raw results (jq not available):"
+              head -20 "$LATEST_RESULT"
+            fi
+          else
+            echo "⚠️ No monitoring results found"
+          fi
+
+      - name: "Check asset health"
+        run: |
+          echo ""
+          echo "🏥 Asset Health Check:"
+
+          # Run a quick health check
+          HEALTH_CHECK=$(./bin/monitor_assets --json 2>/dev/null || echo '{"error": "monitoring failed"}')
+
+          if echo "$HEALTH_CHECK" | grep -q '"success":.*true'; then
+            echo "✅ Assets are accessible and performing well"
+
+            # Extract response times if available
+            if command -v jq > /dev/null 2>&1; then
+              echo ""
+              echo "⚡ Response Times:"
+              echo "$HEALTH_CHECK" | jq -r 'to_entries[] | select(.value.success == true) | "  \(.key): \(.value.total_response_time * 1000 | round)ms"' 2>/dev/null || true
+            fi
+          else
+            echo "⚠️ Some assets may have issues"
+
+            if command -v jq > /dev/null 2>&1; then
+              echo ""
+              echo "❌ Failed Assets:"
+              echo "$HEALTH_CHECK" | jq -r 'to_entries[] | select(.value.success == false) | "  \(.key): \(.value.error)"' 2>/dev/null || true
+            fi
+          fi
+
+      - name: "Performance trend analysis"
+        if: github.event_name == 'schedule'
+        run: |
+          echo ""
+          echo "📈 Performance Trend Analysis:"
+
+          # This would ideally compare with historical data
+          # For now, we'll just record the current performance
+
+          TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          CURRENT_PERFORMANCE=$(./bin/monitor_assets --json 2>/dev/null || echo '{}')
+
+          echo "📅 Timestamp: $TIMESTAMP"
+          echo "🎯 Current Performance:"
+
+          if command -v jq > /dev/null 2>&1; then
+            # Calculate average response time for successful assets
+            AVG_TIME=$(echo "$CURRENT_PERFORMANCE" | jq -r '[to_entries[] | select(.value.success == true) | .value.total_response_time] | add / length * 1000 | round' 2>/dev/null || echo "unknown")
+            SUCCESSFUL_ASSETS=$(echo "$CURRENT_PERFORMANCE" | jq -r '[to_entries[] | select(.value.success == true)] | length' 2>/dev/null || echo "unknown")
+            TOTAL_ASSETS=$(echo "$CURRENT_PERFORMANCE" | jq -r '[to_entries[] | select(.key != "total_time" and .key != "timestamp" and .key != "version")] | length' 2>/dev/null || echo "unknown")
+
+            echo "  Average response time: ${AVG_TIME}ms"
+            echo "  Asset availability: ${SUCCESSFUL_ASSETS}/${TOTAL_ASSETS}"
+
+            # Performance assessment
+            if [ "$AVG_TIME" != "unknown" ] && [ "$AVG_TIME" -lt 500 ]; then
+              echo "  🟢 Performance: EXCELLENT"
+            elif [ "$AVG_TIME" != "unknown" ] && [ "$AVG_TIME" -lt 1000 ]; then
+              echo "  🟡 Performance: GOOD"
+            elif [ "$AVG_TIME" != "unknown" ] && [ "$AVG_TIME" -lt 2000 ]; then
+              echo "  🟠 Performance: SLOW"
+            else
+              echo "  🔴 Performance: POOR"
+            fi
+          fi
+
+      - name: "Upload monitoring artifacts"
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: asset-monitoring-${{ github.run_id }}
+          path: artifacts/monitoring/
+          retention-days: 30
+          if-no-files-found: ignore
+
+      - name: "Performance summary"
+        run: |
+          echo ""
+          echo "📋 Monitoring Summary:"
+          echo "  Monitoring type: $MONITORING_TYPE"
+          echo "  Timestamp: $(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+          echo "  Workflow run: ${{ github.run_id }}"
+          echo ""
+          echo "📁 Artifacts generated:"
+          find artifacts/monitoring -type f 2>/dev/null | while read file; do
+            echo "  - $(basename "$file") ($(du -h "$file" | cut -f1))"
+          done || echo "  No artifacts generated"
+          echo ""
+          echo "🔗 View detailed results in the uploaded artifacts"
+
+  alert-on-performance-issues:
+    name: "Alert on Performance Issues"
+    needs: monitor-asset-performance
+    runs-on: "ubuntu-latest"
+    if: github.event_name == 'schedule'
+
+    steps:
+      - uses: "actions/checkout@v4"
+
+      - name: "Check for performance degradation"
+        run: |
+          echo "🚨 Performance Alert Check"
+
+          # This is a placeholder for more sophisticated alerting
+          # In a real implementation, you might:
+          # - Compare with baseline metrics
+          # - Check if response times exceed thresholds
+          # - Monitor availability trends
+          # - Send notifications via Slack, email, etc.
+
+          # For now, we'll just run a health check
+          if ./bin/monitor_assets --json | grep -q '"success":.*false'; then
+            echo "⚠️ ALERT: Some assets are not accessible"
+            echo "::warning title=Asset Performance Alert::Some GitHub-hosted assets are experiencing issues"
+          else
+            echo "✅ All assets are performing normally"
+          fi
+
+      - name: "Generate performance badge data"
+        run: |
+          # Generate data that could be used for a performance status badge
+          echo "📊 Generating performance badge data..."
+
+          PERFORMANCE_DATA=$(./bin/monitor_assets --json 2>/dev/null || echo '{}')
+
+          if echo "$PERFORMANCE_DATA" | grep -q '"success":.*true'; then
+            echo "ASSET_STATUS=passing" >> $GITHUB_ENV
+            echo "ASSET_COLOR=brightgreen" >> $GITHUB_ENV
+          else
+            echo "ASSET_STATUS=failing" >> $GITHUB_ENV
+            echo "ASSET_COLOR=red" >> $GITHUB_ENV
+          fi
+
+          # Calculate average response time
+          if command -v jq > /dev/null 2>&1; then
+            AVG_TIME=$(echo "$PERFORMANCE_DATA" | jq -r '[to_entries[] | select(.value.success == true) | .value.total_response_time] | add / length * 1000 | round' 2>/dev/null || echo "0")
+            echo "AVERAGE_RESPONSE_TIME=${AVG_TIME}" >> $GITHUB_ENV
+          fi
+
+      - name: "Output performance status"
+        run: |
+          echo "📈 Performance Status:"
+          echo "  Status: ${{ env.ASSET_STATUS }}"
+          echo "  Average Response Time: ${{ env.AVERAGE_RESPONSE_TIME }}ms"
+          echo ""
+          echo "🎯 This data could be used to:"
+          echo "  - Update status badges"
+          echo "  - Trigger alerts"
+          echo "  - Update monitoring dashboards"
+          echo "  - Feed into SLA tracking"

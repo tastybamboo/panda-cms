@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 Panda::CMS.configure do |config|
   # The main title of your website
   config.title = "Demo Site"

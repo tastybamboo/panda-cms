@@ -1,0 +1,17 @@
+<div class="flex flex-col justify-center py-12 px-6 min-h-full text-center lg:px-8">
+  <div class="text-center sm:mx-auto sm:w-full sm:max-w-sm">
+    <img src="/panda-cms-assets/panda-nav.png" class="py-2 mx-auto w-auto h-32">
+    <h2 class="mt-10 mb-6 text-2xl font-bold text-center text-white"><%= t("panda.cms.admin.sessions.new.title") %></h2>
+  </div>
+  <% @providers.each do |provider| %>
+    <div class="mt-4 text-center sm:mx-auto sm:w-full sm:max-w-sm">
+      <%= form_tag "#{Panda::CMS.root_path}/auth/#{provider}", method: "post", data: {turbo: false} do %>
+        <input type="hidden" name="redirect_uri" value="<%= admin_login_callback_url(provider: provider) %>">
+        <button type="submit" id="button-sign-in-<%= provider %>" class="inline-flex gap-x-2 items-center py-2.5 px-3.5 mx-auto mb-4 bg-white rounded-md border min-w-56 border-neutral-400">
+          <i class="fa-brands fa-<%= provider %> text-xl mr-1"></i>
+          <%= t("panda.cms.authentication.sign_in_with", provider: t("panda.cms.authentication.providers.#{provider}")) %>
+        </button>
+      <% end %>
+    </div>
+  <% end %>
+</div>

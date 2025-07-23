@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "rubygems"
 require "panda/core"
 require "panda/cms/railtie"
@@ -17,7 +19,7 @@ require "turbo-rails"
 
 ENV["RAILS_ENV"] ||= "test"
 
-require File.expand_path("../dummy/config/environment", __FILE__)
+require File.expand_path("dummy/config/environment", __dir__)
 abort("The Rails environment is running in production mode!") if Rails.env.production?
 require "rspec/rails"
 
@@ -27,9 +29,7 @@ require "shoulda/matchers"
 require "capybara"
 require "capybara/rspec"
 require "view_component/test_helpers"
-require "faker"
 require "puma"
-require "factory_bot_rails"
 
 # Ensures that the test database schema matches the current schema file.
 # If there are pending migrations it will invoke `db:test:prepare` to
@@ -44,11 +44,40 @@ end
 # Load support files first
 Dir[Rails.root.join("../support/**/*.rb")].sort.each { |f| require f }
 
-# Configure FactoryBot
-FactoryBot.definition_file_paths = [
-  File.join(File.dirname(__FILE__), "factories")
-]
-FactoryBot.reload
+# Configure fixtures
+ActiveRecord::FixtureSet.context_class.send :include, ActiveSupport::Testing::TimeHelpers
+
+# Configure fixture set class name mapping for namespaced models
+# This tells Rails which model class to use for each fixture file
+module PandaCmsFixtures
+  def self.get_class_name(fixture_set_name)
+    case fixture_set_name
+    when "panda_cms_users" then "Panda::CMS::User"
+    when "panda_cms_posts" then "Panda::CMS::Post"
+    when "panda_cms_pages" then "Panda::CMS::Page"
+    when "panda_cms_templates" then "Panda::CMS::Template"
+    when "panda_cms_blocks" then "Panda::CMS::Block"
+    when "panda_cms_block_contents" then "Panda::CMS::BlockContent"
+    when "panda_cms_menus" then "Panda::CMS::Menu"
+    when "panda_cms_menu_items" then "Panda::CMS::MenuItem"
+    end
+  end
+end
+
+# Override ActiveRecord::FixtureSet to use our mapping
+module ActiveRecord
+  class FixtureSet
+    alias_method :original_model_class, :model_class
+
+    def model_class
+      if (klass = PandaCmsFixtures.get_class_name(@name))
+        klass.constantize
+      else
+        original_model_class
+      end
+    end
+  end
+end
 
 Shoulda::Matchers.configure do |config|
   config.integrate do |with|
@@ -57,19 +86,13 @@ Shoulda::Matchers.configure do |config|
   end
 end
 
-module DebugHelpers
-  def puts_debug(message)
-    puts "[DEBUG] #{message}" if ENV["DEBUG"]
-  end
-end
-
 RSpec.configure do |config|
   # URL helpers in tests would be nice to use
   config.include Rails.application.routes.url_helpers
   config.include Panda::CMS::Engine.routes.url_helpers
 
-  # Add debug helper method globally
-  config.include DebugHelpers
+  config.include ViewComponent::TestHelpers, type: :view_component
+  config.include Capybara::RSpecMatchers, type: :view_component
 
   # Use transactions, so we don't have to worry about cleaning up the database
   # The idea is to start each example with a clean database, create whatever data
@@ -88,6 +111,9 @@ RSpec.configure do |config|
 
   # Allow using focus keywords "f... before a specific test"
   config.filter_run_when_matching :focus
+
+  # Exclude EditorJS tests by default unless specifically requested
+  config.filter_run_excluding :editorjs unless ENV["INCLUDE_EDITORJS"] == "true"
 
   # Log examples to allow using --only-failures and --next-failure
   config.example_status_persistence_file_path = "spec/examples.txt"
@@ -118,9 +144,11 @@ RSpec.configure do |config|
     end
   end
 
-  # config.include ViewComponent::TestHelpers, type: :view_component
-  # config.include Capybara::RSpecMatchers, type: :view_component
-  config.include FactoryBot::Syntax::Methods
+  # Configure fixtures path and enable fixtures
+  config.fixture_paths = [File.expand_path("fixtures", __dir__)]
+  config.use_transactional_fixtures = true
+  # Load fixtures globally for all tests
+  config.global_fixtures = :all
 
   if defined?(Bullet) && Bullet.enable?
     config.before(:each) do
@@ -136,13 +164,6 @@ RSpec.configure do |config|
   OmniAuth.config.test_mode = true
 
   config.before(:suite) do
-    DatabaseCleaner.clean_with :transaction
-    Rails.application.load_seed
-  end
-
-  config.around(:each) do |example|
-    DatabaseCleaner.cleaning do
-      example.run
-    end
+    DatabaseCleaner.clean_with :truncation
   end
 end

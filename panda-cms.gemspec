@@ -1,9 +1,11 @@
+# frozen_string_literal: true
+
 require_relative "lib/panda-cms/version"
 
 Gem::Specification.new do |spec|
   spec.name = "panda-cms"
   spec.version = Panda::CMS::VERSION
-  spec.author = ["Panda Software Limited"]
+  spec.author = ["Otaina Limited t/a Tasty Bamboo", "James Inman"]
   spec.email = ["bamboo@pandacms.io"]
   spec.homepage = "https://pandacms.io"
   spec.summary = "Better websites on Rails."
@@ -21,13 +23,23 @@ Gem::Specification.new do |spec|
 
   spec.required_ruby_version = ">= 3.0"
 
-  spec.add_dependency "panda-core"
-  spec.add_dependency "invisible_captcha"
-  spec.add_dependency "pg"
-  spec.add_dependency "sanitize"
+  spec.add_dependency "awesome_nested_set"
+  spec.add_dependency "down"
+  spec.add_dependency "faraday"
+  spec.add_dependency "faraday-multipart"
+  spec.add_dependency "faraday-retry"
   spec.add_dependency "groupdate"
-  spec.add_dependency "http", "~> 5.1"
-  spec.add_dependency "down", "~> 5.4"
+  spec.add_dependency "http"
+  spec.add_dependency "importmap-rails", ">= 2"
+  spec.add_dependency "invisible_captcha"
+  spec.add_dependency "panda-core"
+  spec.add_dependency "pg"
+  spec.add_dependency "propshaft"
+  spec.add_dependency "rails", ">= 7.0"
+  spec.add_dependency "sanitize"
+  spec.add_dependency "silencer"
+  spec.add_dependency "tailwindcss-rails"
+  spec.add_dependency "view_component"
 
   spec.post_install_message = "🐼 💜"
 end

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class RemovePostTagReferences < ActiveRecord::Migration[8.0]
   def up
     remove_reference :panda_cms_posts, :post_tag, foreign_key: {to_table: :panda_cms_post_tags}, type: :uuid

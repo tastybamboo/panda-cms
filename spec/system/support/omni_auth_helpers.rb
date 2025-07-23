@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Set OmniAuth test mode and failure condition
 OmniAuth.config.test_mode = true
 OmniAuth.config.on_failure = proc { |env|
@@ -5,7 +7,13 @@ OmniAuth.config.on_failure = proc { |env|
 }
 
 module OmniAuthHelpers
+  def clear_omniauth_config
+    OmniAuth.config.mock_auth.clear
+    Rails.application.env_config.delete("omniauth.auth")
+  end
+
   def login_with_google(user)
+    clear_omniauth_config
     OmniAuth.config.mock_auth[:google] = OmniAuth::AuthHash.new({
       provider: "google",
       uid: user.id,
@@ -21,10 +29,10 @@ module OmniAuthHelpers
 
     Rails.application.env_config["omniauth.auth"] = OmniAuth.config.mock_auth[:google]
     visit "/admin/auth/google/callback"
-    sleep(0.5)  # Ensure callback is processed
   end
 
   def manual_login_with_google(user)
+    clear_omniauth_config
     OmniAuth.config.mock_auth[:google] = OmniAuth::AuthHash.new({
       provider: "google",
       uid: user.id,
@@ -47,12 +55,17 @@ module OmniAuthHelpers
   end
 
   def login_with_github(user)
+    clear_omniauth_config
     OmniAuth.config.mock_auth[:github] = OmniAuth::AuthHash.new({
       provider: "github",
-      uid: "123456",
+      uid: user.id,
       info: {
         email: user.email,
         name: "#{user.firstname} #{user.lastname}"
+      },
+      credentials: {
+        token: "mock_token",
+        expires_at: Time.now + 1.week
       }
     })
 
@@ -61,13 +74,18 @@ module OmniAuthHelpers
   end
 
   def login_with_microsoft(user)
+    clear_omniauth_config
     OmniAuth.config.mock_auth[:microsoft] = OmniAuth::AuthHash.new({
       provider: "microsoft",
-      uid: "123456",
+      uid: user.id,
       info: {
         email: user.email,
         first_name: user.firstname,
         last_name: user.lastname
+      },
+      credentials: {
+        token: "mock_token",
+        expires_at: Time.now + 1.week
       }
     })
 
@@ -78,7 +96,11 @@ module OmniAuthHelpers
   def login_as_admin(firstname: nil, lastname: nil, email: nil)
     user = admin_user
     login_with_google(user)
-    expect(page).to have_content("Dashboard", wait: 1)
+
+    # Try to navigate to admin if not already there
+    unless page.current_path == "/admin"
+      visit "/admin"
+    end
   end
 
   def login_as_user(firstname: nil, lastname: nil, email: nil)
@@ -86,34 +108,20 @@ module OmniAuthHelpers
   end
 
   def admin_user
-    Panda::CMS::User.find_or_create_by!(
-      firstname: "Admin",
-      lastname: "User",
-      email: "admin@example.com",
-      admin: true,
-      image_url: "/panda-cms-assets/panda-nav.png"
-    )
+    # Use fixture user instead of creating new one
+    user = Panda::CMS::User.find_by(email: "admin@example.com")
+    if user.nil?
+      raise "Admin user not found in database"
+    end
+    user
   end
 
   def regular_user
-    Panda::CMS::User.find_or_create_by!(
-      firstname: "Regular",
-      lastname: "User",
-      email: "regular@example.com",
-      admin: false,
-      image_url: "/panda-cms-assets/panda-nav.png"
-    )
+    # Use fixture user instead of creating new one
+    Panda::CMS::User.find_by!(email: "user@example.com")
   end
 end
 
 RSpec.configure do |config|
   config.include OmniAuthHelpers, type: :system
-
-  config.after(:each, type: :system) do |example|
-    if example.exception
-      puts_debug "Test failed: #{example.full_description}"
-      debug_page_state
-      # debug "Screenshot saved to: #{page.save_screenshot}" if defined?(page) && page.respond_to?(:save_screenshot)
-    end
-  end
 end

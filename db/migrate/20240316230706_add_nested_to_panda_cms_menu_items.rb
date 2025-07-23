@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class AddNestedToPandaCMSMenuItems < ActiveRecord::Migration[7.1]
   def change
     add_column :panda_cms_menu_items, :parent_id, :uuid

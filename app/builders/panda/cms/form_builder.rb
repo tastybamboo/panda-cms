@@ -1,10 +1,12 @@
+# frozen_string_literal: true
+
 module Panda
   module CMS
     class FormBuilder < ActionView::Helpers::FormBuilder
       include ActionView::Helpers::TagHelper
       include ActionView::Helpers::FormTagHelper
 
-      def label(attribute, text = nil, options = {}, &block)
+      def label(attribute, text = nil, options = {})
         super(attribute, text, options.reverse_merge(class: label_styles))
       end
 
@@ -13,8 +15,11 @@ module Panda
           content_tag :div, class: container_styles do
             label(attribute) + meta_text(options) +
               content_tag(:div, class: "flex flex-grow") do
-                content_tag(:span, class: "inline-flex items-center px-3 text-base border border-r-none rounded-s-md whitespace-nowrap break-keep") { options.dig(:data, :prefix) } +
-                  super(attribute, options.reverse_merge(class: input_styles_prefix + " input-prefix rounded-l-none border-l-none"))
+                content_tag(:span,
+                  class: "inline-flex items-center px-3 text-base border border-r-none rounded-s-md whitespace-nowrap break-keep") do
+                  options.dig(:data, :prefix)
+                end +
+                  super(attribute, options.reverse_merge(class: "#{input_styles_prefix} input-prefix rounded-l-none border-l-none"))
               end + error_message(attribute)
           end
         else
@@ -48,7 +53,7 @@ module Panda
         end
       end
 
-      def select(method, choices = nil, options = {}, html_options = {}, &block)
+      def select(method, choices = nil, options = {}, html_options = {})
         content_tag :div, class: container_styles do
           label(method) + meta_text(options) + super(method, choices, options, html_options.reverse_merge(class: select_styles)) + select_svg + error_message(method)
         end
@@ -147,6 +152,7 @@ module Panda
 
       def meta_text(options)
         return unless options[:meta]
+
         @template.content_tag(:p, options[:meta], class: "block text-black/60 text-sm mb-2")
       end
 
@@ -173,7 +179,8 @@ module Panda
       end
 
       def select_svg
-        @template.content_tag(:svg, class: "pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400", aria_hidden: true) do
+        @template.content_tag(:svg,
+          class: "pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400", aria_hidden: true) do
           @template.content_tag(:path, d: "M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z")
         end
       end
@@ -208,6 +215,7 @@ module Panda
 
       def error_message(attribute)
         return unless object.respond_to?(:errors) && object.errors[attribute]&.any?
+
         content_tag(:p, class: "mt-2 text-sm text-red-600") do
           object.errors[attribute].join(", ")
         end

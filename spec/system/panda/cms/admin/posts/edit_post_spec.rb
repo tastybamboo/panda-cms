@@ -1,18 +1,21 @@
+# frozen_string_literal: true
+
 require "system_helper"
 
 RSpec.describe "Editing a post", type: :system do
+  fixtures :panda_cms_users, :panda_cms_posts
+
   before do
     login_as_admin
-    @other_admin = create(:panda_cms_user, admin: true)
   end
 
-  let!(:post) { create(:panda_cms_post, title: "Original Post Title") }
+  let(:post) { panda_cms_posts(:first_post) }
 
-  it "updates an existing post" do
-    visit edit_admin_post_path(post.admin_param)
+  it "updates an existing post", :editorjs do
+    visit "/admin/posts/#{post.id}/edit"
     expect(page).to have_css("[data-controller='editor-form'] .codex-editor")
 
-    fill_in "post[title]", with: "Updated Test Post"
+    fill_in "Title", with: "Updated Test Post"
     editor_input = find("[data-editor-form-target='hiddenField']", visible: false)
 
     content = {
@@ -38,8 +41,8 @@ RSpec.describe "Editing a post", type: :system do
     )
   end
 
-  it "shows validation errors" do
-    visit edit_admin_post_path(post.admin_param)
+  it "shows validation errors", :editorjs do
+    visit "/admin/posts/#{post.id}/edit"
     expect(page).to have_css("[data-controller='editor-form'] .codex-editor")
 
     fill_in "Title", with: ""

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module OmniAuthHelpers
   def login_as_admin
     OmniAuth.config.test_mode = true

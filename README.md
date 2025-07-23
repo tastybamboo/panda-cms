@@ -12,7 +12,7 @@ Better websites, on Rails.
 🐼 is grown from our work at [Otaina](https://www.otaina.co.uk), a small group of freelancers. We needed something that could handle websites large and small – but where we could expand it too. We sent our first websites live in March 2024.
 
 ![Gem Version](https://img.shields.io/gem/v/panda-cms) ![Build Status](https://img.shields.io/github/actions/workflow/status/tastybamboo/panda-cms/ci.yml)
-![GitHub Last Commit](https://img.shields.io/github/last-commit/tasty-bamboo/panda-cms) [![Ruby Code Style](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://github.com/standardrb/standard)
+![GitHub Last Commit](https://img.shields.io/github/last-commit/tastybamboo/panda-cms) [![Ruby Code Style](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://github.com/standardrb/standard)
 
 ## Usage
 
@@ -66,8 +66,43 @@ We welcome contributions.
 
 See our [Contributing Guidelines](https://docs.pandacms.io/developers/contributing/)
 
+### Testing
+
+Panda CMS uses RSpec for testing.
+
+#### Using Fixtures
+
+We encourage using fixtures for tests instead of factories for consistent test data:
+
+1. Create fixture files in `spec/fixtures` named after the model's table (e.g., `panda_cms_pages.yml`)
+2. Define records with unique names and their attributes
+3. Use helper methods to create test templates with mocked file validation
+
+Example fixture format:
+
+```yaml
+# spec/fixtures/panda_cms_pages.yml
+home_page:
+  title: "Home"
+  path: "/"
+  panda_cms_template_id: <%= ActiveRecord::FixtureSet.identify(:page_template) %>
+  status: "active"
+  created_at: <%= Time.current %>
+  updated_at: <%= Time.current %>
+```
+
+Example test using fixtures:
+
+```ruby
+# Access fixture using table name and record name
+page = panda_cms_pages(:home_page)
+expect(page.title).to eq("Home")
+```
+
+When testing models with file validations or complex callbacks, use the helper methods in `spec/models/panda/cms/page_spec.rb` as a reference.
+
 ## License
 
 The gem is available as open source under the terms of the [BSD-3-Clause License](https://opensource.org/licenses/bsd-3-clause).
 
-Copyright © 2024 - 2025, Panda Software Limited.
+Copyright © 2024 - 2025, Otaina Limited.

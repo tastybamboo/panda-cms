@@ -1,0 +1,49 @@
+# Menu Items for Panda CMS
+
+home_link:
+  text: "Home"
+  menu: main_menu
+  page: homepage
+  sort_order: 1
+  lft: 1
+  rgt: 2
+  depth: 0
+  children_count: 0
+  created_at: 2025-01-01 00:00:00
+  updated_at: 2025-01-01 00:00:00
+
+about_link:
+  text: "About"
+  menu: main_menu
+  page: about_page
+  sort_order: 2
+  lft: 3
+  rgt: 4
+  depth: 0
+  children_count: 0
+  created_at: 2025-01-01 00:00:00
+  updated_at: 2025-01-01 00:00:00
+
+services_link:
+  text: "Services"
+  menu: main_menu
+  page: services_page
+  sort_order: 3
+  lft: 5
+  rgt: 6
+  depth: 0
+  children_count: 0
+  created_at: 2025-01-01 00:00:00
+  updated_at: 2025-01-01 00:00:00
+
+external_link:
+  text: "External Link"
+  menu: footer_menu
+  external_url: "https://example.com"
+  sort_order: 1
+  lft: 1
+  rgt: 2
+  depth: 0
+  children_count: 0
+  created_at: 2025-01-01 00:00:00
+  updated_at: 2025-01-01 00:00:00

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module EditorJsHelper
   # Helper method to normalize HTML for comparison, shared with system specs
   def normalize_html(html)

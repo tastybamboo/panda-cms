@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "silencer/rails/logger"
 
 # Don't log requests to the healthcheck endpoint

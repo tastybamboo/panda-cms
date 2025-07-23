@@ -1,4 +1,6 @@
-ENV["BUNDLE_GEMFILE"] ||= File.expand_path("../../../Gemfile", __dir__)
+# frozen_string_literal: true
 
-require "bundler/setup" # Set up gems listed in the Gemfile.
-require "rails/all"     # Add this line to ensure all Rails frameworks are loaded
+ENV['BUNDLE_GEMFILE'] ||= File.expand_path('../../../Gemfile', __dir__)
+
+require 'bundler/setup' # Set up gems listed in the Gemfile.
+require 'rails/all'     # Add this line to ensure all Rails frameworks are loaded

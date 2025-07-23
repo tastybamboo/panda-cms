@@ -19,7 +19,8 @@ module Panda
         # @return void
         def update
           if current_user.update(user_params)
-            redirect_to edit_admin_my_profile_path, flash: {success: "Your profile has been updated successfully."}
+            flash[:success] = "Your profile has been updated successfully."
+            redirect_to edit_admin_my_profile_path
           else
             render :edit, locals: {user: current_user}, status: :unprocessable_entity
           end

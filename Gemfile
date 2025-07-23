@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 source "https://rubygems.org"
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
@@ -22,26 +24,26 @@ group :development, :test do
   gem "database_cleaner-active_record"
   gem "debug"
   gem "erb_lint"
-  gem "factory_bot_rails"
-  gem "faker"
   gem "fasterer"
   gem "generator_spec"
+  gem "importmap-rails", ">= 2"
   gem "listen"
+  gem "omniauth-github"
   gem "omniauth-google-oauth2"
   gem "omniauth-microsoft_graph"
-  gem "omniauth-github"
+  gem "propshaft"
   gem "puma"
   gem "rake"
   gem "rspec"
-  gem "rspec-core", "~> 3.13"
-  gem "rspec-rails", "~> 7.1"
+  gem "rspec-core"
   gem "rspec-github"
+  gem "rspec-rails"
   gem "ruby-lsp"
   gem "shoulda-matchers"
   gem "simplecov", "~> 0.22"
   gem "simplecov-json"
-  gem "simplecov-lcov"
   gem "simplecov_json_formatter"
+  gem "simplecov-lcov"
   gem "simplecov_lcov_formatter"
   gem "standard"
   gem "standard-rails"
@@ -54,3 +56,7 @@ end
 
 group :test do
 end
+
+gem "rbnacl", "~> 7.1"
+gem "tzinfo-data", "~> 1.2025"
+gem "msgpack", "~> 1.8"

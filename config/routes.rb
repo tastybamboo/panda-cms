@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative "../app/constraints/panda/cms/admin_constraint"
 
 Panda::CMS::Engine.routes.draw do
@@ -19,10 +21,6 @@ Panda::CMS::Engine.routes.draw do
         get "bulk_editor", to: "bulk_editor#new"
         post "bulk_editor", to: "bulk_editor#create"
       end
-
-      if Rails.env.development?
-        mount Lookbook::Engine, at: "/lookbook"
-      end
     end
 
     get Panda::CMS.route_namespace, to: "admin/dashboard#show", as: :admin_dashboard
@@ -33,8 +31,10 @@ Panda::CMS::Engine.routes.draw do
   # Authentication routes
   get Panda::CMS.route_namespace, to: "admin/sessions#new", as: :admin_login
   # Get and post options here are for OmniAuth coming back in, not going out
-  match "#{Panda::CMS.route_namespace}/auth/:provider/callback", to: "admin/sessions#create", as: :admin_login_callback, via: %i[get post]
-  match "#{Panda::CMS.route_namespace}/auth/failure", to: "admin/sessions#failure", as: :admin_login_failure, via: %i[get post]
+  match "#{Panda::CMS.route_namespace}/auth/:provider/callback", to: "admin/sessions#create",
+    as: :admin_login_callback, via: %i[get post]
+  match "#{Panda::CMS.route_namespace}/auth/failure", to: "admin/sessions#failure", as: :admin_login_failure,
+    via: %i[get post]
   # OmniAuth additionally adds a GET route for "#{Panda::CMS.route_namespace}/auth/:provider" but doesn't name it
   delete Panda::CMS.route_namespace, to: "admin/sessions#destroy", as: :admin_logout
 
@@ -51,7 +51,7 @@ Panda::CMS::Engine.routes.draw do
       constraints: {
         year: /\d{4}/,
         month: /\d{2}/,
-        slug: /[^\/]+/,
+        slug: %r{[^/]+},
         format: /html|json|xml/
       }
 
@@ -60,7 +60,7 @@ Panda::CMS::Engine.routes.draw do
       to: "posts#show",
       as: :post,
       constraints: {
-        slug: /[^\/]+/,
+        slug: %r{[^/]+},
         format: /html|json|xml/
       }
 

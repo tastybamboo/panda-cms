@@ -1,0 +1,7 @@
+<%= render Panda::CMS::Admin::ContainerComponent.new do |component| %>
+  <% component.with_heading(text: post.title, level: 1) do |heading| %>
+    <% heading.with_button(action: :view, text: "View Post", link: post_path(post.admin_param)) %>
+  <% end %>
+
+  <%= render "form", post: post, url: admin_post_path(post.admin_param), method: :patch %>
+<% end %>

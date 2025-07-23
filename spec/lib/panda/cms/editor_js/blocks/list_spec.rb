@@ -1,6 +1,8 @@
+# frozen_string_literal: true
+
 require "rails_helper"
 
-RSpec.describe Panda::CMS::EditorJs::Blocks::List do
+RSpec.describe Panda::CMS::EditorJs::Blocks::List, :editorjs do
   include EditorJsHelper
 
   let(:ordered_list) do
@@ -27,26 +29,26 @@ RSpec.describe Panda::CMS::EditorJs::Blocks::List do
   it "renders ordered lists with correct HTML structure" do
     rendered = described_class.new(ordered_list).render
     expect(normalize_html(rendered)).to eq(normalize_html(
-      "<ol>" \
-        "<li>First item</li>" \
-        "<li>Second item" \
-          "<ol>" \
-            "<li>Nested item 1</li>" \
-            "<li>Nested item 2</li>" \
-          "</ol>" \
-        "</li>" \
-        "<li>Third item</li>" \
-      "</ol>"
-    ))
+                                             "<ol>" \
+                                               "<li>First item</li>" \
+                                               "<li>Second item" \
+                                                 "<ol>" \
+                                                   "<li>Nested item 1</li>" \
+                                                   "<li>Nested item 2</li>" \
+                                                 "</ol>" \
+                                               "</li>" \
+                                               "<li>Third item</li>" \
+                                             "</ol>"
+                                           ))
   end
 
   it "renders unordered lists with correct HTML structure" do
     rendered = described_class.new(unordered_list).render
     expect(normalize_html(rendered)).to eq(normalize_html(
-      "<ul>" \
-        "<li>First item</li>" \
-        "<li>Second item</li>" \
-      "</ul>"
-    ))
+                                             "<ul>" \
+                                               "<li>First item</li>" \
+                                               "<li>Second item</li>" \
+                                             "</ul>"
+                                           ))
   end
 end

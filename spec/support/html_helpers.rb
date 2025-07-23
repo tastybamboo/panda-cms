@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module HtmlHelpers
   def normalize_html(html)
     html.gsub(/\s+/, " ").strip

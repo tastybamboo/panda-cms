@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Panda
   module CMS
     class AdminConstraint
@@ -11,7 +13,8 @@ module Panda
       end
 
       def current_user(request)
-        User.find_by(id: request.session[:user_id])
+        user_id = request.session[:user_id]
+        User.find_by(id: user_id)
       end
     end
   end

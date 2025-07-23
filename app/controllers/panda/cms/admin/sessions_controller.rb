@@ -27,9 +27,7 @@ module Panda
 
             # Always create the first user as admin, regardless of what our settings look like
             # else we can't ever really login. :)
-            if !create_as_admin
-              create_as_admin = true if !create_as_admin && Panda::CMS::User.count.zero?
-            end
+            create_as_admin = true if !create_as_admin && Panda::CMS::User.count.zero?
 
             if user_info["first_name"] && user_info["last_name"]
               firstname = user_info["first_name"]
@@ -55,9 +53,9 @@ module Panda
             return
           end
 
-          if !user.admin?
+          unless user.admin?
             # User can't be found with this email address or can't login
-            Rails.logger.error "User ID #{user.id} attempted admin login, is not admin." if user && !user.admin
+            Rails.logger.error "User ID #{user.id} attempted admin login, is not admin."
             redirect_to admin_login_path, flash: {error: t("panda.cms.admin.sessions.create.error")}
             return
           end

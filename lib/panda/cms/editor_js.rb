@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative "editor_js/blocks/base"
 require_relative "editor_js/blocks/alert"
 require_relative "editor_js/blocks/header"

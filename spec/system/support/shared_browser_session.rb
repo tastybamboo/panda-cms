@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # File: panda-cms/spec/system/support/shared_browser_session.rb
 module SharedBrowserSession
   def self.included(base)
@@ -7,13 +9,14 @@ module SharedBrowserSession
     end
 
     base.after(:each) do
-      # Just reset the session, don't restart browser
       Capybara.reset_sessions!
     end
 
     base.after(:all) do
       Capybara.current_driver = @__initial_driver
     end
+
+
   end
 end
 

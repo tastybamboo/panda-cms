@@ -1,0 +1,295 @@
+---
+name: "Release Assets"
+
+"on": # yamllint disable-line rule:truthy
+  release:
+    types: [created, published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to compile assets for (e.g., 0.7.4)"
+        required: true
+        type: string
+
+jobs:
+  compile-and-upload-assets:
+    name: "Compile and Upload Assets"
+    runs-on: "ubuntu-latest"
+    permissions:
+      contents: write # Needed to upload release assets
+    env:
+      BUNDLE_PATH: "vendor/bundle"
+      RAILS_ENV: test
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: "actions/checkout@v4"
+
+      - name: "Setup Ruby"
+        uses: "ruby/setup-ruby@v1"
+        with:
+          bundler-cache: true
+
+      - name: "Determine version"
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "release" ]; then
+            VERSION="${{ github.event.release.tag_name }}"
+            # Remove 'v' prefix if present
+            VERSION="${VERSION#v}"
+          else
+            VERSION="${{ github.event.inputs.version }}"
+          fi
+          echo "VERSION=${VERSION}" >> $GITHUB_OUTPUT
+          echo "Using version: ${VERSION}"
+
+      - name: "Update VERSION file"
+        run: |
+          echo "${{ steps.version.outputs.VERSION }}" > VERSION
+          echo "Updated VERSION file to: $(cat VERSION)"
+
+      - name: "Setup dummy Rails environment"
+        working-directory: spec/dummy
+        env:
+          DATABASE_URL: "postgres://postgres:password@localhost:5432/test"
+          RAILS_ENV: test
+        run: |
+          bundle exec rails db:create
+          bundle exec rails db:schema:load
+
+      - name: "Compile assets"
+        working-directory: spec/dummy
+        env:
+          DATABASE_URL: "postgres://postgres:password@localhost:5432/test"
+          RAILS_ENV: test
+        run: |
+          bundle exec rake panda_cms:assets:compile
+          echo "✅ Asset compilation complete"
+
+      - name: "List compiled assets"
+        run: |
+          echo "Compiled assets:"
+          ls -la spec/dummy/tmp/panda_cms_assets/
+          echo ""
+          echo "Asset sizes:"
+          du -h spec/dummy/tmp/panda_cms_assets/*
+
+      - name: "Verify asset integrity"
+        run: |
+          cd spec/dummy/tmp/panda_cms_assets
+          if [ -f "manifest.json" ]; then
+            echo "✅ Manifest file exists"
+            echo "Manifest contents:"
+            cat manifest.json | jq '.'
+          else
+            echo "❌ Manifest file missing"
+            exit 1
+          fi
+
+          if [ -f "panda-cms-${{ steps.version.outputs.VERSION }}.js" ]; then
+            echo "✅ JavaScript bundle exists"
+            echo "JavaScript bundle size: $(wc -c < panda-cms-${{ steps.version.outputs.VERSION }}.js) bytes"
+          else
+            echo "❌ JavaScript bundle missing"
+            exit 1
+          fi
+
+      - name: "Create release if workflow_dispatch"
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          VERSION="v${{ steps.version.outputs.VERSION }}"
+          if ! gh release view "$VERSION" > /dev/null 2>&1; then
+            echo "Creating release $VERSION..."
+            gh release create "$VERSION" \
+              --title "Release $VERSION" \
+              --notes "Automated release for asset compilation" \
+              --draft
+            echo "✅ Release created"
+          else
+            echo "✅ Release $VERSION already exists"
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: "Upload assets to release"
+        run: |
+          VERSION="v${{ steps.version.outputs.VERSION }}"
+          ASSET_DIR="spec/dummy/tmp/panda_cms_assets"
+
+          echo "Uploading assets to release $VERSION..."
+
+          # Upload each asset file
+          for file in "$ASSET_DIR"/*; do
+            if [ -f "$file" ]; then
+              filename=$(basename "$file")
+              echo "Uploading $filename..."
+
+              # Use --clobber to overwrite existing assets
+              if gh release upload "$VERSION" "$file" --clobber; then
+                echo "✅ Uploaded: $filename"
+              else
+                echo "❌ Failed to upload: $filename"
+                exit 1
+              fi
+            fi
+          done
+
+          echo "🎉 All assets uploaded successfully!"
+
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: "Publish release"
+        run: |
+          VERSION="v${{ steps.version.outputs.VERSION }}"
+          echo "Publishing release $VERSION..."
+
+          if gh release edit "$VERSION" --draft=false; then
+            echo "✅ Release published successfully"
+          else
+            echo "❌ Failed to publish release"
+            exit 1
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: "Verify uploaded assets"
+        run: |
+          VERSION="v${{ steps.version.outputs.VERSION }}"
+          echo "Verifying uploaded assets for release $VERSION..."
+
+          # List assets in the release
+          gh release view "$VERSION" --json assets --jq '.assets[].name'
+
+          # Check that key files are present
+          ASSETS=$(gh release view "$VERSION" --json assets --jq '.assets[].name')
+
+          if echo "$ASSETS" | grep -q "panda-cms-${{ steps.version.outputs.VERSION }}.js"; then
+            echo "✅ JavaScript bundle uploaded"
+          else
+            echo "❌ JavaScript bundle missing from release"
+            exit 1
+          fi
+
+          if echo "$ASSETS" | grep -q "manifest.json"; then
+            echo "✅ Manifest uploaded"
+          else
+            echo "❌ Manifest missing from release"
+            exit 1
+          fi
+
+          echo "🎉 Asset verification complete!"
+
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: "Test asset accessibility"
+        run: |
+          VERSION="${{ steps.version.outputs.VERSION }}"
+          BASE_URL="https://github.com/tastybamboo/panda-cms/releases/download/v${VERSION}/"
+
+          echo "Testing asset accessibility..."
+          echo "Waiting for assets to become publicly available..."
+          sleep 10
+
+          # Test manifest accessibility with retries
+          MANIFEST_URL="${BASE_URL}manifest.json"
+          echo "Testing manifest at: $MANIFEST_URL"
+
+          for i in {1..5}; do
+            if curl -f -s "$MANIFEST_URL" > /dev/null; then
+              echo "✅ Manifest accessible at: $MANIFEST_URL"
+              break
+            else
+              echo "⏳ Attempt $i/5: Manifest not yet accessible, waiting..."
+              if [ $i -eq 5 ]; then
+                echo "❌ Manifest not accessible after 5 attempts"
+                exit 1
+              fi
+              sleep 10
+            fi
+          done
+
+          # Test JavaScript bundle accessibility
+          JS_URL="${BASE_URL}panda-cms-${VERSION}.js"
+          echo "Testing JavaScript bundle at: $JS_URL"
+
+          if curl -f -s "$JS_URL" > /dev/null; then
+            echo "✅ JavaScript bundle accessible at: $JS_URL"
+
+            # Check file size
+            SIZE=$(curl -s -I "$JS_URL" | grep -i content-length | cut -d' ' -f2 | tr -d '\r')
+            echo "JavaScript bundle size: $SIZE bytes"
+          else
+            echo "❌ JavaScript bundle not accessible at: $JS_URL"
+            exit 1
+          fi
+
+          echo "🎉 All assets are publicly accessible!"
+
+  test-asset-loading:
+    name: "Test Asset Loading"
+    needs: compile-and-upload-assets
+    runs-on: "ubuntu-latest"
+    env:
+      BUNDLE_PATH: "vendor/bundle"
+      RAILS_ENV: test
+      PANDA_CMS_USE_GITHUB_ASSETS: "true"
+
+    steps:
+      - uses: "actions/checkout@v4"
+
+      - name: "Setup Ruby"
+        uses: "ruby/setup-ruby@v1"
+        with:
+          bundler-cache: true
+
+      - name: "Determine version"
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "release" ]; then
+            VERSION="${{ github.event.release.tag_name }}"
+            VERSION="${VERSION#v}"
+          else
+            VERSION="${{ github.event.inputs.version }}"
+          fi
+          echo "VERSION=${VERSION}" >> $GITHUB_OUTPUT
+
+      - name: "Update VERSION file"
+        run: |
+          echo "${{ steps.version.outputs.VERSION }}" > VERSION
+
+      - name: "Test asset loading in Rails environment"
+        working-directory: spec/dummy
+        run: |
+          # Test that the AssetLoader can find and load the GitHub assets
+          bundle exec rails runner "
+            require 'panda/cms/asset_loader'
+
+            puts 'Testing GitHub asset loading...'
+
+            # Test JavaScript URL generation
+            js_url = Panda::CMS::AssetLoader.javascript_url
+            puts \"JavaScript URL: #{js_url}\"
+
+            # Test asset availability
+            Panda::CMS::AssetLoader.ensure_assets_available!
+            puts '✅ Asset loading test completed'
+          "
+
+      - name: "Report test results"
+        run: |
+          echo "🎉 Asset loading tests passed!"
+          echo "Assets are ready for distribution with Panda CMS v${{ steps.version.outputs.VERSION }}"

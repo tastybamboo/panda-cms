@@ -1,7 +1,10 @@
+# frozen_string_literal: true
+
 require "system_helper"
 
 RSpec.describe "List pages", type: :system do
-  include_context "with standard pages"
+  fixtures :all
+
   before(:each) do
     login_as_admin
     visit "/admin/pages"

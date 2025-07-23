@@ -23,24 +23,25 @@ module Panda
 
         @menu_items = @menu_items.order(:lft).map do |menu_item|
           if is_active?(menu_item)
-            menu_item.define_singleton_method(:css_classes) { styles[:default] + " " + styles[:active] }
+            menu_item.define_singleton_method(:css_classes) { "#{styles[:default]} #{styles[:active]}" }
           else
-            menu_item.define_singleton_method(:css_classes) { styles[:default] + " " + styles[:inactive] }
+            menu_item.define_singleton_method(:css_classes) { "#{styles[:default]} #{styles[:inactive]}" }
           end
 
           menu_item
         end
 
         # TODO: Surely don't need this but Current.page isn't working in the component
-        if @render_page_menu
-          @current_page = Panda::CMS::Page.find_by(path: @current_path)
-          @page_menu_styles = page_menu_styles
-        end
+        return unless @render_page_menu
+
+        @current_page = Panda::CMS::Page.find_by(path: @current_path)
+        @page_menu_styles = page_menu_styles
       end
 
       def is_active?(menu_item)
         return true if @current_path == "/" && active_link?(menu_item.page.path, match: :exact)
         return true if menu_item.page.path != "/" && active_link?(menu_item.page.path, match: :starts_with)
+
         false
       end
 

@@ -1,0 +1,63 @@
+# Posts for Panda CMS
+
+first_post:
+  title: "Test Post 1"
+  slug: '/<%= Time.current.strftime("%Y/%m") %>/test-post-1'
+  status: "active"
+  user: admin_user
+  author: admin_user
+  published_at: <%= Time.current %>
+  content: |-
+    {
+      "time": <%= (Time.current.to_i * 1000) %>,
+      "blocks": [
+        {
+          "type": "header",
+          "data": {
+            "text": "Test Header",
+            "level": 2
+          }
+        },
+        {
+          "type": "paragraph",
+          "data": {
+            "text": "Test content"
+          }
+        }
+      ],
+      "version": "2.28.2"
+    }
+  cached_content: "<h2>Test Header</h2><p>Test content</p>"
+  created_at: <%= Time.current %>
+  updated_at: <%= Time.current %>
+
+second_post:
+  title: "Test Post 2"
+  slug: '/<%= Time.current.strftime("%Y/%m") %>/test-post-2'
+  status: "draft"
+  user: regular_user
+  author: admin_user
+  published_at: null
+  content: |-
+    {
+      "time": <%= (Time.current.to_i * 1000) %>,
+      "blocks": [
+        {
+          "type": "header",
+          "data": {
+            "text": "Draft Post",
+            "level": 2
+          }
+        },
+        {
+          "type": "paragraph",
+          "data": {
+            "text": "This is a draft post"
+          }
+        }
+      ],
+      "version": "2.28.2"
+    }
+  cached_content: "<h2>Draft Post</h2><p>This is a draft post</p>"
+  created_at: <%= Time.current %>
+  updated_at: <%= Time.current %>

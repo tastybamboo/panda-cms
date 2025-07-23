@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 generator = Panda::CMS::DemoSiteGenerator.new
 generator.create_templates
 generator.create_pages
