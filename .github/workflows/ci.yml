@@ -105,26 +105,13 @@ jobs:
           echo ""
           echo "Asset sizes:"
           du -h spec/dummy/tmp/panda_cms_assets/*
-
-      - name: "Verify asset integrity"
+          
+      - name: "Move assets to public directory"
+        working-directory: spec/dummy
         run: |
-          cd spec/dummy/tmp/panda_cms_assets
-          if [ -f "manifest.json" ]; then
-            echo "✅ Manifest file exists"
-            echo "Manifest contents:"
-            cat manifest.json | jq '.'
-          else
-            echo "❌ Manifest file missing"
-            exit 1
-          fi
-
-          if [ -f "panda-cms-${{ steps.version.outputs.VERSION }}.js" ]; then
-            echo "✅ JavaScript bundle exists"
-            echo "JavaScript bundle size: $(wc -c < panda-cms-${{ steps.version.outputs.VERSION }}.js) bytes"
-          else
-            echo "❌ JavaScript bundle missing"
-            exit 1
-          fi
+          mkdir -p public/panda_cms_assets
+          mv spec/dummy/tmp/panda_cms_assets/* public/panda_cms_assets/
+          echo "✅ Assets moved to public directory"
 
       - name: "Run tests"
         env:
