@@ -1,2 +1,1 @@
 web: bin/rails server
-admin_css: rake panda:cms:watch_admin

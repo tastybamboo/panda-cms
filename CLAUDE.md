@@ -75,12 +75,77 @@ yamllint -c .yamllint .
 ```
 
 ### Asset Management
-```bash
-# Watch admin assets during development
-bundle exec rake panda:cms:watch_admin
 
-# Start development server with asset watching
+#### Development
+```bash
+# Start development server (uses importmaps)
 bin/dev
+```
+
+#### Production Asset Compilation
+```bash
+# Compile Panda CMS assets for production/testing
+bundle exec rake app:panda_cms:assets:compile
+
+# Upload compiled assets to GitHub release (for distribution)
+bundle exec rake app:panda_cms:assets:upload
+
+# Download production assets from GitHub release
+bundle exec rake app:panda_cms:assets:download
+```
+
+#### When to Compile Assets
+Asset compilation is required when:
+- **JavaScript changes**: Any modifications to Stimulus controllers or JS modules
+- **CSS changes**: Updates to styles or TailwindCSS configurations  
+- **Creating releases**: Before tagging and publishing new versions
+- **Testing failures**: When system tests fail due to missing JavaScript functionality
+- **CI/Production deployment**: Ensuring consistent assets across environments
+
+#### Release Process with Assets
+```bash
+# 1. Make your code changes
+git add . && git commit -m "Your changes"
+
+# 2. Compile assets for the current codebase
+bundle exec rake app:panda_cms:assets:compile
+
+# 3. Commit the compiled assets
+git add public/panda-cms-assets/
+git commit -m "Compile assets for release"
+
+# 4. Create and push release tag
+git tag -a v0.X.Y -m "Release v0.X.Y"
+git push origin main --tags
+
+# 5. Upload assets to GitHub release
+bundle exec rake app:panda_cms:assets:upload
+```
+
+#### Asset Loading Strategy
+Panda CMS uses different asset loading strategies based on environment:
+
+**Development Environment:**
+- Uses **importmaps** with individual ES modules
+- JavaScript loaded from `app/javascript/panda/cms/` 
+- Supports hot reloading and individual debugging
+- No compilation required
+
+**Test Environment:**
+- Uses **compiled bundles** from `public/panda-cms-assets/`
+- Ensures consistent JavaScript functionality for system tests
+- Requires asset compilation when JavaScript changes
+
+**Production Environment:**
+- Downloads **compiled bundles** from GitHub releases
+- Single minified files with integrity checks
+- Cached locally for performance
+- CDN distribution via GitHub releases
+
+**Environment Override:**
+```bash
+# Force production assets in any environment
+PANDA_CMS_USE_GITHUB_ASSETS=true bundle exec rails server
 ```
 
 ### Database
