@@ -40,7 +40,16 @@
       "Bash(mkdir:*)",
       "Bash(rm:*)",
       "Bash(bundle install:*)",
-      "Bash(DEBUG=1 bundle exec rspec spec/system/panda/cms/admin/posts/add_post_spec.rb:14)"
+      "Bash(DEBUG=1 bundle exec rspec spec/system/panda/cms/admin/posts/add_post_spec.rb:14)",
+      "Bash(gh pr view:*)",
+      "Bash(cp:*)",
+      "WebFetch(domain:release-assets.githubusercontent.com)",
+      "Bash(PANDA_CMS_USE_GITHUB_ASSETS=false bundle exec rspec ./spec/system/panda/cms/admin/pages/add_page_spec.rb:212 ./spec/system/panda/cms/admin/pages/add_page_spec.rb:222)",
+      "Bash(RAILS_ENV=test bundle exec rspec ./spec/system/panda/cms/admin/pages/add_page_spec.rb:212 -fd)",
+      "Bash(RAILS_ENV=test bundle exec rails db:migrate)",
+      "Bash(git rev-parse:*)",
+      "Bash(git tag:*)",
+      "Bash(gh pr edit:*)"
     ],
     "deny": []
   }

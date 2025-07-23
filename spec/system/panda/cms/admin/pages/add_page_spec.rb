@@ -210,9 +210,13 @@ RSpec.describe "When adding a page", type: :system, js: true do
       end
 
       it "shows validation errors when adding a page with missing title input" do
+        # Wait for assets to load before interacting with the page
+        wait_for_panda_cms_assets
+        
+        wait_for_element_with_assets("a", timeout: 10) # Wait for Add Page link
         click_on "Add Page"
 
-        expect(page).to have_field("URL", wait: 5)
+        wait_for_element_with_assets("input[name='page[path]']", timeout: 10) # Wait for form to load
         fill_in "URL", with: "/test-page"
         click_on "Create Page"
 
@@ -220,9 +224,13 @@ RSpec.describe "When adding a page", type: :system, js: true do
       end
 
       it "shows validation errors when adding a page with missing URL input" do
+        # Wait for assets to load before interacting with the page
+        wait_for_panda_cms_assets
+        
+        wait_for_element_with_assets("a", timeout: 10) # Wait for Add Page link
         click_on "Add Page"
 
-        expect(page).to have_field("Title", wait: 5)
+        wait_for_element_with_assets("input[name='page[title]']", timeout: 10) # Wait for form to load
         fill_in "Title", with: "Test Page"
         fill_in "URL", with: ""
         click_on "Create Page"

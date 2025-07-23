@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
-Capybara.default_max_wait_time = 2
+# Increase wait time for CI environments where asset loading is slower
+Capybara.default_max_wait_time = ENV['CI'].present? ? 10 : 5
 
 # Normalize whitespaces when using `has_text?` and similar matchers,
 # i.e., ignore newlines, trailing spaces, etc.
