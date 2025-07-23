@@ -92,7 +92,7 @@ Rails.application.configure do
       ENV['PANDA_CMS_USE_GITHUB_ASSETS'] = 'false'
       
       # Ensure compiled assets exist in public directory
-      version = Panda::CMS::VERSION
+      version = `git rev-parse --short HEAD`.strip
       compiled_js = Rails.public_path.join("panda-cms-assets", "panda-cms-#{version}.js")
       compiled_css = Rails.public_path.join("panda-cms-assets", "panda-cms-#{version}.css")
       

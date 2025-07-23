@@ -64,17 +64,18 @@ jobs:
       - name: "Set timezone"
         run: |
           sudo timedatectl set-timezone Europe/London
+
       - name: "Install xvfb"
         run: |
           sudo apt-get update
           sudo apt-get install -y xvfb libvips
           export DISPLAY=':99.0'
           Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
-
       - name: "Setup Ruby"
         uses: "ruby/setup-ruby@v1"
         with:
           bundler-cache: true
+
       - name: "Setup test environment"
         env:
           DATABASE_URL: "postgres://postgres:password@localhost:5432/test"
@@ -84,7 +85,46 @@ jobs:
           RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
           PT_SILENCE_AR_COMPAT_WARNING: true
         run: |
-          bundle exec rails db:create db:schema:load
+          bundle exec rails db:create
+          bundle exec rails db:schema:load
+
+      - name: "Compile assets"
+        working-directory: spec/dummy
+        env:
+          DATABASE_URL: "postgres://postgres:password@localhost:5432/test"
+          RAILS_ENV: test
+        run: |
+          bundle exec rake panda_cms:assets:compile
+          echo "✅ Asset compilation complete"
+
+      - name: "List compiled assets"
+        run: |
+          echo "Compiled assets:"
+          ls -la spec/dummy/tmp/panda_cms_assets/
+          echo ""
+          echo "Asset sizes:"
+          du -h spec/dummy/tmp/panda_cms_assets/*
+
+      - name: "Verify asset integrity"
+        run: |
+          cd spec/dummy/tmp/panda_cms_assets
+          if [ -f "manifest.json" ]; then
+            echo "✅ Manifest file exists"
+            echo "Manifest contents:"
+            cat manifest.json | jq '.'
+          else
+            echo "❌ Manifest file missing"
+            exit 1
+          fi
+
+          if [ -f "panda-cms-${{ steps.version.outputs.VERSION }}.js" ]; then
+            echo "✅ JavaScript bundle exists"
+            echo "JavaScript bundle size: $(wc -c < panda-cms-${{ steps.version.outputs.VERSION }}.js) bytes"
+          else
+            echo "❌ JavaScript bundle missing"
+            exit 1
+          fi
+              
       - name: "Run tests"
         env:
           DATABASE_URL: "postgres://postgres:password@localhost:5432/test"

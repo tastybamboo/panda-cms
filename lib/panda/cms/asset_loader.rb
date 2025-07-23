@@ -46,22 +46,22 @@ module Panda
           return if development_assets_available? && !use_github_assets?
 
           cache_dir = local_cache_directory
-          version = Panda::CMS::VERSION
+          version = `git rev-parse --short HEAD`.strip
 
           # Check if we already have cached assets for this version
           if cached_assets_exist?(version)
-            Rails.logger.info "[Panda CMS] Using cached assets v#{version}"
+            Rails.logger.info "[Panda CMS] Using cached assets #{version}"
             return
           end
 
-          Rails.logger.info "[Panda CMS] Downloading assets v#{version} from GitHub..."
+          Rails.logger.info "[Panda CMS] Downloading assets #{version} from GitHub..."
           download_github_assets(version, cache_dir)
         end
 
         private
 
         def github_asset_tags(options = {})
-          version = Panda::CMS::VERSION
+          version = `git rev-parse --short HEAD`.strip
           base_url = github_base_url(version)
 
           tags = []
@@ -114,18 +114,18 @@ module Panda
         end
 
         def github_javascript_url
-          version = Panda::CMS::VERSION
+          version = `git rev-parse --short HEAD`.strip
           "#{github_base_url(version)}panda-cms-#{version}.js"
         end
 
         def github_css_url
-          version = Panda::CMS::VERSION
+          version = `git rev-parse --short HEAD`.strip
           "#{github_base_url(version)}panda-cms-#{version}.css"
         end
 
         def development_javascript_url
           # Try cached assets first, then importmap
-          version = Panda::CMS::VERSION
+          version = `git rev-parse --short HEAD`.strip
           cached_path = "/panda-cms-assets/#{version}/panda-cms-#{version}.js"
 
           if cached_asset_exists?(cached_path)
@@ -137,7 +137,7 @@ module Panda
         end
 
         def development_css_url
-          version = Panda::CMS::VERSION
+          version = `git rev-parse --short HEAD`.strip
           cached_path = "/panda-cms-assets/#{version}/panda-cms-#{version}.css"
 
           if cached_asset_exists?(cached_path)
@@ -148,7 +148,7 @@ module Panda
         end
 
         def github_base_url(version)
-          "https://github.com/tastybamboo/panda-cms/releases/download/v#{version}/"
+          "https://github.com/tastybamboo/panda-cms/releases/download/#{version}/"
         end
 
         def development_assets_available?
@@ -246,7 +246,7 @@ module Panda
           http.read_timeout = 30
 
           request = Net::HTTP::Get.new(uri)
-          request["User-Agent"] = "Panda-CMS/#{Panda::CMS::VERSION}"
+          request["User-Agent"] = "Panda-CMS/#{`git rev-parse --short HEAD`}"
 
           response = http.request(request)
 

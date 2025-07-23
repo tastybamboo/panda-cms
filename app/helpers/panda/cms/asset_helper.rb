@@ -17,7 +17,7 @@ module Panda
 
         if Panda::CMS::AssetLoader.use_github_assets?
           # GitHub-hosted assets with integrity check
-          version = Panda::CMS::VERSION
+          version = `git rev-parse --short HEAD`.strip
           integrity = asset_integrity(version, "panda-cms-#{version}.js")
 
           tag_options = {
