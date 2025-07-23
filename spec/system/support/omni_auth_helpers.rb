@@ -7,7 +7,13 @@ OmniAuth.config.on_failure = proc { |env|
 }
 
 module OmniAuthHelpers
+  def clear_omniauth_config
+    OmniAuth.config.mock_auth.clear
+    Rails.application.env_config.delete("omniauth.auth")
+  end
+
   def login_with_google(user)
+    clear_omniauth_config
     OmniAuth.config.mock_auth[:google] = OmniAuth::AuthHash.new({
       provider: "google",
       uid: user.id,
@@ -26,6 +32,7 @@ module OmniAuthHelpers
   end
 
   def manual_login_with_google(user)
+    clear_omniauth_config
     OmniAuth.config.mock_auth[:google] = OmniAuth::AuthHash.new({
       provider: "google",
       uid: user.id,
@@ -48,12 +55,17 @@ module OmniAuthHelpers
   end
 
   def login_with_github(user)
+    clear_omniauth_config
     OmniAuth.config.mock_auth[:github] = OmniAuth::AuthHash.new({
       provider: "github",
-      uid: "123456",
+      uid: user.id,
       info: {
         email: user.email,
         name: "#{user.firstname} #{user.lastname}"
+      },
+      credentials: {
+        token: "mock_token",
+        expires_at: Time.now + 1.week
       }
     })
 
@@ -62,13 +74,18 @@ module OmniAuthHelpers
   end
 
   def login_with_microsoft(user)
+    clear_omniauth_config
     OmniAuth.config.mock_auth[:microsoft] = OmniAuth::AuthHash.new({
       provider: "microsoft",
-      uid: "123456",
+      uid: user.id,
       info: {
         email: user.email,
         first_name: user.firstname,
         last_name: user.lastname
+      },
+      credentials: {
+        token: "mock_token",
+        expires_at: Time.now + 1.week
       }
     })
 
