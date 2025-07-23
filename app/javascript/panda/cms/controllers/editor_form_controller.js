@@ -10,6 +10,10 @@ export default class extends Controller {
 
   connect() {
     this.loadEditorResources();
+    // Enable submit button after a delay as fallback
+    setTimeout(() => {
+      this.enableSubmitButton();
+    }, 1000);
   }
 
   async loadEditorResources() {
@@ -77,6 +81,8 @@ export default class extends Controller {
           holderDiv.dataset.editorInitialized = "true";
           // Add a class to indicate the editor is ready
           holderDiv.classList.add("editor-ready");
+          // Enable the submit button
+          this.enableSubmitButton();
           // Dispatch an event when editor is ready
           this.editorContainerTarget.dispatchEvent(new CustomEvent("editor:ready"));
         },
@@ -119,12 +125,6 @@ export default class extends Controller {
       // Wait for editor to be ready
       await this.editor.isReady;
       console.debug("[Panda CMS] Editor initialized successfully");
-      this.editorContainerTarget.dataset.editorInitialized = "true";
-      holderDiv.dataset.editorInitialized = "true";
-      // Add a class to indicate the editor is ready
-      holderDiv.classList.add("editor-ready");
-      // Dispatch an event when editor is ready
-      this.editorContainerTarget.dispatchEvent(new CustomEvent("editor:ready"));
 
     } catch (error) {
       console.error("[Panda CMS] Editor setup failed:", error);
@@ -133,6 +133,8 @@ export default class extends Controller {
         holderDiv.dataset.editorInitialized = "false";
         holderDiv.classList.remove("editor-ready");
       }
+      // Still enable the submit button even if editor fails
+      this.enableSubmitButton();
     }
   }
 
@@ -189,6 +191,41 @@ export default class extends Controller {
       version: "2.28.2",
       source: "editorJS",
     };
+  }
+  
+  enableSubmitButton() {
+    // Find the submit button in the form and enable it
+    const form = this.element.closest('form');
+    if (form) {
+      const submitButton = form.querySelector('input[type="submit"], button[type="submit"]');
+      if (submitButton) {
+        submitButton.disabled = false;
+      }
+    }
+  }
+
+  async submit(event) {
+    // Ensure editor content is saved before form submission
+    if (this.editor) {
+      try {
+        const outputData = await this.editor.save();
+        outputData.source = "editorJS";
+        const jsonString = JSON.stringify(outputData);
+        this.hiddenFieldTarget.value = jsonString;
+      } catch (error) {
+        console.error("[Panda CMS] Failed to save editor content:", error);
+      }
+    }
+    
+    // Enable the submit button and allow form submission
+    const submitButton = event.target;
+    submitButton.disabled = false;
+    
+    // Submit the form
+    const form = submitButton.closest('form');
+    if (form) {
+      form.submit();
+    }
   }
 
   disconnect() {
