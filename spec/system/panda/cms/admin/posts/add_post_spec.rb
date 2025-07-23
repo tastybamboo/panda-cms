@@ -34,6 +34,7 @@ RSpec.describe "Adding a post", type: :system do
       }
     ")
 
+    # Use normal button click with JavaScript submission
     click_button "Create Post"
     
     # Wait for redirect
@@ -68,13 +69,7 @@ RSpec.describe "Adding a post", type: :system do
     # Don't fill in title
     fill_in "post_slug", with: "/#{Time.current.strftime("%Y/%m")}/test-post"
 
-    # Disable JavaScript submit and use normal form submission
-    page.execute_script("
-      var submitBtn = document.querySelector('input[type=\"submit\"]');
-      submitBtn.removeAttribute('data-action');
-      submitBtn.disabled = false;
-    ")
-    
+    # Use normal button click - validation errors should be handled by JavaScript
     click_button "Create Post"
 
     # Use string-based checks to avoid DOM node issues
@@ -85,13 +80,7 @@ RSpec.describe "Adding a post", type: :system do
     fill_in "post_title", with: "Test Post"
     # Don't fill in slug
 
-    # Disable JavaScript submit and use normal form submission
-    page.execute_script("
-      var submitBtn = document.querySelector('input[type=\"submit\"]');
-      submitBtn.removeAttribute('data-action');
-      submitBtn.disabled = false;
-    ")
-
+    # Use normal button click - validation errors should be handled by JavaScript
     click_button "Create Post"
 
     # Use string-based checks to avoid DOM node issues

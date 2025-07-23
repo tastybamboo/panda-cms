@@ -11,7 +11,7 @@ RSpec.describe "When adding a page", type: :system, js: true do
   context "when not logged in" do
     it "returns a 404 error" do
       visit "/admin/pages/#{homepage.id}/edit"
-      expect(page).to have_content("The page you were looking for doesn't exist.")
+      expect(page.html).to include("The page you were looking for doesn't exist.")
     end
   end
 
@@ -19,7 +19,7 @@ RSpec.describe "When adding a page", type: :system, js: true do
     it "returns a 404 error" do
       login_as_user
       visit "/admin/pages/#{homepage.id}/edit"
-      expect(page).to have_content("The page you were looking for doesn't exist.")
+      expect(page.html).to include("The page you were looking for doesn't exist.")
     end
   end
 
@@ -31,7 +31,7 @@ RSpec.describe "When adding a page", type: :system, js: true do
       end
 
       it "shows the add page form" do
-        expect(page).to have_content("Add Page")
+        expect(page.html).to include("Add Page")
         expect(page).to have_field("Title")
         expect(page).to have_field("URL")
         expect(page).to have_field("Template")
@@ -50,7 +50,7 @@ RSpec.describe "When adding a page", type: :system, js: true do
         click_button "Create Page"
 
         within_frame "editablePageFrame" do
-          expect(page).to have_content("Basic Page Layout")
+          expect(page.html).to include("Basic Page Layout")
         end
       end
 
@@ -60,7 +60,7 @@ RSpec.describe "When adding a page", type: :system, js: true do
         fill_in "URL", with: "/about"
         select "Page", from: "Template"
         click_button "Create Page"
-        expect(page).to have_content("URL has already been taken")
+        expect(page.html).to include("URL has already been taken")
       end
 
       it "updates the form if a parent page is selected" do
@@ -79,11 +79,11 @@ RSpec.describe "When adding a page", type: :system, js: true do
         expect(page).to have_field("URL", with: "/about/about")
         select "Page", from: "Template"
         click_button "Create Page"
-        expect(page).to_not have_content("URL has already been taken")
-        expect(page).to_not have_content("URL has already been taken in this section")
+        expect(page.html).to_not include("URL has already been taken")
+        expect(page.html).to_not include("URL has already been taken in this section")
 
         within_frame "editablePageFrame" do
-          expect(page).to have_content("Basic Page Layout")
+          expect(page.html).to include("Basic Page Layout")
         end
       end
 
@@ -96,13 +96,13 @@ RSpec.describe "When adding a page", type: :system, js: true do
         fill_in "Title", with: "New Test Page"
         fill_in "URL", with: "new-test-page"
         click_button "Create Page"
-        expect(page).to have_content("URL must start with a forward slash")
+        expect(page.html).to include("URL must start with a forward slash")
       end
 
       it "shows validation errors with no title" do
         fill_in "URL", with: "/new-test-page"
         click_button "Create Page"
-        expect(page).to have_content("Title can't be blank")
+        expect(page.html).to include("Title can't be blank")
       end
 
       it "shows validation errors with no URL" do
@@ -112,14 +112,14 @@ RSpec.describe "When adding a page", type: :system, js: true do
         # Then explicitly clear the URL
         fill_in "URL", with: ""
         click_button "Create Page"
-        expect(page).to have_content("URL can't be blank and must start with a forward slash")
+        expect(page.html).to include("URL can't be blank and must start with a forward slash")
       end
 
       it "shows validation errors with invalid details" do
         expect(page).to have_button("Create Page", wait: 5)
         click_button "Create Page"
-        expect(page).to have_content("Title can't be blank")
-        expect(page).to have_content("URL can't be blank and must start with a forward slash")
+        expect(page.html).to include("Title can't be blank")
+        expect(page.html).to include("URL can't be blank and must start with a forward slash")
       end
 
       context "when creating nested pages" do
@@ -131,7 +131,7 @@ RSpec.describe "When adding a page", type: :system, js: true do
           click_button "Create Page"
 
           within_frame "editablePageFrame" do
-            expect(page).to have_content("Basic Page Layout")
+            expect(page.html).to include("Basic Page Layout")
           end
 
           # Now create a second-level page under the first-level page
@@ -143,9 +143,9 @@ RSpec.describe "When adding a page", type: :system, js: true do
           click_button "Create Page"
 
           # Verify the page was created with the correct path
-          expect(page).to_not have_content("URL has already been taken")
+          expect(page.html).to_not include("URL has already been taken")
           within_frame "editablePageFrame" do
-            expect(page).to have_content("Basic Page Layout")
+            expect(page.html).to include("Basic Page Layout")
           end
 
           # Verify the actual path stored in the database
@@ -175,9 +175,9 @@ RSpec.describe "When adding a page", type: :system, js: true do
           click_button "Create Page"
 
           # Verify the page was created successfully
-          expect(page).to_not have_content("URL has already been taken")
+          expect(page.html).to_not include("URL has already been taken")
           within_frame "editablePageFrame" do
-            expect(page).to have_content("Basic Page Layout")
+            expect(page.html).to include("Basic Page Layout")
           end
 
           # Verify the actual path stored in the database
@@ -195,7 +195,7 @@ RSpec.describe "When adding a page", type: :system, js: true do
 
       it "can access the pages index first" do
         expect(page.status_code).to eq(200)
-        expect(page).to have_content("Pages")
+        expect(page.html).to include("Pages")
       end
 
       it "shows validation errors when adding a page with invalid details" do
@@ -206,7 +206,7 @@ RSpec.describe "When adding a page", type: :system, js: true do
         fill_in "URL", with: "invalid-url"
         click_on "Create Page"
 
-        expect(page).to have_content("URL must start with a forward slash")
+        expect(page.html).to include("URL must start with a forward slash")
       end
 
       it "shows validation errors when adding a page with missing title input" do
@@ -216,7 +216,7 @@ RSpec.describe "When adding a page", type: :system, js: true do
         fill_in "URL", with: "/test-page"
         click_on "Create Page"
 
-        expect(page).to have_content("Title can't be blank")
+        expect(page.html).to include("Title can't be blank")
       end
 
       it "shows validation errors when adding a page with missing URL input" do
@@ -227,7 +227,7 @@ RSpec.describe "When adding a page", type: :system, js: true do
         fill_in "URL", with: ""
         click_on "Create Page"
 
-        expect(page).to have_content("URL can't be blank and must start with a forward slash")
+        expect(page.html).to include("URL can't be blank and must start with a forward slash")
       end
     end
   end

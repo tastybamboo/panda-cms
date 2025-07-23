@@ -42,13 +42,8 @@ RSpec.describe "Admin profile management", type: :system do
     fill_in "First Name", with: "Updated"
     fill_in "Last Name", with: "Name"
 
-    # Directly submit the form by bypassing the disabled state (same approach as posts)
-    page.execute_script("
-      var form = document.querySelector('form[data-controller=\"theme-form\"]');
-      if (form) {
-        form.submit();
-      }
-    ")
+    # Use normal button click with JavaScript submission
+    click_button "Update Profile"
 
     # Wait for form submission to complete
     sleep 2

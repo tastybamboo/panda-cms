@@ -205,6 +205,15 @@ export default class extends Controller {
   }
 
   async submit(event) {
+    // Prevent the default button click behavior temporarily
+    event.preventDefault();
+    
+    const submitButton = event.target;
+    const form = submitButton.closest('form');
+    
+    // Re-enable the button that was disabled by data-disable-with
+    submitButton.disabled = false;
+    
     // Ensure editor content is saved before form submission
     if (this.editor) {
       try {
@@ -212,19 +221,26 @@ export default class extends Controller {
         outputData.source = "editorJS";
         const jsonString = JSON.stringify(outputData);
         this.hiddenFieldTarget.value = jsonString;
+        console.log("[Panda CMS] Editor content saved before submission");
       } catch (error) {
         console.error("[Panda CMS] Failed to save editor content:", error);
       }
     }
     
-    // Enable the submit button and allow form submission
-    const submitButton = event.target;
-    submitButton.disabled = false;
-    
-    // Submit the form
-    const form = submitButton.closest('form');
+    // Now trigger the normal form submission (this will let Rails/Turbo handle it properly)
     if (form) {
-      form.submit();
+      // Remove our custom action to prevent infinite loop
+      submitButton.removeAttribute('data-action');
+      
+      // Create a new click event that will trigger the normal form submission
+      const clickEvent = new MouseEvent('click', {
+        bubbles: true,
+        cancelable: true,
+        view: window
+      });
+      
+      // Dispatch the click event, which will trigger normal Rails form submission
+      submitButton.dispatchEvent(clickEvent);
     }
   }
 
