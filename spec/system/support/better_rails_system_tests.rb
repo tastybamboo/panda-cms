@@ -83,9 +83,14 @@ RSpec.configure do |config|
         puts "[CI] Current URL: #{page.current_url rescue 'unknown'}"
         
         # If we're on about:blank, this is the known browser reset issue
-        if page.current_url.include?('about:blank') rescue false
-          puts "[CI] Browser reset to about:blank detected - this is a known Ferrum issue in CI"
-          puts "[CI] Recommendation: Use safe_* helper methods or JavaScript evaluation for element checks"
+        begin
+          current_url = page.current_url
+          if current_url.include?('about:blank')
+            puts "[CI] Browser reset to about:blank detected - this is a known Ferrum issue in CI"
+            puts "[CI] Recommendation: Use safe_* helper methods or JavaScript evaluation for element checks"
+          end
+        rescue
+          puts "[CI] Could not check current URL"
         end
         
         # Re-raise the original error
