@@ -129,18 +129,6 @@ jobs:
           timeout 10s bundle exec rails runner "puts 'Rails can load the asset: ' + File.exist?(Rails.public_path.join('panda-cms-assets/panda-cms-0.7.4.js')).to_s"
           echo "Asset file permissions:"
           ls -la public/panda-cms-assets/panda-cms-0.7.4.js
-          echo ""
-          echo "Check public directory asset serving configuration:"
-          ls -la public/ | grep -E "(panda|assets)" || echo "No panda assets in public"
-          echo ""
-          echo "Test asset serving configuration in Rails:"
-          bundle exec rails runner "
-            puts 'Public file serving enabled: ' + Rails.application.config.public_file_server.enabled.to_s
-            puts 'Asset serving enabled: ' + (Rails.application.config.assets&.enabled || 'N/A').to_s
-            puts 'Static files middleware: ' + Rails.application.config.middleware.to_a.select{|m| m.to_s.include?('Static')}.join(', ')
-            puts 'AssetLoader use_github_assets?: ' + Panda::CMS::AssetLoader.use_github_assets?.to_s
-            puts 'AssetLoader javascript_url: ' + Panda::CMS::AssetLoader.javascript_url.to_s
-          "
 
       - name: "Run tests"
         env:

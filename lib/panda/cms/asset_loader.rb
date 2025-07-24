@@ -62,7 +62,7 @@ module Panda
         private
 
         def github_asset_tags(options = {})
-          version = `git rev-parse --short HEAD`.strip
+          version = asset_version
           base_url = github_base_url(version)
 
           tags = []
@@ -73,9 +73,10 @@ module Panda
 
           js_attrs = {
             src: js_url,
-            type: "module",
             defer: true
           }
+          # Only use type="module" for development importmap assets, not standalone bundles  
+          js_attrs[:type] = "module" unless js_url.include?("panda-cms-assets")
           js_attrs[:integrity] = integrity if integrity
           js_attrs[:crossorigin] = "anonymous" if integrity
 
@@ -167,7 +168,12 @@ module Panda
         end
 
         def github_base_url(version)
-          "https://github.com/tastybamboo/panda-cms/releases/download/#{version}/"
+          # In test environment with compiled assets, use local URLs
+          if Rails.env.test? && compiled_assets_available?
+            "/panda-cms-assets/"
+          else
+            "https://github.com/tastybamboo/panda-cms/releases/download/#{version}/"
+          end
         end
 
         def asset_version
@@ -322,7 +328,9 @@ module Panda
 
         def content_tag(name, content, options = {})
           if defined?(ActionView::Helpers::TagHelper)
-            ActionView::Base.new.content_tag(name, content, options)
+            # Create a view context to render the tag
+            view_context = ActionView::Base.new(ActionView::LookupContext.new([]), {}, nil)
+            view_context.content_tag(name, content, options)
           else
             # Fallback implementation
             attrs = options.map { |k, v| %(#{k}="#{v}") }.join(" ")
@@ -336,7 +344,9 @@ module Panda
 
         def tag(name, options = {})
           if defined?(ActionView::Helpers::TagHelper)
-            ActionView::Base.new.tag(name, options)
+            # Create a view context to render the tag
+            view_context = ActionView::Base.new(ActionView::LookupContext.new([]), {}, nil)
+            view_context.tag(name, options)  
           else
             # Fallback implementation
             attrs = options.map { |k, v| %(#{k}="#{v}") }.join(" ")

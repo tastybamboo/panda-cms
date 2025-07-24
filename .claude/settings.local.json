@@ -55,7 +55,12 @@
       "Bash(grep:*)",
       "Bash(RAILS_ENV=test bundle exec rspec spec/system/panda/cms/admin/posts/add_post_spec.rb -v)",
       "Bash(RAILS_ENV=test bundle exec rspec spec/system/panda/cms/admin/posts/add_post_spec.rb)",
-      "Bash(RAILS_ENV=test bundle exec rspec ../../spec/system/panda/cms/admin/posts/add_post_spec.rb)"
+      "Bash(RAILS_ENV=test bundle exec rspec ../../spec/system/panda/cms/admin/posts/add_post_spec.rb)",
+      "Bash(RAILS_ENV=test bundle exec rails runner 'puts \"\"AssetLoader.use_github_assets?: #{Panda::CMS::AssetLoader.use_github_assets?}\"\"; puts \"\"JavaScript URL: #{Panda::CMS::AssetLoader.javascript_url}\"\"; puts \"\"Compiled assets available?: #{Panda::CMS::AssetLoader.send(:compiled_assets_available?)}\"\"; puts \"\"VERSION: #{Panda::CMS::VERSION}\"\"')",
+      "Bash(RAILS_ENV=test bundle exec rails runner 'puts \"\"Asset tags:\"\"; puts Panda::CMS::AssetLoader.asset_tags')",
+      "Bash(RAILS_ENV=test bundle exec rails runner \"puts ''Asset tags:''; puts Panda::CMS::AssetLoader.asset_tags\")",
+      "Bash(RAILS_ENV=test bundle exec rails runner \"puts ''Asset tags:''; puts Panda::CMS::AssetLoader.asset_tags\" --chdir spec/dummy)",
+      "Bash(RAILS_ENV=test bundle exec rails runner \"\n  require ''panda/cms/asset_helper''\n  helper = Class.new { include Panda::CMS::AssetHelper }.new\n  puts ''Complete assets output:''\n  puts helper.panda_cms_complete_assets\n\" --chdir spec/dummy)"
     ],
     "deny": []
   }
