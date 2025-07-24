@@ -123,6 +123,12 @@ jobs:
           echo "Check for specific initialization variables:"
           grep "pandaCmsStimulus" spec/dummy/public/panda-cms-assets/panda-cms-0.7.4.js || echo "pandaCmsStimulus not found"
           grep "window\." spec/dummy/public/panda-cms-assets/panda-cms-0.7.4.js | head -5
+          echo ""
+          echo "Check if Rails can serve the asset correctly:"
+          cd spec/dummy
+          timeout 10s bundle exec rails runner "puts 'Rails can load the asset: ' + File.exist?(Rails.public_path.join('panda-cms-assets/panda-cms-0.7.4.js')).to_s"
+          echo "Asset file permissions:"
+          ls -la public/panda-cms-assets/panda-cms-0.7.4.js
 
       - name: "Run tests"
         env:

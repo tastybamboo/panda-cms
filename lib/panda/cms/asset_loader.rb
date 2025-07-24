@@ -38,7 +38,8 @@ module Panda
           # Use GitHub assets in production or when explicitly enabled
           Rails.env.production? ||
             ENV["PANDA_CMS_USE_GITHUB_ASSETS"] == "true" ||
-            !development_assets_available?
+            !development_assets_available? ||
+            (Rails.env.test? && compiled_assets_available?)
         end
 
         # Download assets from GitHub to local cache
@@ -167,6 +168,14 @@ module Panda
           else
             `git rev-parse --short HEAD`.strip
           end
+        end
+
+        def compiled_assets_available?
+          # Check if compiled assets exist in test location
+          version = asset_version
+          js_file = Rails.public_path.join("panda-cms-assets", "panda-cms-#{version}.js")
+          css_file = Rails.public_path.join("panda-cms-assets", "panda-cms-#{version}.css")
+          js_file.exist? && css_file.exist?
         end
 
         def development_assets_available?
