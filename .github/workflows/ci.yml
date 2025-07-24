@@ -129,6 +129,18 @@ jobs:
           timeout 10s bundle exec rails runner "puts 'Rails can load the asset: ' + File.exist?(Rails.public_path.join('panda-cms-assets/panda-cms-0.7.4.js')).to_s"
           echo "Asset file permissions:"
           ls -la public/panda-cms-assets/panda-cms-0.7.4.js
+          echo ""
+          echo "Test Rails server startup:"
+          timeout 15s bundle exec rails server -p 3002 -e test &
+          SERVER_PID=$!
+          sleep 5
+          echo "Testing Rails routes:"
+          curl -I http://localhost:3002/admin || echo "Admin route not accessible"
+          curl -I http://localhost:3002/panda-cms-assets/panda-cms-0.7.4.js || echo "Asset route not accessible"
+          echo "Testing admin page HTML content:"
+          curl -s http://localhost:3002/admin 2>/dev/null | head -50 || echo "Could not fetch admin page"
+          kill $SERVER_PID 2>/dev/null || true
+          wait $SERVER_PID 2>/dev/null || true
 
       - name: "Run tests"
         env:

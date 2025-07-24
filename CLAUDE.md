@@ -94,6 +94,14 @@ bundle exec rake app:panda_cms:assets:upload
 bundle exec rake app:panda_cms:assets:download
 ```
 
+**Enhanced Asset Compilation Features:**
+- Automatically compiles all Stimulus controllers from `app/javascript/panda/cms/controllers/`
+- Generates functional standalone JavaScript bundles with working controller implementations
+- Copies compiled assets to test environment location (`spec/dummy/public/panda-cms-assets/`)
+- Creates enhanced controllers with proper slug generation, form handling, and alert management
+- Includes proper initialization code with `window.pandaCmsStimulus` compatibility
+- Supports both root-level and versioned directory asset placement for CI compatibility
+
 #### When to Compile Assets
 Asset compilation is required when:
 - **JavaScript changes**: Any modifications to Stimulus controllers or JS modules
@@ -135,6 +143,7 @@ Panda CMS uses different asset loading strategies based on environment:
 - Uses **compiled bundles** from `public/panda-cms-assets/`
 - Ensures consistent JavaScript functionality for system tests
 - Requires asset compilation when JavaScript changes
+- Automatically generated during CI asset compilation step
 
 **Production Environment:**
 - Downloads **compiled bundles** from GitHub releases
@@ -223,6 +232,92 @@ user = panda_cms_users(:admin_user)
 - Block types in `lib/panda/cms/editor_js/blocks/`
 - Renderer in `lib/panda/cms/editor_js/renderer.rb`
 - Custom JavaScript in `app/javascript/panda/cms/editor/`
+
+## Troubleshooting
+
+### JavaScript Asset Compilation Issues
+
+If you encounter JavaScript test failures with errors like "Could not find node with given id" or debug output showing `pandaCmsLoaded: nil`, this indicates JavaScript asset compilation or loading problems.
+
+#### Common Symptoms
+- System tests timing out waiting for JavaScript
+- Debug output shows: `{"pandaCmsLoaded" => nil, "stimulusExists" => false}`
+- "Could not find node with given id" errors in Capybara tests
+- Tests work locally but fail in CI
+
+#### Root Causes and Solutions
+
+**Problem 1: Asset Compilation Task Not Running in CI**
+```bash
+# Ensure CI runs the correct asset compilation task
+bundle exec rake app:panda_cms:assets:compile  # Correct (note the 'app:' prefix)
+bundle exec rake panda_cms:assets:compile      # Incorrect in some environments
+```
+
+**Problem 2: Assets Generated but Not Copied to Test Location**
+The asset compilation task automatically copies compiled assets from `tmp/panda_cms_assets/` to `spec/dummy/public/panda-cms-assets/` for test environment use. If tests still fail:
+```bash
+# Verify assets were copied correctly
+ls -la spec/dummy/public/panda-cms-assets/
+# Should show panda-cms-0.7.4.js and panda-cms-0.7.4.css
+```
+
+**Problem 3: Asset Loading Strategy Mismatch**
+In test environment, the system should use compiled bundles, not importmap. Check the debug output for:
+```
+[Panda CMS Test] Asset strategy: GitHub/Compiled  # Correct
+[Panda CMS Test] Asset strategy: Development/Local  # Incorrect in test
+```
+
+**Problem 4: Wrong Script Type for Standalone Bundles**
+Standalone bundles should NOT use `type="module"`. The AssetLoader automatically detects bundle type and applies correct script attributes.
+
+**Problem 5: Missing Required JavaScript Variables**
+Enhanced bundles must include:
+- `window.pandaCmsLoaded = true`
+- `window.pandaCmsStimulus = window.Stimulus`
+- `window.pandaCmsVersion`
+- Functional Stimulus controllers
+
+#### Verification Steps
+1. **Check asset compilation output**:
+   ```bash
+   bundle exec rake app:panda_cms:assets:compile
+   # Should show: "Found controller files: [...]" with actual file paths
+   # Should show: "✅ Copied JavaScript to test location"
+   ```
+
+2. **Verify bundle content**:
+   ```bash
+   grep -c "pandaCmsLoaded" spec/dummy/public/panda-cms-assets/panda-cms-*.js
+   grep -c "Stimulus.register" spec/dummy/public/panda-cms-assets/panda-cms-*.js
+   # Both should return counts > 0
+   ```
+
+3. **Check test environment asset loading**:
+   ```bash
+   # Run a single system test and check debug output
+   bundle exec rspec spec/system/panda/cms/admin/posts/add_post_spec.rb:15
+   # Look for: [Panda CMS Test] JavaScript URL: /panda-cms-assets/panda-cms-*.js
+   ```
+
+#### CI-Specific Issues
+- Ensure working directory is `spec/dummy` when running asset compilation
+- Verify engine controller files are accessible in CI environment
+- Check that compiled assets have correct file permissions (should be readable)
+
+### System Test Debug Information
+System tests automatically output debug information when JavaScript fails to load:
+```
+[Test Debug] Asset state: {
+  "pandaCmsLoaded" => true,     # Should be true
+  "stimulusExists" => true,     # Should be true  
+  "controllerCount" => 5,       # Should be > 0
+  "pandaCmsFullBundle" => true  # Should be true
+}
+```
+
+If any of these values are `nil` or `false`, the JavaScript bundle is not executing properly.
 
 ## Important Notes
 
