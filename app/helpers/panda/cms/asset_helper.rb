@@ -90,6 +90,10 @@ module Panda
         css_url = Panda::CMS::AssetLoader.css_url
         using_github = Panda::CMS::AssetLoader.use_github_assets?
         compiled_available = Panda::CMS::AssetLoader.send(:compiled_assets_available?)
+        
+        # Additional CI debugging
+        asset_file_exists = js_url && File.exist?(Rails.root.join("public#{js_url}"))
+        ci_env = ENV["GITHUB_ACTIONS"] == "true"
 
         debug_info = [
           "<!-- Panda CMS Asset Debug Info -->",
@@ -98,7 +102,11 @@ module Panda
           "<!-- Compiled assets available: #{compiled_available} -->",
           "<!-- JavaScript URL: #{js_url} -->",
           "<!-- CSS URL: #{css_url || "none"} -->",
-          "<!-- Rails environment: #{Rails.env} -->",
+          "<!-- Rails environment: #{Rails.env} -->", 
+          "<!-- Asset file exists: #{asset_file_exists} -->",
+          "<!-- Rails root: #{Rails.root} -->",
+          "<!-- CI environment: #{ci_env} -->",
+          "<!-- Params embed_id: #{params[:embed_id] if respond_to?(:params)} -->",
           "<!-- Compiled at: #{Time.now.utc.iso8601} -->"
         ]
 

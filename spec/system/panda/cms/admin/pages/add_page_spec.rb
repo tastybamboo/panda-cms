@@ -73,6 +73,8 @@ RSpec.describe "When adding a page", type: :system, js: true do
       end
 
       it "allows a page to have the same slug as another as long as the parent is different" do
+        # Wait for page to fully load before checking fields
+        expect(page).to have_content("Add Page", wait: 10)
         expect(page).to have_field("URL", with: "")
         select "- About", from: "Parent"
         trigger_slug_generation("About")
