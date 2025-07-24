@@ -182,5 +182,26 @@ RSpec.configure do |config|
 
   config.before(:suite) do
     DatabaseCleaner.clean_with :truncation
+    
+    # Global check for JavaScript loading issues in CI
+    # This will fail fast if we detect systematic JavaScript problems
+    if ENV["GITHUB_ACTIONS"] == "true"
+      puts "\n🔍 CI Environment Detected - Checking JavaScript Infrastructure..."
+      
+      # Verify compiled assets exist
+      js_asset = Rails.root.join("public/panda-cms-assets/panda-cms-0.7.4.js")
+      css_asset = Rails.root.join("public/panda-cms-assets/panda-cms-0.7.4.css")
+      
+      unless File.exist?(js_asset) && File.exist?(css_asset)
+        puts "❌ CRITICAL: Compiled assets missing!"
+        puts "   JavaScript: #{File.exist?(js_asset)} (#{js_asset})"
+        puts "   CSS: #{File.exist?(css_asset)} (#{css_asset})"
+        fail "Compiled assets not found - check asset compilation step"
+      end
+      
+      puts "✅ Compiled assets found:"
+      puts "   JavaScript: #{File.size(js_asset)} bytes"
+      puts "   CSS: #{File.size(css_asset)} bytes"
+    end
   end
 end

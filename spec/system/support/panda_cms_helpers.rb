@@ -73,6 +73,37 @@ module PandaCmsHelpers
     JS
     
     puts "[Test Debug] Asset state: #{result}"
+    
+    # Fail fast if JavaScript is not loading in CI
+    if ENV["GITHUB_ACTIONS"] == "true" && result["pandaCmsLoaded"].nil?
+      puts "\n❌ CRITICAL: JavaScript assets not loading in CI environment!"
+      puts "   pandaCmsLoaded: #{result["pandaCmsLoaded"]}"
+      puts "   stimulusExists: #{result["stimulusExists"]}"
+      puts "   URL: #{result["url"]}"
+      puts "\n🛑 Stopping test suite - JavaScript infrastructure is broken"
+      
+      # Output additional debugging information
+      puts "\n📋 Debug Information:"
+      puts "   Rails.env: #{Rails.env}"
+      puts "   Current working directory: #{Dir.pwd}"
+      
+      # Check if asset files exist
+      asset_path = Rails.root.join("public/panda-cms-assets/panda-cms-0.7.4.js")
+      puts "   Asset file exists: #{File.exist?(asset_path)} (#{asset_path})"
+      
+      if File.exist?(asset_path)
+        puts "   Asset file size: #{File.size(asset_path)} bytes"
+        puts "   Asset file permissions: #{File.stat(asset_path).mode.to_s(8)}"
+      end
+      
+      # Output page HTML for analysis
+      html_file = Rails.root.join("tmp/capybara/javascript_failure_debug.html")
+      File.write(html_file, page.html)
+      puts "   Page HTML saved to: #{html_file}"
+      
+      fail "JavaScript assets not loading - stopping test suite to avoid wasting CI time"
+    end
+    
     result
   rescue => e
     puts "[Test Debug] Error getting asset state: #{e.message}"
