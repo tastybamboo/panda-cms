@@ -225,7 +225,7 @@ RSpec.describe "When adding a page", type: :system, js: true do
       end
 
       it "shows validation errors when adding a page with invalid details", :flaky do
-        click_on "Add Page"
+        safe_click_link "Add Page"
 
         safe_expect_field("page_title")
         safe_fill_in "page_title", with: "Test Page"
@@ -236,7 +236,7 @@ RSpec.describe "When adding a page", type: :system, js: true do
       end
 
       it "shows validation errors when adding a page with missing title input", :flaky do
-        click_on "Add Page"
+        safe_click_link "Add Page"
 
         safe_expect_field("page_path")
         safe_fill_in "page_path", with: "/test-page"
@@ -246,7 +246,7 @@ RSpec.describe "When adding a page", type: :system, js: true do
       end
 
       it "shows validation errors when adding a page with missing URL input", :flaky do
-        click_on "Add Page"
+        safe_click_link "Add Page"
 
         safe_expect_field("page_title")
         safe_fill_in "page_title", with: "Test Page"

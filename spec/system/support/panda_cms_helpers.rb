@@ -216,6 +216,41 @@ module PandaCmsHelpers
     expect(page).to have_select(locator, **options)
   end
 
+  # Safe button click that avoids Ferrum browser resets
+  def safe_click_button(locator, **options)
+    button_exists = page.evaluate_script(<<~JS)
+      document.getElementById(#{locator.to_json}) !== null ||
+      document.querySelector('button[name="' + #{locator.to_json} + '"]') !== null ||
+      document.querySelector('input[type="submit"][value="' + #{locator.to_json} + '"]') !== null ||
+      Array.from(document.querySelectorAll('button')).some(btn => btn.textContent.trim() === #{locator.to_json})
+    JS
+    
+    expect(button_exists).to be(true), "Button '#{locator}' not found in page"
+    click_button(locator, **options)
+  end
+
+  # Safe link click that avoids Ferrum browser resets
+  def safe_click_link(locator, **options)
+    link_exists = page.evaluate_script(<<~JS)
+      document.getElementById(#{locator.to_json}) !== null ||
+      Array.from(document.querySelectorAll('a')).some(link => link.textContent.trim() === #{locator.to_json}) ||
+      document.querySelector('a[href*="' + #{locator.to_json} + '"]') !== null
+    JS
+    
+    expect(link_exists).to be(true), "Link '#{locator}' not found in page"
+    click_link(locator, **options)
+  end
+
+  # Safe element finding that avoids Ferrum browser resets
+  def safe_find(selector, **options)
+    element_exists = page.evaluate_script(<<~JS)
+      document.querySelector(#{selector.to_json}) !== null
+    JS
+    
+    expect(element_exists).to be(true), "Element '#{selector}' not found in page"
+    find(selector, **options)
+  end
+
   # Debug current asset loading state
   def debug_asset_state
     # Ensure we're checking the main page context, not an iframe

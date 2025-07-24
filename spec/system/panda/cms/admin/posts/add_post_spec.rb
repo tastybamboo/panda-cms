@@ -35,7 +35,7 @@ RSpec.describe "Adding a post", type: :system do
       }
     ")
 
-    click_button "Create Post"
+    safe_click_button "Create Post"
     
     # Wait for redirect
     sleep 1
@@ -71,7 +71,7 @@ RSpec.describe "Adding a post", type: :system do
     # Don't fill in title
     safe_fill_in "post_slug", with: "/#{Time.current.strftime("%Y/%m")}/test-post"
 
-    click_button "Create Post"
+    safe_click_button "Create Post"
 
     # Use string-based checks to avoid DOM node issues
     expect(page.html).to include("Title can't be blank")
@@ -82,7 +82,7 @@ RSpec.describe "Adding a post", type: :system do
     # Don't fill in slug
 
     # Use normal button click - validation errors should be handled by JavaScript
-    click_button "Create Post"
+    safe_click_button "Create Post"
 
     # Use string-based checks to avoid DOM node issues
     expect(page.html).to include("URL can't be blank")
