@@ -116,12 +116,22 @@ module Panda
 
         def github_javascript_url
           version = asset_version
-          "#{github_base_url(version)}panda-cms-#{version}.js"
+          # In test environment with local compiled assets, use local URL
+          if Rails.env.test? && compiled_assets_available?
+            "/panda-cms-assets/panda-cms-#{version}.js"
+          else
+            "#{github_base_url(version)}panda-cms-#{version}.js"
+          end
         end
 
         def github_css_url
           version = asset_version
-          "#{github_base_url(version)}panda-cms-#{version}.css"
+          # In test environment with local compiled assets, use local URL
+          if Rails.env.test? && compiled_assets_available?
+            "/panda-cms-assets/panda-cms-#{version}.css"
+          else
+            "#{github_base_url(version)}panda-cms-#{version}.css"
+          end
         end
 
         def development_javascript_url
