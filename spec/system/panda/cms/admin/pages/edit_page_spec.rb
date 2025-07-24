@@ -81,12 +81,14 @@ RSpec.describe "When editing a page", type: :system do
 
     it "shows the content of the page being edited" do
       expect(page.html).to include("About")
+      wait_for_iframe_load("editablePageFrame")
       within_frame "editablePageFrame" do
         expect(page.html).to include("Basic Page Layout")
       end
     end
 
     it "allows editing plain text content of the page" do
+      wait_for_iframe_load("editablePageFrame")
       within_frame "editablePageFrame" do
         # Wait for the page to load
         expect(page.html).to include("Basic Page Layout")
@@ -105,6 +107,7 @@ RSpec.describe "When editing a page", type: :system do
     end
 
     it "allows editing rich text content of the page" do
+      wait_for_iframe_load("editablePageFrame")
       within_frame "editablePageFrame" do
         # Wait for the page to load
         expect(page.html).to include("Basic Page Layout")
@@ -121,6 +124,7 @@ RSpec.describe "When editing a page", type: :system do
     end
 
     it "allows editing code content of the page" do
+      wait_for_iframe_load("editablePageFrame")
       within_frame "editablePageFrame" do
         # Wait for the page to load
         expect(page.html).to include("Basic Page Layout")
