@@ -202,6 +202,39 @@ RSpec.configure do |config|
       puts "✅ Compiled assets found:"
       puts "   JavaScript: #{File.size(js_asset)} bytes"
       puts "   CSS: #{File.size(css_asset)} bytes"
+      
+      # Test basic Rails application responsiveness
+      puts "\n🔍 Testing Rails application responsiveness..."
+      begin
+        require 'net/http'
+        require 'capybara'
+        
+        # Try to make a basic HTTP request to test if Rails is responding
+        if defined?(Capybara) && Capybara.current_session
+          puts "   Capybara server: #{Capybara.current_session.server.base_url rescue 'not available'}"
+        end
+        
+        # Check if database is accessible
+        if defined?(ActiveRecord::Base)
+          begin
+            ActiveRecord::Base.connection.execute("SELECT 1")
+            puts "   Database connection: ✅ OK"
+          rescue => e
+            puts "   Database connection: ❌ FAILED - #{e.message}"
+          end
+        end
+        
+        # Check if basic models can be loaded
+        begin
+          user_count = Panda::CMS::User.count
+          puts "   User model access: ✅ OK (#{user_count} users)"
+        rescue => e
+          puts "   User model access: ❌ FAILED - #{e.message}"
+        end
+        
+      rescue => e
+        puts "   Rails app check failed: #{e.message}"
+      end
     end
   end
 end

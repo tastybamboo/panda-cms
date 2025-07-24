@@ -27,7 +27,31 @@ RSpec.describe "When adding a page", type: :system, js: true do
     context "when using the add page form" do
       before(:each) do
         login_as_admin
+        
+        # Debug CI navigation issues
+        if ENV["GITHUB_ACTIONS"] == "true"
+          puts "\n[CI Debug] Before navigation:"
+          puts "   Current URL: #{page.current_url}"
+          puts "   Page title: #{page.title}"
+        end
+        
         visit "/admin/pages/new"
+        
+        # Debug CI navigation issues
+        if ENV["GITHUB_ACTIONS"] == "true"
+          puts "\n[CI Debug] After navigation to /admin/pages/new:"
+          puts "   Current URL: #{page.current_url}"
+          puts "   Page title: #{page.title}"
+          puts "   Status code: #{page.status_code rescue 'unknown'}"
+          puts "   Page content length: #{page.html.length}"
+          puts "   Page contains 'Add Page': #{page.html.include?('Add Page')}"
+          
+          if page.current_url.include?('about:blank') || page.html.length < 100
+            puts "   ❌ Navigation failed - page didn't load properly"
+            puts "   First 200 chars of HTML: #{page.html[0..200]}"
+            fail "Navigation to /admin/pages/new failed in CI"
+          end
+        end
       end
 
       it "shows the add page form" do
