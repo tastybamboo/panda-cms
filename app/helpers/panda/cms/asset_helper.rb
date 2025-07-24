@@ -22,9 +22,10 @@ module Panda
 
           tag_options = {
             src: js_url,
-            type: "module",
             defer: true
           }
+          # Only use type: "module" for importmap assets, not standalone bundles
+          tag_options[:type] = "module" unless js_url.include?("panda-cms-assets")
           tag_options[:integrity] = integrity if integrity
           tag_options[:crossorigin] = "anonymous" if integrity
 
