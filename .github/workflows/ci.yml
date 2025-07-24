@@ -130,17 +130,17 @@ jobs:
           echo "Asset file permissions:"
           ls -la public/panda-cms-assets/panda-cms-0.7.4.js
           echo ""
-          echo "Test Rails server startup:"
-          timeout 15s bundle exec rails server -p 3002 -e test &
-          SERVER_PID=$!
-          sleep 5
-          echo "Testing Rails routes:"
-          curl -I http://localhost:3002/admin || echo "Admin route not accessible"
-          curl -I http://localhost:3002/panda-cms-assets/panda-cms-0.7.4.js || echo "Asset route not accessible"
-          echo "Testing admin page HTML content:"
-          curl -s http://localhost:3002/admin 2>/dev/null | head -50 || echo "Could not fetch admin page"
-          kill $SERVER_PID 2>/dev/null || true
-          wait $SERVER_PID 2>/dev/null || true
+          echo "Check public directory asset serving configuration:"
+          ls -la public/ | grep -E "(panda|assets)" || echo "No panda assets in public"
+          echo ""
+          echo "Test asset serving configuration in Rails:"
+          bundle exec rails runner "
+            puts 'Public file serving enabled: ' + Rails.application.config.public_file_server.enabled.to_s
+            puts 'Asset serving enabled: ' + (Rails.application.config.assets&.enabled || 'N/A').to_s
+            puts 'Static files middleware: ' + Rails.application.config.middleware.to_a.select{|m| m.to_s.include?('Static')}.join(', ')
+            puts 'AssetLoader use_github_assets?: ' + Panda::CMS::AssetLoader.use_github_assets?.to_s
+            puts 'AssetLoader javascript_url: ' + Panda::CMS::AssetLoader.javascript_url.to_s
+          "
 
       - name: "Run tests"
         env:
