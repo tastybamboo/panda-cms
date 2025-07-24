@@ -119,6 +119,10 @@ jobs:
           wc -l spec/dummy/public/panda-cms-assets/panda-cms-0.7.4.js
           grep -c "pandaCmsLoaded" spec/dummy/public/panda-cms-assets/panda-cms-0.7.4.js || echo "pandaCmsLoaded not found"
           grep -c "Stimulus.register" spec/dummy/public/panda-cms-assets/panda-cms-0.7.4.js || echo "Stimulus.register not found"
+          echo ""
+          echo "Check for specific initialization variables:"
+          grep "pandaCmsStimulus" spec/dummy/public/panda-cms-assets/panda-cms-0.7.4.js || echo "pandaCmsStimulus not found"
+          grep "window\." spec/dummy/public/panda-cms-assets/panda-cms-0.7.4.js | head -5
 
       - name: "Run tests"
         env:

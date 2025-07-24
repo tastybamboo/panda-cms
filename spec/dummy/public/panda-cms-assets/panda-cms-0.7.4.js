@@ -1,5 +1,5 @@
 // Panda CMS JavaScript Bundle v0.7.4
-// Compiled: 2025-07-23T23:35:39Z
+// Compiled: 2025-07-24T00:16:19Z
 // Full bundle with all Stimulus controllers and functionality
 
 // Stimulus setup and polyfill
@@ -182,6 +182,7 @@ window.pandaCmsEditorReady = true;
   window.pandaCmsVersion = '0.7.4';
   window.pandaCmsLoaded = true;
   window.pandaCmsFullBundle = true;
+  window.pandaCmsStimulus = window.Stimulus;
   
   // Initialize on DOM ready
   if (document.readyState === 'loading') {

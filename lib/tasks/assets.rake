@@ -499,6 +499,7 @@ def create_application_init(version)
     "  window.pandaCmsVersion = '#{version}';",
     "  window.pandaCmsLoaded = true;",
     "  window.pandaCmsFullBundle = true;",
+    "  window.pandaCmsStimulus = window.Stimulus;",
     "  ",
     "  // Initialize on DOM ready",
     "  if (document.readyState === 'loading') {",
