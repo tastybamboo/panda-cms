@@ -17,7 +17,7 @@ module Panda
 
         if Panda::CMS::AssetLoader.use_github_assets?
           # GitHub-hosted assets with integrity check
-          version = `git rev-parse --short HEAD`.strip
+          version = Panda::CMS::AssetLoader.send(:asset_version)
           integrity = asset_integrity(version, "panda-cms-#{version}.js")
 
           tag_options = {
@@ -83,19 +83,22 @@ module Panda
 
       # Debug information about asset loading
       def panda_cms_asset_debug
-        return "" unless Rails.env.development?
+        return "" unless Rails.env.development? || Rails.env.test?
 
         version = Panda::CMS::VERSION
         js_url = Panda::CMS::AssetLoader.javascript_url
         css_url = Panda::CMS::AssetLoader.css_url
         using_github = Panda::CMS::AssetLoader.use_github_assets?
+        compiled_available = Panda::CMS::AssetLoader.send(:compiled_assets_available?)
 
         debug_info = [
           "<!-- Panda CMS Asset Debug Info -->",
           "<!-- Version: #{version} -->",
           "<!-- Using GitHub assets: #{using_github} -->",
+          "<!-- Compiled assets available: #{compiled_available} -->",
           "<!-- JavaScript URL: #{js_url} -->",
           "<!-- CSS URL: #{css_url || "none"} -->",
+          "<!-- Rails environment: #{Rails.env} -->",
           "<!-- Compiled at: #{Time.now.utc.iso8601} -->"
         ]
 

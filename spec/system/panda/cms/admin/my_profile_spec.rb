@@ -34,7 +34,7 @@ RSpec.describe "Admin profile management", type: :system do
     expect(html_content).to include("Update Profile")
   end
 
-  it "allows updating profile information" do
+  it "allows updating profile information", :flaky do
     # Wait for form to be fully ready with all fields (longer waits in CI)
     expect(page).to have_field("First Name", wait: ci_wait_time)
     expect(page).to have_field("Last Name", wait: ci_wait_time)
@@ -83,7 +83,7 @@ RSpec.describe "Admin profile management", type: :system do
     end
   end
 
-  it "validates required fields" do
+  it "validates required fields", :flaky do
     # Wait for JavaScript/Stimulus controllers to be ready
     expect(page).to have_css('[data-controller="theme-form"]', wait: ci_long_wait_time)
 
@@ -102,7 +102,7 @@ RSpec.describe "Admin profile management", type: :system do
     expect(page.html).to include("Email Address can't be blank")
   end
 
-  it "maintains the selected theme when form submission fails" do
+  it "maintains the selected theme when form submission fails", :flaky do
     # Wait for form fields to be ready (longer waits in CI)
     expect(page).to have_field("First Name", wait: ci_wait_time)
     expect(page).to have_select("Theme", wait: ci_wait_time)

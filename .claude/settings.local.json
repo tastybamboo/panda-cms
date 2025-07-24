@@ -60,7 +60,8 @@
       "Bash(RAILS_ENV=test bundle exec rails runner 'puts \"\"Asset tags:\"\"; puts Panda::CMS::AssetLoader.asset_tags')",
       "Bash(RAILS_ENV=test bundle exec rails runner \"puts ''Asset tags:''; puts Panda::CMS::AssetLoader.asset_tags\")",
       "Bash(RAILS_ENV=test bundle exec rails runner \"puts ''Asset tags:''; puts Panda::CMS::AssetLoader.asset_tags\" --chdir spec/dummy)",
-      "Bash(RAILS_ENV=test bundle exec rails runner \"\n  require ''panda/cms/asset_helper''\n  helper = Class.new { include Panda::CMS::AssetHelper }.new\n  puts ''Complete assets output:''\n  puts helper.panda_cms_complete_assets\n\" --chdir spec/dummy)"
+      "Bash(RAILS_ENV=test bundle exec rails runner \"\n  require ''panda/cms/asset_helper''\n  helper = Class.new { include Panda::CMS::AssetHelper }.new\n  puts ''Complete assets output:''\n  puts helper.panda_cms_complete_assets\n\" --chdir spec/dummy)",
+      "Bash(INCLUDE_EDITORJS=true bundle exec rspec spec/lib/panda/cms/editor_js/ --format progress)"
     ],
     "deny": []
   }
