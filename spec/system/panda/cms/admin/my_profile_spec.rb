@@ -67,6 +67,11 @@ RSpec.describe "Admin profile management", type: :system do
     end
     
     expect(page.html).to include("My Profile")
+    
+    # Add extra stability wait in CI environment
+    if ENV["GITHUB_ACTIONS"] == "true"
+      sleep(1)
+    end
   end
 
   it "displays the profile form with current user information" do
@@ -110,10 +115,14 @@ RSpec.describe "Admin profile management", type: :system do
 
   it "allows changing theme preference" do
     # Wait for JavaScript/Stimulus controllers to be ready
-    expect(page).to have_css('[data-controller="theme-form"]', wait: ci_long_wait_time)
+    # Use JavaScript evaluation instead of CSS selector to avoid Ferrum issues
+    using_wait_time(ci_long_wait_time) do
+      theme_form_exists = page.evaluate_script("document.querySelector('[data-controller=\"theme-form\"]') !== null")
+      expect(theme_form_exists).to be(true)
+    end
 
-    # Wait for Theme select field to be ready (extra long waits for this problematic field)
-    expect(page).to have_select("Theme", wait: ci_long_wait_time)
+    # Wait for Theme select field to be ready (use field ID instead of label)
+    expect(page).to have_select("user_current_theme", wait: ci_long_wait_time)
 
     select "Sky", from: "Theme"
 
@@ -133,7 +142,11 @@ RSpec.describe "Admin profile management", type: :system do
 
   it "validates required fields", :flaky do
     # Wait for JavaScript/Stimulus controllers to be ready
-    expect(page).to have_css('[data-controller="theme-form"]', wait: ci_long_wait_time)
+    # Use JavaScript evaluation instead of CSS selector to avoid Ferrum issues
+    using_wait_time(ci_long_wait_time) do
+      theme_form_exists = page.evaluate_script("document.querySelector('[data-controller=\"theme-form\"]') !== null")
+      expect(theme_form_exists).to be(true)
+    end
 
     # Wait for form fields to be ready (extra long waits for this problematic test)
     expect(page).to have_field("First Name", wait: ci_long_wait_time)
@@ -152,10 +165,30 @@ RSpec.describe "Admin profile management", type: :system do
 
   it "maintains the selected theme when form submission fails", :flaky do
     # Wait for form fields to be ready (longer waits in CI)
-    expect(page).to have_field("First Name", wait: ci_wait_time)
-    expect(page).to have_select("Theme", wait: ci_wait_time)
+    if ENV["GITHUB_ACTIONS"] == "true"
+      puts "[CI Debug] Before looking for First Name field:"
+      puts "   Current URL: #{page.current_url rescue 'error'}"
+      puts "   Page title: #{page.title rescue 'error'}"
+      puts "   Page content length: #{page.html.length rescue 'error'}"
+      puts "   Page has 'My Profile': #{page.html.include?('My Profile') rescue 'error'}"
+      
+      # Ensure we're still on the right page - re-navigate if needed
+      if page.current_url.include?('about:blank') || !page.html.include?('My Profile')
+        puts "[CI Debug] Page seems to have been reset, re-navigating..."
+        visit "/admin/my_profile/edit"
+        sleep(1)
+      end
+    end
+    # Use HTML-based checks instead of element finding to avoid browser resets
+    expect(page.html).to include('name="user[firstname]"')
+    expect(page.html).to include('name="user[current_theme]"')
+    
+    # Now safely access the form fields using the actual field IDs from HTML
+    expect(page).to have_field("user_firstname", wait: ci_wait_time)
+    expect(page).to have_select("user_current_theme", wait: ci_wait_time)
 
-    fill_in "First Name", with: ""
+    # Use field IDs instead of labels to avoid mismatches
+    fill_in "user_firstname", with: ""
     select "Sky", from: "Theme"
     click_button "Update Profile"
 

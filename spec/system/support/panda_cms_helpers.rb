@@ -297,6 +297,12 @@ RSpec.configure do |config|
   config.after(:each, type: :system) do |example|
     if example.exception
       puts "[Test] Test failed: #{example.exception.message}"
+      
+      # Add immediate page state debugging before other debug info
+      current_url = page.current_url rescue "unknown"
+      page_title = page.title rescue "unknown"
+      puts "[Test] Immediate failure state - URL: #{current_url}, Title: #{page_title}"
+      
       debug_asset_state
     end
   end

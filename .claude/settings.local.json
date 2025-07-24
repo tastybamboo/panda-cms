@@ -66,7 +66,12 @@
       "Bash(rails runner:*)",
       "Bash(RAILS_ENV=test rails runner \"\nputs ''Asset loading test:''\nputs ''Rails.env: '' + Rails.env.to_s\nputs ''Rails.env.test?: '' + Rails.env.test?.to_s\nputs ''use_github_assets?: '' + Panda::CMS::AssetLoader.use_github_assets?.to_s\nputs ''compiled_assets_available?: '' + Panda::CMS::AssetLoader.send(:compiled_assets_available?).to_s\nputs ''javascript_url: '' + Panda::CMS::AssetLoader.javascript_url.to_s\n\")",
       "Bash(RAILS_ENV=test rails runner \"\nputs ''Generated asset tags:''\nasset_html = Panda::CMS::AssetLoader.asset_tags\nputs asset_html\nputs ''''\nputs ''Checking for type=module:''\nputs asset_html.include?(''type=\"\"module\"\"'')\n\")",
-      "Bash(GITHUB_ACTIONS=true RAILS_ENV=test rails runner \"\nputs ''Generated asset tags in CI mode:''\nasset_html = Panda::CMS::AssetLoader.asset_tags\nputs asset_html\nputs ''''\nputs ''Checking for defer:''\nputs asset_html.include?(''defer'')\n\")"
+      "Bash(GITHUB_ACTIONS=true RAILS_ENV=test rails runner \"\nputs ''Generated asset tags in CI mode:''\nasset_html = Panda::CMS::AssetLoader.asset_tags\nputs asset_html\nputs ''''\nputs ''Checking for defer:''\nputs asset_html.include?(''defer'')\n\")",
+      "Bash(GITHUB_ACTIONS=true bundle exec rspec \"spec/system/panda/cms/admin/my_profile_spec.rb:153\" --seed 61620)",
+      "Bash(GITHUB_ACTIONS=true bundle exec rspec \"spec/system/panda/cms/admin/my_profile_spec.rb:139\" --seed 61620)",
+      "Bash(GITHUB_ACTIONS=true bundle exec rspec spec/system/panda/cms/admin/my_profile_spec.rb --seed 61620)",
+      "Bash(GITHUB_ACTIONS=true bundle exec rspec \"spec/system/panda/cms/admin/my_profile_spec.rb:166\" --seed 61620)",
+      "Bash(GITHUB_ACTIONS=true bundle exec rspec \"spec/system/panda/cms/admin/my_profile_spec.rb:116\" --seed 61620)"
     ],
     "deny": []
   }
