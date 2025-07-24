@@ -17,7 +17,55 @@ RSpec.describe "Admin profile management", type: :system do
   before(:each) do
     login_as_admin
 
-    visit "/admin/my_profile/edit"
+    # Debug CI navigation issues for profile page
+    if ENV["GITHUB_ACTIONS"] == "true"
+      puts "\n[CI Debug] Profile test - before navigation:"
+      puts "   Current URL: #{page.current_url}"
+      puts "   Page title: #{page.title}"
+      puts "   Status code: #{page.status_code rescue 'unknown'}"
+    end
+
+    begin
+      visit "/admin/my_profile/edit"
+    rescue => e
+      if ENV["GITHUB_ACTIONS"] == "true"
+        puts "[CI Debug] Navigation to /admin/my_profile/edit failed: #{e.message}"
+        puts "   Current URL after error: #{page.current_url}"
+        fail "Profile page navigation failed: #{e.message}"
+      else
+        raise e
+      end
+    end
+
+    # Debug CI navigation issues for profile page
+    if ENV["GITHUB_ACTIONS"] == "true"
+      puts "\n[CI Debug] Profile test - after navigation:"
+      puts "   Current URL: #{page.current_url}"
+      puts "   Page title: #{page.title}"
+      puts "   Status code: #{page.status_code rescue 'unknown'}"
+      puts "   Page content length: #{page.html.length}"
+      puts "   Page contains 'My Profile': #{page.html.include?('My Profile')}"
+      
+      if page.current_url.include?('about:blank') || page.html.length < 100
+        puts "   ❌ Profile page didn't load properly"
+        puts "   First 500 chars of HTML: #{page.html[0..500]}"
+        
+        # Check if user is actually logged in
+        puts "   Checking login status..."
+        begin
+          if page.html.include?('Sign in') || page.current_url.include?('login')
+            puts "   ❌ User not logged in - redirected to login page"
+          else
+            puts "   ℹ️ Unknown page state"
+          end
+        rescue
+          puts "   ❌ Could not check login status"
+        end
+        
+        fail "Profile page navigation failed - page didn't load properly"
+      end
+    end
+    
     expect(page.html).to include("My Profile")
   end
 
