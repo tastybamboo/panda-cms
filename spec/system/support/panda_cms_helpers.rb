@@ -68,7 +68,9 @@ module PandaCmsHelpers
         controllerCount: window.Stimulus ? window.Stimulus.controllers.size : 0,
         pandaCmsFullBundle: window.pandaCmsFullBundle,
         documentReady: document.readyState,
-        bodyClass: document.body ? document.body.className : 'no-body'
+        bodyClass: document.body ? document.body.className : 'no-body',
+        isInIframe: window !== window.top,
+        parentUrl: (window !== window.top) ? document.referrer : 'not-in-iframe'
       })
     JS
     
@@ -128,8 +130,22 @@ module PandaCmsHelpers
         
         # Check for iframes in the main page HTML
         if page.html.include?('<iframe')
-          iframe_match = page.html.match(/src="([^"]*)"/)
-          puts "   Iframe src found: #{iframe_match[1] if iframe_match}"
+          iframe_matches = page.html.scan(/<iframe[^>]*src="([^"]*)"[^>]*>/i)
+          puts "   Iframe(s) found: #{iframe_matches.flatten}"
+          
+          # Try to access iframe content
+          begin
+            iframe_count = page.all('iframe').count
+            puts "   Total iframes detected: #{iframe_count}"
+            
+            page.all('iframe').each_with_index do |iframe, index|
+              puts "   Iframe #{index + 1} src: #{iframe['src']}"
+              puts "   Iframe #{index + 1} id: #{iframe['id']}"
+              puts "   Iframe #{index + 1} name: #{iframe['name']}"
+            end
+          rescue => e
+            puts "   Error checking iframe details: #{e.message}"
+          end
         else
           puts "   No iframe elements found in HTML"
         end
