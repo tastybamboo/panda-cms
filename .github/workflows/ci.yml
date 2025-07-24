@@ -108,6 +108,17 @@ jobs:
           echo ""
           echo "Asset sizes:"
           du -h spec/dummy/public/panda-cms-assets/*
+          echo ""
+          echo "JavaScript bundle first 10 lines:"
+          head -10 spec/dummy/public/panda-cms-assets/panda-cms-0.7.4.js
+          echo ""
+          echo "JavaScript bundle last 10 lines:"
+          tail -10 spec/dummy/public/panda-cms-assets/panda-cms-0.7.4.js
+          echo ""
+          echo "Bundle size and key content check:"
+          wc -l spec/dummy/public/panda-cms-assets/panda-cms-0.7.4.js
+          grep -c "pandaCmsLoaded" spec/dummy/public/panda-cms-assets/panda-cms-0.7.4.js || echo "pandaCmsLoaded not found"
+          grep -c "Stimulus.register" spec/dummy/public/panda-cms-assets/panda-cms-0.7.4.js || echo "Stimulus.register not found"
 
       - name: "Run tests"
         env:

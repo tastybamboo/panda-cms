@@ -316,7 +316,10 @@ def create_tailwind_components
 end
 
 def compile_all_controllers
-  controller_files = Dir.glob(Panda::CMS::Engine.root.join("app/javascript/panda/cms/controllers/*.js"))
+  engine_root = Panda::CMS::Engine.root
+  puts "Engine root: #{engine_root}"
+  controller_files = Dir.glob(engine_root.join("app/javascript/panda/cms/controllers/*.js"))
+  puts "Found controller files: #{controller_files}"
   controllers = []
   
   controller_files.each do |file|
