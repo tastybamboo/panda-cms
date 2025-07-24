@@ -72,9 +72,10 @@ module Panda
           integrity = asset_integrity(version, "panda-cms-#{version}.js")
 
           js_attrs = {
-            src: js_url,
-            defer: true
+            src: js_url
           }
+          # In CI environment, don't use defer to ensure immediate execution
+          js_attrs[:defer] = true unless ENV["GITHUB_ACTIONS"] == "true"
           # Only use type="module" for development importmap assets, not standalone bundles  
           js_attrs[:type] = "module" unless js_url.include?("panda-cms-assets")
           js_attrs[:integrity] = integrity if integrity

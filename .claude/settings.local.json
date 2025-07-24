@@ -62,7 +62,11 @@
       "Bash(RAILS_ENV=test bundle exec rails runner \"puts ''Asset tags:''; puts Panda::CMS::AssetLoader.asset_tags\" --chdir spec/dummy)",
       "Bash(RAILS_ENV=test bundle exec rails runner \"\n  require ''panda/cms/asset_helper''\n  helper = Class.new { include Panda::CMS::AssetHelper }.new\n  puts ''Complete assets output:''\n  puts helper.panda_cms_complete_assets\n\" --chdir spec/dummy)",
       "Bash(INCLUDE_EDITORJS=true bundle exec rspec spec/lib/panda/cms/editor_js/ --format progress)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(rails runner:*)",
+      "Bash(RAILS_ENV=test rails runner \"\nputs ''Asset loading test:''\nputs ''Rails.env: '' + Rails.env.to_s\nputs ''Rails.env.test?: '' + Rails.env.test?.to_s\nputs ''use_github_assets?: '' + Panda::CMS::AssetLoader.use_github_assets?.to_s\nputs ''compiled_assets_available?: '' + Panda::CMS::AssetLoader.send(:compiled_assets_available?).to_s\nputs ''javascript_url: '' + Panda::CMS::AssetLoader.javascript_url.to_s\n\")",
+      "Bash(RAILS_ENV=test rails runner \"\nputs ''Generated asset tags:''\nasset_html = Panda::CMS::AssetLoader.asset_tags\nputs asset_html\nputs ''''\nputs ''Checking for type=module:''\nputs asset_html.include?(''type=\"\"module\"\"'')\n\")",
+      "Bash(GITHUB_ACTIONS=true RAILS_ENV=test rails runner \"\nputs ''Generated asset tags in CI mode:''\nasset_html = Panda::CMS::AssetLoader.asset_tags\nputs asset_html\nputs ''''\nputs ''Checking for defer:''\nputs asset_html.include?(''defer'')\n\")"
     ],
     "deny": []
   }

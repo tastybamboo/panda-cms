@@ -21,9 +21,10 @@ module Panda
           integrity = asset_integrity(version, "panda-cms-#{version}.js")
 
           tag_options = {
-            src: js_url,
-            defer: true
+            src: js_url
           }
+          # In CI environment, don't use defer to ensure immediate execution
+          tag_options[:defer] = true unless ENV["GITHUB_ACTIONS"] == "true"
           # Only use type: "module" for importmap assets, not standalone bundles
           tag_options[:type] = "module" unless js_url.include?("panda-cms-assets")
           tag_options[:integrity] = integrity if integrity
@@ -34,10 +35,12 @@ module Panda
           # Development assets - check if it's a standalone bundle or importmap
           if js_url.include?("panda-cms-assets")
             # Standalone bundle - don't use type: "module"
-            javascript_include_tag(js_url, defer: true)
+            defer_option = ENV["GITHUB_ACTIONS"] == "true" ? {} : { defer: true }
+            javascript_include_tag(js_url, **defer_option)
           else
             # Importmap asset - use type: "module"
-            javascript_include_tag(js_url, type: "module", defer: true)
+            defer_option = ENV["GITHUB_ACTIONS"] == "true" ? {} : { defer: true }
+            javascript_include_tag(js_url, type: "module", **defer_option)
           end
         end
       end

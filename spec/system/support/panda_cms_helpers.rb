@@ -12,10 +12,15 @@ module PandaCmsHelpers
     while Time.now - start_time < timeout
       # Check if our JavaScript bundle has loaded and initialized
       result = page.evaluate_script(<<~JS)
-        window.pandaCmsLoaded === true && 
-        window.Stimulus && 
-        window.Stimulus.controllers && 
-        window.Stimulus.controllers.size > 0
+        (function() {
+          // Always check the top-level window, not iframe
+          var topWindow = window.top || window;
+          
+          return topWindow.pandaCmsLoaded === true && 
+                 topWindow.Stimulus && 
+                 topWindow.Stimulus.controllers && 
+                 topWindow.Stimulus.controllers.size > 0;
+        })()
       JS
       
       if result
@@ -26,15 +31,21 @@ module PandaCmsHelpers
       sleep 0.2
     end
     
-    # Debug info if assets didn't load
+    # Debug info if assets didn't load  
     script_result = page.evaluate_script(<<~JS)
-      ({
-        pandaCmsLoaded: window.pandaCmsLoaded,
-        pandaCmsVersion: window.pandaCmsVersion,
-        stimulusExists: !!window.Stimulus,
-        controllerCount: window.Stimulus ? window.Stimulus.controllers.size : 0,
-        pandaCmsFullBundle: window.pandaCmsFullBundle
-      })
+      (function() {
+        // Always check the top-level window, not iframe
+        var topWindow = window.top || window;
+        
+        return {
+          pandaCmsLoaded: topWindow.pandaCmsLoaded,
+          pandaCmsVersion: topWindow.pandaCmsVersion,
+          stimulusExists: !!topWindow.Stimulus,
+          controllerCount: topWindow.Stimulus ? topWindow.Stimulus.controllers.size : 0,
+          pandaCmsFullBundle: topWindow.pandaCmsFullBundle,
+          context: window === topWindow ? 'main-page' : 'iframe'
+        };
+      })()
     JS
     
     puts "[Test] Asset loading timeout. Debug info: #{script_result}"
@@ -138,19 +149,27 @@ module PandaCmsHelpers
 
   # Debug current asset loading state
   def debug_asset_state
+    # Ensure we're checking the main page context, not an iframe
     result = page.evaluate_script(<<~JS)
-      ({
-        url: window.location.href,
-        pandaCmsLoaded: window.pandaCmsLoaded,
-        pandaCmsVersion: window.pandaCmsVersion,
-        stimulusExists: !!window.Stimulus,
-        controllerCount: window.Stimulus ? window.Stimulus.controllers.size : 0,
-        pandaCmsFullBundle: window.pandaCmsFullBundle,
-        documentReady: document.readyState,
-        bodyClass: document.body ? document.body.className : 'no-body',
-        isInIframe: window !== window.top,
-        parentUrl: (window !== window.top) ? document.referrer : 'not-in-iframe'
-      })
+      (function() {
+        // Always check the top-level window, not iframe
+        var topWindow = window.top || window;
+        var topDocument = topWindow.document;
+        
+        return {
+          url: topWindow.location.href,
+          pandaCmsLoaded: topWindow.pandaCmsLoaded,
+          pandaCmsVersion: topWindow.pandaCmsVersion,
+          stimulusExists: !!topWindow.Stimulus,
+          controllerCount: topWindow.Stimulus ? topWindow.Stimulus.controllers.size : 0,
+          pandaCmsFullBundle: topWindow.pandaCmsFullBundle,
+          documentReady: topDocument.readyState,
+          bodyClass: topDocument.body ? topDocument.body.className : 'no-body',
+          isInIframe: window !== topWindow,
+          parentUrl: (window !== topWindow) ? topDocument.referrer : 'not-in-iframe',
+          currentContext: window === topWindow ? 'main-page' : 'iframe'
+        };
+      })()
     JS
     
     puts "[Test Debug] Asset state: #{result}"
@@ -164,9 +183,33 @@ module PandaCmsHelpers
       @javascript_failures_count += 1
       test_name = RSpec.current_example&.full_description || "unknown test"
       puts "[Test Debug] JavaScript failure ##{@javascript_failures_count} in: #{test_name}"
+      
+      # Additional debugging for about:blank navigation
+      if result["url"] == "about:blank"
+        puts "[Test Debug] Page navigated to about:blank - possible causes:"
+        puts "   - JavaScript error caused navigation"
+        puts "   - Form submission redirect failed" 
+        puts "   - Browser security restriction"
+        puts "   - Network/server error during navigation"
+        
+        # Check for browser console errors
+        begin
+          console_logs = page.driver.browser.console_messages rescue []
+          if console_logs.any?
+            puts "[Test Debug] Browser console messages:"
+            console_logs.each do |log|
+              puts "   #{log}"
+            end
+          else
+            puts "[Test Debug] No browser console messages found"
+          end
+        rescue => e
+          puts "[Test Debug] Could not check console messages: #{e.message}"
+        end
+      end
     end
     
-    if ENV["GITHUB_ACTIONS"] == "true" && result["pandaCmsLoaded"].nil? && @javascript_failures_count >= 2
+    if ENV["GITHUB_ACTIONS"] == "true" && result["pandaCmsLoaded"].nil? && @javascript_failures_count >= 5
       puts "\n❌ CRITICAL: JavaScript assets not loading in CI environment!"
       puts "   pandaCmsLoaded: #{result["pandaCmsLoaded"]}"
       puts "   stimulusExists: #{result["stimulusExists"]}"
