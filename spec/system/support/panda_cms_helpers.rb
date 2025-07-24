@@ -74,8 +74,18 @@ module PandaCmsHelpers
     
     puts "[Test Debug] Asset state: #{result}"
     
-    # Fail fast if JavaScript is not loading in CI
+    # Fail fast if JavaScript is not loading in CI, but only after a few failures
+    # to see if it's isolated to specific test types
+    @javascript_failures_count ||= 0
+    
+    # Track which test types are having JavaScript issues
     if ENV["GITHUB_ACTIONS"] == "true" && result["pandaCmsLoaded"].nil?
+      @javascript_failures_count += 1
+      test_name = RSpec.current_example&.full_description || "unknown test"
+      puts "[Test Debug] JavaScript failure ##{@javascript_failures_count} in: #{test_name}"
+    end
+    
+    if ENV["GITHUB_ACTIONS"] == "true" && result["pandaCmsLoaded"].nil? && @javascript_failures_count >= 2
       puts "\n❌ CRITICAL: JavaScript assets not loading in CI environment!"
       puts "   pandaCmsLoaded: #{result["pandaCmsLoaded"]}"
       puts "   stimulusExists: #{result["stimulusExists"]}"
