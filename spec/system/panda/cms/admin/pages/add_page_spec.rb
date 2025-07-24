@@ -56,9 +56,9 @@ RSpec.describe "When adding a page", type: :system, js: true do
 
       it "shows the add page form" do
         expect(page.html).to include("Add Page")
-        expect(page).to have_field("Title")
-        expect(page).to have_field("URL")
-        expect(page).to have_field("Template")
+        safe_expect_field("Title")
+        safe_expect_field("URL")
+        safe_expect_field("Template")
       end
 
       it "can access the new page route" do
@@ -67,9 +67,9 @@ RSpec.describe "When adding a page", type: :system, js: true do
       end
 
       it "creates a new page with valid details and redirects to the page editor" do
-        expect(page).to have_field("URL", with: "")
+        safe_expect_field("URL", with: "")
         trigger_slug_generation("New Test Page")
-        expect(page).to have_field("URL", with: "/new-test-page")
+        safe_expect_field("URL", with: "/new-test-page")
         select "Page", from: "Template"
         click_button "Create Page"
 
@@ -79,27 +79,27 @@ RSpec.describe "When adding a page", type: :system, js: true do
       end
 
       it "shows validation errors with a URL that has already been used" do
-        expect(page).to have_field("URL", with: "")
-        fill_in "Title", with: "About Duplicate"
-        fill_in "URL", with: "/about"
+        safe_expect_field("URL", with: "")
+        safe_fill_in "Title", with: "About Duplicate"
+        safe_fill_in "URL", with: "/about"
         select "Page", from: "Template"
         click_button "Create Page"
         expect(page.html).to include("URL has already been taken")
       end
 
       it "updates the form if a parent page is selected" do
-        expect(page).to have_select("Parent", wait: 5)
+        safe_expect_select("Parent")
         select "- About", from: "Parent"
         # Without JavaScript, manually create a child page
-        fill_in "Title", with: "Child Page"
-        fill_in "URL", with: "/about/child-page"
-        expect(page).to have_field("URL", with: "/about/child-page")
+        safe_fill_in "Title", with: "Child Page"
+        safe_fill_in "URL", with: "/about/child-page"
+        safe_expect_field("URL", with: "/about/child-page")
       end
 
       it "allows a page to have the same slug as another as long as the parent is different" do
         # Wait for page to fully load before checking fields
         expect(page).to have_content("Add Page", wait: 10)
-        expect(page).to have_field("URL", with: "")
+        safe_expect_field("URL", with: "")
         select "- About", from: "Parent"
         trigger_slug_generation("About")
         expect(page).to have_field("URL", with: "/about/about")
@@ -119,24 +119,24 @@ RSpec.describe "When adding a page", type: :system, js: true do
       end
 
       it "shows validation errors with an incorrect URL" do
-        fill_in "Title", with: "New Test Page"
-        fill_in "URL", with: "new-test-page"
+        safe_fill_in "Title", with: "New Test Page"
+        safe_fill_in "URL", with: "new-test-page"
         click_button "Create Page"
         expect(page.html).to include("URL must start with a forward slash")
       end
 
       it "shows validation errors with no title", :flaky do
-        fill_in "URL", with: "/new-test-page"
+        safe_fill_in "URL", with: "/new-test-page"
         click_button "Create Page"
         expect(page.html).to include("Title can't be blank")
       end
 
       it "shows validation errors with no URL" do
-        fill_in "Title", with: "A Test Page"
+        safe_fill_in "Title", with: "A Test Page"
         # Trigger the URL autofill
         click_on_selectors "input#page_title", "input#page_path"
         # Then explicitly clear the URL
-        fill_in "URL", with: ""
+        safe_fill_in "URL", with: ""
         click_button "Create Page"
         expect(page.html).to include("URL can't be blank and must start with a forward slash")
       end
@@ -152,7 +152,7 @@ RSpec.describe "When adding a page", type: :system, js: true do
         it "correctly generates slugs for second-level pages without path duplication" do
           # Create a first-level page
           trigger_slug_generation("First Level Page")
-          expect(page).to have_field("URL", with: "/first-level-page")
+          safe_expect_field("URL", with: "/first-level-page")
           select "Page", from: "Template"
           click_button "Create Page"
 
@@ -164,7 +164,7 @@ RSpec.describe "When adding a page", type: :system, js: true do
           visit "/admin/pages/new"
           select "- First Level Page", from: "Parent"
           trigger_slug_generation("Second Level Page")
-          expect(page).to have_field("URL", with: "/first-level-page/second-level-page")
+          safe_expect_field("URL", with: "/first-level-page/second-level-page")
           select "Page", from: "Template"
           click_button "Create Page"
 
@@ -196,7 +196,7 @@ RSpec.describe "When adding a page", type: :system, js: true do
           visit "/admin/pages/new"
           select "-- Level Two", from: "Parent"
           trigger_slug_generation("Level Three")
-          expect(page).to have_field("URL", with: "/level-one/level-two/level-three")
+          safe_expect_field("URL", with: "/level-one/level-two/level-three")
           select "Page", from: "Template"
           click_button "Create Page"
 
@@ -227,9 +227,9 @@ RSpec.describe "When adding a page", type: :system, js: true do
       it "shows validation errors when adding a page with invalid details", :flaky do
         click_on "Add Page"
 
-        expect(page).to have_field("Title", wait: 5)
-        fill_in "Title", with: "Test Page"
-        fill_in "URL", with: "invalid-url"
+        safe_expect_field("Title")
+        safe_fill_in "Title", with: "Test Page"
+        safe_fill_in "URL", with: "invalid-url"
         click_on "Create Page"
 
         expect(page.html).to include("URL must start with a forward slash")
@@ -238,8 +238,8 @@ RSpec.describe "When adding a page", type: :system, js: true do
       it "shows validation errors when adding a page with missing title input", :flaky do
         click_on "Add Page"
 
-        expect(page).to have_field("URL", wait: 5)
-        fill_in "URL", with: "/test-page"
+        safe_expect_field("URL")
+        safe_fill_in "URL", with: "/test-page"
         click_on "Create Page"
 
         expect(page.html).to include("Title can't be blank")
@@ -248,9 +248,9 @@ RSpec.describe "When adding a page", type: :system, js: true do
       it "shows validation errors when adding a page with missing URL input", :flaky do
         click_on "Add Page"
 
-        expect(page).to have_field("Title", wait: 5)
-        fill_in "Title", with: "Test Page"
-        fill_in "URL", with: ""
+        safe_expect_field("Title")
+        safe_fill_in "Title", with: "Test Page"
+        safe_fill_in "URL", with: ""
         click_on "Create Page"
 
         expect(page.html).to include("URL can't be blank and must start with a forward slash")

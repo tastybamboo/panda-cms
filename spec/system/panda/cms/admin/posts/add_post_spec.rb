@@ -16,8 +16,9 @@ RSpec.describe "Adding a post", type: :system do
     unique_title = "Test Post #{Time.now.to_i}"
     unique_slug = "/#{Time.current.strftime("%Y/%m")}/test-post-#{Time.now.to_i}"
     
-    fill_in "post_title", with: unique_title
-    fill_in "post_slug", with: unique_slug
+    # Use safe form helpers to avoid Ferrum browser reset issues
+    safe_fill_in "post_title", with: unique_title
+    safe_fill_in "post_slug", with: unique_slug
 
     # Set the content field with valid EditorJS content
     content_json = {
@@ -68,7 +69,7 @@ RSpec.describe "Adding a post", type: :system do
 
   it "shows validation errors when title is missing" do
     # Don't fill in title
-    fill_in "post_slug", with: "/#{Time.current.strftime("%Y/%m")}/test-post"
+    safe_fill_in "post_slug", with: "/#{Time.current.strftime("%Y/%m")}/test-post"
 
     click_button "Create Post"
 
@@ -77,7 +78,7 @@ RSpec.describe "Adding a post", type: :system do
   end
 
   it "shows validation errors when URL is missing" do
-    fill_in "post_title", with: "Test Post"
+    safe_fill_in "post_title", with: "Test Post"
     # Don't fill in slug
 
     # Use normal button click - validation errors should be handled by JavaScript
@@ -91,8 +92,10 @@ RSpec.describe "Adding a post", type: :system do
     # Use string-based checks for form presence
     html_content = page.html  
     expect(html_content).to include("Add Post")
-    expect(page).to have_field("post_title")
-    expect(page).to have_field("post_slug")
-    expect(page).to have_button("Create Post")
+    
+    # Use safe helpers to avoid Ferrum browser reset issues
+    safe_expect_field("post_title")
+    safe_expect_field("post_slug")
+    safe_expect_button("Create Post")
   end
 end

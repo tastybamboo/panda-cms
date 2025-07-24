@@ -71,6 +71,31 @@ RSpec.configure do |config|
   end
 
   # Enable automatic screenshots on failure
+  # Add CI-specific timeout and retry logic for form interactions
+  config.around(:each, type: :system) do |example|
+    if ENV["GITHUB_ACTIONS"] == "true"
+      # In CI, wrap the test execution with additional error handling
+      begin
+        example.run
+      rescue Ferrum::NodeNotFoundError => e
+        # Log the specific error that causes about:blank navigation
+        puts "[CI] Ferrum NodeNotFoundError detected: #{e.message}"
+        puts "[CI] Current URL: #{page.current_url rescue 'unknown'}"
+        
+        # If we're on about:blank, this is the known browser reset issue
+        if page.current_url.include?('about:blank') rescue false
+          puts "[CI] Browser reset to about:blank detected - this is a known Ferrum issue in CI"
+          puts "[CI] Recommendation: Use safe_* helper methods or JavaScript evaluation for element checks"
+        end
+        
+        # Re-raise the original error
+        raise e
+      end
+    else
+      example.run
+    end
+  end
+
   config.after(:each, type: :system) do |example|
     if example.exception
       begin

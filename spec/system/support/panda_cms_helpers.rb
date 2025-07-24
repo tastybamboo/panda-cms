@@ -147,6 +147,75 @@ module PandaCmsHelpers
     false
   end
 
+  # Safe form field interaction that avoids Ferrum browser resets
+  def safe_fill_in(locator, with:, **options)
+    # First verify the field exists in HTML to avoid Ferrum issues
+    if locator.include?('[') || locator.include?('#') || locator.include?('.')
+      # It's a CSS selector
+      field_exists = page.evaluate_script("document.querySelector(#{locator.to_json}) !== null")
+    else
+      # It's a field name/id/label - check multiple ways
+      field_exists = page.evaluate_script(<<~JS)
+        document.getElementById(#{locator.to_json}) !== null ||
+        document.querySelector('input[name="' + #{locator.to_json} + '"]') !== null ||
+        document.querySelector('textarea[name="' + #{locator.to_json} + '"]') !== null ||
+        document.querySelector('select[name="' + #{locator.to_json} + '"]') !== null ||
+        document.querySelector('label[for="' + #{locator.to_json} + '"]') !== null
+      JS
+    end
+    
+    expect(field_exists).to be(true), "Field '#{locator}' not found in page"
+    
+    # Now safely interact with the field
+    fill_in locator, with: with, **options
+  end
+
+  # Safe element expectation that avoids Ferrum browser resets
+  def safe_expect_field(locator, **options)
+    # Check field exists first
+    if locator.include?('[') || locator.include?('#') || locator.include?('.')
+      field_exists = page.evaluate_script("document.querySelector(#{locator.to_json}) !== null")
+    else
+      field_exists = page.evaluate_script(<<~JS)
+        document.getElementById(#{locator.to_json}) !== null ||
+        document.querySelector('input[name="' + #{locator.to_json} + '"]') !== null ||
+        document.querySelector('textarea[name="' + #{locator.to_json} + '"]') !== null ||
+        document.querySelector('select[name="' + #{locator.to_json} + '"]') !== null ||
+        document.querySelector('label[for="' + #{locator.to_json} + '"]') !== null
+      JS
+    end
+    
+    expect(field_exists).to be(true), "Field '#{locator}' not found in page"
+    
+    # Now safely check the field
+    expect(page).to have_field(locator, **options)
+  end
+
+  # Safe button expectation
+  def safe_expect_button(locator, **options)
+    button_exists = page.evaluate_script(<<~JS)
+      document.getElementById(#{locator.to_json}) !== null ||
+      document.querySelector('button[name="' + #{locator.to_json} + '"]') !== null ||
+      document.querySelector('input[type="submit"][value="' + #{locator.to_json} + '"]') !== null ||
+      Array.from(document.querySelectorAll('button')).some(btn => btn.textContent.trim() === #{locator.to_json})
+    JS
+    
+    expect(button_exists).to be(true), "Button '#{locator}' not found in page"
+    expect(page).to have_button(locator, **options)
+  end
+
+  # Safe select expectation
+  def safe_expect_select(locator, **options)
+    select_exists = page.evaluate_script(<<~JS)
+      document.getElementById(#{locator.to_json}) !== null ||
+      document.querySelector('select[name="' + #{locator.to_json} + '"]') !== null ||
+      document.querySelector('label[for="' + #{locator.to_json} + '"]') !== null
+    JS
+    
+    expect(select_exists).to be(true), "Select '#{locator}' not found in page"
+    expect(page).to have_select(locator, **options)
+  end
+
   # Debug current asset loading state
   def debug_asset_state
     # Ensure we're checking the main page context, not an iframe
