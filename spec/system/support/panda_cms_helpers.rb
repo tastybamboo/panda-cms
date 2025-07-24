@@ -80,6 +80,9 @@ module PandaCmsHelpers
       puts "   pandaCmsLoaded: #{result["pandaCmsLoaded"]}"
       puts "   stimulusExists: #{result["stimulusExists"]}"
       puts "   URL: #{result["url"]}"
+      puts "   Page title: #{page.title rescue 'unable to get title'}"
+      puts "   Current path: #{page.current_path rescue 'unable to get path'}"
+      puts "   Current URL: #{page.current_url rescue 'unable to get URL'}"
       puts "\n🛑 Stopping test suite - JavaScript infrastructure is broken"
       
       # Output additional debugging information
@@ -97,9 +100,33 @@ module PandaCmsHelpers
       end
       
       # Output page HTML for analysis
-      html_file = Rails.root.join("tmp/capybara/javascript_failure_debug.html")
-      File.write(html_file, page.html)
-      puts "   Page HTML saved to: #{html_file}"
+      begin
+        html_file = Rails.root.join("tmp/capybara/javascript_failure_debug.html")
+        FileUtils.mkdir_p(File.dirname(html_file))
+        File.write(html_file, page.html)
+        puts "   Page HTML saved to: #{html_file}"
+        
+        # Check if we're in an iframe context and debug iframe URLs
+        begin
+          page.within_frame("editablePageFrame") do
+            iframe_url = page.evaluate_script("window.location.href")
+            puts "   Iframe URL: #{iframe_url}"
+          end
+        rescue
+          puts "   No iframe found or iframe not accessible"
+        end
+        
+        # Check for iframes in the main page HTML
+        if page.html.include?('<iframe')
+          iframe_match = page.html.match(/src="([^"]*)"/)
+          puts "   Iframe src found: #{iframe_match[1] if iframe_match}"
+        else
+          puts "   No iframe elements found in HTML"
+        end
+        
+      rescue => e
+        puts "   Error saving debug info: #{e.message}"
+      end
       
       fail "JavaScript assets not loading - stopping test suite to avoid wasting CI time"
     end
