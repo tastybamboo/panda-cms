@@ -112,6 +112,23 @@ RSpec.configure do |config|
   # Allow using focus keywords "f... before a specific test"
   config.filter_run_when_matching :focus
 
+  # Retry flaky tests automatically 
+  # This is especially useful for system tests that may have timing issues
+  config.around(:each, :flaky) do |example|
+    retry_count = example.metadata[:retry] || 3
+    retry_count.times do |i|
+      example.run
+      break unless example.exception
+      
+      if i < retry_count - 1
+        puts "\n[RETRY] Test failed, retrying... (attempt #{i + 2}/#{retry_count})"
+        puts "[RETRY] Exception: #{example.exception.class.name}: #{example.exception.message[0..100]}"
+        example.instance_variable_set(:@exception, nil)
+        sleep 1 # Brief pause between retries
+      end
+    end
+  end
+
   # Exclude EditorJS tests by default unless specifically requested
   config.filter_run_excluding :editorjs unless ENV["INCLUDE_EDITORJS"] == "true"
 

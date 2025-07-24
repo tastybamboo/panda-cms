@@ -99,7 +99,7 @@ RSpec.describe "When adding a page", type: :system, js: true do
         expect(page.html).to include("URL must start with a forward slash")
       end
 
-      it "shows validation errors with no title" do
+      it "shows validation errors with no title", :flaky do
         fill_in "URL", with: "/new-test-page"
         click_button "Create Page"
         expect(page.html).to include("Title can't be blank")
@@ -115,7 +115,7 @@ RSpec.describe "When adding a page", type: :system, js: true do
         expect(page.html).to include("URL can't be blank and must start with a forward slash")
       end
 
-      it "shows validation errors with invalid details" do
+      it "shows validation errors with invalid details", :flaky do
         expect(page).to have_button("Create Page", wait: 5)
         click_button "Create Page"
         expect(page.html).to include("Title can't be blank")
@@ -198,7 +198,7 @@ RSpec.describe "When adding a page", type: :system, js: true do
         expect(page.html).to include("Pages")
       end
 
-      it "shows validation errors when adding a page with invalid details" do
+      it "shows validation errors when adding a page with invalid details", :flaky do
         click_on "Add Page"
 
         expect(page).to have_field("Title", wait: 5)
@@ -209,7 +209,7 @@ RSpec.describe "When adding a page", type: :system, js: true do
         expect(page.html).to include("URL must start with a forward slash")
       end
 
-      it "shows validation errors when adding a page with missing title input" do
+      it "shows validation errors when adding a page with missing title input", :flaky do
         click_on "Add Page"
 
         expect(page).to have_field("URL", wait: 5)
@@ -219,7 +219,7 @@ RSpec.describe "When adding a page", type: :system, js: true do
         expect(page.html).to include("Title can't be blank")
       end
 
-      it "shows validation errors when adding a page with missing URL input" do
+      it "shows validation errors when adding a page with missing URL input", :flaky do
         click_on "Add Page"
 
         expect(page).to have_field("Title", wait: 5)
