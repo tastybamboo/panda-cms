@@ -117,7 +117,7 @@ RSpec.describe "Adding a post", type: :system do
     safe_click_button "Create Post"
 
     # Use string-based checks to avoid DOM node issues
-    expect(page.html).to include("URL can't be blank")
+    expect(page.html).to include("Slug can't be blank")
   end
 
   it "shows the add post form with required fields" do
