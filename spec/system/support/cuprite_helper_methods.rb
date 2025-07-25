@@ -118,8 +118,8 @@ module CupriteHelpers
 
   # Trigger slug generation and wait for the result
   def trigger_slug_generation(title)
-    # Use safe helpers to avoid Ferrum browser reset issues
-    safe_fill_in "page_title", with: title
+    # Use standard Capybara methods
+    fill_in "page_title", with: title
 
     # Manually generate the slug instead of relying on JavaScript
     slug = create_slug_from_title(title)
@@ -149,9 +149,9 @@ module CupriteHelpers
     JS
 
     if parent_info["hasParent"] && parent_info["parentPath"].present?
-      safe_fill_in "page_path", with: "#{parent_info["parentPath"]}/#{slug}"
+      fill_in "page_path", with: "#{parent_info["parentPath"]}/#{slug}"
     else
-      safe_fill_in "page_path", with: "/#{slug}"
+      fill_in "page_path", with: "/#{slug}"
     end
   end
 
