@@ -87,16 +87,16 @@ RSpec.describe "Admin profile management", type: :system do
     expect(html_content).to include("Update Profile")
   end
 
-  it "allows updating profile information", :flaky do
+  it "allows updating profile information" do
     # Wait for form to be fully ready with all fields (longer waits in CI)
-    safe_expect_field("user_firstname")
-    safe_expect_field("user_lastname")
+    expect(page).to have_field("user_firstname")
+    expect(page).to have_field("user_lastname")
 
-    safe_fill_in "user_firstname", with: "Updated"
-    safe_fill_in "user_lastname", with: "Name"
+    fill_in "user_firstname", with: "Updated"
+    fill_in "user_lastname", with: "Name"
 
     # Use normal button click with JavaScript submission
-    safe_click_button "Update Profile"
+    click_button "Update Profile"
 
     # Wait for form submission to complete
     sleep 2
@@ -109,8 +109,8 @@ RSpec.describe "Admin profile management", type: :system do
     end
     
     # Verify the profile values were updated (the main goal)
-    safe_expect_field("user_firstname", with: "Updated")
-    safe_expect_field("user_lastname", with: "Name")
+    expect(page).to have_field("user_firstname", with: "Updated")
+    expect(page).to have_field("user_lastname", with: "Name")
   end
 
   it "allows changing theme preference" do
@@ -122,11 +122,11 @@ RSpec.describe "Admin profile management", type: :system do
     end
 
     # Wait for Theme select field to be ready (use field ID instead of label)
-    safe_expect_select("user_current_theme")
+    expect(page).to have_select("user_current_theme")
 
     select "Sky", from: "user_current_theme"
 
-    safe_click_button "Update Profile"
+    click_button "Update Profile"
 
     # Wait a moment for the form submission to process
     sleep(2)
@@ -151,27 +151,22 @@ RSpec.describe "Admin profile management", type: :system do
     end
 
     # Wait for form fields to be ready (extra long waits for this problematic test)
-    safe_expect_field("user_firstname")
-    safe_expect_field("user_lastname")
-    safe_expect_field("user_email")
+    expect(page).to have_field("user_firstname")
+    expect(page).to have_field("user_lastname")
+    expect(page).to have_field("user_email")
 
-    safe_fill_in "user_firstname", with: ""
-    safe_fill_in "user_lastname", with: ""
-    safe_fill_in "user_email", with: ""
-    safe_click_button "Update Profile"
+    fill_in "user_firstname", with: ""
+    fill_in "user_lastname", with: ""
+    fill_in "user_email", with: ""
+    click_button "Update Profile"
 
-    # Wait for validation errors to appear
-    expect(page).to have_css('div.bg-red-50', wait: 5)
-    
-    # Check for validation errors within the error div
-    within('div.bg-red-50') do
-      expect(page).to have_content("First Name can't be blank")
-      expect(page).to have_content("Last Name can't be blank") 
-      expect(page).to have_content("Email Address can't be blank")
-    end
+    # Check for validation errors
+    expect(page).to have_content("First Name can't be blank", wait: 5)
+    expect(page).to have_content("Last Name can't be blank") 
+    expect(page).to have_content("Email Address can't be blank")
   end
 
-  it "maintains the selected theme when form submission fails", :flaky do
+  it "maintains the selected theme when form submission fails" do
     # Wait for form fields to be ready (longer waits in CI)
     if ENV["GITHUB_ACTIONS"] == "true"
       puts "[CI Debug] Before looking for First Name field:"
@@ -192,21 +187,16 @@ RSpec.describe "Admin profile management", type: :system do
     expect(page.html).to include('name="user[current_theme]"')
     
     # Now safely access the form fields using the actual field IDs from HTML
-    safe_expect_field("user_firstname")
-    safe_expect_select("user_current_theme")
+    expect(page).to have_field("user_firstname")
+    expect(page).to have_select("user_current_theme")
 
     # Use field IDs instead of labels to avoid mismatches
-    safe_fill_in "user_firstname", with: ""
+    fill_in "user_firstname", with: ""
     select "Sky", from: "Theme"
-    safe_click_button "Update Profile"
+    click_button "Update Profile"
 
-    # Wait for validation errors to appear
-    expect(page).to have_css('div.bg-red-50', wait: 5)
-    
     # Check for validation error
-    within('div.bg-red-50') do
-      expect(page).to have_content("First Name can't be blank")
-    end
+    expect(page).to have_content("First Name can't be blank", wait: 5)
     
     # Skip problematic select matcher in CI - verify via HTML content
     expect(page.html).to include('selected="selected"')
