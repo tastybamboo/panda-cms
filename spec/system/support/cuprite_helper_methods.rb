@@ -118,26 +118,40 @@ module CupriteHelpers
 
   # Trigger slug generation and wait for the result
   def trigger_slug_generation(title)
-    fill_in "Title", with: title
+    # Use safe helpers to avoid Ferrum browser reset issues
+    safe_fill_in "page_title", with: title
 
     # Manually generate the slug instead of relying on JavaScript
     slug = create_slug_from_title(title)
 
     # Wait for page to be fully loaded before manipulating form
 
-    # Check if a parent is selected to determine the full path
-    parent_select = find("select[name='page[parent_id]']", wait: 1)
-    if parent_select.value.present? && parent_select.value != ""
-      # Get the parent path from the selected option text
-      selected_option = parent_select.find("option[value='#{parent_select.value}']")
-      if selected_option.text =~ /\((.*)\)$/
-        parent_path = $1.gsub(/\/$/, "") # Remove trailing slash
-        fill_in "URL", with: "#{parent_path}/#{slug}"
-      else
-        fill_in "URL", with: "/#{slug}"
-      end
+    # Check if a parent is selected to determine the full path using JavaScript
+    parent_info = page.evaluate_script(<<~JS)
+      (function() {
+        var parentSelect = document.querySelector('select[name="page[parent_id]"]');
+        if (!parentSelect || !parentSelect.value) {
+          return { hasParent: false };
+        }
+        
+        var selectedOption = parentSelect.querySelector('option[value="' + parentSelect.value + '"]');
+        if (!selectedOption) {
+          return { hasParent: false };
+        }
+        
+        var text = selectedOption.textContent;
+        var pathMatch = text.match(/\\((.*)\\)$/);
+        return {
+          hasParent: true,
+          parentPath: pathMatch ? pathMatch[1].replace(/\\/$/, '') : ''
+        };
+      })()
+    JS
+
+    if parent_info["hasParent"] && parent_info["parentPath"].present?
+      safe_fill_in "page_path", with: "#{parent_info["parentPath"]}/#{slug}"
     else
-      fill_in "URL", with: "/#{slug}"
+      safe_fill_in "page_path", with: "/#{slug}"
     end
   end
 

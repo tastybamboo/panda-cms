@@ -7,9 +7,41 @@ RSpec.describe "Adding a post", type: :system do
 
   before do
     login_as_admin
+    
+    # Debug CI navigation issues for post page
+    if ENV["GITHUB_ACTIONS"] == "true"
+      puts "\n[CI Debug] Post test - before navigation:"
+      puts "   Current URL: #{page.current_url}"
+      puts "   Page title: #{page.title}"
+      puts "   Status code: #{page.status_code rescue 'unknown'}"
+    end
+    
     visit "/admin/posts"
     # Navigate directly to add post page to avoid DOM node issues
     visit "/admin/posts/new"
+    
+    # Debug CI navigation issues for post page
+    if ENV["GITHUB_ACTIONS"] == "true"
+      puts "\n[CI Debug] Post test - after navigation:"
+      puts "   Current URL: #{page.current_url}"
+      puts "   Page title: #{page.title}"
+      puts "   Status code: #{page.status_code rescue 'unknown'}"
+      puts "   Page content length: #{page.html.length}"
+      puts "   Page contains 'Add Post': #{page.html.include?('Add Post')}"
+      
+      if page.current_url.include?('about:blank') || page.html.length < 100
+        puts "   ❌ Post page didn't load properly"
+        puts "   First 500 chars of HTML: #{page.html[0..500]}"
+        fail "Post page navigation failed in CI"
+      end
+    end
+    
+    expect(page.html).to include("Add Post")
+    
+    # Add extra stability wait in CI environment
+    if ENV["GITHUB_ACTIONS"] == "true"
+      sleep(1)
+    end
   end
 
   it "creates a new post with valid details" do

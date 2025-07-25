@@ -133,8 +133,19 @@ RSpec.describe "When adding a page", type: :system, js: true do
 
       it "shows validation errors with no URL" do
         safe_fill_in "page_title", with: "A Test Page"
-        # Trigger the URL autofill
-        click_on_selectors "input#page_title", "input#page_path"
+        # Trigger the URL autofill by using JavaScript directly
+        page.evaluate_script(<<~JS)
+          var titleField = document.querySelector('input#page_title');
+          var pathField = document.querySelector('input#page_path');
+          if (titleField) {
+            titleField.dispatchEvent(new Event('input', { bubbles: true }));
+            titleField.dispatchEvent(new Event('focusout', { bubbles: true }));
+          }
+          if (pathField) {
+            pathField.dispatchEvent(new Event('input', { bubbles: true }));
+            pathField.dispatchEvent(new Event('focusout', { bubbles: true }));
+          }
+        JS
         # Then explicitly clear the URL
         safe_fill_in "page_path", with: ""
         safe_click_button "Create Page"
