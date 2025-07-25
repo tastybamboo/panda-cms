@@ -192,11 +192,13 @@ module PandaCmsHelpers
       # For CI, just verify via JavaScript to avoid Ferrum issues
       if options[:with]
         field_value = page.evaluate_script(<<~JS)
-          var field = document.getElementById(#{locator.to_json}) ||
-                     document.querySelector('input[name="' + #{locator.to_json} + '"]') ||
-                     document.querySelector('textarea[name="' + #{locator.to_json} + '"]') ||
-                     document.querySelector('select[name="' + #{locator.to_json} + '"]');
-          field ? field.value : null;
+          (function() {
+            var field = document.getElementById(#{locator.to_json}) ||
+                       document.querySelector('input[name="' + #{locator.to_json} + '"]') ||
+                       document.querySelector('textarea[name="' + #{locator.to_json} + '"]') ||
+                       document.querySelector('select[name="' + #{locator.to_json} + '"]');
+            return field ? field.value : null;
+          })()
         JS
         expect(field_value).to eq(options[:with]), "Field '#{locator}' value mismatch: expected '#{options[:with]}', got '#{field_value}'"
       end
