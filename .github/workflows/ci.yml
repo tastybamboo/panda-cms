@@ -142,7 +142,35 @@ jobs:
           PT_SILENCE_AR_COMPAT_WARNING: true
         run: |
           mkdir -p tmp
-          xvfb-run -a bundle exec rspec --tag ~skip
+          mkdir -p test-results
+          # Run tests and capture all output to file
+          xvfb-run -a bundle exec rspec --tag ~skip --format documentation 2>&1 | tee test-results/test-output.log
+          # Capture exit code
+          echo ${PIPESTATUS[0]} > test-results/exit-code.txt
+          # Also create a summary
+          echo "Test run completed at $(date)" > test-results/summary.txt
+          echo "Exit code: $(cat test-results/exit-code.txt)" >> test-results/summary.txt
+          tail -20 test-results/test-output.log >> test-results/summary.txt
+      - name: Display test summary
+        if: always()
+        run: |
+          echo "=== Test Summary ==="
+          cat test-results/summary.txt || echo "No summary found"
+          echo ""
+          echo "=== Last 50 lines of test output ==="
+          tail -50 test-results/test-output.log || echo "No test output found"
+          
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results
+          path: |
+            test-results/
+            spec/tmp/capybara/
+          if-no-files-found: ignore
+          retention-days: 7
+      
       - name: Keep screenshots from failed system tests
         uses: actions/upload-artifact@v4
         if: failure()
