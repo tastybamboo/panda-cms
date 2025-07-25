@@ -108,13 +108,21 @@ RSpec.describe "Adding a post", type: :system do
     visit "/admin/posts/new"
     expect(page).to have_css("form", wait: 5)
     
+    # Wait for EditorJS to initialize and enable the submit button
+    expect(page).to have_button("Create Post", disabled: false, wait: 10)
+    
     # Fill valid fields, omit the field being tested
     safe_fill_in "post_slug", with: "/#{Time.current.strftime("%Y/%m")}/test-post"
 
     safe_click_button "Create Post"
+    
+    # Wait for validation errors to appear (form submission completes)
+    expect(page).to have_css('div.bg-red-50', wait: 5)
 
     # Check for exact validation error message from model
-    expect(page.html).to include("Title can't be blank")
+    within('div.bg-red-50') do
+      expect(page).to have_content("Title can't be blank")
+    end
   end
 
   it "shows validation errors when URL is missing" do
@@ -122,13 +130,21 @@ RSpec.describe "Adding a post", type: :system do
     visit "/admin/posts/new"
     expect(page).to have_css("form", wait: 5)
     
+    # Wait for EditorJS to initialize and enable the submit button
+    expect(page).to have_button("Create Post", disabled: false, wait: 10)
+    
     # Fill valid fields, omit the field being tested
     safe_fill_in "post_title", with: "Test Post"
 
     safe_click_button "Create Post"
+    
+    # Wait for validation errors to appear (form submission completes)
+    expect(page).to have_css('div.bg-red-50', wait: 5)
 
     # Check for exact validation error message (note: it's "URL" not "Slug")
-    expect(page.html).to include("URL can't be blank")
+    within('div.bg-red-50') do
+      expect(page).to have_content("URL can't be blank")
+    end
   end
 
   it "shows the add post form with required fields" do

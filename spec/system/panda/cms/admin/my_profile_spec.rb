@@ -142,7 +142,7 @@ RSpec.describe "Admin profile management", type: :system do
     end
   end
 
-  it "validates required fields", :flaky do
+  it "validates required fields" do
     # Wait for JavaScript/Stimulus controllers to be ready
     # Use JavaScript evaluation instead of CSS selector to avoid Ferrum issues
     using_wait_time(ci_long_wait_time) do
@@ -160,9 +160,15 @@ RSpec.describe "Admin profile management", type: :system do
     safe_fill_in "user_email", with: ""
     safe_click_button "Update Profile"
 
-    expect(page.html).to include("First Name can't be blank")
-    expect(page.html).to include("Last Name can't be blank")
-    expect(page.html).to include("Email Address can't be blank")
+    # Wait for validation errors to appear
+    expect(page).to have_css('div.bg-red-50', wait: 5)
+    
+    # Check for validation errors within the error div
+    within('div.bg-red-50') do
+      expect(page).to have_content("First Name can't be blank")
+      expect(page).to have_content("Last Name can't be blank") 
+      expect(page).to have_content("Email Address can't be blank")
+    end
   end
 
   it "maintains the selected theme when form submission fails", :flaky do
@@ -194,7 +200,14 @@ RSpec.describe "Admin profile management", type: :system do
     select "Sky", from: "Theme"
     safe_click_button "Update Profile"
 
-    expect(page.html).to include("First Name can't be blank")
+    # Wait for validation errors to appear
+    expect(page).to have_css('div.bg-red-50', wait: 5)
+    
+    # Check for validation error
+    within('div.bg-red-50') do
+      expect(page).to have_content("First Name can't be blank")
+    end
+    
     # Skip problematic select matcher in CI - verify via HTML content
     expect(page.html).to include('selected="selected"')
   end

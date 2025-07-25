@@ -2,7 +2,7 @@
 
 require "system_helper"
 
-RSpec.describe "When adding a page", type: :system, js: true do
+RSpec.describe "When adding a page", type: :system do
   fixtures :all
 
   let(:homepage) { panda_cms_pages(:homepage) }
@@ -27,31 +27,8 @@ RSpec.describe "When adding a page", type: :system, js: true do
     context "when using the add page form" do
       before(:each) do
         login_as_admin
-        
-        # Debug CI navigation issues
-        if ENV["GITHUB_ACTIONS"] == "true"
-          puts "\n[CI Debug] Before navigation:"
-          puts "   Current URL: #{page.current_url}"
-          puts "   Page title: #{page.title}"
-        end
-        
         visit "/admin/pages/new"
-        
-        # Debug CI navigation issues
-        if ENV["GITHUB_ACTIONS"] == "true"
-          puts "\n[CI Debug] After navigation to /admin/pages/new:"
-          puts "   Current URL: #{page.current_url}"
-          puts "   Page title: #{page.title}"
-          puts "   Status code: #{page.status_code rescue 'unknown'}"
-          puts "   Page content length: #{page.html.length}"
-          puts "   Page contains 'Add Page': #{page.html.include?('Add Page')}"
-          
-          if page.current_url.include?('about:blank') || page.html.length < 100
-            puts "   ❌ Navigation failed - page didn't load properly"
-            puts "   First 200 chars of HTML: #{page.html[0..200]}"
-            fail "Navigation to /admin/pages/new failed in CI"
-          end
-        end
+        expect(page).to have_content("Add Page", wait: 10)
       end
 
       it "shows the add page form" do
@@ -84,7 +61,7 @@ RSpec.describe "When adding a page", type: :system, js: true do
         safe_fill_in "page_path", with: "/about"
         safe_select "Page", from: "page_panda_cms_template_id"
         safe_click_button "Create Page"
-        expect(page.html).to include("URL has already been taken")
+        expect(page).to have_content("URL has already been taken", wait: 5)
       end
 
       it "updates the form if a parent page is selected" do
@@ -122,41 +99,37 @@ RSpec.describe "When adding a page", type: :system, js: true do
         safe_fill_in "page_title", with: "New Test Page"
         safe_fill_in "page_path", with: "new-test-page"
         safe_click_button "Create Page"
-        expect(page.html).to include("URL must start with a forward slash")
+        
+        # Check for validation error
+        expect(page).to have_content("URL must start with a forward slash", wait: 5)
       end
 
-      it "shows validation errors with no title", :flaky do
-        safe_fill_in "page_path", with: "/new-test-page"
-        safe_click_button "Create Page"
-        expect(page.html).to include("Title can't be blank")
+      it "shows validation errors with no title" do
+        # Fill in path but not title
+        fill_in "page_path", with: "/new-test-page"
+        click_button "Create Page"
+        
+        # Check for validation error
+        expect(page).to have_content("Title can't be blank", wait: 5)
       end
 
       it "shows validation errors with no URL" do
         safe_fill_in "page_title", with: "A Test Page"
-        # Trigger the URL autofill by using JavaScript directly
-        page.evaluate_script(<<~JS)
-          var titleField = document.querySelector('input#page_title');
-          var pathField = document.querySelector('input#page_path');
-          if (titleField) {
-            titleField.dispatchEvent(new Event('input', { bubbles: true }));
-            titleField.dispatchEvent(new Event('focusout', { bubbles: true }));
-          }
-          if (pathField) {
-            pathField.dispatchEvent(new Event('input', { bubbles: true }));
-            pathField.dispatchEvent(new Event('focusout', { bubbles: true }));
-          }
-        JS
-        # Then explicitly clear the URL
+        # Clear the path field to test validation
         safe_fill_in "page_path", with: ""
         safe_click_button "Create Page"
-        expect(page.html).to include("URL can't be blank and must start with a forward slash")
+        
+        # Check for validation error
+        expect(page).to have_content("URL can't be blank and must start with a forward slash", wait: 5)
       end
 
-      it "shows validation errors with invalid details", :flaky do
+      it "shows validation errors with invalid details" do
         expect(page).to have_button("Create Page", wait: 5)
         safe_click_button "Create Page"
-        expect(page.html).to include("Title can't be blank")
-        expect(page.html).to include("URL can't be blank and must start with a forward slash")
+        
+        # Check for validation errors
+        expect(page).to have_content("Title can't be blank", wait: 5)
+        expect(page).to have_content("URL can't be blank and must start with a forward slash")
       end
 
       context "when creating nested pages" do
@@ -235,36 +208,42 @@ RSpec.describe "When adding a page", type: :system, js: true do
         expect(page.html).to include("Pages")
       end
 
-      it "shows validation errors when adding a page with invalid details", :flaky do
-        safe_click_link "Add Page"
+      it "shows validation errors when adding a page with invalid details" do
+        visit "/admin/pages/new"
+        expect(page).to have_css("form", wait: 5)
 
         safe_expect_field("page_title")
         safe_fill_in "page_title", with: "Test Page"
         safe_fill_in "page_path", with: "invalid-url"
         click_on "Create Page"
 
-        expect(page.html).to include("URL must start with a forward slash")
+        # Check for validation error
+        expect(page).to have_content("URL must start with a forward slash", wait: 5)
       end
 
-      it "shows validation errors when adding a page with missing title input", :flaky do
-        safe_click_link "Add Page"
+      it "shows validation errors when adding a page with missing title input" do
+        visit "/admin/pages/new"
+        expect(page).to have_css("form", wait: 5)
 
         safe_expect_field("page_path")
         safe_fill_in "page_path", with: "/test-page"
         click_on "Create Page"
 
-        expect(page.html).to include("Title can't be blank")
+        # Check for validation error
+        expect(page).to have_content("Title can't be blank", wait: 5)
       end
 
-      it "shows validation errors when adding a page with missing URL input", :flaky do
-        safe_click_link "Add Page"
+      it "shows validation errors when adding a page with missing URL input" do
+        visit "/admin/pages/new"
+        expect(page).to have_css("form", wait: 5)
 
         safe_expect_field("page_title")
         safe_fill_in "page_title", with: "Test Page"
         safe_fill_in "page_path", with: ""
         click_on "Create Page"
 
-        expect(page.html).to include("URL can't be blank and must start with a forward slash")
+        # Check for validation error
+        expect(page).to have_content("URL can't be blank and must start with a forward slash", wait: 5)
       end
     end
   end

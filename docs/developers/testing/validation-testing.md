@@ -48,15 +48,23 @@ it "shows validation errors when [field] is missing" do
   # 2. Wait for form to be fully loaded
   expect(page).to have_css("form", wait: 5)
   
-  # 3. Use safe helpers for form interaction
+  # 3. Wait for JavaScript initialization (especially for forms with EditorJS)
+  expect(page).to have_button("Create Post", disabled: false, wait: 10)
+  
+  # 4. Use safe helpers for form interaction
   safe_fill_in "valid_field", with: "value"
   # Don't fill in the field being tested
   
-  # 4. Submit form
+  # 5. Submit form
   safe_click_button "Create Post"  # or appropriate button
   
-  # 5. Check for validation error
-  expect(page.html).to include("Field can't be blank")
+  # 6. Wait for validation errors to appear
+  expect(page).to have_css('div.bg-red-50', wait: 5)
+  
+  # 7. Check for validation error
+  within('div.bg-red-50') do
+    expect(page).to have_content("Field can't be blank")
+  end
 end
 ```
 
@@ -64,8 +72,10 @@ end
 
 1. **Clean State**: Every validation test MUST start with `visit` to ensure clean page state
 2. **Form Wait**: Include `expect(page).to have_css("form", wait: 5)` to ensure form is loaded
-3. **Correct Error Messages**: Use the exact validation error text from the model
-4. **Safe Helpers**: Use `safe_fill_in`, `safe_click_button` etc. (they automatically use standard Capybara for validation tests)
+3. **JavaScript Wait**: For forms with EditorJS, wait for the submit button to be enabled
+4. **Error Wait**: Use `expect(page).to have_css('div.bg-red-50', wait: 5)` to wait for validation errors
+5. **Correct Error Messages**: Use the exact validation error text from the model
+6. **Safe Helpers**: Use `safe_fill_in`, `safe_click_button` etc. (they automatically use standard Capybara for validation tests)
 
 ### 📝 Example: Complete Validation Test
 
@@ -83,14 +93,22 @@ describe "Post validation" do
     visit "/admin/posts/new"
     expect(page).to have_css("form", wait: 5)
     
+    # Wait for EditorJS to initialize
+    expect(page).to have_button("Create Post", disabled: false, wait: 10)
+    
     # Fill valid fields, omit the one being tested
     safe_fill_in "post_slug", with: "/#{Time.current.strftime("%Y/%m")}/test-post"
     
     # Submit form
     safe_click_button "Create Post"
     
+    # Wait for validation errors to appear
+    expect(page).to have_css('div.bg-red-50', wait: 5)
+    
     # Check for exact validation message
-    expect(page.html).to include("Title can't be blank")
+    within('div.bg-red-50') do
+      expect(page).to have_content("Title can't be blank")
+    end
   end
 
   it "shows validation errors when URL is missing" do
@@ -98,14 +116,22 @@ describe "Post validation" do
     visit "/admin/posts/new"
     expect(page).to have_css("form", wait: 5)
     
+    # Wait for EditorJS to initialize
+    expect(page).to have_button("Create Post", disabled: false, wait: 10)
+    
     # Fill valid fields, omit the one being tested
     safe_fill_in "post_title", with: "Test Post"
     
     # Submit form
     safe_click_button "Create Post"
     
+    # Wait for validation errors to appear
+    expect(page).to have_css('div.bg-red-50', wait: 5)
+    
     # Check for exact validation message (note: it's "URL" not "Slug")
-    expect(page.html).to include("URL can't be blank")
+    within('div.bg-red-50') do
+      expect(page).to have_content("URL can't be blank")
+    end
   end
 end
 ```
@@ -149,9 +175,19 @@ puts "[DEBUG] All validation errors: #{page.all('.bg-red-50').map(&:text)}"
 Validation tests require special handling because:
 
 1. **Form State**: Validation depends on clean form state between tests
-2. **JavaScript Timing**: Validation logic may depend on client-side JavaScript being loaded
-3. **Rails Integration**: Proper form submission and error display requires standard Capybara behavior
-4. **Browser Stability**: Non-validation tests use safe helpers to prevent browser resets in CI
+2. **JavaScript Timing**: EditorJS forms disable the submit button until initialization completes
+3. **Async Form Submission**: JavaScript form handling can create race conditions with validation
+4. **Rails Integration**: Proper form submission and error display requires standard Capybara behavior
+5. **Browser Stability**: Non-validation tests use safe helpers to prevent browser resets in CI
+
+### Key Issue: EditorJS Form Submission
+
+Forms with EditorJS use a custom submit handler that:
+- Intercepts the form submission
+- Saves editor content
+- Re-triggers form submission
+
+This can cause timing issues where validation errors don't appear immediately. The solution is to wait for the error div to appear with `expect(page).to have_css('div.bg-red-50', wait: 5)`.
 
 ## Automatic Behavior
 
