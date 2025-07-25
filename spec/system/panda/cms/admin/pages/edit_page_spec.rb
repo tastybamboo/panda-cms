@@ -39,7 +39,7 @@ RSpec.describe "When editing a page", type: :system do
 
       expect(page.html).to include("Page Details")
 
-      safe_find("a[id='slideover-toggle']").click
+      find("a[id='slideover-toggle']").click
 
       within("#slideover") do
         expect(page).to have_field("Title", with: "About")
@@ -47,7 +47,7 @@ RSpec.describe "When editing a page", type: :system do
     end
 
     it "updates the page details" do
-      safe_find("a[id='slideover-toggle']").click
+      find("a[id='slideover-toggle']").click
       within("#slideover") do
         fill_in "Title", with: "Updated About Page"
       end
