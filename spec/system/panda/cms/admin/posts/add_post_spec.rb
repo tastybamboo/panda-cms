@@ -44,7 +44,11 @@ RSpec.describe "Adding a post", type: :system do
     end
   end
 
+
   it "creates a new post with valid details" do
+    # Ensure clean state for this test
+    visit "/admin/posts/new"
+    
     unique_title = "Test Post #{Time.now.to_i}"
     unique_slug = "/#{Time.current.strftime("%Y/%m")}/test-post-#{Time.now.to_i}"
     
@@ -100,27 +104,37 @@ RSpec.describe "Adding a post", type: :system do
   end
 
   it "shows validation errors when title is missing" do
-    # Don't fill in title
+    # REQUIRED: Clean state for validation test (see docs/developers/testing/validation-testing.md)
+    visit "/admin/posts/new"
+    expect(page).to have_css("form", wait: 5)
+    
+    # Fill valid fields, omit the field being tested
     safe_fill_in "post_slug", with: "/#{Time.current.strftime("%Y/%m")}/test-post"
 
     safe_click_button "Create Post"
 
-    # Use string-based checks to avoid DOM node issues
+    # Check for exact validation error message from model
     expect(page.html).to include("Title can't be blank")
   end
 
   it "shows validation errors when URL is missing" do
+    # REQUIRED: Clean state for validation test (see docs/developers/testing/validation-testing.md)
+    visit "/admin/posts/new"
+    expect(page).to have_css("form", wait: 5)
+    
+    # Fill valid fields, omit the field being tested
     safe_fill_in "post_title", with: "Test Post"
-    # Don't fill in slug
 
-    # Use normal button click - validation errors should be handled by JavaScript
     safe_click_button "Create Post"
 
-    # Use string-based checks to avoid DOM node issues
-    expect(page.html).to include("Slug can't be blank")
+    # Check for exact validation error message (note: it's "URL" not "Slug")
+    expect(page.html).to include("URL can't be blank")
   end
 
   it "shows the add post form with required fields" do
+    # Ensure clean state for this test
+    visit "/admin/posts/new"
+    
     # Use string-based checks for form presence
     html_content = page.html  
     expect(html_content).to include("Add Post")

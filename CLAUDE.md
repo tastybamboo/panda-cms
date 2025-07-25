@@ -1,6 +1,8 @@
-a# CLAUDE.md
+# CLAUDE.md
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+For comprehensive developer documentation, see the `docs/` directory which contains detailed guides on testing, configuration, deployment, and development practices.
 
 ## Project Overview
 
@@ -38,6 +40,9 @@ Panda CMS is a Rails engine that provides content management functionality for R
 
 ### Testing
 ```bash
+# IMPORTANT: Always run tests from the project root directory (/Users/james/Projects/panda-cms)
+# NOT from spec/dummy/ directory
+
 # Run all tests
 bundle exec rspec
 
@@ -51,6 +56,12 @@ bundle exec rspec spec/lib/
 
 # Run single test file
 bundle exec rspec spec/models/panda/cms/page_spec.rb
+
+# Run specific test by name pattern
+bundle exec rspec spec/system/panda/cms/admin/posts/add_post_spec.rb -e "shows validation errors when title is missing"
+
+# Run specific test by line number
+bundle exec rspec spec/system/panda/cms/admin/posts/add_post_spec.rb:106
 
 # Include EditorJS tests (excluded by default)
 INCLUDE_EDITORJS=true bundle exec rspec
@@ -186,6 +197,13 @@ bin/dev
 - Fixtures in `spec/fixtures/` with YAML format
 - System tests use Cuprite (Chrome headless) for browser automation
 - EditorJS tests are excluded by default (use `INCLUDE_EDITORJS=true` to include)
+
+### Validation Tests
+- **Important**: See `docs/developers/testing/validation-testing.md` for complete validation testing patterns
+- Validation tests are automatically detected by test description keywords
+- Require clean page state with `visit` at start of each test
+- Must include `expect(page).to have_css("form", wait: 5)` for form readiness
+- Use exact validation error messages from models (e.g., "Title can't be blank")
 
 ### Fixture Usage
 ```ruby

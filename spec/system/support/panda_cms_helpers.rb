@@ -149,7 +149,31 @@ module PandaCmsHelpers
 
   # Safe form field interaction that avoids Ferrum browser resets
   def safe_fill_in(locator, with:, **options)
-    # In CI, use even more defensive approach
+    # First check if field exists
+    if locator.include?('[') || locator.include?('#') || locator.include?('.')
+      # It's a CSS selector
+      field_exists = page.evaluate_script("document.querySelector(#{locator.to_json}) !== null")
+    else
+      # It's a field name/id/label - check multiple ways
+      field_exists = page.evaluate_script(<<~JS)
+        document.getElementById(#{locator.to_json}) !== null ||
+        document.querySelector('input[name="' + #{locator.to_json} + '"]') !== null ||
+        document.querySelector('textarea[name="' + #{locator.to_json} + '"]') !== null ||
+        document.querySelector('select[name="' + #{locator.to_json} + '"]') !== null ||
+        document.querySelector('label[for="' + #{locator.to_json} + '"]') !== null
+      JS
+    end
+    
+    expect(field_exists).to be(true), "Field '#{locator}' not found in page"
+    
+    # For validation tests, always use standard Capybara to ensure proper form state
+    test_description = RSpec.current_example&.full_description || ""
+    if is_validation_test?(test_description)
+      fill_in locator, with: with, **options
+      return
+    end
+    
+    # In CI, use defensive JavaScript approach to avoid browser resets for non-validation tests
     if ENV["GITHUB_ACTIONS"] == "true"
       # Use JavaScript directly to set the field value to avoid Capybara timing issues
       field_set = page.evaluate_script(<<~JS)
@@ -159,9 +183,15 @@ module PandaCmsHelpers
                      document.querySelector('textarea[name="' + #{locator.to_json} + '"]') ||
                      document.querySelector('select[name="' + #{locator.to_json} + '"]');
           if (field) {
+            // Set the new value
             field.value = #{with.to_json};
+            
+            // Trigger comprehensive events to ensure Rails sees the change
             field.dispatchEvent(new Event('input', { bubbles: true }));
             field.dispatchEvent(new Event('change', { bubbles: true }));
+            field.dispatchEvent(new Event('blur', { bubbles: true }));
+            field.dispatchEvent(new Event('focusout', { bubbles: true }));
+            
             return true;
           }
           return false;
@@ -170,24 +200,7 @@ module PandaCmsHelpers
       
       expect(field_set).to be(true), "Field '#{locator}' not found or could not be set"
     else
-      # In local development, use standard approach with verification
-      if locator.include?('[') || locator.include?('#') || locator.include?('.')
-        # It's a CSS selector
-        field_exists = page.evaluate_script("document.querySelector(#{locator.to_json}) !== null")
-      else
-        # It's a field name/id/label - check multiple ways
-        field_exists = page.evaluate_script(<<~JS)
-          document.getElementById(#{locator.to_json}) !== null ||
-          document.querySelector('input[name="' + #{locator.to_json} + '"]') !== null ||
-          document.querySelector('textarea[name="' + #{locator.to_json} + '"]') !== null ||
-          document.querySelector('select[name="' + #{locator.to_json} + '"]') !== null ||
-          document.querySelector('label[for="' + #{locator.to_json} + '"]') !== null
-        JS
-      end
-      
-      expect(field_exists).to be(true), "Field '#{locator}' not found in page"
-      
-      # Now safely interact with the field
+      # In local development, use standard Capybara approach for proper Rails integration
       fill_in locator, with: with, **options
     end
   end
@@ -209,7 +222,14 @@ module PandaCmsHelpers
     
     expect(field_exists).to be(true), "Field '#{locator}' not found in page"
     
-    # In CI, skip Capybara matchers that cause browser resets
+    # For validation tests, always use standard Capybara matchers
+    test_description = RSpec.current_example&.full_description || ""
+    if is_validation_test?(test_description)
+      expect(page).to have_field(locator, **options)
+      return
+    end
+    
+    # In CI, skip Capybara matchers that cause browser resets for non-validation tests
     if ENV["GITHUB_ACTIONS"] == "true"
       # For CI, just verify via JavaScript to avoid Ferrum issues
       if options[:with]
@@ -242,7 +262,14 @@ module PandaCmsHelpers
     
     expect(button_exists).to be(true), "Button '#{locator}' not found in page"
     
-    # In CI, skip Capybara matchers that cause browser resets
+    # For validation tests, always use standard Capybara matchers
+    test_description = RSpec.current_example&.full_description || ""
+    if is_validation_test?(test_description)
+      expect(page).to have_button(locator, **options)
+      return
+    end
+    
+    # In CI, skip Capybara matchers that cause browser resets for non-validation tests
     unless ENV["GITHUB_ACTIONS"] == "true"
       expect(page).to have_button(locator, **options)
     end
@@ -258,7 +285,14 @@ module PandaCmsHelpers
     
     expect(select_exists).to be(true), "Select '#{locator}' not found in page"
     
-    # In CI, skip Capybara matchers that cause browser resets
+    # For validation tests, always use standard Capybara matchers
+    test_description = RSpec.current_example&.full_description || ""
+    if is_validation_test?(test_description)
+      expect(page).to have_select(locator, **options)
+      return
+    end
+    
+    # In CI, skip Capybara matchers that cause browser resets for non-validation tests
     unless ENV["GITHUB_ACTIONS"] == "true"
       expect(page).to have_select(locator, **options)
     end
@@ -274,6 +308,14 @@ module PandaCmsHelpers
     JS
     
     expect(button_exists).to be(true), "Button '#{locator}' not found in page"
+    
+    # For validation tests, always use standard Capybara to ensure proper form submission
+    test_description = RSpec.current_example&.full_description || ""
+    if is_validation_test?(test_description)
+      click_button(locator, **options)
+      return
+    end
+    
     click_button(locator, **options)
   end
 
@@ -448,6 +490,39 @@ module PandaCmsHelpers
   rescue => e
     puts "[Test Debug] Error getting asset state: #{e.message}"
     nil
+  end
+
+  private
+
+  # Comprehensive detection of validation-related tests
+  # These tests require standard Capybara form handling to ensure proper Rails validation behavior
+  # 
+  # For complete validation testing guide, see: docs/developers/testing/validation-testing.md
+  def is_validation_test?(test_description)
+    validation_patterns = [
+      'validation',       # "shows validation errors"
+      'validates',        # "validates required fields"
+      'invalid',          # "with invalid details"
+      'required',         # "with required fields", "missing required"
+      'missing',          # "when title is missing", "with missing URL"
+      'blank',            # "can't be blank"
+      'incorrect',        # "with an incorrect URL"
+      'already been',     # "URL that has already been used"
+      'must start',       # "must start with a forward slash"
+      'error.*when',      # "error when adding"
+      'fail.*submit'      # "form submission fails"
+    ]
+    
+    # Convert to lowercase for case-insensitive matching
+    description_lower = test_description.downcase
+    
+    # Check if any validation pattern matches
+    is_validation = validation_patterns.any? { |pattern| description_lower.include?(pattern) }
+    
+    # Debug output to verify pattern detection  
+    # puts "[VALIDATION DEBUG] Test: '#{test_description}' -> validation: #{is_validation}"
+    
+    is_validation
   end
 end
 
