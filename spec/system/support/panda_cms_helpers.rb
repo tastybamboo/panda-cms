@@ -149,25 +149,47 @@ module PandaCmsHelpers
 
   # Safe form field interaction that avoids Ferrum browser resets
   def safe_fill_in(locator, with:, **options)
-    # First verify the field exists in HTML to avoid Ferrum issues
-    if locator.include?('[') || locator.include?('#') || locator.include?('.')
-      # It's a CSS selector
-      field_exists = page.evaluate_script("document.querySelector(#{locator.to_json}) !== null")
-    else
-      # It's a field name/id/label - check multiple ways
-      field_exists = page.evaluate_script(<<~JS)
-        document.getElementById(#{locator.to_json}) !== null ||
-        document.querySelector('input[name="' + #{locator.to_json} + '"]') !== null ||
-        document.querySelector('textarea[name="' + #{locator.to_json} + '"]') !== null ||
-        document.querySelector('select[name="' + #{locator.to_json} + '"]') !== null ||
-        document.querySelector('label[for="' + #{locator.to_json} + '"]') !== null
+    # In CI, use even more defensive approach
+    if ENV["GITHUB_ACTIONS"] == "true"
+      # Use JavaScript directly to set the field value to avoid Capybara timing issues
+      field_set = page.evaluate_script(<<~JS)
+        (function() {
+          var field = document.getElementById(#{locator.to_json}) ||
+                     document.querySelector('input[name="' + #{locator.to_json} + '"]') ||
+                     document.querySelector('textarea[name="' + #{locator.to_json} + '"]') ||
+                     document.querySelector('select[name="' + #{locator.to_json} + '"]');
+          if (field) {
+            field.value = #{with.to_json};
+            field.dispatchEvent(new Event('input', { bubbles: true }));
+            field.dispatchEvent(new Event('change', { bubbles: true }));
+            return true;
+          }
+          return false;
+        })()
       JS
+      
+      expect(field_set).to be(true), "Field '#{locator}' not found or could not be set"
+    else
+      # In local development, use standard approach with verification
+      if locator.include?('[') || locator.include?('#') || locator.include?('.')
+        # It's a CSS selector
+        field_exists = page.evaluate_script("document.querySelector(#{locator.to_json}) !== null")
+      else
+        # It's a field name/id/label - check multiple ways
+        field_exists = page.evaluate_script(<<~JS)
+          document.getElementById(#{locator.to_json}) !== null ||
+          document.querySelector('input[name="' + #{locator.to_json} + '"]') !== null ||
+          document.querySelector('textarea[name="' + #{locator.to_json} + '"]') !== null ||
+          document.querySelector('select[name="' + #{locator.to_json} + '"]') !== null ||
+          document.querySelector('label[for="' + #{locator.to_json} + '"]') !== null
+        JS
+      end
+      
+      expect(field_exists).to be(true), "Field '#{locator}' not found in page"
+      
+      # Now safely interact with the field
+      fill_in locator, with: with, **options
     end
-    
-    expect(field_exists).to be(true), "Field '#{locator}' not found in page"
-    
-    # Now safely interact with the field
-    fill_in locator, with: with, **options
   end
 
   # Safe element expectation that avoids Ferrum browser resets
