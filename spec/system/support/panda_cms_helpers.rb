@@ -277,6 +277,19 @@ module PandaCmsHelpers
     find(selector, **options)
   end
 
+  # Safe select that avoids Ferrum browser resets
+  def safe_select(value, from:, **options)
+    # First verify the select element exists
+    select_exists = page.evaluate_script(<<~JS)
+      document.getElementById(#{from.to_json}) !== null ||
+      document.querySelector('select[name="' + #{from.to_json} + '"]') !== null ||
+      document.querySelector('label[for="' + #{from.to_json} + '"]') !== null
+    JS
+    
+    expect(select_exists).to be(true), "Select '#{from}' not found in page"
+    select(value, from: from, **options)
+  end
+
   # Debug current asset loading state
   def debug_asset_state
     # Ensure we're checking the main page context, not an iframe

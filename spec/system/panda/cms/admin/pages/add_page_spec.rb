@@ -70,8 +70,8 @@ RSpec.describe "When adding a page", type: :system, js: true do
         safe_expect_field("page_path", with: "")
         trigger_slug_generation("New Test Page")
         safe_expect_field("page_path", with: "/new-test-page")
-        select "Page", from: "Template"
-        click_button "Create Page"
+        safe_select "Page", from: "page_panda_cms_template_id"
+        safe_click_button "Create Page"
 
         within_frame "editablePageFrame" do
           expect(page.html).to include("Basic Page Layout")
@@ -82,14 +82,14 @@ RSpec.describe "When adding a page", type: :system, js: true do
         safe_expect_field("page_path", with: "")
         safe_fill_in "page_title", with: "About Duplicate"
         safe_fill_in "page_path", with: "/about"
-        select "Page", from: "Template"
-        click_button "Create Page"
+        safe_select "Page", from: "page_panda_cms_template_id"
+        safe_click_button "Create Page"
         expect(page.html).to include("URL has already been taken")
       end
 
       it "updates the form if a parent page is selected" do
         safe_expect_select("page_parent_id")
-        select "- About", from: "page_parent_id"
+        safe_select "- About", from: "page_parent_id"
         # Without JavaScript, manually create a child page
         safe_fill_in "page_title", with: "Child Page"
         safe_fill_in "page_path", with: "/about/child-page"
@@ -100,11 +100,11 @@ RSpec.describe "When adding a page", type: :system, js: true do
         # Wait for page to fully load before checking fields
         expect(page).to have_content("Add Page", wait: 10)
         safe_expect_field("page_path", with: "")
-        select "- About", from: "Parent"
+        safe_select "- About", from: "page_parent_id"
         trigger_slug_generation("About")
         expect(page).to have_field("URL", with: "/about/about")
-        select "Page", from: "Template"
-        click_button "Create Page"
+        safe_select "Page", from: "page_panda_cms_template_id"
+        safe_click_button "Create Page"
         expect(page.html).to_not include("URL has already been taken")
         expect(page.html).to_not include("URL has already been taken in this section")
 
@@ -121,13 +121,13 @@ RSpec.describe "When adding a page", type: :system, js: true do
       it "shows validation errors with an incorrect URL" do
         safe_fill_in "page_title", with: "New Test Page"
         safe_fill_in "page_path", with: "new-test-page"
-        click_button "Create Page"
+        safe_click_button "Create Page"
         expect(page.html).to include("URL must start with a forward slash")
       end
 
       it "shows validation errors with no title", :flaky do
         safe_fill_in "page_path", with: "/new-test-page"
-        click_button "Create Page"
+        safe_click_button "Create Page"
         expect(page.html).to include("Title can't be blank")
       end
 
@@ -137,13 +137,13 @@ RSpec.describe "When adding a page", type: :system, js: true do
         click_on_selectors "input#page_title", "input#page_path"
         # Then explicitly clear the URL
         safe_fill_in "page_path", with: ""
-        click_button "Create Page"
+        safe_click_button "Create Page"
         expect(page.html).to include("URL can't be blank and must start with a forward slash")
       end
 
       it "shows validation errors with invalid details", :flaky do
         expect(page).to have_button("Create Page", wait: 5)
-        click_button "Create Page"
+        safe_click_button "Create Page"
         expect(page.html).to include("Title can't be blank")
         expect(page.html).to include("URL can't be blank and must start with a forward slash")
       end
@@ -153,8 +153,8 @@ RSpec.describe "When adding a page", type: :system, js: true do
           # Create a first-level page
           trigger_slug_generation("First Level Page")
           safe_expect_field("page_path", with: "/first-level-page")
-          select "Page", from: "Template"
-          click_button "Create Page"
+          safe_select "Page", from: "page_panda_cms_template_id"
+          safe_click_button "Create Page"
 
           within_frame "editablePageFrame" do
             expect(page.html).to include("Basic Page Layout")
@@ -162,11 +162,11 @@ RSpec.describe "When adding a page", type: :system, js: true do
 
           # Now create a second-level page under the first-level page
           visit "/admin/pages/new"
-          select "- First Level Page", from: "Parent"
+          safe_select "- First Level Page", from: "page_parent_id"
           trigger_slug_generation("Second Level Page")
           safe_expect_field("page_path", with: "/first-level-page/second-level-page")
-          select "Page", from: "Template"
-          click_button "Create Page"
+          safe_select "Page", from: "page_panda_cms_template_id"
+          safe_click_button "Create Page"
 
           # Verify the page was created with the correct path
           expect(page.html).to_not include("URL has already been taken")
@@ -182,23 +182,23 @@ RSpec.describe "When adding a page", type: :system, js: true do
         it "correctly generates slugs for third-level pages without path duplication" do
           # Create a first-level page
           trigger_slug_generation("Level One")
-          select "Page", from: "Template"
-          click_button "Create Page"
+          safe_select "Page", from: "page_panda_cms_template_id"
+          safe_click_button "Create Page"
 
           # Create a second-level page
           visit "/admin/pages/new"
-          select "- Level One", from: "Parent"
+          safe_select "- Level One", from: "page_parent_id"
           trigger_slug_generation("Level Two")
-          select "Page", from: "Template"
-          click_button "Create Page"
+          safe_select "Page", from: "page_panda_cms_template_id"
+          safe_click_button "Create Page"
 
           # Create a third-level page
           visit "/admin/pages/new"
-          select "-- Level Two", from: "Parent"
+          safe_select "-- Level Two", from: "page_parent_id"
           trigger_slug_generation("Level Three")
           safe_expect_field("page_path", with: "/level-one/level-two/level-three")
-          select "Page", from: "Template"
-          click_button "Create Page"
+          safe_select "Page", from: "page_panda_cms_template_id"
+          safe_click_button "Create Page"
 
           # Verify the page was created successfully
           expect(page.html).to_not include("URL has already been taken")
