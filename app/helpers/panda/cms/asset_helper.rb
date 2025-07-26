@@ -101,6 +101,18 @@ module Panda
         # Additional CI debugging
         asset_file_exists = js_url && File.exist?(Rails.root.join("public#{js_url}"))
         ci_env = ENV["GITHUB_ACTIONS"] == "true"
+        
+        # Check what script tag will be generated
+        script_tag_preview = if using_github
+          tag_options = { src: js_url }
+          tag_options[:defer] = true unless ci_env
+          if !js_url.include?("panda-cms-assets")
+            tag_options[:type] = "module"
+          end
+          "Script tag: <script#{tag_options.map { |k,v| v == true ? " #{k}" : " #{k}=\"#{v}\"" }.join}></script>"
+        else
+          "Using development assets"
+        end
 
         debug_info = [
           "<!-- Panda CMS Asset Debug Info -->",
@@ -113,6 +125,7 @@ module Panda
           "<!-- Asset file exists: #{asset_file_exists} -->",
           "<!-- Rails root: #{Rails.root} -->",
           "<!-- CI environment: #{ci_env} -->",
+          "<!-- #{script_tag_preview} -->",
           "<!-- Params embed_id: #{params[:embed_id] if respond_to?(:params)} -->",
           "<!-- Compiled at: #{Time.now.utc.iso8601} -->"
         ]
@@ -153,7 +166,9 @@ module Panda
         [
           panda_cms_asset_debug,
           panda_cms_assets,
-          panda_cms_stimulus_init
+          panda_cms_stimulus_init,
+          # Add immediate JavaScript execution test for CI debugging
+          (Rails.env.test? ? javascript_tag("window.pandaCmsInlineTest = true; console.log('[Panda CMS] Inline script executed');") : "")
         ].join("\n").html_safe
       end
 
