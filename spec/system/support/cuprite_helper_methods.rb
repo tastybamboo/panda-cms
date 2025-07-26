@@ -147,20 +147,17 @@ module CupriteHelpers
   def safe_fill_in(locator, with:)
     retries = 0
     start_time = Time.now
-    max_duration = 10 # Maximum 10 seconds total
+    max_duration = 5 # Maximum 5 seconds total
     
     begin
-      # Ensure page is loaded first
-      return fill_in(locator, with: with) unless ensure_page_loaded
-      
       fill_in locator, with: with
     rescue Ferrum::NodeNotFoundError => e
       retries += 1
       elapsed = Time.now - start_time
       
-      if retries <= 3 && elapsed < max_duration && ENV["GITHUB_ACTIONS"]
-        puts "[CI] Ferrum::NodeNotFoundError on fill_in '#{locator}', retry #{retries}/3 (#{elapsed.round(1)}s elapsed)"
-        sleep 1
+      if retries <= 2 && elapsed < max_duration && ENV["GITHUB_ACTIONS"]
+        puts "[CI] Ferrum::NodeNotFoundError on fill_in '#{locator}', retry #{retries}/2 (#{elapsed.round(1)}s elapsed)"
+        sleep 0.5
         retry
       else
         puts "[CI] Giving up on fill_in '#{locator}' after #{retries} retries and #{elapsed.round(1)}s" if ENV["GITHUB_ACTIONS"]
@@ -172,20 +169,17 @@ module CupriteHelpers
   def safe_select(value, from:)
     retries = 0
     start_time = Time.now
-    max_duration = 10 # Maximum 10 seconds total
+    max_duration = 5 # Maximum 5 seconds total
     
     begin
-      # Ensure page is loaded first
-      return select(value, from: from) unless ensure_page_loaded
-      
       select value, from: from
     rescue Ferrum::NodeNotFoundError => e
       retries += 1
       elapsed = Time.now - start_time
       
-      if retries <= 3 && elapsed < max_duration && ENV["GITHUB_ACTIONS"]
-        puts "[CI] Ferrum::NodeNotFoundError on select '#{value}' from '#{from}', retry #{retries}/3 (#{elapsed.round(1)}s elapsed)"
-        sleep 1
+      if retries <= 2 && elapsed < max_duration && ENV["GITHUB_ACTIONS"]
+        puts "[CI] Ferrum::NodeNotFoundError on select '#{value}' from '#{from}', retry #{retries}/2 (#{elapsed.round(1)}s elapsed)"
+        sleep 0.5
         retry
       else
         puts "[CI] Giving up on select '#{value}' from '#{from}' after #{retries} retries and #{elapsed.round(1)}s" if ENV["GITHUB_ACTIONS"]
@@ -197,20 +191,17 @@ module CupriteHelpers
   def safe_click_button(locator)
     retries = 0
     start_time = Time.now
-    max_duration = 10 # Maximum 10 seconds total
+    max_duration = 5 # Maximum 5 seconds total
     
     begin
-      # Ensure page is loaded first
-      return click_button(locator) unless ensure_page_loaded
-      
       click_button locator
     rescue Ferrum::NodeNotFoundError => e
       retries += 1
       elapsed = Time.now - start_time
       
-      if retries <= 3 && elapsed < max_duration && ENV["GITHUB_ACTIONS"]
-        puts "[CI] Ferrum::NodeNotFoundError on click_button '#{locator}', retry #{retries}/3 (#{elapsed.round(1)}s elapsed)"
-        sleep 1
+      if retries <= 2 && elapsed < max_duration && ENV["GITHUB_ACTIONS"]
+        puts "[CI] Ferrum::NodeNotFoundError on click_button '#{locator}', retry #{retries}/2 (#{elapsed.round(1)}s elapsed)"
+        sleep 0.5
         retry
       else
         puts "[CI] Giving up on click_button '#{locator}' after #{retries} retries and #{elapsed.round(1)}s" if ENV["GITHUB_ACTIONS"]
