@@ -19,8 +19,23 @@ browser_options = {
   "no-first-run": nil,
   "ignore-certificate-errors": nil,
   "allow-insecure-localhost": nil,
-  "enable-features": "NetworkService,NetworkServiceInProcess"
+  "enable-features": "NetworkService,NetworkServiceInProcess",
+  # Additional flags to allow JavaScript execution in CI
+  "disable-blink-features": "AutomationControlled",
+  "disable-site-isolation-trials": nil,
+  "allow-running-insecure-content": nil,
+  "disable-features": "IsolateOrigins,site-per-process"
 }
+
+# Add more permissive options in CI to debug JavaScript issues
+if ENV["GITHUB_ACTIONS"] == "true"
+  browser_options.merge!({
+    "unsafely-treat-insecure-origin-as-secure": "http://127.0.0.1,http://localhost",
+    "disable-web-security": nil,
+    "allow-file-access-from-files": nil,
+    "allow-file-access": nil
+  })
+end
 
 
 @cuprite_options = {
@@ -35,6 +50,19 @@ browser_options = {
   headless: !ENV["HEADLESS"].in?(%w[n 0 no false]),
   pending_connection_errors: false
 }
+
+# Log browser configuration in CI
+if ENV["GITHUB_ACTIONS"] == "true"
+  puts "\n🔍 Ferrum/Cuprite Browser Configuration:"
+  puts "   Debug mode: #{ENV["DEBUG"]}"
+  puts "   Headless: #{@cuprite_options[:headless]}"
+  puts "   JS errors tracking: #{@cuprite_options[:js_errors]}"
+  puts "   Browser options:"
+  browser_options.each do |key, value|
+    puts "     #{key}: #{value.nil? ? 'enabled' : value}"
+  end
+  puts ""
+end
 
 Capybara.register_driver(:better_cuprite) do |app|
   Capybara::Cuprite::Driver.new(app, **@cuprite_options)
