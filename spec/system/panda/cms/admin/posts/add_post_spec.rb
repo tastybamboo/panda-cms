@@ -52,9 +52,14 @@ RSpec.describe "Adding a post", type: :system do
     unique_title = "Test Post #{Time.now.to_i}"
     unique_slug = "/#{Time.current.strftime("%Y/%m")}/test-post-#{Time.now.to_i}"
     
-    # Use standard Capybara methods
-    fill_in "post_title", with: unique_title
-    fill_in "post_slug", with: unique_slug
+    # Use safe methods in CI
+    if ENV["GITHUB_ACTIONS"]
+      safe_fill_in "post_title", with: unique_title
+      safe_fill_in "post_slug", with: unique_slug
+    else
+      fill_in "post_title", with: unique_title
+      fill_in "post_slug", with: unique_slug
+    end
 
     # Set the content field with valid EditorJS content
     content_json = {
@@ -71,7 +76,11 @@ RSpec.describe "Adding a post", type: :system do
       }
     ")
 
-    click_button "Create Post"
+    if ENV["GITHUB_ACTIONS"]
+      safe_click_button "Create Post"
+    else
+      click_button "Create Post"
+    end
     
     # Wait for redirect
     sleep 1
@@ -112,9 +121,13 @@ RSpec.describe "Adding a post", type: :system do
     expect(page).to have_button("Create Post", disabled: false, wait: 10)
     
     # Fill valid fields, omit the field being tested
-    fill_in "post_slug", with: "/#{Time.current.strftime("%Y/%m")}/test-post"
-
-    click_button "Create Post"
+    if ENV["GITHUB_ACTIONS"]
+      safe_fill_in "post_slug", with: "/#{Time.current.strftime("%Y/%m")}/test-post"
+      safe_click_button "Create Post"
+    else
+      fill_in "post_slug", with: "/#{Time.current.strftime("%Y/%m")}/test-post"
+      click_button "Create Post"
+    end
     
     # Wait for validation errors to appear
     expect(page).to have_content("Title can't be blank", wait: 5)

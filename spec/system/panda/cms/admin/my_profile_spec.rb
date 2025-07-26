@@ -190,9 +190,15 @@ RSpec.describe "Admin profile management", type: :system do
     sleep 0.5
 
     # Use field IDs instead of labels to avoid mismatches
-    fill_in "user_firstname", with: ""
-    select "Sky", from: "Theme"
-    click_button "Update Profile"
+    if ENV["GITHUB_ACTIONS"]
+      safe_fill_in "user_firstname", with: ""
+      safe_select "Sky", from: "Theme"
+      safe_click_button "Update Profile"
+    else
+      fill_in "user_firstname", with: ""
+      select "Sky", from: "Theme"
+      click_button "Update Profile"
+    end
 
     # Check for validation error
     expect(page).to have_content("First Name can't be blank", wait: 5)

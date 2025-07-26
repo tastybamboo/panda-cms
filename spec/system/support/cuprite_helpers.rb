@@ -65,7 +65,34 @@ if ENV["GITHUB_ACTIONS"] == "true"
 end
 
 Capybara.register_driver(:better_cuprite) do |app|
-  Capybara::Cuprite::Driver.new(app, **@cuprite_options)
+  driver = Capybara::Cuprite::Driver.new(app, **@cuprite_options)
+  
+  # Add page load event handling to ensure browser doesn't reset
+  if ENV["GITHUB_ACTIONS"] == "true"
+    # Override the visit method to handle about:blank issues
+    driver.define_singleton_method :visit_with_retry do |url|
+      retries = 0
+      begin
+        visit_without_retry(url)
+        # Wait for page to load
+        browser.network.wait_for_idle(timeout: 5) rescue nil
+      rescue => e
+        retries += 1
+        if retries <= 3 && current_url.include?('about:blank')
+          puts "[CI] Browser reset detected on visit, retry #{retries}/3"
+          sleep 1
+          retry
+        else
+          raise e
+        end
+      end
+    end
+    
+    driver.singleton_class.send(:alias_method, :visit_without_retry, :visit)
+    driver.singleton_class.send(:alias_method, :visit, :visit_with_retry)
+  end
+  
+  driver
 end
 
 # Configure Capybara to use :better_cuprite driver by default

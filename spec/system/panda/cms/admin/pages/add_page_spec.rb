@@ -51,8 +51,13 @@ RSpec.describe "When adding a page", type: :system do
         trigger_slug_generation("New Test Page")
         # Allow slug generation to complete
         sleep 0.5
-        select "Page", from: "page_panda_cms_template_id"
-        click_button "Create Page"
+        if ENV["GITHUB_ACTIONS"]
+          safe_select "Page", from: "page_panda_cms_template_id"
+          safe_click_button "Create Page"
+        else
+          select "Page", from: "page_panda_cms_template_id"
+          click_button "Create Page"
+        end
 
         within_frame "editablePageFrame" do
           expect(page).to have_content("Basic Page Layout")
@@ -80,12 +85,21 @@ RSpec.describe "When adding a page", type: :system do
         # Wait for page to fully load before checking fields
         sleep 0.5
         expect(page.html).to include("Add Page")
-        select "- About", from: "page_parent_id"
-        trigger_slug_generation("About")
-        # URL field should have the correct value
-        sleep 0.5
-        select "Page", from: "page_panda_cms_template_id"
-        click_button "Create Page"
+        if ENV["GITHUB_ACTIONS"]
+          safe_select "- About", from: "page_parent_id"
+          trigger_slug_generation("About")
+          # URL field should have the correct value
+          sleep 0.5
+          safe_select "Page", from: "page_panda_cms_template_id"
+          safe_click_button "Create Page"
+        else
+          select "- About", from: "page_parent_id"
+          trigger_slug_generation("About")
+          # URL field should have the correct value
+          sleep 0.5
+          select "Page", from: "page_panda_cms_template_id"
+          click_button "Create Page"
+        end
         expect(page).not_to have_content("URL has already been taken")
         expect(page).not_to have_content("URL has already been taken in this section")
 
@@ -173,8 +187,13 @@ RSpec.describe "When adding a page", type: :system do
         it "correctly generates slugs for third-level pages without path duplication" do
           # Create a first-level page
           trigger_slug_generation("Level One")
-          select "Page", from: "page_panda_cms_template_id"
-          click_button "Create Page"
+          if ENV["GITHUB_ACTIONS"]
+            safe_select "Page", from: "page_panda_cms_template_id"
+            safe_click_button "Create Page"
+          else
+            select "Page", from: "page_panda_cms_template_id"
+            click_button "Create Page"
+          end
 
           # Create a second-level page
           visit "/admin/pages/new"

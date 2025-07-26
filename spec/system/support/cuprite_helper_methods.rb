@@ -30,6 +30,39 @@
 # Example:
 #   wait_for_dom_mutation(timeout: 10)
 module CupriteHelpers
+  # Ensure page is loaded and stable before interacting
+  def ensure_page_loaded
+    # Check if we're on about:blank and need to reload
+    if page.current_url.include?('about:blank')
+      puts "[CI] Page is on about:blank, attempting to recover..." if ENV["GITHUB_ACTIONS"]
+      
+      # Try to go back to the previous page
+      begin
+        page.go_back
+        sleep 0.5
+      rescue
+        # If go_back fails, we need to revisit the page
+        # This will be handled by the calling test
+        raise "Page navigation lost - browser is on about:blank"
+      end
+    end
+    
+    # Wait for page to be ready
+    wait_for_ready_state
+  end
+  
+  # Wait for document ready state
+  def wait_for_ready_state
+    Timeout.timeout(5) do
+      loop do
+        ready = page.evaluate_script('document.readyState')
+        break if ready == 'complete'
+        sleep 0.1
+      end
+    end
+  rescue Timeout::Error
+    puts "[CI] Timeout waiting for document ready state" if ENV["GITHUB_ACTIONS"]
+  end
   # Waits for a specific selector to be present and visible on the page
   # @param selector [String] CSS selector to wait for
   # @param timeout [Integer] Maximum time to wait in seconds (default: 5)
@@ -116,10 +149,72 @@ module CupriteHelpers
     false
   end
 
+  # Safe methods that handle Ferrum NodeNotFoundError in CI
+  def safe_fill_in(locator, with:)
+    retries = 0
+    begin
+      # Ensure page is loaded first
+      ensure_page_loaded
+      
+      fill_in locator, with: with
+    rescue Ferrum::NodeNotFoundError => e
+      retries += 1
+      if retries <= 3 && ENV["GITHUB_ACTIONS"]
+        puts "[CI] Ferrum::NodeNotFoundError on fill_in '#{locator}', retry #{retries}/3"
+        sleep 1
+        retry
+      else
+        raise e
+      end
+    end
+  end
+  
+  def safe_select(value, from:)
+    retries = 0
+    begin
+      # Ensure page is loaded first
+      ensure_page_loaded
+      
+      select value, from: from
+    rescue Ferrum::NodeNotFoundError => e
+      retries += 1
+      if retries <= 3 && ENV["GITHUB_ACTIONS"]
+        puts "[CI] Ferrum::NodeNotFoundError on select '#{value}' from '#{from}', retry #{retries}/3"
+        sleep 1
+        retry
+      else
+        raise e
+      end
+    end
+  end
+  
+  def safe_click_button(locator)
+    retries = 0
+    begin
+      # Ensure page is loaded first
+      ensure_page_loaded
+      
+      click_button locator
+    rescue Ferrum::NodeNotFoundError => e
+      retries += 1
+      if retries <= 3 && ENV["GITHUB_ACTIONS"]
+        puts "[CI] Ferrum::NodeNotFoundError on click_button '#{locator}', retry #{retries}/3"
+        sleep 1
+        retry
+      else
+        raise e
+      end
+    end
+  end
+
   # Trigger slug generation and wait for the result
   def trigger_slug_generation(title)
-    # Use standard Capybara methods
-    fill_in "page_title", with: title
+    # Use safe methods in CI
+    if ENV["GITHUB_ACTIONS"]
+      safe_fill_in "page_title", with: title
+    else
+      fill_in "page_title", with: title
+    end
 
     # Manually generate the slug instead of relying on JavaScript
     slug = create_slug_from_title(title)
@@ -149,9 +244,17 @@ module CupriteHelpers
     JS
 
     if parent_info["hasParent"] && parent_info["parentPath"].present?
-      fill_in "page_path", with: "#{parent_info["parentPath"]}/#{slug}"
+      if ENV["GITHUB_ACTIONS"]
+        safe_fill_in "page_path", with: "#{parent_info["parentPath"]}/#{slug}"
+      else
+        fill_in "page_path", with: "#{parent_info["parentPath"]}/#{slug}"
+      end
     else
-      fill_in "page_path", with: "/#{slug}"
+      if ENV["GITHUB_ACTIONS"]
+        safe_fill_in "page_path", with: "/#{slug}"
+      else
+        fill_in "page_path", with: "/#{slug}"
+      end
     end
   end
 

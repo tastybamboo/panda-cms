@@ -28,10 +28,17 @@ Capybara.singleton_class.prepend(Module.new do
 end)
 
 Capybara.server_host = "127.0.0.1"
-# Let Capybara choose an available port automatically
+Capybara.server_port = ENV["CAPYBARA_PORT"]&.to_i # Let Capybara choose if not specified
 
-Panda::CMS.config.url = Capybara.app_host
-Rails.application.routes.default_url_options[:host] = Capybara.app_host
+# Configure Puma server with explicit options
+Capybara.register_server :puma do |app, port, host|
+  require 'rack/handler/puma'
+  Rack::Handler::Puma.run(app, Port: port, Host: host, Silent: true, Threads: "0:4")
+end
+Capybara.server = :puma
+
+# Do not set app_host here - let Capybara determine it from the server
+# This avoids conflicts between what's configured and what's actually running
 
 RSpec.configure do |config|
   config.after(:each, type: :system) do |example|

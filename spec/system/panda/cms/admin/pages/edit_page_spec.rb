@@ -39,7 +39,12 @@ RSpec.describe "When editing a page", type: :system do
 
       expect(page.html).to include("Page Details")
 
-      find("a[id='slideover-toggle']").click
+      if ENV["GITHUB_ACTIONS"]
+        # In CI, use JavaScript to click the element to avoid Ferrum issues
+        page.execute_script("document.getElementById('slideover-toggle').click()")
+      else
+        find("a[id='slideover-toggle']").click
+      end
 
       within("#slideover") do
         expect(page).to have_field("Title", with: "About")

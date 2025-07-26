@@ -47,13 +47,33 @@ RSpec.configure do |config|
 
   # Set up Current attributes after Capybara is ready
   config.before(:each, type: :system) do
-    # Wait for Capybara to be ready and set Current.root properly
-    if Capybara.current_session.server
-      host = Capybara.current_session.server.host
-      port = Capybara.current_session.server.port
-      Panda::CMS::Current.root = "http://#{host}:#{port}"
+    # Force visit a page to ensure Capybara server is started
+    # This is critical in CI to ensure the server is running before we try to get its URL
+    begin
+      visit "/health" rescue visit "/"
+    rescue => e
+      puts "[CI] Initial visit failed: #{e.message}" if ENV["GITHUB_ACTIONS"]
+    end
+    
+    # Wait for Capybara server to be available
+    server_url = nil
+    10.times do
+      if Capybara.current_session.server
+        host = Capybara.current_session.server.host
+        port = Capybara.current_session.server.port
+        server_url = "http://#{host}:#{port}"
+        break
+      end
+      sleep 0.1
+    end
+    
+    if server_url
+      Panda::CMS::Current.root = server_url
+      Rails.application.routes.default_url_options[:host] = server_url
+      Panda::CMS.config.url = server_url
     else
-      # Fallback if server isn't available yet
+      # Fallback if server isn't available
+      puts "[CI] Warning: Capybara server not available, using fallback" if ENV["GITHUB_ACTIONS"]
       Panda::CMS::Current.root = "http://127.0.0.1:3001"
     end
 
