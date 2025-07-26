@@ -40,6 +40,8 @@ module PandaCmsHelpers
         return {
           pandaCmsLoaded: topWindow.pandaCmsLoaded,
           pandaCmsVersion: topWindow.pandaCmsVersion,
+          pandaCmsScriptExecuted: topWindow.pandaCmsScriptExecuted,
+          pandaCmsError: topWindow.pandaCmsError,
           stimulusExists: !!topWindow.Stimulus,
           controllerCount: topWindow.Stimulus ? topWindow.Stimulus.controllers.size : 0,
           pandaCmsFullBundle: topWindow.pandaCmsFullBundle,
@@ -367,6 +369,8 @@ module PandaCmsHelpers
           url: topWindow.location.href,
           pandaCmsLoaded: topWindow.pandaCmsLoaded,
           pandaCmsVersion: topWindow.pandaCmsVersion,
+          pandaCmsScriptExecuted: topWindow.pandaCmsScriptExecuted,
+          pandaCmsError: topWindow.pandaCmsError,
           stimulusExists: !!topWindow.Stimulus,
           controllerCount: topWindow.Stimulus ? topWindow.Stimulus.controllers.size : 0,
           pandaCmsFullBundle: topWindow.pandaCmsFullBundle,
