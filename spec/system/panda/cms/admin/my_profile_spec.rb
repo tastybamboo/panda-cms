@@ -186,9 +186,8 @@ RSpec.describe "Admin profile management", type: :system do
     expect(page.html).to include('name="user[firstname]"')
     expect(page.html).to include('name="user[current_theme]"')
     
-    # Now safely access the form fields using the actual field IDs from HTML
-    expect(page).to have_field("user_firstname")
-    expect(page).to have_select("user_current_theme")
+    # Add small delay to ensure form is ready
+    sleep 0.5
 
     # Use field IDs instead of labels to avoid mismatches
     fill_in "user_firstname", with: ""

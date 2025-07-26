@@ -145,12 +145,15 @@ jobs:
           mkdir -p test-results
           # Run tests and capture all output to file
           xvfb-run -a bundle exec rspec --tag ~skip --format documentation 2>&1 | tee test-results/test-output.log
-          # Capture exit code
-          echo ${PIPESTATUS[0]} > test-results/exit-code.txt
+          # Capture exit code from the pipeline
+          TEST_EXIT_CODE=${PIPESTATUS[0]}
+          echo $TEST_EXIT_CODE > test-results/exit-code.txt
           # Also create a summary
           echo "Test run completed at $(date)" > test-results/summary.txt
-          echo "Exit code: $(cat test-results/exit-code.txt)" >> test-results/summary.txt
+          echo "Exit code: $TEST_EXIT_CODE" >> test-results/summary.txt
           tail -20 test-results/test-output.log >> test-results/summary.txt
+          # Exit with the actual test exit code
+          exit $TEST_EXIT_CODE
       - name: Display test summary
         if: always()
         run: |

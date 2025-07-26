@@ -47,6 +47,8 @@ RSpec.describe "When editing a page", type: :system do
     end
 
     it "updates the page details" do
+      # Allow page to stabilize before interacting
+      sleep 1
       find("a[id='slideover-toggle']").click
       within("#slideover") do
         fill_in "Title", with: "Updated About Page"

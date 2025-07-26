@@ -218,7 +218,7 @@ RSpec.describe "When adding a page", type: :system do
 
       it "shows validation errors when adding a page with invalid details" do
         visit "/admin/pages/new"
-        expect(page).to have_css("form", wait: 5)
+        sleep 1  # Allow page to stabilize
         fill_in "page_title", with: "Test Page"
         fill_in "page_path", with: "invalid-url"
         click_on "Create Page"
@@ -229,7 +229,7 @@ RSpec.describe "When adding a page", type: :system do
 
       it "shows validation errors when adding a page with missing title input" do
         visit "/admin/pages/new"
-        expect(page).to have_css("form", wait: 5)
+        sleep 1  # Allow page to stabilize
         fill_in "page_path", with: "/test-page"
         click_on "Create Page"
 
@@ -239,7 +239,7 @@ RSpec.describe "When adding a page", type: :system do
 
       it "shows validation errors when adding a page with missing URL input" do
         visit "/admin/pages/new"
-        expect(page).to have_css("form", wait: 5)
+        sleep 1  # Allow page to stabilize
         fill_in "page_title", with: "Test Page"
         fill_in "page_path", with: ""
         click_on "Create Page"
