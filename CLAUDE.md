@@ -345,3 +345,7 @@ If any of these values are `nil` or `false`, the JavaScript bundle is not execut
 - Authentication requires provider setup (GitHub, Google, Microsoft)
 - Database schema uses UUIDs for all primary keys
 - Content is stored as EditorJS JSON with cached HTML rendering
+
+## Workflow Memories
+
+- You should always download artifacts once I tell you a CI run is complete, and add the working directories you need automatically, it saves me doing it manually.

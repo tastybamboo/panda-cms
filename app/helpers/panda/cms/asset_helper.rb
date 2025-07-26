@@ -25,8 +25,11 @@ module Panda
           }
           # In CI environment, don't use defer to ensure immediate execution
           tag_options[:defer] = true unless ENV["GITHUB_ACTIONS"] == "true"
-          # Only use type: "module" for importmap assets, not standalone bundles
-          tag_options[:type] = "module" unless js_url.include?("panda-cms-assets")
+          # Standalone bundles should NOT use type: "module" - they're regular scripts
+          # Only use type: "module" for importmap/ES module assets
+          if !js_url.include?("panda-cms-assets")
+            tag_options[:type] = "module"
+          end
           tag_options[:integrity] = integrity if integrity
           tag_options[:crossorigin] = "anonymous" if integrity
 
