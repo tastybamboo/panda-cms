@@ -51,13 +51,8 @@ RSpec.describe "When adding a page", type: :system do
         trigger_slug_generation("New Test Page")
         # Allow slug generation to complete
         sleep 0.5
-        if ENV["GITHUB_ACTIONS"]
-          safe_select "Page", from: "page_panda_cms_template_id"
-          safe_click_button "Create Page"
-        else
-          select "Page", from: "page_panda_cms_template_id"
-          click_button "Create Page"
-        end
+        select "Page", from: "page_panda_cms_template_id"
+        click_button "Create Page"
 
         within_frame "editablePageFrame" do
           expect(page).to have_content("Basic Page Layout")

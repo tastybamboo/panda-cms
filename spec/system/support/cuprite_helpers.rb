@@ -65,7 +65,22 @@ if ENV["GITHUB_ACTIONS"] == "true"
 end
 
 Capybara.register_driver(:better_cuprite) do |app|
-  Capybara::Cuprite::Driver.new(app, **@cuprite_options)
+  driver = Capybara::Cuprite::Driver.new(app, **@cuprite_options)
+  
+  # Ensure Ferrum::NodeNotFoundError is treated as a retriable error
+  # This fixes the "Could not find node with given id" errors in CI
+  driver.instance_eval do
+    def invalid_element_errors
+      [
+        Capybara::Cuprite::ObsoleteNode,
+        Capybara::Cuprite::MouseEventFailed,
+        Ferrum::NoExecutionContextError,
+        Ferrum::NodeNotFoundError  # Add this to force retries
+      ]
+    end
+  end
+  
+  driver
 end
 
 # Configure Capybara to use :better_cuprite driver by default
