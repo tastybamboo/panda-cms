@@ -33,22 +33,16 @@ module CupriteHelpers
   # Ensure page is loaded and stable before interacting
   def ensure_page_loaded
     # Check if we're on about:blank and need to reload
-    if page.current_url.include?('about:blank')
-      puts "[CI] Page is on about:blank, attempting to recover..." if ENV["GITHUB_ACTIONS"]
-      
-      # Try to go back to the previous page
-      begin
-        page.go_back
-        sleep 0.5
-      rescue
-        # If go_back fails, we need to revisit the page
-        # This will be handled by the calling test
-        raise "Page navigation lost - browser is on about:blank"
-      end
+    current_url = page.current_url rescue "unknown"
+    if current_url.include?('about:blank')
+      puts "[CI] Page is on about:blank, skipping recovery to avoid loops" if ENV["GITHUB_ACTIONS"]
+      # Don't try to recover - let the test handle it
+      return false
     end
     
     # Wait for page to be ready
     wait_for_ready_state
+    true
   end
   
   # Wait for document ready state
@@ -152,18 +146,24 @@ module CupriteHelpers
   # Safe methods that handle Ferrum NodeNotFoundError in CI
   def safe_fill_in(locator, with:)
     retries = 0
+    start_time = Time.now
+    max_duration = 10 # Maximum 10 seconds total
+    
     begin
       # Ensure page is loaded first
-      ensure_page_loaded
+      return fill_in(locator, with: with) unless ensure_page_loaded
       
       fill_in locator, with: with
     rescue Ferrum::NodeNotFoundError => e
       retries += 1
-      if retries <= 3 && ENV["GITHUB_ACTIONS"]
-        puts "[CI] Ferrum::NodeNotFoundError on fill_in '#{locator}', retry #{retries}/3"
+      elapsed = Time.now - start_time
+      
+      if retries <= 3 && elapsed < max_duration && ENV["GITHUB_ACTIONS"]
+        puts "[CI] Ferrum::NodeNotFoundError on fill_in '#{locator}', retry #{retries}/3 (#{elapsed.round(1)}s elapsed)"
         sleep 1
         retry
       else
+        puts "[CI] Giving up on fill_in '#{locator}' after #{retries} retries and #{elapsed.round(1)}s" if ENV["GITHUB_ACTIONS"]
         raise e
       end
     end
@@ -171,18 +171,24 @@ module CupriteHelpers
   
   def safe_select(value, from:)
     retries = 0
+    start_time = Time.now
+    max_duration = 10 # Maximum 10 seconds total
+    
     begin
       # Ensure page is loaded first
-      ensure_page_loaded
+      return select(value, from: from) unless ensure_page_loaded
       
       select value, from: from
     rescue Ferrum::NodeNotFoundError => e
       retries += 1
-      if retries <= 3 && ENV["GITHUB_ACTIONS"]
-        puts "[CI] Ferrum::NodeNotFoundError on select '#{value}' from '#{from}', retry #{retries}/3"
+      elapsed = Time.now - start_time
+      
+      if retries <= 3 && elapsed < max_duration && ENV["GITHUB_ACTIONS"]
+        puts "[CI] Ferrum::NodeNotFoundError on select '#{value}' from '#{from}', retry #{retries}/3 (#{elapsed.round(1)}s elapsed)"
         sleep 1
         retry
       else
+        puts "[CI] Giving up on select '#{value}' from '#{from}' after #{retries} retries and #{elapsed.round(1)}s" if ENV["GITHUB_ACTIONS"]
         raise e
       end
     end
@@ -190,18 +196,24 @@ module CupriteHelpers
   
   def safe_click_button(locator)
     retries = 0
+    start_time = Time.now
+    max_duration = 10 # Maximum 10 seconds total
+    
     begin
       # Ensure page is loaded first
-      ensure_page_loaded
+      return click_button(locator) unless ensure_page_loaded
       
       click_button locator
     rescue Ferrum::NodeNotFoundError => e
       retries += 1
-      if retries <= 3 && ENV["GITHUB_ACTIONS"]
-        puts "[CI] Ferrum::NodeNotFoundError on click_button '#{locator}', retry #{retries}/3"
+      elapsed = Time.now - start_time
+      
+      if retries <= 3 && elapsed < max_duration && ENV["GITHUB_ACTIONS"]
+        puts "[CI] Ferrum::NodeNotFoundError on click_button '#{locator}', retry #{retries}/3 (#{elapsed.round(1)}s elapsed)"
         sleep 1
         retry
       else
+        puts "[CI] Giving up on click_button '#{locator}' after #{retries} retries and #{elapsed.round(1)}s" if ENV["GITHUB_ACTIONS"]
         raise e
       end
     end

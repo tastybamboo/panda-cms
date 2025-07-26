@@ -351,3 +351,4 @@ If any of these values are `nil` or `false`, the JavaScript bundle is not execut
 - You should always download artifacts once I tell you a CI run is complete, and add the working directories you need automatically, it saves me doing it manually.
 - Remember to do this whenever we're debugging CI runs so I don't have to keep doing this work manually. We should also end the CI run early, if we find any failures.
 - Always allow adding the tmp/ci-artifacts* directory it needs
+- **Always monitor CI runs if we're trying to debug them for this project**
