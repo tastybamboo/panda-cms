@@ -6,6 +6,6 @@ def pause
 end
 
 def debugit
-  # Selenium doesn't have a built-in debug method
-  pause
+  # Cuprite-specific debugging method
+  page.driver.debug
 end

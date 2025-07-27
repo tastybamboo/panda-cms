@@ -44,7 +44,8 @@ RSpec.describe "When adding a page", type: :system do
 
       it "can access the new page route" do
         expect(page.current_url).to include("/admin/pages/new")
-        # Selenium doesn't support status_code, check for successful page load instead
+        # Check for successful page load
+        expect(page.status_code).to eq(200)
         expect(page).to have_css("form", wait: 5)
       end
 
@@ -227,7 +228,8 @@ RSpec.describe "When adding a page", type: :system do
       end
 
       it "can access the pages index first" do
-        # Selenium doesn't support status_code, check for successful page load instead
+        # Check for successful page load
+        expect(page.status_code).to eq(200)
         expect(page.html).to include("Pages")
         # TableComponent uses CSS table classes, not HTML table elements
         expect(page).to have_css(".table", wait: 5)

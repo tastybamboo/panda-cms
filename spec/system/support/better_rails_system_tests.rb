@@ -40,7 +40,7 @@ RSpec.configure do |config|
   # Make sure this hook runs before others
   # Means you don't have to set js: true in every system spec
   config.prepend_before(:each, type: :system) do
-    driven_by :selenium_chrome
+    driven_by :cuprite
     # Don't load seeds when using fixtures to avoid conflicts
     # Rails.application.load_seed
   end
@@ -96,8 +96,8 @@ RSpec.configure do |config|
     if example.exception
       begin
         # Wait for any pending JavaScript to complete
-        # Selenium doesn't have direct network idle support
-        sleep 0.5
+        # Cuprite has direct network idle support
+        page.driver.wait_for_network_idle rescue nil
 
         # Wait for DOM to be ready
         sleep 0.5

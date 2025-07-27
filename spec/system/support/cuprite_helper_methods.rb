@@ -113,10 +113,12 @@ module CupriteHelpers
   # @param timeout [Integer] Maximum time to wait in seconds (default: 5)
   # @return [Boolean] true if network is idle, false if timeout occurs
   def wait_for_network_idle(timeout: 5)
-    # Selenium doesn't have direct network idle support
-    # Just wait a bit for any ongoing requests
-    sleep 0.5
+    # Cuprite has direct network idle support
+    page.driver.wait_for_network_idle(timeout: timeout)
     true
+  rescue => e
+    puts "[CI] Network idle timeout: #{e.message}" if ENV["GITHUB_ACTIONS"]
+    false
   end
 
   # Waits for JavaScript to modify the DOM
@@ -136,22 +138,15 @@ module CupriteHelpers
   # Useful when you want to checkout the contents of a web page in the middle of a test
   # running in a headful mode.
   def pause
-    # Selenium doesn't have a built-in pause method
-    # Use debugger or sleep instead
-    if ENV["DEBUG"].in?(%w[y 1 yes true])
-      # debugger removed for CI
-      puts "Debug pause point reached"
-    else
-      puts "Paused. Press Enter to continue..."
-      gets
-    end
+    # Cuprite-specific pause method
+    page.driver.pause
   end
 
   # Drop #browser_debug anywhere in a test to open a Chrome inspector and pause the execution
   # Usage: browser_debug(binding)
   def browser_debug(*)
-    # Selenium doesn't have a built-in debug method
-    pause
+    # Cuprite-specific debug method
+    page.driver.debug
   end
 
   # Allows sending a list of CSS selectors to be clicked on in the correct order (no delay)
@@ -184,7 +179,7 @@ module CupriteHelpers
 
     begin
       fill_in locator, with: with
-    rescue Selenium::WebDriver::Error::NoSuchElementError, Capybara::ElementNotFound => e
+    rescue Ferrum::NodeNotFoundError, Capybara::ElementNotFound => e
       retries += 1
       elapsed = Time.now - start_time
 
@@ -206,7 +201,7 @@ module CupriteHelpers
 
     begin
       select value, from: from
-    rescue Selenium::WebDriver::Error::NoSuchElementError, Capybara::ElementNotFound => e
+    rescue Ferrum::NodeNotFoundError, Capybara::ElementNotFound => e
       retries += 1
       elapsed = Time.now - start_time
 
@@ -228,7 +223,7 @@ module CupriteHelpers
 
     begin
       click_button locator
-    rescue Selenium::WebDriver::Error::NoSuchElementError, Capybara::ElementNotFound => e
+    rescue Ferrum::NodeNotFoundError, Capybara::ElementNotFound => e
       retries += 1
       elapsed = Time.now - start_time
 

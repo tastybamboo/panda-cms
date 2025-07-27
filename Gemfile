@@ -15,7 +15,7 @@ group :development, :test do
   gem "bullet"
   gem "bundler-audit"
   gem "capybara"
-  gem "selenium-webdriver"
+  gem "cuprite"
   gem "danger"
   gem "danger-reek"
   gem "danger-rubocop"

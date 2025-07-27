@@ -4,7 +4,6 @@
   <%= panda_cms_form_with model: user,
                          url: admin_my_profile_path,
                          method: :patch,
-                         local: true,
                          data: { controller: "theme-form" } do |f| %>
     <% if user.errors.any? %>
       <div class="mb-4 p-4 bg-red-50 border border-red-200 rounded-md">

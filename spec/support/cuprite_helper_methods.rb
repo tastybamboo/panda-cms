@@ -2,14 +2,8 @@
 
 module CupriteHelpers
   def pause
-    # Selenium doesn't have a built-in debug method
-    if ENV["DEBUG"].in?(%w[y 1 yes true])
-      # debugger removed for CI
-      puts "Debug pause point reached"
-    else
-      puts "Paused. Press Enter to continue..."
-      gets
-    end
+    # Cuprite-specific pause method
+    page.driver.pause
   end
 
   def debug_page_state
