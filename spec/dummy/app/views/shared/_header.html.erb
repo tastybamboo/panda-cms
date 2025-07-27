@@ -7,7 +7,6 @@
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
-    
     <% if Panda::CMS::AssetLoader.use_github_assets? || Rails.env.test? %>
       <!-- Using compiled Panda CMS assets -->
       <%= panda_cms_complete_assets %>
