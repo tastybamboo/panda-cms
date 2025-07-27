@@ -157,6 +157,7 @@ RSpec.describe "When adding a page", type: :system do
           select "Page", from: "page_panda_cms_template_id"
           click_button "Create Page"
 
+          wait_for_iframe_load("editablePageFrame")
           within_frame "editablePageFrame" do
             expect(page.html).to include("Basic Page Layout")
           end
@@ -172,6 +173,7 @@ RSpec.describe "When adding a page", type: :system do
 
           # Verify the page was created with the correct path
           expect(page.html).to_not include("URL has already been taken")
+          wait_for_iframe_load("editablePageFrame")
           within_frame "editablePageFrame" do
             expect(page.html).to include("Basic Page Layout")
           end
@@ -210,6 +212,7 @@ RSpec.describe "When adding a page", type: :system do
 
           # Verify the page was created successfully
           expect(page.html).to_not include("URL has already been taken")
+          wait_for_iframe_load("editablePageFrame")
           within_frame "editablePageFrame" do
             expect(page.html).to include("Basic Page Layout")
           end
