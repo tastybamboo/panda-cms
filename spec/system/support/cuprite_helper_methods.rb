@@ -139,7 +139,8 @@ module CupriteHelpers
     # Selenium doesn't have a built-in pause method
     # Use debugger or sleep instead
     if ENV["DEBUG"].in?(%w[y 1 yes true])
-      debugger
+      # debugger removed for CI
+      puts "Debug pause point reached"
     else
       puts "Paused. Press Enter to continue..."
       gets
