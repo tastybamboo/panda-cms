@@ -49,7 +49,7 @@ RSpec.configure do |config|
   config.before(:each, type: :system) do
     # Don't force visit in CI - it causes browser resets
     # Instead, let the first visit in the test handle server startup
-    
+
     # Set default URL configuration
     Panda::CMS::Current.root = "http://127.0.0.1:#{Capybara.server_port || 3001}"
     Rails.application.routes.default_url_options[:host] = Panda::CMS::Current.root
@@ -78,8 +78,12 @@ RSpec.configure do |config|
       rescue => e
         # Log any error for debugging
         puts "[CI] Test error detected: #{e.class} - #{e.message}"
-        puts "[CI] Current URL: #{page.current_url rescue 'unknown'}"
-        
+        puts "[CI] Current URL: #{begin
+          page.current_url
+        rescue
+          "unknown"
+        end}"
+
         # Re-raise the original error
         raise e
       end

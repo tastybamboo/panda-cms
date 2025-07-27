@@ -26,7 +26,7 @@ RSpec.describe "Admin dashboard", type: :system do
       login_as_admin
       visit "/admin"
       # Use string-based check to avoid DOM node issues
-      expect(page.html).to include('Dashboard')
+      expect(page.html).to include("Dashboard")
     end
 
     it "displays the admin navigation" do
@@ -34,16 +34,16 @@ RSpec.describe "Admin dashboard", type: :system do
       visit "/admin"
       # Wait for page to load by checking path
       sleep 2
-      
+
       # Use string-based checks to avoid DOM node issues
       html_content = page.html
-      expect(html_content).to include('Dashboard')
+      expect(html_content).to include("Dashboard")
       expect(html_content).to include('href="/admin/pages"')
       expect(html_content).to include('href="/admin/posts"')
       expect(html_content).to include('href="/admin/forms"')
       expect(html_content).to include('href="/admin/menus"')
       expect(html_content).to include('href="/admin/settings"')
-      expect(html_content).to include('Logout')
+      expect(html_content).to include("Logout")
     end
   end
 end

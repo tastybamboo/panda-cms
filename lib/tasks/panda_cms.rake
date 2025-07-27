@@ -10,7 +10,6 @@ ENV["TAILWIND_PATH"] ||= Tailwindcss::Engine.root.join("exe/tailwindcss").to_s
 
 namespace :panda do
   namespace :cms do
-
     desc "Generate missing blocks from template files"
     task generate_missing_blocks: [:environment] do
       Panda::CMS::Template.generate_missing_blocks
@@ -26,4 +25,3 @@ namespace :panda do
 end
 
 task default: %i[spec panda cms]
-

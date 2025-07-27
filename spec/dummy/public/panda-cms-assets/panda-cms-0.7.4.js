@@ -1,5 +1,5 @@
 // Panda CMS JavaScript Bundle v0.7.4
-// Compiled: 2025-07-26T14:14:58Z
+// Compiled: 2025-07-27T12:31:27Z
 // Full bundle with all Stimulus controllers and functionality
 
 // Stimulus setup and polyfill

@@ -8,7 +8,7 @@ RSpec.describe "When editing a page", type: :system do
 
   let(:homepage) { panda_cms_pages(:homepage) }
   let(:about_page) { panda_cms_pages(:about_page) }
-  
+
   def wait_for_javascript
     # Wait for the slideover toggle to be present, which indicates JavaScript has loaded
     expect(page).to have_css("#slideover-toggle", wait: 10)
@@ -35,7 +35,7 @@ RSpec.describe "When editing a page", type: :system do
       # Initialize Current.root for iframe template rendering
       Panda::CMS::Current.root = Capybara.app_host
       visit "/admin/pages/#{about_page.id}/edit"
-      
+
       # Ensure the page has loaded before proceeding
       expect(page).to have_content("About", wait: 10)
     end
@@ -43,13 +43,13 @@ RSpec.describe "When editing a page", type: :system do
     it "shows the page details slideover" do
       expect(page.html).to include("About")
       expect(page.html).to include("<main")
-      
+
       # Ensure JavaScript has loaded
       wait_for_javascript
-      
+
       # Click the slideover toggle using JavaScript
       page.execute_script("document.getElementById('slideover-toggle').click()")
-      
+
       # Wait for slideover to become visible (animation might take time)
       expect(page).to have_css("#slideover", visible: true, wait: 10)
 
@@ -61,28 +61,28 @@ RSpec.describe "When editing a page", type: :system do
     it "updates the page details" do
       # Ensure JavaScript has loaded
       wait_for_javascript
-      
+
       # Click the slideover toggle using JavaScript
       page.execute_script("document.getElementById('slideover-toggle').click()")
-      
+
       # Wait for slideover to become visible
       expect(page).to have_css("#slideover", visible: true, wait: 10)
-      
+
       within("#slideover") do
         fill_in "Title", with: "Updated About Page"
       end
-      
+
       # Find and click the save button within the form
       within("#slideover") do
         # Find the form and submit it
         form = find("form[action^='/admin/pages/']")
-        
+
         # Click the Save button within the form
         within(form) do
           click_button "Save"
         end
       end
-      
+
       # Wait for success message and page update
       expect(page).to have_content("This page was successfully updated!", wait: 10)
 

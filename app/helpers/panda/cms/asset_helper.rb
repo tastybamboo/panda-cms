@@ -34,17 +34,15 @@ module Panda
           tag_options[:crossorigin] = "anonymous" if integrity
 
           content_tag(:script, "", tag_options)
-        else
+        elsif js_url.include?("panda-cms-assets")
           # Development assets - check if it's a standalone bundle or importmap
-          if js_url.include?("panda-cms-assets")
-            # Standalone bundle - don't use type: "module"
-            defer_option = ENV["GITHUB_ACTIONS"] == "true" ? {} : { defer: true }
-            javascript_include_tag(js_url, **defer_option)
-          else
-            # Importmap asset - use type: "module"
-            defer_option = ENV["GITHUB_ACTIONS"] == "true" ? {} : { defer: true }
-            javascript_include_tag(js_url, type: "module", **defer_option)
-          end
+          defer_option = (ENV["GITHUB_ACTIONS"] == "true") ? {} : {defer: true}
+          javascript_include_tag(js_url, **defer_option)
+        # Standalone bundle - don't use type: "module"
+        else
+          # Importmap asset - use type: "module"
+          defer_option = (ENV["GITHUB_ACTIONS"] == "true") ? {} : {defer: true}
+          javascript_include_tag(js_url, type: "module", **defer_option)
         end
       end
 
@@ -97,19 +95,19 @@ module Panda
         css_url = Panda::CMS::AssetLoader.css_url
         using_github = Panda::CMS::AssetLoader.use_github_assets?
         compiled_available = Panda::CMS::AssetLoader.send(:compiled_assets_available?)
-        
+
         # Additional CI debugging
         asset_file_exists = js_url && File.exist?(Rails.root.join("public#{js_url}"))
         ci_env = ENV["GITHUB_ACTIONS"] == "true"
-        
+
         # Check what script tag will be generated
         script_tag_preview = if using_github
-          tag_options = { src: js_url }
+          tag_options = {src: js_url}
           tag_options[:defer] = true unless ci_env
           if !js_url.include?("panda-cms-assets")
             tag_options[:type] = "module"
           end
-          "Script tag: <script#{tag_options.map { |k,v| v == true ? " #{k}" : " #{k}=\"#{v}\"" }.join}></script>"
+          "Script tag: <script#{tag_options.map { |k, v| (v == true) ? " #{k}" : " #{k}=\"#{v}\"" }.join}></script>"
         else
           "Using development assets"
         end
@@ -121,7 +119,7 @@ module Panda
           "<!-- Compiled assets available: #{compiled_available} -->",
           "<!-- JavaScript URL: #{js_url} -->",
           "<!-- CSS URL: #{css_url || "none"} -->",
-          "<!-- Rails environment: #{Rails.env} -->", 
+          "<!-- Rails environment: #{Rails.env} -->",
           "<!-- Asset file exists: #{asset_file_exists} -->",
           "<!-- Rails root: #{Rails.root} -->",
           "<!-- CI environment: #{ci_env} -->",

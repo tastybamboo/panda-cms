@@ -6,7 +6,7 @@ module OmniAuthHelpers
       puts "\n[CI Debug] Starting admin login process..."
       puts "   Current URL before login: #{page.current_url}"
     end
-    
+
     OmniAuth.config.test_mode = true
     OmniAuth.config.mock_auth[:google_oauth2] = OmniAuth::AuthHash.new(
       provider: "google_oauth2",
@@ -16,7 +16,7 @@ module OmniAuthHelpers
         name: "Admin User"
       }
     )
-    
+
     begin
       visit "/auth/google_oauth2"
     rescue => e
@@ -28,15 +28,15 @@ module OmniAuthHelpers
         raise e
       end
     end
-    
+
     if ENV["GITHUB_ACTIONS"] == "true"
       puts "[CI Debug] After login navigation:"
       puts "   Current URL: #{page.current_url}"
       puts "   Page title: #{page.title}"
       puts "   Page content length: #{page.html.length}"
-      puts "   Page contains admin content: #{page.html.include?('Admin') || page.html.include?('Dashboard')}"
-      
-      if page.current_url.include?('about:blank') || page.html.length < 100
+      puts "   Page contains admin content: #{page.html.include?("Admin") || page.html.include?("Dashboard")}"
+
+      if page.current_url.include?("about:blank") || page.html.length < 100
         puts "   ❌ Login failed - page didn't load properly"
         puts "   First 200 chars of HTML: #{page.html[0..200]}"
         fail "Login process failed - page didn't load"

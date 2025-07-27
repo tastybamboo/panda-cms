@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # Increase wait time for CI environments where asset loading is slower
-Capybara.default_max_wait_time = ENV['CI'].present? ? 10 : 5
+Capybara.default_max_wait_time = ENV["CI"].present? ? 10 : 5
 
 # Normalize whitespaces when using `has_text?` and similar matchers,
 # i.e., ignore newlines, trailing spaces, etc.
@@ -32,7 +32,7 @@ Capybara.server_port = ENV["CAPYBARA_PORT"]&.to_i # Let Capybara choose if not s
 
 # Configure Puma server with explicit options
 Capybara.register_server :puma do |app, port, host|
-  require 'rack/handler/puma'
+  require "rack/handler/puma"
   Rack::Handler::Puma.run(app, Port: port, Host: host, Silent: true, Threads: "0:4")
 end
 Capybara.server = :puma

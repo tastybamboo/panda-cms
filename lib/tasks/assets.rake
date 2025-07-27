@@ -40,26 +40,26 @@ namespace :panda_cms do
       # Rails.root is the dummy app, so we need to go to its public directory
       test_asset_dir = Rails.root.join("public", "panda-cms-assets")
       FileUtils.mkdir_p(test_asset_dir)
-      
+
       js_file_name = "panda-cms-#{version}.js"
       css_file_name = "panda-cms-#{version}.css"
-      
+
       # Copy JavaScript file
       if File.exist?(output_dir.join(js_file_name))
         FileUtils.cp(output_dir.join(js_file_name), test_asset_dir.join(js_file_name))
         puts "✅ Copied JavaScript to test location: #{test_asset_dir.join(js_file_name)}"
       end
-      
+
       # Copy CSS file
       if File.exist?(output_dir.join(css_file_name))
         FileUtils.cp(output_dir.join(css_file_name), test_asset_dir.join(css_file_name))
         puts "✅ Copied CSS to test location: #{test_asset_dir.join(css_file_name)}"
       end
-      
+
       # Copy manifest
       if File.exist?(output_dir.join("manifest.json"))
         FileUtils.cp(output_dir.join("manifest.json"), test_asset_dir.join("manifest.json"))
-        puts "✅ Copied manifest to test location: #{test_asset_dir.join('manifest.json')}"
+        puts "✅ Copied manifest to test location: #{test_asset_dir.join("manifest.json")}"
       end
 
       puts "🎉 Asset compilation complete!"
@@ -164,19 +164,19 @@ def compile_javascript_bundle(version)
   bundle << "// Compiled: #{Time.now.utc.iso8601}"
   bundle << "// Full bundle with all Stimulus controllers and functionality"
   bundle << ""
-  
+
   # Add Stimulus polyfill/setup
   bundle << create_stimulus_setup
-  
+
   # Add TailwindCSS Stimulus components
   bundle << create_tailwind_components
-  
+
   # Add all Panda CMS controllers
   bundle << compile_all_controllers
-  
+
   # Add editor components
   bundle << compile_editor_components
-  
+
   # Add main application initialization
   bundle << create_application_init(version)
 
@@ -253,7 +253,7 @@ def create_stimulus_setup
     "  register: function(name, controller) {",
     "    this.controllers.set(name, controller);",
     "    console.log('[Panda CMS] Registered controller:', name);",
-    "    // Simple controller connection simulation",  
+    "    // Simple controller connection simulation",
     "    document.addEventListener('DOMContentLoaded', () => {",
     "      const elements = document.querySelectorAll(`[data-controller*='${name}']`);",
     "      elements.forEach(element => {",
@@ -321,29 +321,29 @@ def compile_all_controllers
   controller_files = Dir.glob(engine_root.join("app/javascript/panda/cms/controllers/*.js"))
   puts "Found controller files: #{controller_files}"
   controllers = []
-  
+
   controller_files.each do |file|
-    next if File.basename(file) == 'index.js'
-    
-    controller_name = File.basename(file, '.js')
+    next if File.basename(file) == "index.js"
+
+    controller_name = File.basename(file, ".js")
     puts "Compiling controller: #{controller_name}"
-    
+
     # Read and process the controller file
     content = File.read(file)
-    
+
     # Convert ES6 controller to simple object
     controllers << convert_es6_controller_to_simple(controller_name, content)
   end
-  
+
   controllers.join("\n\n")
 end
 
 def convert_es6_controller_to_simple(name, content)
   # For now, create a simpler working controller that focuses on form validation
-  controller_name = name.gsub('_', '-')
-  
+  controller_name = name.tr("_", "-")
+
   case name
-  when 'theme_form_controller'
+  when "theme_form_controller"
     [
       "// Theme Form Controller",
       "const ThemeFormController = {",
@@ -361,7 +361,7 @@ def convert_es6_controller_to_simple(name, content)
       "",
       "Stimulus.register('theme-form', ThemeFormController);"
     ].join("\n")
-  when 'slug_controller'  
+  when "slug_controller"
     [
       "// Slug Controller",
       "const SlugController = {",
@@ -373,7 +373,7 @@ def convert_es6_controller_to_simple(name, content)
       "    console.log('[Panda CMS] Slug controller connected');",
       "    this.titleFieldTarget = this.element.querySelector('[data-slug-target=\"titleField\"]') ||",
       "                           this.element.querySelector('#page_title, #post_title, input[name*=\"title\"]');",
-      "    this.pathFieldTarget = this.element.querySelector('[data-slug-target=\"pathField\"]') ||", 
+      "    this.pathFieldTarget = this.element.querySelector('[data-slug-target=\"pathField\"]') ||",
       "                          this.element.querySelector('#page_path, #post_path, input[name*=\"path\"], input[name*=\"slug\"]');",
       "    ",
       "    if (this.titleFieldTarget) {",
@@ -412,7 +412,7 @@ def convert_es6_controller_to_simple(name, content)
       "",
       "Stimulus.register('slug', SlugController);"
     ].join("\n")
-  when 'editor_form_controller'
+  when "editor_form_controller"
     [
       "// Editor Form Controller",
       "const EditorFormController = {",
@@ -440,10 +440,10 @@ def convert_es6_controller_to_simple(name, content)
     ].join("\n")
   else
     [
-      "// #{name.gsub('_', ' ').titleize} Controller", 
+      "// #{name.tr("_", " ").titleize} Controller",
       "const #{name.camelize}Controller = {",
       "  connect() {",
-      "    console.log('[Panda CMS] #{name.gsub('_', ' ').titleize} controller connected');",
+      "    console.log('[Panda CMS] #{name.tr("_", " ").titleize} controller connected');",
       "  }",
       "};",
       "",
@@ -455,26 +455,26 @@ end
 def process_controller_methods(class_body)
   # Simple method extraction - just copy methods as-is but clean up syntax
   methods = []
-  
+
   # Split by methods (looking for function patterns)
   class_body.scan(/(static\s+\w+\s*=.*?;|connect\(\)\s*\{.*?\}|\w+\([^)]*\)\s*\{.*?\})/m) do |match|
     method = match[0].strip
-    
+
     # Skip static properties for now, focus on methods
-    next if method.start_with?('static')
-    
+    next if method.start_with?("static")
+
     # Clean up the method syntax for object format
     if method.match?(/(\w+)\(\s*\)\s*\{/)
       # No-argument methods
       method = method.gsub(/(\w+)\(\s*\)\s*\{/, '\1() {')
     elsif method.match?(/(\w+)\([^)]+\)\s*\{/)
-      # Methods with arguments  
+      # Methods with arguments
       method = method.gsub(/(\w+)\(([^)]+)\)\s*\{/, '\1(\2) {')
     end
-    
+
     methods << "  #{method}"
   end
-  
+
   methods.join(",\n\n")
 end
 

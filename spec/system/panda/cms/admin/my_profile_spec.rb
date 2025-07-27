@@ -22,7 +22,11 @@ RSpec.describe "Admin profile management", type: :system do
       puts "\n[CI Debug] Profile test - before navigation:"
       puts "   Current URL: #{page.current_url}"
       puts "   Page title: #{page.title}"
-      puts "   Status code: #{page.status_code rescue 'unknown'}"
+      puts "   Status code: #{begin
+        page.status_code
+      rescue
+        "unknown"
+      end}"
     end
 
     begin
@@ -42,18 +46,22 @@ RSpec.describe "Admin profile management", type: :system do
       puts "\n[CI Debug] Profile test - after navigation:"
       puts "   Current URL: #{page.current_url}"
       puts "   Page title: #{page.title}"
-      puts "   Status code: #{page.status_code rescue 'unknown'}"
+      puts "   Status code: #{begin
+        page.status_code
+      rescue
+        "unknown"
+      end}"
       puts "   Page content length: #{page.html.length}"
-      puts "   Page contains 'My Profile': #{page.html.include?('My Profile')}"
-      
-      if page.current_url.include?('about:blank') || page.html.length < 100
+      puts "   Page contains 'My Profile': #{page.html.include?("My Profile")}"
+
+      if page.current_url.include?("about:blank") || page.html.length < 100
         puts "   ❌ Profile page didn't load properly"
         puts "   First 500 chars of HTML: #{page.html[0..500]}"
-        
+
         # Check if user is actually logged in
         puts "   Checking login status..."
         begin
-          if page.html.include?('Sign in') || page.current_url.include?('login')
+          if page.html.include?("Sign in") || page.current_url.include?("login")
             puts "   ❌ User not logged in - redirected to login page"
           else
             puts "   ℹ️ Unknown page state"
@@ -61,13 +69,13 @@ RSpec.describe "Admin profile management", type: :system do
         rescue
           puts "   ❌ Could not check login status"
         end
-        
+
         fail "Profile page navigation failed - page didn't load properly"
       end
     end
-    
+
     expect(page.html).to include("My Profile")
-    
+
     # Add extra stability wait in CI environment
     if ENV["GITHUB_ACTIONS"] == "true"
       sleep(1)
@@ -81,7 +89,7 @@ RSpec.describe "Admin profile management", type: :system do
     # Use form field checks that are less prone to node errors
     html_content = page.html
     expect(html_content).to include("First Name")
-    expect(html_content).to include("Last Name") 
+    expect(html_content).to include("Last Name")
     expect(html_content).to include("Email Address")
     expect(html_content).to include("Theme")
     expect(html_content).to include("Update Profile")
@@ -100,14 +108,14 @@ RSpec.describe "Admin profile management", type: :system do
 
     # Wait for form submission to complete
     sleep 2
-    
+
     # Check if we were redirected to login (session expired)
     if page.has_css?("#button-sign-in-google")
       # Log back in and check the profile was updated
       login_as_admin
       visit "/admin/my_profile/edit"
     end
-    
+
     # Verify the profile values were updated (the main goal)
     expect(page).to have_field("user_firstname", with: "Updated")
     expect(page).to have_field("user_lastname", with: "Name")
@@ -162,7 +170,7 @@ RSpec.describe "Admin profile management", type: :system do
 
     # Check for validation errors
     expect(page).to have_content("First Name can't be blank", wait: 5)
-    expect(page).to have_content("Last Name can't be blank") 
+    expect(page).to have_content("Last Name can't be blank")
     expect(page).to have_content("Email Address can't be blank")
   end
 
@@ -170,13 +178,29 @@ RSpec.describe "Admin profile management", type: :system do
     # Wait for form fields to be ready (longer waits in CI)
     if ENV["GITHUB_ACTIONS"] == "true"
       puts "[CI Debug] Before looking for First Name field:"
-      puts "   Current URL: #{page.current_url rescue 'error'}"
-      puts "   Page title: #{page.title rescue 'error'}"
-      puts "   Page content length: #{page.html.length rescue 'error'}"
-      puts "   Page has 'My Profile': #{page.html.include?('My Profile') rescue 'error'}"
-      
+      puts "   Current URL: #{begin
+        page.current_url
+      rescue
+        "error"
+      end}"
+      puts "   Page title: #{begin
+        page.title
+      rescue
+        "error"
+      end}"
+      puts "   Page content length: #{begin
+        page.html.length
+      rescue
+        "error"
+      end}"
+      puts "   Page has 'My Profile': #{begin
+        page.html.include?("My Profile")
+      rescue
+        "error"
+      end}"
+
       # Ensure we're still on the right page - re-navigate if needed
-      if page.current_url.include?('about:blank') || !page.html.include?('My Profile')
+      if page.current_url.include?("about:blank") || !page.html.include?("My Profile")
         puts "[CI Debug] Page seems to have been reset, re-navigating..."
         visit "/admin/my_profile/edit"
         sleep(1)
@@ -185,7 +209,7 @@ RSpec.describe "Admin profile management", type: :system do
     # Use HTML-based checks instead of element finding to avoid browser resets
     expect(page.html).to include('name="user[firstname]"')
     expect(page.html).to include('name="user[current_theme]"')
-    
+
     # Add small delay to ensure form is ready
     sleep 0.5
 
@@ -202,7 +226,7 @@ RSpec.describe "Admin profile management", type: :system do
 
     # Check for validation error
     expect(page).to have_content("First Name can't be blank", wait: 5)
-    
+
     # Skip problematic select matcher in CI - verify via HTML content
     expect(page.html).to include('selected="selected"')
   end

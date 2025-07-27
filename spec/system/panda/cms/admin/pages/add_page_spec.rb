@@ -114,7 +114,7 @@ RSpec.describe "When adding a page", type: :system do
         fill_in "page_title", with: "New Test Page"
         fill_in "page_path", with: "new-test-page"
         click_button "Create Page"
-        
+
         # Check for validation error
         expect(page).to have_content("URL must start with a forward slash", wait: 5)
       end
@@ -123,7 +123,7 @@ RSpec.describe "When adding a page", type: :system do
         # Fill in path but not title
         fill_in "page_path", with: "/new-test-page"
         click_button "Create Page"
-        
+
         # Check for validation error
         expect(page).to have_content("Title can't be blank", wait: 5)
       end
@@ -133,7 +133,7 @@ RSpec.describe "When adding a page", type: :system do
         # Clear the path field to test validation
         fill_in "page_path", with: ""
         click_button "Create Page"
-        
+
         # Check for validation error
         expect(page).to have_content("URL can't be blank and must start with a forward slash", wait: 5)
       end
@@ -141,7 +141,7 @@ RSpec.describe "When adding a page", type: :system do
       it "shows validation errors with invalid details" do
         expect(page).to have_button("Create Page", wait: 5)
         click_button "Create Page"
-        
+
         # Check for validation errors
         expect(page).to have_content("Title can't be blank", wait: 5)
         expect(page).to have_content("URL can't be blank and must start with a forward slash")

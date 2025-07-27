@@ -65,11 +65,11 @@ RSpec.describe "Admin authentication", type: :system do
 
     it "handles logout properly" do
       login_with_google(admin_user)
-      # Find logout by text content instead of ID to avoid node issues  
+      # Find logout by text content instead of ID to avoid node issues
       html_content = page.html
       if html_content.include?("Logout") || html_content.include?("logout")
         # Try different approaches to find logout
-        if html_content.match(/href="[^"]*logout[^"]*"/)
+        if /href="[^"]*logout[^"]*"/.match?(html_content)
           # Extract logout URL and visit it directly
           logout_match = html_content.match(/href="([^"]*logout[^"]*)"/)
           if logout_match
@@ -82,7 +82,7 @@ RSpec.describe "Admin authentication", type: :system do
           skip "Logout URL not found in page HTML"
         end
       else
-        skip "Logout link not found in page HTML"  
+        skip "Logout link not found in page HTML"
       end
     end
   end

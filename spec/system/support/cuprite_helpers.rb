@@ -29,35 +29,35 @@ if ENV["GITHUB_ACTIONS"] == "true"
   chrome_options.add_argument("--disable-web-security")
   chrome_options.add_argument("--allow-file-access-from-files")
   chrome_options.add_argument("--allow-file-access")
-  
+
   puts "\n🔍 Selenium Chrome Configuration:"
   puts "   Debug mode: #{ENV["DEBUG"]}"
   puts "   Headless: #{!ENV["HEADLESS"].in?(%w[n 0 no false])}"
-  puts "   Browser options: #{chrome_options.args.join(' ')}"
+  puts "   Browser options: #{chrome_options.args.join(" ")}"
   puts ""
 end
 
 Capybara.register_driver :selenium_chrome do |app|
   # Enable browser console logging
-  chrome_options.add_preference('goog:loggingPrefs', { browser: 'ALL' })
-  
+  chrome_options.add_preference("goog:loggingPrefs", {browser: "ALL"})
+
   options = {
     browser: :chrome,
     options: chrome_options
   }
-  
+
   # Add logging in debug mode
   if ENV["DEBUG"].in?(%w[y 1 yes true])
     options[:service] = Selenium::WebDriver::Service.chrome(
-      args: ["--verbose", "--log-path=#{Rails.root.join('log', 'chromedriver.log')}"]
+      args: ["--verbose", "--log-path=#{Rails.root.join("log", "chromedriver.log")}"]
     )
   end
-  
+
   Capybara::Selenium::Driver.new(app, **options)
 end
 
 # Configure Capybara
-Capybara.default_driver = :rack_test
+Capybara.default_driver = :selenium_chrome
 Capybara.javascript_driver = :selenium_chrome
 Capybara.default_max_wait_time = 10
 Capybara.server = :puma, {Silent: true}

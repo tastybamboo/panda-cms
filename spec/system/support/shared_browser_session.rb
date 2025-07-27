@@ -15,8 +15,6 @@ module SharedBrowserSession
     base.after(:all) do
       Capybara.current_driver = @__initial_driver
     end
-
-
   end
 end
 

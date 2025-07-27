@@ -184,13 +184,13 @@ module Panda
           # In test environment, use VERSION constant for consistency with compiled assets
           # In other environments, use git SHA for dynamic versioning
           # Also check for test environment indicators since Rails.env might be development in specs
-          if Rails.env.test? || ENV['CI'].present? || in_test_environment?
+          if Rails.env.test? || ENV["CI"].present? || in_test_environment?
             Panda::CMS::VERSION
           else
             `git rev-parse --short HEAD`.strip
           end
         end
-        
+
         def in_test_environment?
           # Check if we're running specs even if Rails.env is development
           defined?(RSpec) && RSpec.respond_to?(:configuration)
@@ -356,7 +356,7 @@ module Panda
           if defined?(ActionView::Helpers::TagHelper)
             # Create a view context to render the tag
             view_context = ActionView::Base.new(ActionView::LookupContext.new([]), {}, nil)
-            view_context.tag(name, options)  
+            view_context.tag(name, options)
           else
             # Fallback implementation
             attrs = options.map { |k, v| %(#{k}="#{v}") }.join(" ")

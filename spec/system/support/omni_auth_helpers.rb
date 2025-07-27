@@ -29,10 +29,10 @@ module OmniAuthHelpers
 
     # Set the Rails env config which the controller checks
     Rails.application.env_config["omniauth.auth"] = OmniAuth.config.mock_auth[:google]
-    
+
     # Visit the callback URL directly in test mode
     visit "/admin/auth/google/callback"
-    
+
     # We should be redirected to /admin after successful auth
     expect(page).to have_current_path("/admin", wait: 10)
   end
@@ -77,10 +77,10 @@ module OmniAuthHelpers
 
     # Set the Rails env config which the controller checks
     Rails.application.env_config["omniauth.auth"] = OmniAuth.config.mock_auth[:github]
-    
+
     # Visit the callback URL directly in test mode
     visit "/admin/auth/github/callback"
-    
+
     # We should be redirected to /admin after successful auth
     expect(page).to have_current_path("/admin", wait: 10)
   end
@@ -103,10 +103,10 @@ module OmniAuthHelpers
 
     # Set the Rails env config which the controller checks
     Rails.application.env_config["omniauth.auth"] = OmniAuth.config.mock_auth[:microsoft]
-    
+
     # Visit the callback URL directly in test mode
     visit "/admin/auth/microsoft/callback"
-    
+
     # We should be redirected to /admin after successful auth
     expect(page).to have_current_path("/admin", wait: 10)
   end

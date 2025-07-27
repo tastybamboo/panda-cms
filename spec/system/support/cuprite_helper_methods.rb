@@ -33,38 +33,46 @@ module CupriteHelpers
   # Ensure page is loaded and stable before interacting
   def ensure_page_loaded
     # Check if we're on about:blank and need to reload
-    current_url = page.current_url rescue "unknown"
-    if current_url.include?('about:blank')
+    current_url = begin
+      page.current_url
+    rescue
+      "unknown"
+    end
+    if current_url.include?("about:blank")
       puts "[CI] Page is on about:blank, skipping recovery to avoid loops" if ENV["GITHUB_ACTIONS"]
       # Don't try to recover - let the test handle it
       return false
     end
-    
+
     # Wait for page to be ready
     wait_for_ready_state
     # Wait for JavaScript to load
     wait_for_javascript
     true
   end
-  
+
   # Wait for document ready state
   def wait_for_ready_state
     Timeout.timeout(5) do
       loop do
-        ready = page.evaluate_script('document.readyState')
-        break if ready == 'complete'
+        ready = page.evaluate_script("document.readyState")
+        break if ready == "complete"
         sleep 0.1
       end
     end
   rescue Timeout::Error
     puts "[CI] Timeout waiting for document ready state" if ENV["GITHUB_ACTIONS"]
   end
-  
+
   # Wait for JavaScript to load (Panda CMS specific)
   def wait_for_javascript(timeout: 5)
     Timeout.timeout(timeout) do
       loop do
-        loaded = page.evaluate_script('window.pandaCmsLoaded === true') rescue false
+        loaded = begin
+          page.evaluate_script("window.pandaCmsLoaded === true")
+        rescue
+          false
+        end
         break if loaded
         sleep 0.1
       end
@@ -74,6 +82,7 @@ module CupriteHelpers
     puts "[CI] Timeout waiting for JavaScript to load" if ENV["GITHUB_ACTIONS"]
     false
   end
+
   # Waits for a specific selector to be present and visible on the page
   # @param selector [String] CSS selector to wait for
   # @param timeout [Integer] Maximum time to wait in seconds (default: 5)
@@ -171,13 +180,13 @@ module CupriteHelpers
     retries = 0
     start_time = Time.now
     max_duration = 5 # Maximum 5 seconds total
-    
+
     begin
       fill_in locator, with: with
     rescue Selenium::WebDriver::Error::NoSuchElementError, Capybara::ElementNotFound => e
       retries += 1
       elapsed = Time.now - start_time
-      
+
       if retries <= 2 && elapsed < max_duration && ENV["GITHUB_ACTIONS"]
         puts "[CI] Element not found on fill_in '#{locator}', retry #{retries}/2 (#{elapsed.round(1)}s elapsed)"
         sleep 0.5
@@ -188,18 +197,18 @@ module CupriteHelpers
       end
     end
   end
-  
+
   def safe_select(value, from:)
     retries = 0
     start_time = Time.now
     max_duration = 5 # Maximum 5 seconds total
-    
+
     begin
       select value, from: from
     rescue Selenium::WebDriver::Error::NoSuchElementError, Capybara::ElementNotFound => e
       retries += 1
       elapsed = Time.now - start_time
-      
+
       if retries <= 2 && elapsed < max_duration && ENV["GITHUB_ACTIONS"]
         puts "[CI] Element not found on select '#{value}' from '#{from}', retry #{retries}/2 (#{elapsed.round(1)}s elapsed)"
         sleep 0.5
@@ -210,18 +219,18 @@ module CupriteHelpers
       end
     end
   end
-  
+
   def safe_click_button(locator)
     retries = 0
     start_time = Time.now
     max_duration = 5 # Maximum 5 seconds total
-    
+
     begin
       click_button locator
     rescue Selenium::WebDriver::Error::NoSuchElementError, Capybara::ElementNotFound => e
       retries += 1
       elapsed = Time.now - start_time
-      
+
       if retries <= 2 && elapsed < max_duration && ENV["GITHUB_ACTIONS"]
         puts "[CI] Element not found on click_button '#{locator}', retry #{retries}/2 (#{elapsed.round(1)}s elapsed)"
         sleep 0.5
@@ -275,12 +284,10 @@ module CupriteHelpers
       else
         fill_in "page_path", with: "#{parent_info["parentPath"]}/#{slug}"
       end
+    elsif ENV["GITHUB_ACTIONS"]
+      safe_fill_in "page_path", with: "/#{slug}"
     else
-      if ENV["GITHUB_ACTIONS"]
-        safe_fill_in "page_path", with: "/#{slug}"
-      else
-        fill_in "page_path", with: "/#{slug}"
-      end
+      fill_in "page_path", with: "/#{slug}"
     end
   end
 

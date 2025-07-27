@@ -7,11 +7,11 @@ RSpec.describe "Website" do
 
   it "shows the homepage with JavaScript functionality" do
     visit "/"
-    
+
     # Test basic page content
     html_content = page.html
     expect(html_content.include?("Homepage Layout")).to be true
-    
+
     # Test that JavaScript modules load and execute
     # Wait specifically for the vanilla JS to modify the DOM element
     expect(page).to have_content("I like ice cream!", wait: 5)
