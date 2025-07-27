@@ -216,11 +216,11 @@ RSpec.describe "Admin profile management", type: :system do
     # Use field IDs instead of labels to avoid mismatches
     if ENV["GITHUB_ACTIONS"]
       safe_fill_in "user_firstname", with: ""
-      safe_select "Sky", from: "Theme"
+      safe_select "Sky", from: "user_current_theme"
       safe_click_button "Update Profile"
     else
       fill_in "user_firstname", with: ""
-      select "Sky", from: "Theme"
+      select "Sky", from: "user_current_theme"
       click_button "Update Profile"
     end
 
