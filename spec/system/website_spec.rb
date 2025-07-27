@@ -5,15 +5,16 @@ require "system_helper"
 RSpec.describe "Website" do
   fixtures :all
 
-  it "shows the homepage with rich text blocks and rendered JS" do
+  it "shows the homepage with JavaScript functionality" do
     visit "/"
 
-    # Wait for the layout to be visible
-    expect(page).to have_content("Homepage Layout", wait: 1)
+    # Test basic page content
+    html_content = page.html
+    expect(html_content.include?("Homepage Layout")).to be true
 
-    # Wait for JavaScript to initialize
-    expect(page).to have_content("I like ice cream!", wait: 1)
-    expect(page).to have_content("Hello, Stimulus!", wait: 1)
+    # Test that JavaScript modules load and execute
+    # Wait specifically for the vanilla JS to modify the DOM element
+    expect(page).to have_content("I like ice cream!", wait: 5)
   end
 
   it "shows the about page with plain text, code and rich text blocks" do

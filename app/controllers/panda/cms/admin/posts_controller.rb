@@ -39,8 +39,7 @@ module Panda
 
           if @post.save
             Rails.logger.debug "Post saved successfully"
-            flash[:success] = "The post was successfully created!"
-            redirect_to edit_admin_post_path(@post.admin_param), status: :see_other
+            redirect_to edit_admin_post_path(@post.admin_param), notice: "The post was successfully created!"
           else
             Rails.logger.debug "Post save failed: #{@post.errors.full_messages.inspect}"
             flash.now[:error] = @post.errors.full_messages.join(", ")

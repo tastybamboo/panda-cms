@@ -61,20 +61,22 @@ jobs:
           VERSION: ${{ github.event.pull_request.head.sha }}
         run: |
           echo "${VERSION}" >> VERSION
+
       - name: "Set timezone"
         run: |
           sudo timedatectl set-timezone Europe/London
+
       - name: "Install xvfb"
         run: |
           sudo apt-get update
           sudo apt-get install -y xvfb libvips
           export DISPLAY=':99.0'
           Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
-
       - name: "Setup Ruby"
         uses: "ruby/setup-ruby@v1"
         with:
           bundler-cache: true
+
       - name: "Setup test environment"
         env:
           DATABASE_URL: "postgres://postgres:password@localhost:5432/test"
@@ -84,7 +86,50 @@ jobs:
           RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
           PT_SILENCE_AR_COMPAT_WARNING: true
         run: |
-          bundle exec rails db:create db:schema:load
+          bundle exec rails db:create
+          bundle exec rails db:schema:load
+
+      - name: "Compile assets"
+        working-directory: spec/dummy
+        env:
+          DATABASE_URL: "postgres://postgres:password@localhost:5432/test"
+          RAILS_ENV: test
+        run: |
+          bundle exec rake panda_cms:assets:compile
+          echo "✅ Asset compilation complete"
+
+      - name: "Verify compiled assets"
+        run: |
+          echo "Compiled assets in tmp:"
+          ls -la spec/dummy/tmp/panda_cms_assets/
+          echo ""
+          echo "Assets copied to test location:"
+          ls -la spec/dummy/public/panda-cms-assets/
+          echo ""
+          echo "Asset sizes:"
+          du -h spec/dummy/public/panda-cms-assets/*
+          echo ""
+          echo "JavaScript bundle first 10 lines:"
+          head -10 spec/dummy/public/panda-cms-assets/panda-cms-0.7.4.js
+          echo ""
+          echo "JavaScript bundle last 10 lines:"
+          tail -10 spec/dummy/public/panda-cms-assets/panda-cms-0.7.4.js
+          echo ""
+          echo "Bundle size and key content check:"
+          wc -l spec/dummy/public/panda-cms-assets/panda-cms-0.7.4.js
+          grep -c "pandaCmsLoaded" spec/dummy/public/panda-cms-assets/panda-cms-0.7.4.js || echo "pandaCmsLoaded not found"
+          grep -c "Stimulus.register" spec/dummy/public/panda-cms-assets/panda-cms-0.7.4.js || echo "Stimulus.register not found"
+          echo ""
+          echo "Check for specific initialization variables:"
+          grep "pandaCmsStimulus" spec/dummy/public/panda-cms-assets/panda-cms-0.7.4.js || echo "pandaCmsStimulus not found"
+          grep "window\." spec/dummy/public/panda-cms-assets/panda-cms-0.7.4.js | head -5
+          echo ""
+          echo "Check if Rails can serve the asset correctly:"
+          cd spec/dummy
+          timeout 10s bundle exec rails runner "puts 'Rails can load the asset: ' + File.exist?(Rails.public_path.join('panda-cms-assets/panda-cms-0.7.4.js')).to_s"
+          echo "Asset file permissions:"
+          ls -la public/panda-cms-assets/panda-cms-0.7.4.js
+
       - name: "Run tests"
         env:
           DATABASE_URL: "postgres://postgres:password@localhost:5432/test"
@@ -95,9 +140,42 @@ jobs:
           CAPYBARA_ARTIFACTS: "../tmp/capybara"
           RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
           PT_SILENCE_AR_COMPAT_WARNING: true
+          DEBUG: "true"
+          FERRUM_INTERMITTENT_SLEEP: "0.5"
         run: |
           mkdir -p tmp
-          xvfb-run -a bundle exec rspec --tag ~skip
+          mkdir -p test-results
+          # Run tests and capture all output to file
+          xvfb-run -a bundle exec rspec --tag ~skip --format documentation 2>&1 | tee test-results/test-output.log
+          # Capture exit code from the pipeline
+          TEST_EXIT_CODE=${PIPESTATUS[0]}
+          echo $TEST_EXIT_CODE > test-results/exit-code.txt
+          # Also create a summary
+          echo "Test run completed at $(date)" > test-results/summary.txt
+          echo "Exit code: $TEST_EXIT_CODE" >> test-results/summary.txt
+          tail -20 test-results/test-output.log >> test-results/summary.txt
+          # Exit with the actual test exit code
+          exit $TEST_EXIT_CODE
+      - name: Display test summary
+        if: always()
+        run: |
+          echo "=== Test Summary ==="
+          cat test-results/summary.txt || echo "No summary found"
+          echo ""
+          echo "=== Last 50 lines of test output ==="
+          tail -50 test-results/test-output.log || echo "No test output found"
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results
+          path: |
+            test-results/
+            spec/tmp/capybara/
+          if-no-files-found: ignore
+          retention-days: 7
+
       - name: Keep screenshots from failed system tests
         uses: actions/upload-artifact@v4
         if: failure()

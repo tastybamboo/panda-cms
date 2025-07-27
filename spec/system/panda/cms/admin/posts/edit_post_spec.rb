@@ -13,7 +13,11 @@ RSpec.describe "Editing a post", type: :system do
 
   it "updates an existing post", :editorjs do
     visit "/admin/posts/#{post.id}/edit"
-    expect(page).to have_css("[data-controller='editor-form'] .codex-editor")
+    # Use JavaScript evaluation instead of CSS selector to avoid Ferrum issues
+    using_wait_time(10) do
+      editor_exists = page.evaluate_script("document.querySelector(\"[data-controller='editor-form'] .codex-editor\") !== null")
+      expect(editor_exists).to be(true)
+    end
 
     fill_in "Title", with: "Updated Test Post"
     editor_input = find("[data-editor-form-target='hiddenField']", visible: false)
@@ -43,7 +47,11 @@ RSpec.describe "Editing a post", type: :system do
 
   it "shows validation errors", :editorjs do
     visit "/admin/posts/#{post.id}/edit"
-    expect(page).to have_css("[data-controller='editor-form'] .codex-editor")
+    # Use JavaScript evaluation instead of CSS selector to avoid Ferrum issues
+    using_wait_time(10) do
+      editor_exists = page.evaluate_script("document.querySelector(\"[data-controller='editor-form'] .codex-editor\") !== null")
+      expect(editor_exists).to be(true)
+    end
 
     fill_in "Title", with: ""
     click_button "Update Post"

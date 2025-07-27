@@ -28,7 +28,7 @@ Rails.application.configure do
   # this is usually not necessary, and can slow down your test suite. However, it's
   # recommended that you enable it in continuous integration systems to ensure eager
   # loading is working properly before deploying your code.
-  config.eager_load = false
+  config.eager_load = ENV['CI'].present?
 
   # Configure public file server for tests with Cache-Control for performance.
   config.public_file_server.enabled = true
@@ -82,6 +82,36 @@ Rails.application.configure do
       OmniAuth.config.on_failure = proc { |env|
         OmniAuth::FailureEndpoint.new(env).redirect_to_failure
       }
+    end
+    
+    # Force use of compiled assets in test environment for consistency
+    if ENV['CI'].present? || Rails.env.test?
+      puts "[Panda CMS Test] Test/CI environment detected - configuring asset loading"
+      
+      # Don't use GitHub assets, prefer local compiled assets
+      ENV['PANDA_CMS_USE_GITHUB_ASSETS'] = 'false'
+      
+      # Ensure compiled assets exist in public directory
+      version = Panda::CMS::VERSION
+      compiled_js = Rails.public_path.join("panda-cms-assets", "panda-cms-#{version}.js")
+      compiled_css = Rails.public_path.join("panda-cms-assets", "panda-cms-#{version}.css")
+      
+      if compiled_js.exist? && compiled_css.exist?
+        puts "[Panda CMS Test] Using local compiled assets: #{compiled_js}"
+      else
+        puts "[Panda CMS Test] Compiled assets not found at #{compiled_js}"
+        puts "[Panda CMS Test] Falling back to development/importmap assets"
+      end
+      
+      # Debug asset loading strategy
+      begin
+        strategy = Panda::CMS::AssetLoader.use_github_assets? ? 'GitHub/Compiled' : 'Development/Local'
+        js_url = Panda::CMS::AssetLoader.javascript_url
+        puts "[Panda CMS Test] Asset strategy: #{strategy}"
+        puts "[Panda CMS Test] JavaScript URL: #{js_url}"
+      rescue => e
+        puts "[Panda CMS Test] Error checking asset strategy: #{e.message}"
+      end
     end
   end
 end

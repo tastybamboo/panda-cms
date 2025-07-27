@@ -27,8 +27,14 @@ module OmniAuthHelpers
       }
     })
 
+    # Set the Rails env config which the controller checks
     Rails.application.env_config["omniauth.auth"] = OmniAuth.config.mock_auth[:google]
+
+    # Visit the callback URL directly in test mode
     visit "/admin/auth/google/callback"
+
+    # We should be redirected to /admin after successful auth
+    expect(page).to have_current_path("/admin", wait: 10)
   end
 
   def manual_login_with_google(user)
@@ -69,8 +75,14 @@ module OmniAuthHelpers
       }
     })
 
+    # Set the Rails env config which the controller checks
     Rails.application.env_config["omniauth.auth"] = OmniAuth.config.mock_auth[:github]
+
+    # Visit the callback URL directly in test mode
     visit "/admin/auth/github/callback"
+
+    # We should be redirected to /admin after successful auth
+    expect(page).to have_current_path("/admin", wait: 10)
   end
 
   def login_with_microsoft(user)
@@ -89,18 +101,20 @@ module OmniAuthHelpers
       }
     })
 
+    # Set the Rails env config which the controller checks
     Rails.application.env_config["omniauth.auth"] = OmniAuth.config.mock_auth[:microsoft]
+
+    # Visit the callback URL directly in test mode
     visit "/admin/auth/microsoft/callback"
+
+    # We should be redirected to /admin after successful auth
+    expect(page).to have_current_path("/admin", wait: 10)
   end
 
   def login_as_admin(firstname: nil, lastname: nil, email: nil)
     user = admin_user
     login_with_google(user)
-
-    # Try to navigate to admin if not already there
-    unless page.current_path == "/admin"
-      visit "/admin"
-    end
+    # login_with_google already ensures we're at /admin
   end
 
   def login_as_user(firstname: nil, lastname: nil, email: nil)

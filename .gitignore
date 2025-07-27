@@ -9,6 +9,7 @@
 /spec/dummy/log/**/*
 /spec/dummy/storage/
 /spec/dummy/tmp/
+/spec/dummy/public/assets/
 .byebug_history
 .DS_Store
 .env
@@ -16,3 +17,4 @@
 *.gem
 /coverage/**
 **/coverage/**
+.claude/settings.local.json

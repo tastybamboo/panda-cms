@@ -1,1 +1,11 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Panda CMS Page</title>
+  <% if params[:embed_id].present? %>
+    <!-- Include Panda CMS assets for editor functionality when in edit mode -->
+    <%= panda_cms_complete_assets %>
+  <% end %>
+</head>
+<body>
 <h1>Test Header</h1>

@@ -6,5 +6,6 @@ def pause
 end
 
 def debugit
-  page.driver.debug(binding)
+  # Cuprite-specific debugging method
+  page.driver.debug
 end

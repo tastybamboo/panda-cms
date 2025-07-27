@@ -28,6 +28,7 @@ module Panda
 
       config.to_prepare do
         ApplicationController.helper(::ApplicationHelper)
+        ApplicationController.helper(Panda::CMS::AssetHelper)
       end
 
       # Set our generators

@@ -17,21 +17,32 @@ module Panda
 
         if Panda::CMS::AssetLoader.use_github_assets?
           # GitHub-hosted assets with integrity check
-          version = Panda::CMS::VERSION
+          version = Panda::CMS::AssetLoader.send(:asset_version)
           integrity = asset_integrity(version, "panda-cms-#{version}.js")
 
           tag_options = {
-            src: js_url,
-            type: "module",
-            defer: true
+            src: js_url
           }
+          # In CI environment, don't use defer to ensure immediate execution
+          tag_options[:defer] = true unless ENV["GITHUB_ACTIONS"] == "true"
+          # Standalone bundles should NOT use type: "module" - they're regular scripts
+          # Only use type: "module" for importmap/ES module assets
+          if !js_url.include?("panda-cms-assets")
+            tag_options[:type] = "module"
+          end
           tag_options[:integrity] = integrity if integrity
           tag_options[:crossorigin] = "anonymous" if integrity
 
           content_tag(:script, "", tag_options)
+        elsif js_url.include?("panda-cms-assets")
+          # Development assets - check if it's a standalone bundle or importmap
+          defer_option = (ENV["GITHUB_ACTIONS"] == "true") ? {} : {defer: true}
+          javascript_include_tag(js_url, **defer_option)
+        # Standalone bundle - don't use type: "module"
         else
-          # Development assets
-          javascript_include_tag(js_url, type: "module", defer: true)
+          # Importmap asset - use type: "module"
+          defer_option = (ENV["GITHUB_ACTIONS"] == "true") ? {} : {defer: true}
+          javascript_include_tag(js_url, type: "module", **defer_option)
         end
       end
 
@@ -77,19 +88,43 @@ module Panda
 
       # Debug information about asset loading
       def panda_cms_asset_debug
-        return "" unless Rails.env.development?
+        return "" unless Rails.env.development? || Rails.env.test?
 
         version = Panda::CMS::VERSION
         js_url = Panda::CMS::AssetLoader.javascript_url
         css_url = Panda::CMS::AssetLoader.css_url
         using_github = Panda::CMS::AssetLoader.use_github_assets?
+        compiled_available = Panda::CMS::AssetLoader.send(:compiled_assets_available?)
+
+        # Additional CI debugging
+        asset_file_exists = js_url && File.exist?(Rails.root.join("public#{js_url}"))
+        ci_env = ENV["GITHUB_ACTIONS"] == "true"
+
+        # Check what script tag will be generated
+        script_tag_preview = if using_github
+          tag_options = {src: js_url}
+          tag_options[:defer] = true unless ci_env
+          if !js_url.include?("panda-cms-assets")
+            tag_options[:type] = "module"
+          end
+          "Script tag: <script#{tag_options.map { |k, v| (v == true) ? " #{k}" : " #{k}=\"#{v}\"" }.join}></script>"
+        else
+          "Using development assets"
+        end
 
         debug_info = [
           "<!-- Panda CMS Asset Debug Info -->",
           "<!-- Version: #{version} -->",
           "<!-- Using GitHub assets: #{using_github} -->",
+          "<!-- Compiled assets available: #{compiled_available} -->",
           "<!-- JavaScript URL: #{js_url} -->",
           "<!-- CSS URL: #{css_url || "none"} -->",
+          "<!-- Rails environment: #{Rails.env} -->",
+          "<!-- Asset file exists: #{asset_file_exists} -->",
+          "<!-- Rails root: #{Rails.root} -->",
+          "<!-- CI environment: #{ci_env} -->",
+          "<!-- #{script_tag_preview} -->",
+          "<!-- Params embed_id: #{params[:embed_id] if respond_to?(:params)} -->",
           "<!-- Compiled at: #{Time.now.utc.iso8601} -->"
         ]
 
@@ -129,7 +164,9 @@ module Panda
         [
           panda_cms_asset_debug,
           panda_cms_assets,
-          panda_cms_stimulus_init
+          panda_cms_stimulus_init,
+          # Add immediate JavaScript execution test for CI debugging
+          (Rails.env.test? ? javascript_tag("window.pandaCmsInlineTest = true; console.log('[Panda CMS] Inline script executed');") : "")
         ].join("\n").html_safe
       end
 

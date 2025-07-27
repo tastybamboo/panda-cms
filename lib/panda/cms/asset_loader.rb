@@ -38,7 +38,8 @@ module Panda
           # Use GitHub assets in production or when explicitly enabled
           Rails.env.production? ||
             ENV["PANDA_CMS_USE_GITHUB_ASSETS"] == "true" ||
-            !development_assets_available?
+            !development_assets_available? ||
+            ((Rails.env.test? || in_test_environment?) && compiled_assets_available?)
         end
 
         # Download assets from GitHub to local cache
@@ -46,22 +47,22 @@ module Panda
           return if development_assets_available? && !use_github_assets?
 
           cache_dir = local_cache_directory
-          version = Panda::CMS::VERSION
+          version = `git rev-parse --short HEAD`.strip
 
           # Check if we already have cached assets for this version
           if cached_assets_exist?(version)
-            Rails.logger.info "[Panda CMS] Using cached assets v#{version}"
+            Rails.logger.info "[Panda CMS] Using cached assets #{version}"
             return
           end
 
-          Rails.logger.info "[Panda CMS] Downloading assets v#{version} from GitHub..."
+          Rails.logger.info "[Panda CMS] Downloading assets #{version} from GitHub..."
           download_github_assets(version, cache_dir)
         end
 
         private
 
         def github_asset_tags(options = {})
-          version = Panda::CMS::VERSION
+          version = asset_version
           base_url = github_base_url(version)
 
           tags = []
@@ -71,10 +72,15 @@ module Panda
           integrity = asset_integrity(version, "panda-cms-#{version}.js")
 
           js_attrs = {
-            src: js_url,
-            type: "module",
-            defer: true
+            src: js_url
           }
+          # In CI environment, don't use defer to ensure immediate execution
+          js_attrs[:defer] = true unless ENV["GITHUB_ACTIONS"] == "true"
+          # Standalone bundles should NOT use type="module" - they're regular scripts
+          # Only use type="module" for importmap/ES module assets
+          if !js_url.include?("panda-cms-assets")
+            js_attrs[:type] = "module"
+          end
           js_attrs[:integrity] = integrity if integrity
           js_attrs[:crossorigin] = "anonymous" if integrity
 
@@ -114,22 +120,36 @@ module Panda
         end
 
         def github_javascript_url
-          version = Panda::CMS::VERSION
-          "#{github_base_url(version)}panda-cms-#{version}.js"
+          version = asset_version
+          # In test environment with local compiled assets, use local URL
+          if Rails.env.test? && compiled_assets_available?
+            "/panda-cms-assets/panda-cms-#{version}.js"
+          else
+            "#{github_base_url(version)}panda-cms-#{version}.js"
+          end
         end
 
         def github_css_url
-          version = Panda::CMS::VERSION
-          "#{github_base_url(version)}panda-cms-#{version}.css"
+          version = asset_version
+          # In test environment with local compiled assets, use local URL
+          if Rails.env.test? && compiled_assets_available?
+            "/panda-cms-assets/panda-cms-#{version}.css"
+          else
+            "#{github_base_url(version)}panda-cms-#{version}.css"
+          end
         end
 
         def development_javascript_url
           # Try cached assets first, then importmap
-          version = Panda::CMS::VERSION
-          cached_path = "/panda-cms-assets/#{version}/panda-cms-#{version}.js"
+          version = asset_version
+          # Try root level first (standalone bundle), then versioned directory
+          root_path = "/panda-cms-assets/panda-cms-#{version}.js"
+          versioned_path = "/panda-cms-assets/#{version}/panda-cms-#{version}.js"
 
-          if cached_asset_exists?(cached_path)
-            cached_path
+          if cached_asset_exists?(root_path)
+            root_path
+          elsif cached_asset_exists?(versioned_path)
+            versioned_path
           else
             # Fallback to importmap or engine asset
             "/assets/panda/cms/controllers/index.js"
@@ -137,18 +157,51 @@ module Panda
         end
 
         def development_css_url
-          version = Panda::CMS::VERSION
-          cached_path = "/panda-cms-assets/#{version}/panda-cms-#{version}.css"
+          version = asset_version
+          # Try versioned directory first, then root level
+          versioned_path = "/panda-cms-assets/#{version}/panda-cms-#{version}.css"
+          root_path = "/panda-cms-assets/panda-cms-#{version}.css"
 
-          if cached_asset_exists?(cached_path)
-            cached_path
+          if cached_asset_exists?(versioned_path)
+            versioned_path
+          elsif cached_asset_exists?(root_path)
+            root_path
           else
             nil # No CSS in development mode typically
           end
         end
 
         def github_base_url(version)
-          "https://github.com/tastybamboo/panda-cms/releases/download/v#{version}/"
+          # In test environment with compiled assets, use local URLs
+          if (Rails.env.test? || in_test_environment?) && compiled_assets_available?
+            "/panda-cms-assets/"
+          else
+            "https://github.com/tastybamboo/panda-cms/releases/download/#{version}/"
+          end
+        end
+
+        def asset_version
+          # In test environment, use VERSION constant for consistency with compiled assets
+          # In other environments, use git SHA for dynamic versioning
+          # Also check for test environment indicators since Rails.env might be development in specs
+          if Rails.env.test? || ENV["CI"].present? || in_test_environment?
+            Panda::CMS::VERSION
+          else
+            `git rev-parse --short HEAD`.strip
+          end
+        end
+
+        def in_test_environment?
+          # Check if we're running specs even if Rails.env is development
+          defined?(RSpec) && RSpec.respond_to?(:configuration)
+        end
+
+        def compiled_assets_available?
+          # Check if compiled assets exist in test location
+          version = asset_version
+          js_file = Rails.public_path.join("panda-cms-assets", "panda-cms-#{version}.js")
+          css_file = Rails.public_path.join("panda-cms-assets", "panda-cms-#{version}.css")
+          js_file.exist? && css_file.exist?
         end
 
         def development_assets_available?
@@ -246,7 +299,7 @@ module Panda
           http.read_timeout = 30
 
           request = Net::HTTP::Get.new(uri)
-          request["User-Agent"] = "Panda-CMS/#{Panda::CMS::VERSION}"
+          request["User-Agent"] = "Panda-CMS/#{`git rev-parse --short HEAD`}"
 
           response = http.request(request)
 
@@ -285,7 +338,9 @@ module Panda
 
         def content_tag(name, content, options = {})
           if defined?(ActionView::Helpers::TagHelper)
-            ActionView::Base.new.content_tag(name, content, options)
+            # Create a view context to render the tag
+            view_context = ActionView::Base.new(ActionView::LookupContext.new([]), {}, nil)
+            view_context.content_tag(name, content, options)
           else
             # Fallback implementation
             attrs = options.map { |k, v| %(#{k}="#{v}") }.join(" ")
@@ -299,7 +354,9 @@ module Panda
 
         def tag(name, options = {})
           if defined?(ActionView::Helpers::TagHelper)
-            ActionView::Base.new.tag(name, options)
+            # Create a view context to render the tag
+            view_context = ActionView::Base.new(ActionView::LookupContext.new([]), {}, nil)
+            view_context.tag(name, options)
           else
             # Fallback implementation
             attrs = options.map { |k, v| %(#{k}="#{v}") }.join(" ")

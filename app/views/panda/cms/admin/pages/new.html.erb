@@ -2,6 +2,15 @@
   <% component.with_heading(text: "Add Page", level: 1) do |heading| %>
   <% end %>
   <%= panda_cms_form_with model: page, url: admin_pages_path, method: :post do |f| %>
+    <% if page.errors.any? %>
+      <div class="mb-4 p-4 bg-red-50 border border-red-200 rounded-md">
+        <div class="text-sm text-red-600">
+          <% page.errors.full_messages.each do |message| %>
+            <p><%= message %></p>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
     <% options = nested_set_options(Panda::CMS::Page, page) { |i| "#{"-" * i.level} #{i.title} (#{i.path})" } %>
     <%= f.select :parent_id, options %>
     <%= f.text_field :title %>
