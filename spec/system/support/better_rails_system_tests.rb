@@ -40,22 +40,20 @@ RSpec.configure do |config|
   # Make sure this hook runs before others
   # Means you don't have to set js: true in every system spec
   config.prepend_before(:each, type: :system) do
-    driven_by :better_cuprite
+    driven_by :cuprite
     # Don't load seeds when using fixtures to avoid conflicts
     # Rails.application.load_seed
   end
 
   # Set up Current attributes after Capybara is ready
   config.before(:each, type: :system) do
-    # Wait for Capybara to be ready and set Current.root properly
-    if Capybara.current_session.server
-      host = Capybara.current_session.server.host
-      port = Capybara.current_session.server.port
-      Panda::CMS::Current.root = "http://#{host}:#{port}"
-    else
-      # Fallback if server isn't available yet
-      Panda::CMS::Current.root = "http://127.0.0.1:3001"
-    end
+    # Don't force visit in CI - it causes browser resets
+    # Instead, let the first visit in the test handle server startup
+
+    # Set default URL configuration
+    Panda::CMS::Current.root = "http://127.0.0.1:#{Capybara.server_port || 3001}"
+    Rails.application.routes.default_url_options[:host] = Panda::CMS::Current.root
+    Panda::CMS.config.url = Panda::CMS::Current.root
 
     # Set other Current attributes that might be needed
     Panda::CMS::Current.request_id = SecureRandom.uuid
@@ -71,17 +69,35 @@ RSpec.configure do |config|
   end
 
   # Enable automatic screenshots on failure
+  # Add CI-specific timeout and retry logic for form interactions
+  config.around(:each, type: :system) do |example|
+    if ENV["GITHUB_ACTIONS"] == "true"
+      # In CI, wrap the test execution with additional error handling
+      begin
+        example.run
+      rescue => e
+        # Log any error for debugging
+        puts "[CI] Test error detected: #{e.class} - #{e.message}"
+        puts "[CI] Current URL: #{begin
+          page.current_url
+        rescue
+          "unknown"
+        end}"
+
+        # Re-raise the original error
+        raise e
+      end
+    else
+      example.run
+    end
+  end
+
   config.after(:each, type: :system) do |example|
     if example.exception
       begin
-        # Wait for any pending JavaScript and network requests to complete
-        if page.driver.respond_to?(:browser) && page.driver.browser.respond_to?(:network)
-          begin
-            page.driver.browser.network.wait_for_idle(timeout: 2)
-          rescue
-            nil
-          end
-        end
+        # Wait for any pending JavaScript to complete
+        # Cuprite has direct network idle support
+        page.driver.wait_for_network_idle rescue nil
 
         # Wait for DOM to be ready
         sleep 0.5
@@ -119,17 +135,15 @@ RSpec.configure do |config|
         end
 
         # Check session state
-        if page.driver.respond_to?(:browser) && page.driver.browser.respond_to?(:cookies)
-          cookies = begin
-            page.driver.browser.cookies.all
-          rescue
-            []
-          end
-          begin
-            cookies.find { |cookie| cookie["name"].include?("session") }
-          rescue
-            nil
-          end
+        cookies = begin
+          page.driver.browser.manage.all_cookies
+        rescue
+          []
+        end
+        begin
+          cookies.find { |cookie| cookie[:name].to_s.include?("session") }
+        rescue
+          nil
         end
 
         # Use Capybara's save_screenshot method

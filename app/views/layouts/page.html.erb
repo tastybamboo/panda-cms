@@ -2,6 +2,10 @@
 <html>
 <head>
   <title>Test Page</title>
+  <% if params[:embed_id].present? %>
+    <!-- Include Panda CMS assets for editor functionality when in edit mode -->
+    <%= panda_cms_complete_assets %>
+  <% end %>
 </head>
 <body>
   <h1><%= @page.title %></h1>

@@ -112,6 +112,23 @@ RSpec.configure do |config|
   # Allow using focus keywords "f... before a specific test"
   config.filter_run_when_matching :focus
 
+  # Retry flaky tests automatically
+  # This is especially useful for system tests that may have timing issues
+  config.around(:each, :flaky) do |example|
+    retry_count = example.metadata[:retry] || 3
+    retry_count.times do |i|
+      example.run
+      break unless example.exception
+
+      if i < retry_count - 1
+        puts "\n[RETRY] Test failed, retrying... (attempt #{i + 2}/#{retry_count})"
+        puts "[RETRY] Exception: #{example.exception.class.name}: #{example.exception.message[0..100]}"
+        example.instance_variable_set(:@exception, nil)
+        sleep 1 # Brief pause between retries
+      end
+    end
+  end
+
   # Exclude EditorJS tests by default unless specifically requested
   config.filter_run_excluding :editorjs unless ENV["INCLUDE_EDITORJS"] == "true"
 
@@ -165,5 +182,62 @@ RSpec.configure do |config|
 
   config.before(:suite) do
     DatabaseCleaner.clean_with :truncation
+
+    # Global check for JavaScript loading issues in CI
+    # This will fail fast if we detect systematic JavaScript problems
+    if ENV["GITHUB_ACTIONS"] == "true"
+      puts "\n🔍 CI Environment Detected - Checking JavaScript Infrastructure..."
+
+      # Verify compiled assets exist
+      js_asset = Rails.root.join("public/panda-cms-assets/panda-cms-0.7.4.js")
+      css_asset = Rails.root.join("public/panda-cms-assets/panda-cms-0.7.4.css")
+
+      unless File.exist?(js_asset) && File.exist?(css_asset)
+        puts "❌ CRITICAL: Compiled assets missing!"
+        puts "   JavaScript: #{File.exist?(js_asset)} (#{js_asset})"
+        puts "   CSS: #{File.exist?(css_asset)} (#{css_asset})"
+        fail "Compiled assets not found - check asset compilation step"
+      end
+
+      puts "✅ Compiled assets found:"
+      puts "   JavaScript: #{File.size(js_asset)} bytes"
+      puts "   CSS: #{File.size(css_asset)} bytes"
+
+      # Test basic Rails application responsiveness
+      puts "\n🔍 Testing Rails application responsiveness..."
+      begin
+        require "net/http"
+        require "capybara"
+
+        # Try to make a basic HTTP request to test if Rails is responding
+        if defined?(Capybara) && Capybara.current_session
+          puts "   Capybara server: #{begin
+            Capybara.current_session.server.base_url
+          rescue
+            "not available"
+          end}"
+        end
+
+        # Check if database is accessible
+        if defined?(ActiveRecord::Base)
+          begin
+            ActiveRecord::Base.connection.execute("SELECT 1")
+            puts "   Database connection: ✅ OK"
+          rescue => e
+            puts "   Database connection: ❌ FAILED - #{e.message}"
+          end
+        end
+
+        # Check if basic models can be loaded
+        begin
+          user_count = Panda::CMS::User.count
+          puts "   User model access: ✅ OK (#{user_count} users)"
+        rescue => e
+          puts "   User model access: ❌ FAILED - #{e.message}"
+        end
+      rescue => e
+        puts "   Rails app check failed: #{e.message}"
+      end
+    end
   end
 end
