@@ -6,5 +6,6 @@ def pause
 end
 
 def debugit
-  page.driver.debug(binding)
+  # Selenium doesn't have a built-in debug method
+  pause
 end

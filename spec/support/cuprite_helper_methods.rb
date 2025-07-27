@@ -2,17 +2,23 @@
 
 module CupriteHelpers
   def pause
-    page.driver.debug(binding)
+    # Selenium doesn't have a built-in debug method
+    if ENV["DEBUG"].in?(%w[y 1 yes true])
+      debugger
+    else
+      puts "Paused. Press Enter to continue..."
+      gets
+    end
   end
 
   def debug_page_state
     return unless ENV["DEBUG"]
 
     # Log any JS console errors
-    if page.driver.browser.respond_to?(:manage)
-      console_logs = page.driver.browser.manage.logs.get(:browser)
+    if page.driver.browser.respond_to?(:logs)
+      console_logs = page.driver.browser.logs.get(:browser)
       if console_logs.present?
-        console_logs.each { |log| }
+        console_logs.each { |log| puts "[Console] #{log.level}: #{log.message}" }
       end
     end
   rescue

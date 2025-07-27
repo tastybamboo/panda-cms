@@ -5,7 +5,7 @@ module SharedBrowserSession
   def self.included(base)
     base.before(:all) do
       @__initial_driver = Capybara.current_driver
-      Capybara.current_driver = :better_cuprite
+      Capybara.current_driver = :selenium_chrome
     end
 
     base.after(:each) do

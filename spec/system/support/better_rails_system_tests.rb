@@ -40,7 +40,7 @@ RSpec.configure do |config|
   # Make sure this hook runs before others
   # Means you don't have to set js: true in every system spec
   config.prepend_before(:each, type: :system) do
-    driven_by :better_cuprite
+    driven_by :selenium_chrome
     # Don't load seeds when using fixtures to avoid conflicts
     # Rails.application.load_seed
   end
@@ -75,21 +75,10 @@ RSpec.configure do |config|
       # In CI, wrap the test execution with additional error handling
       begin
         example.run
-      rescue Ferrum::NodeNotFoundError => e
-        # Log the specific error that causes about:blank navigation
-        puts "[CI] Ferrum NodeNotFoundError detected: #{e.message}"
+      rescue => e
+        # Log any error for debugging
+        puts "[CI] Test error detected: #{e.class} - #{e.message}"
         puts "[CI] Current URL: #{page.current_url rescue 'unknown'}"
-        
-        # If we're on about:blank, this is the known browser reset issue
-        begin
-          current_url = page.current_url
-          if current_url.include?('about:blank')
-            puts "[CI] Browser reset to about:blank detected - this is a known Ferrum issue in CI"
-            puts "[CI] Recommendation: Use safe_* helper methods or JavaScript evaluation for element checks"
-          end
-        rescue
-          puts "[CI] Could not check current URL"
-        end
         
         # Re-raise the original error
         raise e
@@ -102,14 +91,9 @@ RSpec.configure do |config|
   config.after(:each, type: :system) do |example|
     if example.exception
       begin
-        # Wait for any pending JavaScript and network requests to complete
-        if page.driver.respond_to?(:browser) && page.driver.browser.respond_to?(:network)
-          begin
-            page.driver.browser.network.wait_for_idle(timeout: 2)
-          rescue
-            nil
-          end
-        end
+        # Wait for any pending JavaScript to complete
+        # Selenium doesn't have direct network idle support
+        sleep 0.5
 
         # Wait for DOM to be ready
         sleep 0.5
@@ -147,17 +131,15 @@ RSpec.configure do |config|
         end
 
         # Check session state
-        if page.driver.respond_to?(:browser) && page.driver.browser.respond_to?(:cookies)
-          cookies = begin
-            page.driver.browser.cookies.all
-          rescue
-            []
-          end
-          begin
-            cookies.find { |cookie| cookie["name"].include?("session") }
-          rescue
-            nil
-          end
+        cookies = begin
+          page.driver.browser.manage.all_cookies
+        rescue
+          []
+        end
+        begin
+          cookies.find { |cookie| cookie[:name].to_s.include?("session") }
+        rescue
+          nil
         end
 
         # Use Capybara's save_screenshot method

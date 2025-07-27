@@ -42,6 +42,8 @@ module CupriteHelpers
     
     # Wait for page to be ready
     wait_for_ready_state
+    # Wait for JavaScript to load
+    wait_for_javascript
     true
   end
   
@@ -56,6 +58,21 @@ module CupriteHelpers
     end
   rescue Timeout::Error
     puts "[CI] Timeout waiting for document ready state" if ENV["GITHUB_ACTIONS"]
+  end
+  
+  # Wait for JavaScript to load (Panda CMS specific)
+  def wait_for_javascript(timeout: 5)
+    Timeout.timeout(timeout) do
+      loop do
+        loaded = page.evaluate_script('window.pandaCmsLoaded === true') rescue false
+        break if loaded
+        sleep 0.1
+      end
+    end
+    true
+  rescue Timeout::Error
+    puts "[CI] Timeout waiting for JavaScript to load" if ENV["GITHUB_ACTIONS"]
+    false
   end
   # Waits for a specific selector to be present and visible on the page
   # @param selector [String] CSS selector to wait for
@@ -87,12 +104,10 @@ module CupriteHelpers
   # @param timeout [Integer] Maximum time to wait in seconds (default: 5)
   # @return [Boolean] true if network is idle, false if timeout occurs
   def wait_for_network_idle(timeout: 5)
-    page.driver.browser.network.wait_for_idle(timeout: timeout)
+    # Selenium doesn't have direct network idle support
+    # Just wait a bit for any ongoing requests
+    sleep 0.5
     true
-  rescue Ferrum::TimeoutError
-    false
-  rescue
-    false
   end
 
   # Waits for JavaScript to modify the DOM
@@ -112,20 +127,28 @@ module CupriteHelpers
   # Useful when you want to checkout the contents of a web page in the middle of a test
   # running in a headful mode.
   def pause
-    page.driver.pause
+    # Selenium doesn't have a built-in pause method
+    # Use debugger or sleep instead
+    if ENV["DEBUG"].in?(%w[y 1 yes true])
+      debugger
+    else
+      puts "Paused. Press Enter to continue..."
+      gets
+    end
   end
 
   # Drop #browser_debug anywhere in a test to open a Chrome inspector and pause the execution
   # Usage: browser_debug(binding)
   def browser_debug(*)
-    page.driver.debug(*)
+    # Selenium doesn't have a built-in debug method
+    pause
   end
 
   # Allows sending a list of CSS selectors to be clicked on in the correct order (no delay)
   # Useful where you need to trigger e.g. a blur event on an input field
   def click_on_selectors(*css_selectors)
     css_selectors.each do |selector|
-      page.driver.browser.at_css(selector).click
+      find(selector).click
       sleep 0.1 # Add a small delay to allow JavaScript to run
     end
   end
@@ -151,12 +174,12 @@ module CupriteHelpers
     
     begin
       fill_in locator, with: with
-    rescue Ferrum::NodeNotFoundError => e
+    rescue Selenium::WebDriver::Error::NoSuchElementError, Capybara::ElementNotFound => e
       retries += 1
       elapsed = Time.now - start_time
       
       if retries <= 2 && elapsed < max_duration && ENV["GITHUB_ACTIONS"]
-        puts "[CI] Ferrum::NodeNotFoundError on fill_in '#{locator}', retry #{retries}/2 (#{elapsed.round(1)}s elapsed)"
+        puts "[CI] Element not found on fill_in '#{locator}', retry #{retries}/2 (#{elapsed.round(1)}s elapsed)"
         sleep 0.5
         retry
       else
@@ -173,12 +196,12 @@ module CupriteHelpers
     
     begin
       select value, from: from
-    rescue Ferrum::NodeNotFoundError => e
+    rescue Selenium::WebDriver::Error::NoSuchElementError, Capybara::ElementNotFound => e
       retries += 1
       elapsed = Time.now - start_time
       
       if retries <= 2 && elapsed < max_duration && ENV["GITHUB_ACTIONS"]
-        puts "[CI] Ferrum::NodeNotFoundError on select '#{value}' from '#{from}', retry #{retries}/2 (#{elapsed.round(1)}s elapsed)"
+        puts "[CI] Element not found on select '#{value}' from '#{from}', retry #{retries}/2 (#{elapsed.round(1)}s elapsed)"
         sleep 0.5
         retry
       else
@@ -195,12 +218,12 @@ module CupriteHelpers
     
     begin
       click_button locator
-    rescue Ferrum::NodeNotFoundError => e
+    rescue Selenium::WebDriver::Error::NoSuchElementError, Capybara::ElementNotFound => e
       retries += 1
       elapsed = Time.now - start_time
       
       if retries <= 2 && elapsed < max_duration && ENV["GITHUB_ACTIONS"]
-        puts "[CI] Ferrum::NodeNotFoundError on click_button '#{locator}', retry #{retries}/2 (#{elapsed.round(1)}s elapsed)"
+        puts "[CI] Element not found on click_button '#{locator}', retry #{retries}/2 (#{elapsed.round(1)}s elapsed)"
         sleep 0.5
         retry
       else

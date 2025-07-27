@@ -39,7 +39,7 @@ module Panda
           Rails.env.production? ||
             ENV["PANDA_CMS_USE_GITHUB_ASSETS"] == "true" ||
             !development_assets_available? ||
-            (Rails.env.test? && compiled_assets_available?)
+            ((Rails.env.test? || in_test_environment?) && compiled_assets_available?)
         end
 
         # Download assets from GitHub to local cache
@@ -173,7 +173,7 @@ module Panda
 
         def github_base_url(version)
           # In test environment with compiled assets, use local URLs
-          if Rails.env.test? && compiled_assets_available?
+          if (Rails.env.test? || in_test_environment?) && compiled_assets_available?
             "/panda-cms-assets/"
           else
             "https://github.com/tastybamboo/panda-cms/releases/download/#{version}/"
@@ -183,11 +183,17 @@ module Panda
         def asset_version
           # In test environment, use VERSION constant for consistency with compiled assets
           # In other environments, use git SHA for dynamic versioning
-          if Rails.env.test?
+          # Also check for test environment indicators since Rails.env might be development in specs
+          if Rails.env.test? || ENV['CI'].present? || in_test_environment?
             Panda::CMS::VERSION
           else
             `git rev-parse --short HEAD`.strip
           end
+        end
+        
+        def in_test_environment?
+          # Check if we're running specs even if Rails.env is development
+          defined?(RSpec) && RSpec.respond_to?(:configuration)
         end
 
         def compiled_assets_available?

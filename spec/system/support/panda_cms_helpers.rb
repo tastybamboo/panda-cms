@@ -407,7 +407,7 @@ module PandaCmsHelpers
         
         # Check for browser console errors
         begin
-          console_logs = page.driver.browser.console_messages rescue []
+          console_logs = page.driver.browser.logs.get(:browser) rescue []
           if console_logs.any?
             puts "[Test Debug] Browser console messages:"
             console_logs.each do |log|
