@@ -91,7 +91,7 @@ jobs:
             # Get current version
             CURRENT_VERSION=$(ruby -r ./lib/panda/cms/version.rb -e "puts Panda::CMS::VERSION")
             echo "Current version: $CURRENT_VERSION"
-            
+
             # Calculate next version based on type
             case "${{ inputs.version_type }}" in
               major)
@@ -106,7 +106,7 @@ jobs:
             esac
             echo "Next version: $VERSION"
           fi
-          
+
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
           echo "TAG=v$VERSION" >> $GITHUB_OUTPUT
 
@@ -116,7 +116,7 @@ jobs:
             echo "❌ Version ${{ steps.version.outputs.TAG }} already exists!"
             exit 1
           fi
-          
+
           if gem list -r panda-cms -a | grep -q "${{ steps.version.outputs.VERSION }}"; then
             echo "⚠️ Warning: Version ${{ steps.version.outputs.VERSION }} already exists on RubyGems"
             if [ "${{ inputs.dry_run }}" != "true" ]; then
@@ -129,7 +129,7 @@ jobs:
         run: |
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
-          
+
           BRANCH="release/${{ steps.version.outputs.TAG }}"
           git checkout -b "$BRANCH"
           echo "Created branch: $BRANCH"
@@ -138,7 +138,7 @@ jobs:
         run: |
           echo "📝 Updating version to ${{ steps.version.outputs.VERSION }}..."
           gem bump --no-commit --version ${{ steps.version.outputs.VERSION }}
-          
+
           # Update Gemfile.lock
           bundle update
 
@@ -146,17 +146,17 @@ jobs:
         id: changelog
         run: |
           echo "📋 Generating changelog..."
-          
+
           # Get the previous tag
           PREVIOUS_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
-          
+
           if [ -n "$PREVIOUS_TAG" ]; then
             echo "Changes since $PREVIOUS_TAG:"
             echo ""
-            
+
             # Generate changelog
             CHANGELOG=$(git log --pretty=format:"- %s (%an)" "$PREVIOUS_TAG"..HEAD | grep -v "Merge pull request" | head -20)
-            
+
             # Save to file for release notes
             {
               echo "## What's Changed"
@@ -165,7 +165,7 @@ jobs:
               echo ""
               echo "**Full Changelog**: https://github.com/tastybamboo/panda-cms/compare/$PREVIOUS_TAG...${{ steps.version.outputs.TAG }}"
             } > release_notes.md
-            
+
             cat release_notes.md
           else
             echo "First release!" > release_notes.md
@@ -180,16 +180,16 @@ jobs:
         run: |
           echo "💎 Building gem..."
           gem build panda-cms.gemspec
-          
+
           # Verify gem was built
           GEM_FILE="panda-cms-${{ steps.version.outputs.VERSION }}.gem"
           if [ ! -f "$GEM_FILE" ]; then
             echo "❌ Gem file not found: $GEM_FILE"
             exit 1
           fi
-          
+
           echo "✅ Gem built: $GEM_FILE ($(du -h $GEM_FILE | cut -f1))"
-          
+
           # Display gem contents
           echo ""
           echo "📦 Gem contents:"
@@ -205,14 +205,14 @@ jobs:
         if: ${{ !inputs.dry_run }}
         run: |
           echo "⏳ Waiting for asset compilation workflow to complete..."
-          
+
           # Wait for the release-assets workflow to start
           sleep 30
-          
+
           # Poll for workflow completion (max 10 minutes)
           for i in {1..20}; do
             echo "Checking asset workflow status (attempt $i/20)..."
-            
+
             # Check if release exists and has assets
             if gh release view ${{ steps.version.outputs.TAG }} --json assets -q '.assets | length' > /dev/null 2>&1; then
               ASSET_COUNT=$(gh release view ${{ steps.version.outputs.TAG }} --json assets -q '.assets | length')
@@ -222,7 +222,7 @@ jobs:
                 break
               fi
             fi
-            
+
             if [ $i -eq 20 ]; then
               echo "⚠️ Asset compilation timeout - proceeding anyway"
             else
@@ -238,15 +238,15 @@ jobs:
           GEM_HOST_API_KEY: ${{ secrets.RUBYGEMS_API_KEY }}
         run: |
           echo "📤 Publishing gem to RubyGems..."
-          
+
           GEM_FILE="panda-cms-${{ steps.version.outputs.VERSION }}.gem"
-          
+
           # Set up credentials
           mkdir -p ~/.gem
           echo "---" > ~/.gem/credentials
           echo ":rubygems_api_key: $GEM_HOST_API_KEY" >> ~/.gem/credentials
           chmod 0600 ~/.gem/credentials
-          
+
           # Publish gem
           if gem push $GEM_FILE; then
             echo "✅ Gem published successfully!"
@@ -254,7 +254,7 @@ jobs:
             echo "❌ Failed to publish gem"
             exit 1
           fi
-          
+
           # Clean up credentials
           rm ~/.gem/credentials
 
@@ -274,17 +274,17 @@ jobs:
         if: ${{ !inputs.dry_run }}
         run: |
           echo "🔍 Verifying release..."
-          
+
           # Wait a bit for RubyGems to update
           sleep 30
-          
+
           # Check if gem is available on RubyGems
           if gem list -r panda-cms -a | grep -q "${{ steps.version.outputs.VERSION }}"; then
             echo "✅ Gem is available on RubyGems!"
           else
             echo "⚠️ Gem not yet visible on RubyGems (this may take a few minutes)"
           fi
-          
+
           # Display release information
           echo ""
           echo "📋 Release Summary:"
