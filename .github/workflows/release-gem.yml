@@ -168,8 +168,11 @@ jobs:
           VERSION_FILE="lib/panda-cms/version.rb"
           sed -i "s/VERSION = \".*\"/VERSION = \"${{ steps.version.outputs.VERSION }}\"/" $VERSION_FILE
 
+          # Disable frozen mode for bundle update
+          bundle config set frozen false
+
           # Update Gemfile.lock
-          bundle update
+          bundle update panda-cms
 
       - name: "Generate changelog"
         id: changelog
