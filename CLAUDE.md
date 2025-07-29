@@ -355,3 +355,6 @@ If any of these values are `nil` or `false`, the JavaScript bundle is not execut
 - Remember to do this whenever we're debugging CI runs so I don't have to keep doing this work manually. We should also end the CI run early, if we find any failures.
 - Always allow adding the tmp/ci-artifacts* directory it needs
 - **Always monitor CI runs if we're trying to debug them for this project**
+
+## Code Quality Memories
+- Always run "yamllint -c .yamllint ." if you make changes to .yml or .yaml files.
