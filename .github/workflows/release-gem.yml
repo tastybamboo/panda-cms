@@ -155,10 +155,18 @@ jobs:
           git checkout -b "$BRANCH"
           echo "Created branch: $BRANCH"
 
+          # Clean up any uncommitted changes from asset compilation
+          # These are test artifacts that shouldn't be in the release
+          git clean -fd
+          git checkout -- .
+
       - name: "Bump version"
         run: |
           echo "📝 Updating version to ${{ steps.version.outputs.VERSION }}..."
-          gem bump --no-commit --version ${{ steps.version.outputs.VERSION }}
+
+          # Manually update version file since gem bump requires clean working directory
+          VERSION_FILE="lib/panda-cms/version.rb"
+          sed -i "s/VERSION = \".*\"/VERSION = \"${{ steps.version.outputs.VERSION }}\"/" $VERSION_FILE
 
           # Update Gemfile.lock
           bundle update
