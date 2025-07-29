@@ -126,20 +126,20 @@ Asset compilation is required when:
 # 1. Make your code changes
 git add . && git commit -m "Your changes"
 
-# 2. Compile assets for the current codebase
-bundle exec rake app:panda_cms:assets:compile
-
-# 3. Commit the compiled assets
-git add public/panda-cms-assets/
-git commit -m "Compile assets for release"
-
-# 4. Create and push release tag
+# 2. Create and push release tag
 git tag -a v0.X.Y -m "Release v0.X.Y"
 git push origin main --tags
 
-# 5. Upload assets to GitHub release
-bundle exec rake app:panda_cms:assets:upload
+# 3. GitHub Actions automatically compiles and uploads assets
+# Monitor the release workflow at:
+# https://github.com/tastybamboo/panda-cms/actions/workflows/release-assets.yml
+
+# 4. Once assets are uploaded, publish the gem
+gem build panda-cms.gemspec
+gem push panda-cms-0.X.Y.gem
 ```
+
+**Note**: Assets are automatically compiled and uploaded by the GitHub Actions workflow when a release tag is pushed. For manual asset compilation, see the [release documentation](docs/developers/releasing.md).
 
 #### Asset Loading Strategy
 Panda CMS uses different asset loading strategies based on environment:
@@ -267,9 +267,12 @@ If you encounter JavaScript test failures with errors like "Could not find node 
 
 **Problem 1: Asset Compilation Task Not Running in CI**
 ```bash
-# Ensure CI runs the correct asset compilation task
-bundle exec rake app:panda_cms:assets:compile  # Correct (note the 'app:' prefix)
-bundle exec rake panda_cms:assets:compile      # Incorrect in some environments
+# In CI, assets are compiled from the spec/dummy directory
+cd spec/dummy
+bundle exec rake panda_cms:assets:compile  # Correct for CI
+
+# For local development from project root
+bundle exec rake app:panda_cms:assets:compile  # Correct for local dev
 ```
 
 **Problem 2: Assets Generated but Not Copied to Test Location**
