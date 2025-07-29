@@ -205,8 +205,17 @@ jobs:
 
       - name: "Commit version bump"
         run: |
-          git add -A
-          git commit -m "Release ${{ steps.version.outputs.VERSION }}"
+          # Only add specific files, not vendor/bundle
+          git add lib/panda-cms/version.rb
+          git add Gemfile.lock
+          git add release_notes.md
+
+          # Check if there are actual changes to commit
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Release ${{ steps.version.outputs.VERSION }}"
+          fi
 
       - name: "Build gem"
         run: |
