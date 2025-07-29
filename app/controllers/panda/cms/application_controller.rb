@@ -39,7 +39,7 @@ module Panda
       end
 
       def authenticate_user!
-        redirect_to root_path, flash: {error: "Please login to view this!"} unless user_signed_in?
+        redirect_to main_app.root_path, flash: {error: "Please login to view this!"} unless user_signed_in?
       end
 
       def authenticate_admin_user!
