@@ -70,15 +70,36 @@ jobs:
         run: |
           gem install gem-release
 
+      - name: "Setup test database"
+        env:
+          DATABASE_URL: "postgres://postgres:password@localhost:5432/test"
+          RAILS_ENV: test
+        run: |
+          bundle exec rails db:create
+          bundle exec rails db:schema:load
+
+      - name: "Compile assets for tests"
+        working-directory: spec/dummy
+        env:
+          DATABASE_URL: "postgres://postgres:password@localhost:5432/test"
+          RAILS_ENV: test
+        run: |
+          echo "🔧 Compiling assets for test environment..."
+          bundle exec rake panda_cms:assets:compile
+          echo "✅ Asset compilation complete"
+          
+          # Verify assets exist
+          echo "Verifying compiled assets:"
+          ls -la public/panda-cms-assets/
+
       - name: "Run tests"
         if: ${{ !inputs.skip_tests }}
         env:
           DATABASE_URL: "postgres://postgres:password@localhost:5432/test"
           RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
+          RAILS_ENV: test
         run: |
           echo "🧪 Running test suite..."
-          bundle exec rails db:create
-          bundle exec rails db:schema:load
           bundle exec rspec --tag ~skip --fail-fast
 
       - name: "Determine version"
@@ -89,7 +110,7 @@ jobs:
             echo "Using specific version: $VERSION"
           else
             # Get current version
-            CURRENT_VERSION=$(ruby -r ./lib/panda/cms/version.rb -e "puts Panda::CMS::VERSION")
+            CURRENT_VERSION=$(ruby -r ./lib/panda-cms/version.rb -e "puts Panda::CMS::VERSION")
             echo "Current version: $CURRENT_VERSION"
 
             # Calculate next version based on type
