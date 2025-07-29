@@ -251,6 +251,7 @@ jobs:
           sleep 30
 
           # Poll for workflow completion (max 10 minutes)
+          ASSET_FOUND=false
           for i in {1..20}; do
             echo "Checking asset workflow status (attempt $i/20)..."
 
@@ -260,16 +261,27 @@ jobs:
               if [ "$ASSET_COUNT" -gt 0 ]; then
                 echo "✅ Assets uploaded successfully!"
                 gh release view ${{ steps.version.outputs.TAG }} --json assets -q '.assets[].name'
+                ASSET_FOUND=true
                 break
               fi
             fi
 
             if [ $i -eq 20 ]; then
-              echo "⚠️ Asset compilation timeout - proceeding anyway"
+              echo "❌ Asset compilation timeout - assets are required for production"
+              echo "The release-assets workflow did not complete in time."
+              echo "Please check: https://github.com/tastybamboo/panda-cms/actions/workflows/release-assets.yml"
+              exit 1
             else
               sleep 30
             fi
           done
+
+          # Verify we have the required assets
+          if [ "$ASSET_FOUND" != "true" ]; then
+            echo "❌ No assets found for release ${{ steps.version.outputs.TAG }}"
+            echo "Cannot publish gem without compiled assets."
+            exit 1
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -299,17 +311,21 @@ jobs:
           # Clean up credentials
           rm ~/.gem/credentials
 
-      - name: "Create pull request"
+      - name: "Display PR instructions"
         if: ${{ !inputs.dry_run }}
         run: |
-          # Create PR to merge release branch
-          gh pr create \
-            --title "Release ${{ steps.version.outputs.VERSION }}" \
-            --body "Automated release of version ${{ steps.version.outputs.VERSION }}" \
-            --base main \
-            --head "release/${{ steps.version.outputs.TAG }}"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          echo "📝 Manual PR Creation Required"
+          echo ""
+          echo "GitHub Actions cannot create PRs with the default token."
+          echo "Please create the PR manually:"
+          echo ""
+          echo "1. Visit: https://github.com/tastybamboo/panda-cms/pull/new/release/${{ steps.version.outputs.TAG }}"
+          echo "2. Set base branch to: main"
+          echo "3. Use title: Release ${{ steps.version.outputs.VERSION }}"
+          echo "4. Add description about the release"
+          echo ""
+          echo "Or run locally:"
+          echo "gh pr create --title \"Release ${{ steps.version.outputs.VERSION }}\" --body \"Release of version ${{ steps.version.outputs.VERSION }}\" --base main --head \"release/${{ steps.version.outputs.TAG }}\""
 
       - name: "Verify release"
         if: ${{ !inputs.dry_run }}
@@ -336,10 +352,14 @@ jobs:
           echo ""
           echo "🎉 Release complete!"
           echo ""
-          echo "Next steps:"
-          echo "1. Review and merge the PR: #${{ github.run_number }}"
-          echo "2. Delete the release branch after merging"
-          echo "3. Announce the release"
+          echo "📌 Required Manual Steps:"
+          echo "1. Create PR: https://github.com/tastybamboo/panda-cms/pull/new/release/${{ steps.version.outputs.TAG }}"
+          echo "2. Review and merge the PR"
+          echo "3. Delete the release branch after merging:"
+          echo "   git push origin --delete release/${{ steps.version.outputs.TAG }}"
+          echo "4. Announce the release"
+          echo ""
+          echo "⚠️ IMPORTANT: The gem is published but the code changes are not yet in main branch!"
 
       - name: "Dry run summary"
         if: ${{ inputs.dry_run }}
