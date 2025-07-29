@@ -87,7 +87,7 @@ jobs:
           echo "🔧 Compiling assets for test environment..."
           bundle exec rake panda_cms:assets:compile
           echo "✅ Asset compilation complete"
-          
+
           # Verify assets exist
           echo "Verifying compiled assets:"
           ls -la public/panda-cms-assets/
