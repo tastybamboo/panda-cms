@@ -105,12 +105,33 @@ module Panda
         end
 
         def development_asset_tags(options = {})
-          # In development, use importmap or local assets
-          if defined?(Rails.application.importmap)
-            # Use importmap for development
-            javascript_importmap_tags
+          # In test environment with CI, always use compiled assets
+          if (Rails.env.test? || ENV["CI"].present?) && compiled_assets_available?
+            # Use the same logic as GitHub assets but with local paths
+            version = asset_version
+            js_url = "/panda-cms-assets/panda-cms-#{version}.js"
+            css_url = "/panda-cms-assets/panda-cms-#{version}.css"
+            
+            tags = []
+            
+            # JavaScript tag
+            tags << content_tag(:script, "", {
+              src: js_url,
+              defer: true
+            })
+            
+            # CSS tag if exists
+            if cached_asset_exists?(css_url)
+              tags << tag(:link, {
+                rel: "stylesheet",
+                href: css_url
+              })
+            end
+            
+            tags.join("\n").html_safe
           else
-            # Fallback to basic script tag
+            # In development, just use a simple script tag
+            # The view will handle importmap tags separately
             content_tag(:script, "", {
               src: development_javascript_url,
               type: "module",
