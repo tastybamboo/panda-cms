@@ -11,22 +11,14 @@ class MigrateUsersToPandaCore < ActiveRecord::Migration[8.0]
       # Copy all user data
       execute <<-SQL
         INSERT INTO panda_core_users (
-          id, firstname, lastname, email, image_url, admin, current_theme, created_at, updated_at
+          id, name, email, image_url, is_admin, created_at, updated_at
         )
         SELECT 
           id,
-          COALESCE(firstname, split_part(name, ' ', 1), ''),
-          COALESCE(lastname, 
-            CASE 
-              WHEN name IS NOT NULL AND position(' ' IN name) > 0 
-              THEN substring(name FROM position(' ' IN name) + 1)
-              ELSE ''
-            END, 
-          ''),
+          COALESCE(name, CONCAT(firstname, ' ', lastname), 'Unknown User'),
           email,
           image_url,
           COALESCE(admin, false),
-          COALESCE(current_theme, 'default'),
           created_at,
           updated_at
         FROM panda_cms_users
@@ -83,13 +75,17 @@ class MigrateUsersToPandaCore < ActiveRecord::Migration[8.0]
         )
         SELECT 
           id,
-          firstname,
-          lastname,
-          CONCAT(firstname, ' ', lastname),
+          split_part(name, ' ', 1),
+          CASE 
+            WHEN position(' ' IN name) > 0 
+            THEN substring(name FROM position(' ' IN name) + 1)
+            ELSE ''
+          END,
+          name,
           email,
           image_url,
-          admin,
-          current_theme,
+          is_admin,
+          'default',
           created_at,
           updated_at
         FROM panda_core_users
