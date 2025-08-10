@@ -9,8 +9,8 @@ RSpec.describe Panda::CMS::Post, type: :model do
       Panda::CMS::Post.create!(
         title: "Test Post",
         slug: "/test-post",
-        user: panda_cms_users(:admin_user),
-        author: panda_cms_users(:admin_user),
+        user: panda_core_users(:admin_user),
+        author: panda_core_users(:admin_user),
         status: "active"
       )
     end
