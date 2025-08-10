@@ -9,11 +9,15 @@ gem "panda-core", github: "tastybamboo/panda-core", branch: "feature/auth-migrat
 # Specify your gem's dependencies in panda-cms.gemspec.
 gemspec
 
+# Development-only dependencies  
+group :development do
+  gem "better_errors"
+  gem "binding_of_caller"
+end
+
 # Development and testing dependencies
 group :development, :test do
   gem "annotaterb"
-  gem "better_errors"
-  gem "binding_of_caller"
   gem "brakeman"
   gem "bullet"
   gem "bundler-audit"
