@@ -55,7 +55,7 @@ begin
     puts "✅ Admin user found:"
     puts "  ID: #{admin_user.id}"
     puts "  Email: #{admin_user.email}"
-    puts "  Name: #{admin_user.firstname} #{admin_user.lastname}"
+    puts "  Name: #{admin_user.name.split(" ")[0]} #{admin_user.name.split(" ")[1] || ""}"
     puts "  Admin: #{admin_user.admin?}"
   else
     puts "❌ Admin user NOT found!"
@@ -111,7 +111,7 @@ begin
       uid: admin_user.id,
       info: {
         email: admin_user.email,
-        name: "#{admin_user.firstname} #{admin_user.lastname}"
+        name: "#{admin_user.name.split(" ")[0]} #{admin_user.name.split(" ")[1] || ""}"
       },
       credentials: {
         token: "mock_token",
@@ -137,7 +137,7 @@ begin
     # Simulate the SessionsController#create logic
     user_info = {
       "email" => admin_user.email,
-      "name" => "#{admin_user.firstname} #{admin_user.lastname}"
+      "name" => "#{admin_user.name.split(" ")[0]} #{admin_user.name.split(" ")[1] || ""}"
     }
 
     user = Panda::CMS::User.find_by(email: user_info["email"])
