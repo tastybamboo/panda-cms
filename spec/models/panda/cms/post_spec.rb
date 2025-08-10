@@ -3,7 +3,7 @@
 require "rails_helper"
 
 RSpec.describe Panda::CMS::Post, type: :model do
-  fixtures :panda_cms_users
+  fixtures :panda_core_users
   describe "editor content", :editorjs do
     let(:post) do
       Panda::CMS::Post.create!(

@@ -3,7 +3,7 @@
 require "system_helper"
 
 RSpec.describe "Admin authentication", type: :system do
-  fixtures :panda_cms_users
+  fixtures :panda_core_users
   describe "where provider is" do
     context "Google" do
       it "logs in admin successfully" do

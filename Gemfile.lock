@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/tastybamboo/panda-core.git
-  revision: 6ec06cc34b98d47c2a90fc823240ce1e1345eda5
+  revision: bc89ba042dda260f22dfc2065f43b92eccd7d57f
   branch: feature/auth-migration-from-cms
   specs:
     panda-core (0.1.16)

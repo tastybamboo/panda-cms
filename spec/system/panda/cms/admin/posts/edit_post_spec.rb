@@ -3,7 +3,7 @@
 require "system_helper"
 
 RSpec.describe "Editing a post", type: :system do
-  fixtures :panda_cms_users, :panda_cms_posts
+  fixtures :panda_core_users, :panda_cms_posts
 
   before do
     login_as_admin

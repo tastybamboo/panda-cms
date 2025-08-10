@@ -4,7 +4,7 @@
 require "system_helper"
 
 RSpec.describe "Admin profile management", type: :system do
-  fixtures :panda_cms_users
+  fixtures :panda_core_users
 
   def ci_wait_time(local: 1, ci: 10)
     ENV["GITHUB_ACTIONS"] ? ci : local
