@@ -1,33 +1,32 @@
 # Authentication in Panda CMS
 
-Panda CMS provides a flexible authentication system built on OmniAuth. This section covers everything you need to know about authentication in your Panda CMS application.
+> **Note**: Authentication is now handled by Panda Core. This documentation is for reference only.
 
-## Topics
+## Authentication System
 
-1. [Authentication Providers](providers.md)
-   - Available providers
-   - Configuration and setup
-   - Troubleshooting
-   - Security considerations
+As of Panda CMS v0.8.0, authentication has been moved to [Panda Core](https://github.com/tastybamboo/panda-core). 
 
-## Quick Start
+For authentication documentation, please see:
+- [Panda Core Authentication Guide](https://github.com/tastybamboo/panda-core/tree/main/docs/authentication)
+- [Migration Guide](https://github.com/tastybamboo/panda-core/blob/main/docs/authentication/migration.md)
 
-1. Choose your authentication provider(s) (Google, Microsoft, GitHub)
-2. Add the required gems to your Gemfile
-3. Configure your credentials
-4. Enable the providers in your Panda CMS configuration
+## What's Changed
 
-Example minimal setup for Google authentication:
+1. **User Model**: Now uses `Panda::Core::User` instead of `Panda::CMS::User`
+2. **Configuration**: Authentication is configured in `Panda::Core`, not `Panda::CMS`
+3. **Database**: Users are stored in `panda_core_users` table
+
+## Quick Reference
+
+### Configuring Authentication
+
+Authentication providers are now configured in your panda_core initializer:
 
 ```ruby
-# Gemfile
-gem 'omniauth-google-oauth2', '~> 1.1'
-
-# config/initializers/panda_cms.rb
-Panda::CMS.configure do |config|
-  config.authentication = {
-    google: {
-      enabled: true,
+# config/initializers/panda_core.rb
+Panda::Core.configure do |config|
+  config.authentication_providers = {
+    google_oauth2: {
       client_id: Rails.application.credentials.dig(:google, :client_id),
       client_secret: Rails.application.credentials.dig(:google, :client_secret)
     }
@@ -35,42 +34,18 @@ Panda::CMS.configure do |config|
 end
 ```
 
-## Common Use Cases
+### Accessing Current User
 
-1. **Single Provider Setup**
-   - Best for simple applications
-   - Recommended for getting started
-   - See [Authentication Providers](providers.md) for setup instructions
+In controllers and views:
+```ruby
+# Still works the same way
+Current.user
+```
 
-2. **Multiple Providers**
-   - Allow users to choose their preferred login method
-   - Each provider can be configured independently
-   - See provider-specific documentation for details
+### Admin Access
 
-3. **Domain-Restricted Access**
-   - Limit access to specific email domains
-   - Commonly used with Google authentication
-   - See Google provider configuration for details
+Admin routes and permissions continue to work as before, but now use `Panda::Core::User#is_admin` instead of `admin`.
 
-## Best Practices
+## Legacy Documentation
 
-1. **Security**
-   - Always use HTTPS in production
-   - Keep credentials secure
-   - Use environment-specific configurations
-
-2. **User Experience**
-   - Enable appropriate providers for your audience
-   - Consider auto-provisioning settings
-   - Provide clear login instructions
-
-3. **Maintenance**
-   - Keep provider gems updated
-   - Monitor authentication logs
-   - Test authentication flows regularly
-
-## Need Help?
-
-- Check the [Troubleshooting](providers.md#troubleshooting) section
-- Review provider-specific documentation
-- Submit issues on GitHub
+For applications still using older versions of Panda CMS with built-in authentication, see the [legacy authentication documentation](providers.md).
