@@ -53,7 +53,7 @@ module Panda
       def authenticate_admin_user!
         return if user_signed_in? && current_user.admin?
 
-        redirect_to admin_login_path,
+        redirect_to panda_core.admin_login_path,
           flash: {error: "Please login to view this!"}
       end
 

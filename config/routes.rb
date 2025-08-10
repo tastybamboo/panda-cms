@@ -26,15 +26,7 @@ Panda::CMS::Engine.routes.draw do
 
   ### PUBLIC ROUTES ###
 
-  # Authentication routes
-  get Panda::CMS.route_namespace, to: "admin/sessions#new", as: :admin_login
-  # Get and post options here are for OmniAuth coming back in, not going out
-  match "#{Panda::CMS.route_namespace}/auth/:provider/callback", to: "admin/sessions#create",
-    as: :admin_login_callback, via: %i[get post]
-  match "#{Panda::CMS.route_namespace}/auth/failure", to: "admin/sessions#failure", as: :admin_login_failure,
-    via: %i[get post]
-  # OmniAuth additionally adds a GET route for "#{Panda::CMS.route_namespace}/auth/:provider" but doesn't name it
-  delete Panda::CMS.route_namespace, to: "admin/sessions#destroy", as: :admin_logout
+  # Authentication routes are now handled by Panda::Core
 
   ### APPENDED ROUTES ###
 

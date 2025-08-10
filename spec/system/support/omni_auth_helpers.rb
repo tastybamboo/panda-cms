@@ -52,7 +52,7 @@ module OmniAuthHelpers
       }
     })
 
-    visit admin_login_path
+    visit panda_core.admin_login_path
     expect(page).to have_css("#button-sign-in-google")
     find("#button-sign-in-google").click
 
