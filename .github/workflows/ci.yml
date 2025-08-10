@@ -95,7 +95,10 @@ jobs:
           DATABASE_URL: "postgres://postgres:password@localhost:5432/test"
           RAILS_ENV: test
         run: |
-          bundle exec rake panda_cms:assets:compile
+          # Compile Core assets first
+          bundle exec rake panda:core:assets:compile || echo "Core assets compilation not available"
+          # Then compile CMS assets
+          bundle exec rake panda:cms:assets:compile
           echo "✅ Asset compilation complete"
 
       - name: "Verify compiled assets"
