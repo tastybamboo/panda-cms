@@ -8,10 +8,10 @@ module Panda
 
         # @param model [ActiveRecord::Base] Model instance to which the user activity is related
         # @param at [ActiveSupport::TimeWithZone] Time of the activity
-        # @param user [Panda::CMS::User] User who performed the activity
+        # @param user [Panda::Core::User] User who performed the activity
         def initialize(model: nil, at: nil, user: nil)
           @model = model
-          @user = user if user.is_a?(::Panda::CMS::User)
+          @user = user if user.is_a?(::Panda::Core::User)
           @time = at if at.is_a?(::ActiveSupport::TimeWithZone)
         end
       end

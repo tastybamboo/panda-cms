@@ -5,9 +5,8 @@ require "groupdate"
 module Panda
   module CMS
     module Admin
-      class DashboardController < ApplicationController
+      class DashboardController < ::Panda::Core::AdminController
         before_action :set_initial_breadcrumb, only: %i[show]
-        before_action :authenticate_admin_user!
 
         # GET /admin
         def show

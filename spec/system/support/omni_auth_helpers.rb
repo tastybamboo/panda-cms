@@ -123,7 +123,7 @@ module OmniAuthHelpers
 
   def admin_user
     # Use fixture user instead of creating new one
-    user = Panda::CMS::User.find_by(email: "admin@example.com")
+    user = Panda::Core::User.find_by(email: "admin@example.com")
     if user.nil?
       raise "Admin user not found in database"
     end
@@ -132,7 +132,7 @@ module OmniAuthHelpers
 
   def regular_user
     # Use fixture user instead of creating new one
-    Panda::CMS::User.find_by!(email: "user@example.com")
+    Panda::Core::User.find_by!(email: "user@example.com")
   end
 end
 

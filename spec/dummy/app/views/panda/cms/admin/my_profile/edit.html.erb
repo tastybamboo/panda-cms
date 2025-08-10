@@ -1,4 +1,4 @@
-<%= render Panda::CMS::Admin::ContainerComponent.new do |component| %>
+<%= render Panda::Core::Admin::ContainerComponent.new do |component| %>
   <% component.with_heading(text: "My Profile", level: 1) %>
 
   <%= panda_cms_form_with model: user,

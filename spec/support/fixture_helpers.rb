@@ -7,7 +7,8 @@ module FixtureHelpers
     panda_cms_templates: Panda::CMS::Template,
     panda_cms_blocks: Panda::CMS::Block,
     panda_cms_block_contents: Panda::CMS::BlockContent,
-    panda_cms_users: Panda::CMS::User,
+    panda_cms_users: Panda::Core::User,  # Use Core::User directly
+    panda_core_users: Panda::Core::User,  # Support both table names
     panda_cms_menus: Panda::CMS::Menu,
     panda_cms_menu_items: Panda::CMS::MenuItem,
     panda_cms_posts: Panda::CMS::Post

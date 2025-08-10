@@ -1,17 +1,17 @@
-<%= render Panda::CMS::Admin::ContainerComponent.new do |component| %>
+<%= render Panda::Core::Admin::ContainerComponent.new do |component| %>
   <% component.with_heading(text: "Pages", level: 1) do |heading| %>
     <% heading.with_button(action: :add, text: "Add Page", link: new_admin_page_path) %>
   <% end %>
 
   <% if root_page %>
-    <%= render Panda::CMS::Admin::TableComponent.new(term: "page", rows: root_page.self_and_descendants) do |table| %>
+    <%= render Panda::Core::Admin::TableComponent.new(term: "page", rows: root_page.self_and_descendants) do |table| %>
       <% table.column("Name") do |page| %>
         <div class="<%= table_indent(page) %>">
           <%= link_to page.title, edit_admin_page_path(page), class: "block h-full w-full" %>
           <span class="block text-xs text-black/60"><%= page.path %></span>
         </div>
       <% end %>
-      <% table.column("Status") { |page| render Panda::CMS::Admin::TagComponent.new(status: page.status) } %>
+      <% table.column("Status") { |page| render Panda::Core::Admin::TagComponent.new(status: page.status) } %>
       <% table.column("Last Updated") { |page| render Panda::CMS::Admin::UserActivityComponent.new(model: page) } %>
     <% end %>
   <% else %>

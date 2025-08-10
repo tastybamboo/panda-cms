@@ -2,7 +2,7 @@
 
 require "rails_helper"
 
-RSpec.describe Panda::CMS::FormBuilder do
+RSpec.describe Panda::Core::FormBuilder do
   let(:lookup_context) { ActionView::LookupContext.new(ActionController::Base.view_paths) }
   let(:assigns) { {} }
   let(:controller) { ActionController::Base.new }

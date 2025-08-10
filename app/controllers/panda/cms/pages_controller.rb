@@ -82,9 +82,9 @@ module Panda
       def record_visit
         RecordVisitJob.perform_later(
           path: request.path,
-          user_id: Current.user&.id,
+          user_id: Panda::Core::Current.user&.id,
           redirect_id: @redirect&.id,
-          page_id: Current.page&.id,
+          page_id: Panda::CMS::Current.page&.id,
           user_agent: request.user_agent,
           ip_address: request.remote_ip,
           referer: request.referer, # TODO: Fix the naming of this column

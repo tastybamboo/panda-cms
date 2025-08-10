@@ -3,9 +3,8 @@
 module Panda
   module CMS
     module Admin
-      class MenusController < ApplicationController
+      class MenusController < ::Panda::Core::AdminController
         before_action :set_initial_breadcrumb, only: %i[index]
-        before_action :authenticate_admin_user!
 
         # Lists all menus which can be managed by the administrator
         # @type GET

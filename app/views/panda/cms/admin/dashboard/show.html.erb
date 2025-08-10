@@ -1,5 +1,5 @@
 <div class="" data-controller="dashboard">
-  <%= render Panda::CMS::Admin::ContainerComponent.new do |container| %>
+  <%= render Panda::Core::Admin::ContainerComponent.new do |container| %>
     <% container.with_heading(text: "Dashboard", level: 1) do |heading| %>
       <% heading.with_button(action: :add, text: "Add Page", link: new_admin_page_path) %>
     <% end %>

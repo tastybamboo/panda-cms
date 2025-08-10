@@ -1,7 +1,8 @@
 # frozen_string_literal: true
 
-namespace :panda_cms do
-  namespace :assets do
+namespace :panda do
+  namespace :cms do
+    namespace :assets do
     desc "Compile Panda CMS assets for GitHub release distribution"
     task :compile do
       puts "🐼 Compiling Panda CMS assets..."
@@ -150,6 +151,7 @@ namespace :panda_cms do
         puts "❌ Error downloading assets: #{e.message}"
         puts "Falling back to local development mode..."
       end
+    end
     end
   end
 end

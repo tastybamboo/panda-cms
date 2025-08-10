@@ -4,7 +4,7 @@ module Panda
   module CMS
     module Admin
       module Settings
-        class BulkEditorController < ApplicationController
+        class BulkEditorController < ::Panda::Core::AdminController
           before_action :set_initial_breadcrumb, only: %i[new]
 
           def new

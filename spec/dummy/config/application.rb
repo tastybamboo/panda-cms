@@ -6,6 +6,7 @@ require 'rails/all'
 
 # Require the gems listed in Gemfile
 Bundler.require(*Rails.groups)
+require 'panda/core'
 require 'panda/cms'
 
 module Dummy

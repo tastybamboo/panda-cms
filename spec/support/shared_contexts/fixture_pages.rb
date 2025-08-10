@@ -28,7 +28,7 @@ RSpec.shared_context "with fixture pages" do
   def verify_fixture_data
     expect(Panda::CMS::Template.count).to be >= 3
     expect(Panda::CMS::Page.count).to be >= 5
-    expect(Panda::CMS::User.count).to be >= 2
+    expect(Panda::Core::User.count).to be >= 2
     expect(homepage.path).to eq("/")
     expect(homepage_template.max_uses).to eq(1)
   end

@@ -12,8 +12,8 @@ module Panda
 
       self.table_name = "panda_cms_posts"
 
-      belongs_to :user, class_name: "Panda::CMS::User"
-      belongs_to :author, class_name: "Panda::CMS::User", optional: true
+      belongs_to :user, class_name: "Panda::Core::User"
+      belongs_to :author, class_name: "Panda::Core::User", optional: true
       has_many :block_contents, as: :blockable, dependent: :destroy
       has_many :blocks, through: :block_contents
 

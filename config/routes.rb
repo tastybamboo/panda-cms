@@ -1,9 +1,7 @@
 # frozen_string_literal: true
 
-require_relative "../app/constraints/panda/cms/admin_constraint"
-
 Panda::CMS::Engine.routes.draw do
-  constraints Panda::CMS::AdminConstraint.new(&:present?) do
+  constraints Panda::Core::AdminConstraint.new(&:present?) do
     namespace Panda::CMS.route_namespace, as: :admin, module: :admin do
       resources :files
       resources :forms, only: %i[index show]

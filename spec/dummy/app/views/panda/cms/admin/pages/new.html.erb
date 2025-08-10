@@ -1,4 +1,4 @@
-<%= render Panda::CMS::Admin::ContainerComponent.new do |component| %>
+<%= render Panda::Core::Admin::ContainerComponent.new do |component| %>
   <% component.with_heading(text: "Add Page", level: 1) do |heading| %>
   <% end %>
   <%= panda_cms_form_with model: page, url: admin_pages_path, method: :post do |f| %>

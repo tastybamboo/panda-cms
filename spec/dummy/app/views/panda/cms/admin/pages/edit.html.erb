@@ -1,4 +1,4 @@
-<%= render Panda::CMS::Admin::ContainerComponent.new do |component| %>
+<%= render Panda::Core::Admin::ContainerComponent.new do |component| %>
   <% component.with_heading(text: "#{page.title}", level: 1) %>
   <% component.with_slideover(title: "Page Details") do %>
     <%= panda_cms_form_with model: page, url: admin_page_path, method: :put do |f| %>
@@ -9,17 +9,17 @@
     <% end %>
   <% end %>
   <div id="successMessage" class="hidden">
-    <%= render Panda::CMS::Admin::FlashMessageComponent.new(kind: "success", message: "This page was successfully updated!", temporary: false) %>
+    <%= render Panda::Core::Admin::FlashMessageComponent.new(kind: "success", message: "This page was successfully updated!", temporary: false) %>
   </div>
   <div id="errorMessage" class="hidden">
-    <%= render Panda::CMS::Admin::FlashMessageComponent.new(kind: "error", message: "There was an error updating this page.", temporary: false) %>
+    <%= render Panda::Core::Admin::FlashMessageComponent.new(kind: "error", message: "There was an error updating this page.", temporary: false) %>
   </div>
   <div class="grid grid-cols-2 mb-4 -mt-5">
     <div>
       <a class="inline-block mb-2 text-sm text-black/60" target="_blank" href="<%= @page.path %>"><%= @page.path %> <i class="ml-2 fa-solid fa-arrow-up-right-from-square"></i></a>
     </div>
     <div class="relative -mt-5">
-      <span class="absolute right-0"><%= render Panda::CMS::Admin::ButtonComponent.new(text: "Save Changes", action: :save_inactive, icon: "check", link: "#", size: :regular, id: "saveEditableButton") %></span>
+      <span class="absolute right-0"><%= render Panda::Core::Admin::ButtonComponent.new(text: "Save Changes", action: :save_inactive, icon: "check", link: "#", size: :regular, id: "saveEditableButton") %></span>
     </div>
   </div>
   <%= content_tag :iframe, nil,

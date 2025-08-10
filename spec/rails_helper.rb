@@ -2,6 +2,7 @@
 
 require "rubygems"
 require "panda/core"
+require "panda/core/engine"
 require "panda/cms/railtie"
 
 require "rails/all"
@@ -41,6 +42,9 @@ rescue ActiveRecord::PendingMigrationError => e
   abort e.to_s.strip
 end
 
+# Ensure Panda::Core models are loaded before support files
+Rails.application.eager_load!
+
 # Load support files first
 Dir[Rails.root.join("../support/**/*.rb")].sort.each { |f| require f }
 
@@ -52,7 +56,8 @@ ActiveRecord::FixtureSet.context_class.send :include, ActiveSupport::Testing::Ti
 module PandaCmsFixtures
   def self.get_class_name(fixture_set_name)
     case fixture_set_name
-    when "panda_cms_users" then "Panda::CMS::User"
+    when "panda_cms_users" then "Panda::Core::User"  # Use Core::User
+    when "panda_core_users" then "Panda::Core::User"  # Support both table names
     when "panda_cms_posts" then "Panda::CMS::Post"
     when "panda_cms_pages" then "Panda::CMS::Page"
     when "panda_cms_templates" then "Panda::CMS::Template"
@@ -230,7 +235,7 @@ RSpec.configure do |config|
 
         # Check if basic models can be loaded
         begin
-          user_count = Panda::CMS::User.count
+          user_count = Panda::Core::User.count
           puts "   User model access: ✅ OK (#{user_count} users)"
         rescue => e
           puts "   User model access: ❌ FAILED - #{e.message}"

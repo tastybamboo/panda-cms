@@ -3,9 +3,9 @@
 module Panda
   module CMS
     module Admin
-      class PagesController < ApplicationController
+      class PagesController < ::Panda::Core::AdminController
         before_action :set_initial_breadcrumb, only: %i[index edit new create update]
-        before_action :authenticate_admin_user!
+        # Authentication is automatically enforced by AdminController
 
         # Lists all pages which can be managed by the administrator
         # @type GET

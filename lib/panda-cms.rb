@@ -7,30 +7,54 @@ require "view_component"
 
 module Panda
   module CMS
-    extend Dry::Configurable
+    class Configuration
+      attr_accessor :title, :admin_path, :require_login_to_view, :authentication, 
+                    :posts, :route_namespace, :url, :editor_js_tools, 
+                    :editor_js_tool_config, :instagram, :analytics
 
-    setting :title, default: "Demo Site"
-    setting :admin_path, default: "/admin"
-    setting :require_login_to_view, default: false
-    setting :authentication, default: {}
-    setting :posts, default: {enabled: true, prefix: "blog"}
-    setting :route_namespace, default: "/admin"
-    setting :url
-    setting :editor_js_tools, default: []
-    setting :editor_js_tool_config, default: {}
+      def initialize
+        @title = "Demo Site"
+        @admin_path = "/admin"
+        @require_login_to_view = false
+        @authentication = {}
+        @posts = {enabled: true, prefix: "blog"}
+        @route_namespace = "/admin"
+        @url = nil
+        @editor_js_tools = []
+        @editor_js_tool_config = {}
+        @instagram = {
+          enabled: false,
+          username: nil,
+          access_token: nil
+        }
+        @analytics = {
+          google_analytics: {
+            enabled: false,
+            tracking_id: nil
+          }
+        }
+      end
+    end
 
-    setting :instagram, default: {
-      enabled: false,
-      username: nil,
-      access_token: nil
-    }
+    class << self
+      attr_writer :configuration
 
-    setting :analytics, default: {
-      google_analytics: {
-        enabled: false,
-        tracking_id: nil
-      }
-    }
+      def configuration
+        @configuration ||= Configuration.new
+      end
+
+      def config
+        configuration
+      end
+
+      def configure
+        yield configuration if block_given?
+      end
+
+      def reset_configuration!
+        @configuration = Configuration.new
+      end
+    end
 
     def self.root_path
       config.admin_path
@@ -41,10 +65,6 @@ module Panda
 
       def route_namespace
         config.admin_path
-      end
-
-      def configure
-        yield config if block_given?
       end
     end
   end

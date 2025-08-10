@@ -1,8 +1,8 @@
-<%= render Panda::CMS::Admin::ContainerComponent.new do |component| %>
+<%= render Panda::Core::Admin::ContainerComponent.new do |component| %>
   <% component.with_heading(text: "Menus", level: 1) do |heading| %>
   <% end %>
-  <%= render Panda::CMS::Admin::TableComponent.new(term: "menu", rows: menus) do |table| %>
+  <%= render Panda::Core::Admin::TableComponent.new(term: "menu", rows: menus) do |table| %>
     <% table.column("Name") { |menu| link_to menu.name, edit_admin_menu_path(menu) } %>
-    <% table.column("Kind") { |menu| render Panda::CMS::Admin::TagComponent.new(status: :active, text: menu.kind.titleize) } %>
+    <% table.column("Kind") { |menu| render Panda::Core::Admin::TagComponent.new(status: :active, text: menu.kind.titleize) } %>
   <% end %>
 <% end %>
