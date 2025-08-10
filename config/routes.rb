@@ -2,6 +2,9 @@
 
 Panda::CMS::Engine.routes.draw do
   constraints Panda::Core::AdminConstraint.new(&:present?) do
+    # Override the panda-core dashboard with our CMS-specific one
+    get Panda::CMS.route_namespace, to: "admin/dashboard#show", as: :admin_dashboard
+    
     namespace Panda::CMS.route_namespace, as: :admin, module: :admin do
       resources :files
       resources :forms, only: %i[index show]
@@ -20,8 +23,6 @@ Panda::CMS::Engine.routes.draw do
         post "bulk_editor", to: "bulk_editor#create"
       end
     end
-
-    get Panda::CMS.route_namespace, to: "admin/dashboard#show", as: :admin_dashboard
   end
 
   ### PUBLIC ROUTES ###

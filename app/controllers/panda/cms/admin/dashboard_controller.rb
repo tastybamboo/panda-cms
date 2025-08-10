@@ -5,11 +5,13 @@ require "groupdate"
 module Panda
   module CMS
     module Admin
-      class DashboardController < ::Panda::Core::AdminController
+      class DashboardController < ::Panda::Core::Admin::DashboardController
         before_action :set_initial_breadcrumb, only: %i[show]
 
-        # GET /admin
+        # Override the panda-core dashboard with CMS-specific dashboard
         def show
+          # Render the CMS dashboard view
+          render "panda/cms/admin/dashboard/show"
         end
 
         private
