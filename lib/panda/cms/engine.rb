@@ -142,7 +142,9 @@ module Panda
           
           # Customize initial breadcrumb
           config.initial_admin_breadcrumb = ->(controller) {
-            ["Admin", controller.admin_dashboard_path]
+            # Use admin_root_path which exists in panda-core context
+            # This will be overridden by CMS dashboard route when available
+            ["Admin", controller.admin_root_path]
           }
           
           # Dashboard widgets
