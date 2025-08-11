@@ -4,7 +4,7 @@ source "https://rubygems.org"
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
 # Use panda-core from GitHub with latest fixes
-gem "panda-core", github: "tastybamboo/panda-core", ref: "2c780166742ef6abfcfd3e7a14678f6b8aed59e9"
+gem "panda-core", github: "tastybamboo/panda-core", ref: "3dd549d7c61f7baa65407d2b670c2cd2cac39d66"
 
 # Specify your gem's dependencies in panda-cms.gemspec.
 gemspec
