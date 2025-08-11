@@ -25,7 +25,7 @@ module Panda
 
       def panda_cms_editor
         if Panda::Core::Current.user&.admin
-          content_tag(:a, "🐼", href: edit_admin_page_url(Panda::CMS::Current.page), class: "text-3xl inline absolute right-2 top-2")
+          content_tag(:a, "🐼", href: edit_admin_cms_page_url(Panda::CMS::Current.page), class: "text-3xl inline absolute right-2 top-2")
         end
       end
 

@@ -43,7 +43,7 @@ RSpec.describe "When adding a page", type: :system do
       end
 
       it "can access the new page route" do
-        expect(page.current_url).to include("/admin/pages/new")
+        expect(page.current_url).to include("/admin/cms/pages/new")
         # Check for successful page load
         expect(page.status_code).to eq(200)
         expect(page).to have_css("form", wait: 5)

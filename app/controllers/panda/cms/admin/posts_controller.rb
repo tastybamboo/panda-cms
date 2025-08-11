@@ -26,7 +26,7 @@ module Panda
         # Loads the post editor
         # @type GET
         def edit
-          add_breadcrumb post.title, edit_admin_post_path(post.admin_param)
+          add_breadcrumb post.title, edit_admin_cms_post_path(post.admin_param)
           render :edit, locals: {post: post}
         end
 
@@ -38,7 +38,7 @@ module Panda
 
           if @post.save
             Rails.logger.debug "Post saved successfully"
-            redirect_to edit_admin_post_path(@post.admin_param), notice: "The post was successfully created!"
+            redirect_to edit_admin_cms_post_path(@post.admin_param), notice: "The post was successfully created!"
           else
             Rails.logger.debug "Post save failed: #{@post.errors.full_messages.inspect}"
             flash.now[:error] = @post.errors.full_messages.join(", ")
@@ -59,13 +59,13 @@ module Panda
           update_params[:user_id] = current_user.id
           if post.update(update_params)
             Rails.logger.debug "Post updated successfully"
-            add_breadcrumb post.title, edit_admin_post_path(post.admin_param)
+            add_breadcrumb post.title, edit_admin_cms_post_path(post.admin_param)
             flash[:success] = "The post was successfully updated"
-            redirect_to edit_admin_post_path(post.admin_param), status: :see_other
+            redirect_to edit_admin_cms_post_path(post.admin_param), status: :see_other
           else
             Rails.logger.debug "Post update failed: #{post.errors.full_messages.inspect}"
             Rails.logger.debug "Preserving content: #{post_params[:content].inspect}"
-            add_breadcrumb post.title.presence || "Edit Post", edit_admin_post_path(post.admin_param)
+            add_breadcrumb post.title.presence || "Edit Post", edit_admin_cms_post_path(post.admin_param)
             flash.now[:error] = post.errors.full_messages.join(", ")
             render :edit, locals: {
               post: post,
@@ -91,11 +91,11 @@ module Panda
         end
 
         def set_initial_breadcrumb
-          add_breadcrumb "Posts", admin_posts_path
+          add_breadcrumb "Posts", admin_cms_posts_path
         end
 
         def setup_new_post_form(post: nil, preserved_content: nil)
-          add_breadcrumb "Add Post", new_admin_post_path
+          add_breadcrumb "Add Post", new_admin_cms_post_path
 
           post ||= Panda::CMS::Post.new(
             status: "active",
@@ -104,7 +104,7 @@ module Panda
 
           {
             post: post,
-            url: admin_posts_path,
+            url: admin_cms_posts_path,
             preserved_content: preserved_content
           }
         end

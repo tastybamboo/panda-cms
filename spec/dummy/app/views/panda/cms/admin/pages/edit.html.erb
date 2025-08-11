@@ -1,7 +1,7 @@
 <%= render Panda::Core::Admin::ContainerComponent.new do |component| %>
   <% component.with_heading(text: "#{page.title}", level: 1) %>
   <% component.with_slideover(title: "Page Details") do %>
-    <%= panda_cms_form_with model: page, url: admin_page_path, method: :put do |f| %>
+    <%= panda_cms_form_with model: page, url: admin_cms_page_path, method: :put do |f| %>
       <%= f.text_field :title, class: "block w-full rounded-md border-0 p-2 text-gray-900 ring-1 ring-inset ring-mid placeholder:text-gray-300 focus:ring-1 focus:ring-inset focus:ring-dark sm:leading-6 hover:pointer" %>
       <%= f.text_field :template, value: template.name,  readonly: true, class: "read-only:bg-gray-100 block w-full rounded-md border-0 p-2 text-gray-900 ring-1 ring-inset ring-mid placeholder:text-gray-300 focus:ring-1 focus:ring-inset focus:ring-dark sm:leading-6 hover:pointer" %>
       <%= f.select :status, options_for_select([["Active", "active"], ["Draft", "draft"], ["Hidden", "hidden"], ["Archived", "archived"]], selected: page.status), {}, class: "block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-mid focus:ring-1 focus:ring-inset focus:ring-dark sm:leading-6 hover:pointer" %>
@@ -30,7 +30,7 @@
       data: {
         controller: "editor-iframe",
         editor_iframe_page_id_value: @page.id,
-        editor_iframe_admin_path_value: "#{admin_dashboard_url}",
+        editor_iframe_admin_path_value: "#{admin_cms_dashboard_url}",
         editor_iframe_autosave_value: false
       } %>
 <% end %>

@@ -17,7 +17,7 @@ module Panda
         def show
           form = Panda::CMS::Form.find(params[:id])
 
-          add_breadcrumb form.name, admin_form_path(form)
+          add_breadcrumb form.name, admin_cms_form_path(form)
           submissions = form.form_submissions.order(created_at: :desc)
           # TODO: Set a whitelist of fields we allow to be submitted for the form, shown in this view
           # and a formatting array of how to display them... eventually?
@@ -34,7 +34,7 @@ module Panda
         private
 
         def set_initial_breadcrumb
-          add_breadcrumb "Forms", admin_forms_path
+          add_breadcrumb "Forms", admin_cms_forms_path
         end
 
         # Only allow a list of trusted parameters through

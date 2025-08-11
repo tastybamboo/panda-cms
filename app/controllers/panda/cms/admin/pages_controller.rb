@@ -25,7 +25,7 @@ module Panda
         # Loads the page editor
         # @type GET
         def edit
-          add_breadcrumb page.title, edit_admin_page_path(page)
+          add_breadcrumb page.title, edit_admin_cms_page_path(page)
 
           render :edit, locals: {page: page, template: page.template}
         end
@@ -44,7 +44,7 @@ module Panda
           end
 
           if page.save
-            redirect_to edit_admin_page_path(page), notice: "The page was successfully created."
+            redirect_to edit_admin_cms_page_path(page), notice: "The page was successfully created."
           else
             flash.now[:error] = page.errors.full_messages.to_sentence
             locals = setup_new_page_form(page: page)
@@ -56,7 +56,7 @@ module Panda
         # @return
         def update
           if page.update(page_params)
-            redirect_to edit_admin_page_path(page),
+            redirect_to edit_admin_cms_page_path(page),
               status: :see_other,
               flash: {success: "This page was successfully updated!"}
           else
@@ -79,11 +79,11 @@ module Panda
         end
 
         def set_initial_breadcrumb
-          add_breadcrumb "Pages", admin_pages_path
+          add_breadcrumb "Pages", admin_cms_pages_path
         end
 
         def setup_new_page_form(page:)
-          add_breadcrumb "Add Page", new_admin_page_path
+          add_breadcrumb "Add Page", new_admin_cms_page_path
           {
             page: page,
             available_templates: Panda::CMS::Template.available

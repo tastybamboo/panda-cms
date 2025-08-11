@@ -1,7 +1,7 @@
 <div class="" data-controller="dashboard">
   <%= render Panda::Core::Admin::ContainerComponent.new do |container| %>
     <% container.with_heading(text: "Dashboard", level: 1) do |heading| %>
-      <% heading.with_button(action: :add, text: "Add Page", link: new_admin_page_path) %>
+      <% heading.with_button(action: :add, text: "Add Page", link: new_admin_cms_page_path) %>
     <% end %>
     <dl class="grid grid-cols-1 gap-5 mt-5 sm:grid-cols-3">
       <%= render Panda::CMS::Admin::StatisticsComponent.new(metric: "Views Today", value: Panda::CMS::Visit.group_by_day(:visited_at, last: 1).count.values.first) %>

@@ -4,9 +4,8 @@ Panda::CMS.configure do |config|
   # The main title of your website
   # The default is "Demo Site"
   config.title = 'Demo Site'
-  # The path to the administration panel, which must start with a /
-  # The default is "/admin"
-  config.admin_path = '/admin'
+  # Admin path is now configured via Panda::Core
+  # config.admin_path = '/admin' # REMOVED - use Panda::Core.configuration.admin_path instead
   # Is login required to access the site?
   config.require_login_to_view = false
   # Authentication providers

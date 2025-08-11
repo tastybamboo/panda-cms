@@ -21,7 +21,7 @@ module Panda
         end
 
         def set_initial_breadcrumb
-          add_breadcrumb "Menus", admin_menus_path
+          add_breadcrumb "Menus", admin_cms_menus_path
         end
       end
     end

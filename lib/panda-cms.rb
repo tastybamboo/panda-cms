@@ -8,17 +8,15 @@ require "view_component"
 module Panda
   module CMS
     class Configuration
-      attr_accessor :title, :admin_path, :require_login_to_view, :authentication, 
-                    :posts, :route_namespace, :url, :editor_js_tools, 
+      attr_accessor :title, :require_login_to_view, :authentication, 
+                    :posts, :url, :editor_js_tools, 
                     :editor_js_tool_config, :instagram, :analytics
 
       def initialize
         @title = "Demo Site"
-        @admin_path = "/admin"
         @require_login_to_view = false
         @authentication = {}
         @posts = {enabled: true, prefix: "blog"}
-        @route_namespace = "/admin"
         @url = nil
         @editor_js_tools = []
         @editor_js_tool_config = {}
@@ -57,14 +55,16 @@ module Panda
     end
 
     def self.root_path
-      config.admin_path
+      # Delegate to Panda::Core's admin_path configuration
+      Panda::Core.configuration.admin_path
     end
 
     class << self
       attr_accessor :loader
 
       def route_namespace
-        config.admin_path
+        # Delegate to Panda::Core's admin_path configuration
+        Panda::Core.configuration.admin_path
       end
     end
   end

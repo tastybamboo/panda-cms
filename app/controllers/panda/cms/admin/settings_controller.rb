@@ -15,7 +15,7 @@ module Panda
         private
 
         def set_initial_breadcrumb
-          add_breadcrumb "Settings", admin_settings_path
+          add_breadcrumb "Settings", admin_cms_settings_path
         end
       end
     end

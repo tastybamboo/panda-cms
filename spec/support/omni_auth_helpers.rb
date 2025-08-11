@@ -26,7 +26,8 @@ module OmniAuthHelpers
     )
 
     begin
-      visit "/auth/google_oauth2"
+      visit "/admin/login"
+      click_button "button-sign-in-google_oauth2"
     rescue => e
       if ENV["GITHUB_ACTIONS"] == "true"
         puts "[CI Debug] Login navigation failed: #{e.message}"
@@ -69,6 +70,7 @@ module OmniAuthHelpers
         name: "Regular User"
       }
     )
-    visit "/auth/google_oauth2"
+    visit "/admin/login"
+    click_button "button-sign-in-google_oauth2"
   end
 end
