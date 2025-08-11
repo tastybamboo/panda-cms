@@ -3,8 +3,6 @@
 require "system_helper"
 
 RSpec.describe "Adding a post", type: :system do
-  fixtures :panda_core_users
-
   before do
     login_as_admin
 
