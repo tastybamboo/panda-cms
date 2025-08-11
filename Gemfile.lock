@@ -1,7 +1,7 @@
 GIT
   remote: https://github.com/tastybamboo/panda-core.git
-  revision: 18848e683db66d0dc4f2c8b0c1498cb9d82bcae5
-  branch: feature/auth-migration-from-cms
+  revision: 2c780166742ef6abfcfd3e7a14678f6b8aed59e9
+  ref: 2c780166742ef6abfcfd3e7a14678f6b8aed59e9
   specs:
     panda-core (0.1.16)
       importmap-rails
