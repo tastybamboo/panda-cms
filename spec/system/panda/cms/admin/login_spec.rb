@@ -85,7 +85,7 @@ RSpec.describe "Admin authentication", type: :system do
           logout_match = html_content.match(/href="([^"]*logout[^"]*)"/)
           if logout_match
             visit logout_match[1]
-            expect(page).to have_current_path("/admin/cms")
+            expect(page).to have_current_path("/admin/login")
             expect(page.html).to include("Sign in to your account")
           end
         else
