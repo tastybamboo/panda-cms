@@ -10,6 +10,9 @@ require 'bullet' if defined?(Bullet)
 # and recreated between test runs. Don't rely on the data there!
 
 Rails.application.configure do
+  # Always disable Better Errors in test environment
+  ENV['DISABLE_BETTER_ERRORS'] = 'true'
+  
   config.after_initialize do
     if defined?(Bullet)
       Bullet.enable = true
