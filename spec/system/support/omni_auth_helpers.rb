@@ -121,17 +121,21 @@ module OmniAuthHelpers
   end
 
   def admin_user
-    # Use fixture user instead of creating new one
-    user = Panda::Core::User.find_by(email: "admin@example.com")
-    if user.nil?
-      raise "Admin user not found in database"
+    # Create admin user if it doesn't exist
+    Panda::Core::User.find_or_create_by!(email: "admin@example.com") do |user|
+      user.firstname = "Admin"
+      user.lastname = "User"
+      user.admin = true
     end
-    user
   end
 
   def regular_user
-    # Use fixture user instead of creating new one
-    Panda::Core::User.find_by!(email: "user@example.com")
+    # Create regular user if it doesn't exist
+    Panda::Core::User.find_or_create_by!(email: "user@example.com") do |user|
+      user.firstname = "Regular"
+      user.lastname = "User"
+      user.admin = false
+    end
   end
 end
 
