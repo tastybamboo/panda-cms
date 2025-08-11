@@ -105,7 +105,7 @@ RSpec.describe "Adding a post", type: :system do
     sleep 1
 
     # Check if we were redirected to login (session expired)
-    if page.has_css?("#button-sign-in-google")
+    if page.has_css?("#button-sign-in-google_oauth2")
       # Log back in and check the posts
       login_as_admin
       visit "/admin/posts"

@@ -14,8 +14,8 @@ module OmniAuthHelpers
 
   def login_with_google(user)
     clear_omniauth_config
-    OmniAuth.config.mock_auth[:google] = OmniAuth::AuthHash.new({
-      provider: "google",
+    OmniAuth.config.mock_auth[:google_oauth2] = OmniAuth::AuthHash.new({
+      provider: "google_oauth2",
       uid: user.id,
       info: {
         email: user.email,
@@ -28,10 +28,10 @@ module OmniAuthHelpers
     })
 
     # Set the Rails env config which the controller checks
-    Rails.application.env_config["omniauth.auth"] = OmniAuth.config.mock_auth[:google]
+    Rails.application.env_config["omniauth.auth"] = OmniAuth.config.mock_auth[:google_oauth2]
 
     # Visit the callback URL directly in test mode
-    visit "/admin/auth/google/callback"
+    visit "/admin/auth/google_oauth2/callback"
 
     # We should be redirected to /admin/cms after successful auth
     expect(page).to have_current_path("/admin/cms", wait: 10)
@@ -39,8 +39,8 @@ module OmniAuthHelpers
 
   def manual_login_with_google(user)
     clear_omniauth_config
-    OmniAuth.config.mock_auth[:google] = OmniAuth::AuthHash.new({
-      provider: "google",
+    OmniAuth.config.mock_auth[:google_oauth2] = OmniAuth::AuthHash.new({
+      provider: "google_oauth2",
       uid: user.id,
       info: {
         email: user.email,
@@ -53,10 +53,10 @@ module OmniAuthHelpers
     })
 
     visit panda_core.admin_login_path
-    expect(page).to have_css("#button-sign-in-google")
-    find("#button-sign-in-google").click
+    expect(page).to have_css("#button-sign-in-google_oauth2")
+    find("#button-sign-in-google_oauth2").click
 
-    Rails.application.env_config["omniauth.auth"] = OmniAuth.config.mock_auth[:google]
+    Rails.application.env_config["omniauth.auth"] = OmniAuth.config.mock_auth[:google_oauth2]
     visit "/admin"
   end
 

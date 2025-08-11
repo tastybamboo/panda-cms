@@ -108,7 +108,7 @@ RSpec.describe "Admin profile management", type: :system do
     sleep 2
 
     # Check if we were redirected to login (session expired)
-    if page.has_css?("#button-sign-in-google")
+    if page.has_css?("#button-sign-in-google_oauth2")
       # Log back in and check the profile was updated
       login_as_admin
       visit "/admin/my_profile/edit"

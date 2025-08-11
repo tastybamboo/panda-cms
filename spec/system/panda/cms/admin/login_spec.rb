@@ -96,9 +96,9 @@ RSpec.describe "Admin authentication", type: :system do
 
       # Add debugging and wait for page load
       expect(page).to have_current_path("/admin/cms")
-      expect(page).to have_selector("#button-sign-in-google", wait: 1)
+      expect(page).to have_selector("#button-sign-in-google_oauth2", wait: 1)
 
-      find("#button-sign-in-google").click
+      find("#button-sign-in-google_oauth2").click
       expect(page).to have_current_path("/admin/cms")
       expect(page).to have_content("There was an error logging you in")
     end
