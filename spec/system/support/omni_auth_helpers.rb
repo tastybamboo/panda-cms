@@ -19,7 +19,7 @@ module OmniAuthHelpers
       uid: user.id,
       info: {
         email: user.email,
-        name: user.name
+        name: "#{user.firstname} #{user.lastname}"
       },
       credentials: {
         token: "mock_token",
@@ -44,7 +44,7 @@ module OmniAuthHelpers
       uid: user.id,
       info: {
         email: user.email,
-        name: user.name
+        name: "#{user.firstname} #{user.lastname}"
       },
       credentials: {
         token: "mock_token",
@@ -67,7 +67,7 @@ module OmniAuthHelpers
       uid: user.id,
       info: {
         email: user.email,
-        name: user.name
+        name: "#{user.firstname} #{user.lastname}"
       },
       credentials: {
         token: "mock_token",
@@ -92,7 +92,7 @@ module OmniAuthHelpers
       uid: user.id,
       info: {
         email: user.email,
-        name: user.name
+        name: "#{user.firstname} #{user.lastname}"
       },
       credentials: {
         token: "mock_token",

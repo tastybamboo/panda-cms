@@ -3,9 +3,16 @@
 require "rails_helper"
 
 RSpec.describe Panda::Core::User, type: :model do
-  fixtures :panda_core_users
-  
   describe "validations" do
+    subject { 
+      Panda::Core::User.new(
+        email: "test@example.com",
+        firstname: "Test",
+        lastname: "User",
+        admin: false
+      )
+    }
+    
     it { should validate_presence_of(:email) }
     it { should validate_uniqueness_of(:email).case_insensitive }
   end
@@ -13,9 +20,10 @@ RSpec.describe Panda::Core::User, type: :model do
   describe "email" do
     it "downcases email before saving" do
       user = Panda::Core::User.create!(
-        name: "Test User",
+        firstname: "Test",
+        lastname: "User",
         email: "TEST@EXAMPLE.COM",
-        is_admin: false
+        admin: false
       )
       expect(user.email).to eq("test@example.com")
     end
@@ -23,21 +31,19 @@ RSpec.describe Panda::Core::User, type: :model do
 
   describe "#admin?" do
     it "returns the admin status" do
-      admin_user = panda_core_users(:admin_user)
-      regular_user = panda_core_users(:regular_user)
+      admin = create_admin_user
+      regular = create_regular_user
 
-      expect(admin_user.admin?).to be true
-      expect(regular_user.admin?).to be false
+      expect(admin.admin?).to be true
+      expect(regular.admin?).to be false
     end
   end
 
   describe "#name" do
     it "returns the full name" do
-      admin_user = panda_core_users(:admin_user)
+      admin = create_admin_user
 
-      expect(admin_user.name).to eq("Admin User")
+      expect(admin.name).to eq("Admin User")
     end
   end
-
-  # Name setter is no longer needed as we now have a single name field
 end

@@ -8,6 +8,8 @@ For comprehensive developer documentation, see the `docs/` directory which conta
 
 Panda CMS is a Rails engine that provides content management functionality for Rails applications. It's built as a gem and follows the Rails Engine architecture pattern. The project uses modern Rails features and focuses on developer experience.
 
+**Important**: This project depends on `panda-core` gem which is located at `../core` in development. The Gemfile uses a local path reference for development and testing.
+
 ## Architecture
 
 ### Engine Structure
@@ -193,10 +195,19 @@ bin/dev
 ## Testing Strategy
 
 ### Test Structure
-- Uses RSpec with fixtures instead of factories
+- Uses RSpec with fixtures instead of factories (with exceptions below)
 - Fixtures in `spec/fixtures/` with YAML format
 - System tests use Cuprite (Chrome headless) for browser automation
 - EditorJS tests are excluded by default (use `INCLUDE_EDITORJS=true` to include)
+
+### User and Post Testing (IMPORTANT)
+- **Users are created programmatically**, NOT via fixtures
+- **Posts that require users are created programmatically**, NOT via fixtures
+- See `spec/TEST_WRITING_GUIDE.md` for detailed patterns
+- Use `create_admin_user` and `create_regular_user` helper methods
+- These helpers use fixed IDs for consistent references:
+  - Admin: `8f481fcb-d9c8-55d7-ba17-5ea5d9ed8b7a`
+  - Regular: `9a8b7c6d-5e4f-3a2b-1c0d-9e8f7a6b5c4d`
 
 ### Validation Tests
 - **Important**: See `docs/developers/testing/validation-testing.md` for complete validation testing patterns

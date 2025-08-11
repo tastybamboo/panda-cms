@@ -169,8 +169,15 @@ RSpec.configure do |config|
   # Configure fixtures path and enable fixtures
   config.fixture_paths = [File.expand_path("fixtures", __dir__)]
   config.use_transactional_fixtures = true
-  # Load fixtures globally for all tests
-  config.global_fixtures = :all
+  # Load fixtures globally for all tests EXCEPT those that require users
+  # panda_core_users are created programmatically
+  # panda_cms_posts require users to exist first
+  fixture_files = Dir[File.expand_path("fixtures/*.yml", __dir__)].map do |f|
+    File.basename(f, ".yml").to_sym
+  end
+  fixture_files.delete(:panda_core_users)
+  fixture_files.delete(:panda_cms_posts)
+  config.global_fixtures = fixture_files
 
   if defined?(Bullet) && Bullet.enable?
     config.before(:each) do
