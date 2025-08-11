@@ -205,10 +205,12 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_09_231125) do
   end
 
   create_table "panda_core_users", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.string "name"
-    t.string "email"
+    t.string "firstname", null: false
+    t.string "lastname", null: false
+    t.string "email", null: false
     t.string "image_url"
-    t.boolean "is_admin", default: false, null: false
+    t.boolean "admin", default: false, null: false
+    t.string "current_theme", default: "default"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["email"], name: "index_panda_core_users_on_email", unique: true
