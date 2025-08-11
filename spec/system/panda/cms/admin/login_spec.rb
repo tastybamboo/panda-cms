@@ -19,7 +19,12 @@ RSpec.describe "Admin authentication", type: :system do
 
     context "GitHub" do
       it "logs in admin successfully" do
+        # Enable GitHub in both CMS and Core configs
         Panda::CMS.config.authentication[:github][:enabled] = true
+        Panda::Core.configuration.authentication_providers[:github] = {
+          client_id: "test_client_id",
+          client_secret: "test_client_secret"
+        }
         login_with_github(admin_user)
         # Use string-based checks to avoid DOM node issues
         html_content = page.html
@@ -31,7 +36,12 @@ RSpec.describe "Admin authentication", type: :system do
 
     context "Microsoft" do
       it "logs in admin successfully" do
+        # Enable Microsoft in both CMS and Core configs
         Panda::CMS.config.authentication[:microsoft][:enabled] = true
+        Panda::Core.configuration.authentication_providers[:microsoft_graph] = {
+          client_id: "test_client_id",
+          client_secret: "test_client_secret"
+        }
         login_with_microsoft(admin_user)
         # Use string-based checks to avoid DOM node issues
         html_content = page.html
@@ -44,12 +54,12 @@ RSpec.describe "Admin authentication", type: :system do
 
   describe "when signing in" do
     it "prevents non-admin access" do
-      login_with_google(regular_user)
-      expect(page).to have_current_path("/admin/cms")
+      login_with_google(regular_user, expect_success: false)
+      expect(page).to have_current_path("/admin/login")
       # Use string-based checks to avoid DOM node issues
       html_content = page.html
       expect(html_content).not_to include("Dashboard")
-      expect(html_content).to include("There was an error logging you in")
+      expect(html_content).to include("You do not have permission to access the admin area")
     end
   end
 
@@ -90,17 +100,16 @@ RSpec.describe "Admin authentication", type: :system do
 
   describe "on error" do
     it "handles invalid credentials" do
-      # Initialize the authentication config hash if it doesn't exist
-      OmniAuth.config.mock_auth[:google] = :invalid_credentials
-      visit "/admin/cms"
-
-      # Add debugging and wait for page load
-      expect(page).to have_current_path("/admin/cms")
-      expect(page).to have_selector("#button-sign-in-google_oauth2", wait: 1)
-
-      find("#button-sign-in-google_oauth2").click
-      expect(page).to have_current_path("/admin/cms")
-      expect(page).to have_content("There was an error logging you in")
+      # Use the helper to set up the mock auth with invalid credentials
+      clear_omniauth_config
+      OmniAuth.config.mock_auth[:google_oauth2] = :invalid_credentials
+      
+      # Visit the callback URL directly (simulating failed OAuth)
+      visit "/admin/auth/google_oauth2/callback"
+      
+      # Should redirect back to login with error message
+      expect(page).to have_current_path("/admin/login")
+      expect(page).to have_content("Authentication failed")
     end
   end
 end

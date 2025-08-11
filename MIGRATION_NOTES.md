@@ -4,7 +4,11 @@
 
 This document describes the migration of user authentication from panda-cms to panda-core gem, completed on August 11, 2025.
 
-**Latest Fix**: Fixed panda-core sidebar template to use `configuration` instead of `config` (commit 9400378).
+**Latest Fixes**: 
+- Fixed OAuth provider mismatch (google vs google_oauth2) in tests
+- Fixed User model method calls (is_admin? to admin?)
+- Added /cms prefix to all CMS admin routes
+- Fixed dashboard redirect configuration
 
 ## Why This Migration?
 

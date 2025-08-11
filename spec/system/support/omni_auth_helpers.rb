@@ -12,7 +12,7 @@ module OmniAuthHelpers
     Rails.application.env_config.delete("omniauth.auth")
   end
 
-  def login_with_google(user)
+  def login_with_google(user, expect_success: true)
     clear_omniauth_config
     OmniAuth.config.mock_auth[:google_oauth2] = OmniAuth::AuthHash.new({
       provider: "google_oauth2",
@@ -33,8 +33,10 @@ module OmniAuthHelpers
     # Visit the callback URL directly in test mode
     visit "/admin/auth/google_oauth2/callback"
 
-    # We should be redirected to /admin/cms after successful auth
-    expect(page).to have_current_path("/admin/cms", wait: 10)
+    # Only check for successful redirect if expected
+    if expect_success
+      expect(page).to have_current_path("/admin/cms", wait: 10)
+    end
   end
 
   def manual_login_with_google(user)
@@ -60,7 +62,7 @@ module OmniAuthHelpers
     visit "/admin"
   end
 
-  def login_with_github(user)
+  def login_with_github(user, expect_success: true)
     clear_omniauth_config
     OmniAuth.config.mock_auth[:github] = OmniAuth::AuthHash.new({
       provider: "github",
@@ -81,14 +83,16 @@ module OmniAuthHelpers
     # Visit the callback URL directly in test mode
     visit "/admin/auth/github/callback"
 
-    # We should be redirected to /admin after successful auth
-    expect(page).to have_current_path("/admin/cms", wait: 10)
+    # Only check for successful redirect if expected
+    if expect_success
+      expect(page).to have_current_path("/admin/cms", wait: 10)
+    end
   end
 
-  def login_with_microsoft(user)
+  def login_with_microsoft(user, expect_success: true)
     clear_omniauth_config
-    OmniAuth.config.mock_auth[:microsoft] = OmniAuth::AuthHash.new({
-      provider: "microsoft",
+    OmniAuth.config.mock_auth[:microsoft_graph] = OmniAuth::AuthHash.new({
+      provider: "microsoft_graph",
       uid: user.id,
       info: {
         email: user.email,
@@ -101,13 +105,15 @@ module OmniAuthHelpers
     })
 
     # Set the Rails env config which the controller checks
-    Rails.application.env_config["omniauth.auth"] = OmniAuth.config.mock_auth[:microsoft]
+    Rails.application.env_config["omniauth.auth"] = OmniAuth.config.mock_auth[:microsoft_graph]
 
     # Visit the callback URL directly in test mode
-    visit "/admin/auth/microsoft/callback"
+    visit "/admin/auth/microsoft_graph/callback"
 
-    # We should be redirected to /admin after successful auth
-    expect(page).to have_current_path("/admin/cms", wait: 10)
+    # Only check for successful redirect if expected
+    if expect_success
+      expect(page).to have_current_path("/admin/cms", wait: 10)
+    end
   end
 
   def login_as_admin(firstname: nil, lastname: nil, email: nil)

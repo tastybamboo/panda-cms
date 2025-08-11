@@ -1,7 +1,5 @@
-GIT
-  remote: https://github.com/tastybamboo/panda-core.git
-  revision: 3dd549d7c61f7baa65407d2b670c2cd2cac39d66
-  ref: 3dd549d7c61f7baa65407d2b670c2cd2cac39d66
+PATH
+  remote: ../core
   specs:
     panda-core (0.1.16)
       importmap-rails
