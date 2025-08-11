@@ -7,9 +7,10 @@ This guide explains how to write tests for Panda CMS after the user migration to
 ## Key Changes from Traditional Rails Testing
 
 1. **No User Fixtures**: User fixtures (`panda_core_users`) are NOT loaded globally
-2. **No Post Fixtures**: Post fixtures (`panda_cms_posts`) are NOT loaded globally (they require users)
+2. **Post Fixtures Without Users**: Post fixtures (`panda_cms_posts`) are loaded but have NULL user_id and author_id
 3. **Programmatic User Creation**: Users are created on-demand using helper methods
 4. **Fixed User IDs**: Helper methods use consistent IDs for reliable references
+5. **Nullable User References**: Posts can exist without users (user_id and author_id are nullable)
 
 ## User Creation Helpers
 
@@ -78,7 +79,33 @@ end
 
 ### Tests with Posts or Other User-Dependent Models
 
-When testing models that depend on users (like posts), create them programmatically:
+Posts from fixtures will NOT have users by default. You have two options:
+
+#### Option 1: Update existing fixture posts with users
+
+```ruby
+RSpec.describe "Post Management", type: :system do
+  fixtures :panda_cms_posts
+  
+  before do
+    # Create users first
+    @admin = create_admin_user
+    
+    # Update fixture posts to have users
+    panda_cms_posts(:first_post).update!(user: @admin, author: @admin)
+    
+    login_as_admin
+  end
+  
+  it "edits the post" do
+    post = panda_cms_posts(:first_post)
+    visit "/admin/posts/#{post.id}/edit"
+    # ... test implementation
+  end
+end
+```
+
+#### Option 2: Create posts programmatically
 
 ```ruby
 RSpec.describe "Post Management", type: :system do
@@ -86,7 +113,7 @@ RSpec.describe "Post Management", type: :system do
     # Create users first
     @admin = create_admin_user
     
-    # Create posts programmatically
+    # Create posts programmatically with users
     @post = Panda::CMS::Post.create!(
       title: "Test Post",
       slug: "/test-post",
@@ -235,6 +262,26 @@ if user.admin   # Or access the column directly
 5. **Use fixed IDs** when you need consistent references
 6. **Login after creating users** in system tests
 
+## CI-Specific Considerations
+
+### Why Posts Don't Have Users in Fixtures
+
+In CI, the panda_core_users table is managed by a separate gem (panda-core). Rails fixtures cannot reference records from another gem's tables reliably because:
+1. The users table is empty when fixtures load
+2. Foreign key constraints would fail
+3. Rails doesn't know about the cross-gem dependency
+
+Therefore:
+- Post fixtures have `user_id: null` and `author_id: null`
+- The database migrations make these columns nullable
+- Tests must create users and associate them when needed
+
+### CI vs Local Development
+
+- **Locally**: You can use `path: "../core"` in Gemfile for faster development
+- **In CI**: Must use `github: "tastybamboo/panda-core"` reference
+- **Test Database**: Gets reset between test runs in CI, so no persistent users
+
 ## Migration Notes
 
 This approach was chosen (option #3 from the migration plan) to:
@@ -242,5 +289,11 @@ This approach was chosen (option #3 from the migration plan) to:
 - Provide flexibility in test data creation
 - Ensure consistent test behavior
 - Work around Rails column caching problems
+- Allow CI to run without foreign key violations
 
 The alternative approaches (modifying migrations or using aliases) had significant drawbacks that made them unsuitable for a sustainable testing strategy.
+
+### Database Changes Made
+
+1. **Migration 20250809231125**: Migrates users from panda_cms_users to panda_core_users
+2. **Migration 20250811111000**: Makes post user_id and author_id nullable for fixture compatibility
