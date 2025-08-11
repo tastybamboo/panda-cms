@@ -5,8 +5,8 @@ require "system_helper"
 RSpec.describe "Editor.js resources", type: :system, editorjs: true do
   it "can load Editor.js resources properly" do
     login_as_admin
-    visit "/admin"
-    expect(page).to have_current_path("/admin", wait: 10)
+    visit "/admin/cms"
+    expect(page).to have_current_path("/admin/cms", wait: 10)
 
     # Create a test div to load Editor.js into
     page.execute_script(<<~JS)

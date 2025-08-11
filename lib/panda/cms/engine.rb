@@ -140,11 +140,17 @@ module Panda
           config.login_logo_path = "/panda-cms-assets/panda-nav.png"
           config.login_page_title = "Panda CMS Admin"
           
+          # Set dashboard redirect path to CMS dashboard
+          config.dashboard_redirect_path = "#{Panda::CMS.route_namespace}/cms"
+          
           # Customize initial breadcrumb
           config.initial_admin_breadcrumb = ->(controller) {
-            # Use admin_root_path which exists in panda-core context
-            # This will be overridden by CMS dashboard route when available
-            ["Admin", controller.admin_root_path]
+            # Use CMS dashboard path - will be evaluated in controller context
+            if controller.respond_to?(:admin_dashboard_path)
+              ["Admin", controller.admin_dashboard_path]
+            else
+              ["Admin", "#{Panda::CMS.route_namespace}/cms"]
+            end
           }
           
           # Dashboard widgets

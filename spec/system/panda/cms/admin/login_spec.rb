@@ -13,7 +13,7 @@ RSpec.describe "Admin authentication", type: :system do
         html_content = page.html
         # Flash message may not always appear, but check we're logged in to dashboard
         expect(html_content).to include("Dashboard")
-        expect(page).to have_current_path("/admin")
+        expect(page).to have_current_path("/admin/cms")
       end
     end
 
@@ -25,7 +25,7 @@ RSpec.describe "Admin authentication", type: :system do
         html_content = page.html
         # Flash message may not always appear, but check we're logged in to dashboard
         expect(html_content).to include("Dashboard")
-        expect(page).to have_current_path("/admin")
+        expect(page).to have_current_path("/admin/cms")
       end
     end
 
@@ -37,7 +37,7 @@ RSpec.describe "Admin authentication", type: :system do
         html_content = page.html
         # Microsoft login may not show flash message, just verify we're on dashboard
         expect(html_content).to include("Dashboard")
-        expect(page).to have_current_path("/admin")
+        expect(page).to have_current_path("/admin/cms")
       end
     end
   end
@@ -45,7 +45,7 @@ RSpec.describe "Admin authentication", type: :system do
   describe "when signing in" do
     it "prevents non-admin access" do
       login_with_google(regular_user)
-      expect(page).to have_current_path("/admin")
+      expect(page).to have_current_path("/admin/cms")
       # Use string-based checks to avoid DOM node issues
       html_content = page.html
       expect(html_content).not_to include("Dashboard")
@@ -56,7 +56,7 @@ RSpec.describe "Admin authentication", type: :system do
   describe "with sessions" do
     it "maintains admin session across pages" do
       login_with_google(admin_user)
-      visit "/admin/pages"
+      visit "/admin/cms/pages"
       expect(page).not_to have_current_path("/admin/login")
       # Use string-based checks to avoid DOM node issues
       html_content = page.html
@@ -75,7 +75,7 @@ RSpec.describe "Admin authentication", type: :system do
           logout_match = html_content.match(/href="([^"]*logout[^"]*)"/)
           if logout_match
             visit logout_match[1]
-            expect(page).to have_current_path("/admin")
+            expect(page).to have_current_path("/admin/cms")
             expect(page.html).to include("Sign in to your account")
           end
         else
@@ -92,14 +92,14 @@ RSpec.describe "Admin authentication", type: :system do
     it "handles invalid credentials" do
       # Initialize the authentication config hash if it doesn't exist
       OmniAuth.config.mock_auth[:google] = :invalid_credentials
-      visit "/admin"
+      visit "/admin/cms"
 
       # Add debugging and wait for page load
-      expect(page).to have_current_path("/admin")
+      expect(page).to have_current_path("/admin/cms")
       expect(page).to have_selector("#button-sign-in-google", wait: 1)
 
       find("#button-sign-in-google").click
-      expect(page).to have_current_path("/admin")
+      expect(page).to have_current_path("/admin/cms")
       expect(page).to have_content("There was an error logging you in")
     end
   end

@@ -33,8 +33,8 @@ module OmniAuthHelpers
     # Visit the callback URL directly in test mode
     visit "/admin/auth/google/callback"
 
-    # We should be redirected to /admin after successful auth
-    expect(page).to have_current_path("/admin", wait: 10)
+    # We should be redirected to /admin/cms after successful auth
+    expect(page).to have_current_path("/admin/cms", wait: 10)
   end
 
   def manual_login_with_google(user)
@@ -82,7 +82,7 @@ module OmniAuthHelpers
     visit "/admin/auth/github/callback"
 
     # We should be redirected to /admin after successful auth
-    expect(page).to have_current_path("/admin", wait: 10)
+    expect(page).to have_current_path("/admin/cms", wait: 10)
   end
 
   def login_with_microsoft(user)
@@ -107,7 +107,7 @@ module OmniAuthHelpers
     visit "/admin/auth/microsoft/callback"
 
     # We should be redirected to /admin after successful auth
-    expect(page).to have_current_path("/admin", wait: 10)
+    expect(page).to have_current_path("/admin/cms", wait: 10)
   end
 
   def login_as_admin(firstname: nil, lastname: nil, email: nil)
