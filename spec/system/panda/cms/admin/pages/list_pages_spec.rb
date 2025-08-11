@@ -5,14 +5,14 @@ require "system_helper"
 RSpec.describe "List pages", type: :system do
   before(:each) do
     login_as_admin
-    visit "/admin/pages"
+    visit "/admin/cms/pages"
   end
 
   it "shows the correct header" do
     # Use string-based checks to avoid DOM node issues
     html_content = page.html
     expect(html_content).to include("Pages")
-    expect(html_content).to include('href="/admin/pages/new"')
+    expect(html_content).to include('href="/admin/cms/pages/new"')
     expect(html_content).to include("Add Page")
   end
 

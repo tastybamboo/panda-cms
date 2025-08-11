@@ -16,7 +16,7 @@ RSpec.describe "When editing a page", type: :system do
 
   context "when not logged in" do
     it "returns a 404 error" do
-      visit "/admin/pages/#{homepage.id}/edit"
+      visit "/admin/cms/pages/#{homepage.id}/edit"
       expect(page.html).to include("The page you were looking for doesn't exist.")
     end
   end
@@ -24,7 +24,7 @@ RSpec.describe "When editing a page", type: :system do
   context "when not logged in as an administrator" do
     it "returns a 404 error" do
       login_as_user
-      visit "/admin/pages/#{homepage.id}/edit"
+      visit "/admin/cms/pages/#{homepage.id}/edit"
       expect(page.html).to include("The page you were looking for doesn't exist.")
     end
   end
@@ -34,7 +34,7 @@ RSpec.describe "When editing a page", type: :system do
       login_as_admin
       # Initialize Current.root for iframe template rendering
       Panda::CMS::Current.root = Capybara.app_host
-      visit "/admin/pages/#{about_page.id}/edit"
+      visit "/admin/cms/pages/#{about_page.id}/edit"
 
       # Ensure the page has loaded before proceeding
       expect(page).to have_content("About", wait: 10)
@@ -91,7 +91,7 @@ RSpec.describe "When editing a page", type: :system do
       expect(about_page.title).to eq("Updated About Page")
 
       # Refresh the page to see the updated title
-      visit "/admin/pages/#{about_page.id}/edit"
+      visit "/admin/cms/pages/#{about_page.id}/edit"
       # Check that the title was updated in the main heading
       expect(page.html).to include("Updated About Page")
       expect(page.html).to include("<main")

@@ -33,7 +33,7 @@ RSpec.describe "Editing a post", type: :system do
   let(:post) { @post }
 
   it "updates an existing post", :editorjs do
-    visit "/admin/posts/#{post.id}/edit"
+    visit "/admin/cms/posts/#{post.id}/edit"
     # Use JavaScript evaluation instead of CSS selector to avoid Ferrum issues
     using_wait_time(10) do
       editor_exists = page.evaluate_script("document.querySelector(\"[data-controller='editor-form'] .codex-editor\") !== null")
@@ -67,7 +67,7 @@ RSpec.describe "Editing a post", type: :system do
   end
 
   it "shows validation errors", :editorjs do
-    visit "/admin/posts/#{post.id}/edit"
+    visit "/admin/cms/posts/#{post.id}/edit"
     # Use JavaScript evaluation instead of CSS selector to avoid Ferrum issues
     using_wait_time(10) do
       editor_exists = page.evaluate_script("document.querySelector(\"[data-controller='editor-form'] .codex-editor\") !== null")

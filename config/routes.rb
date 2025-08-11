@@ -16,7 +16,7 @@ Panda::CMS::Engine.routes.draw do
 
       get "settings", to: "settings#index"
 
-      resource :my_profile, only: %i[edit update], controller: :my_profile
+      # Profile management moved to panda-core at /admin/my_profile
 
       namespace :settings, as: :settings do
         get "bulk_editor", to: "bulk_editor#new"

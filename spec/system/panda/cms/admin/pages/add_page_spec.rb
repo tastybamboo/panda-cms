@@ -10,7 +10,7 @@ RSpec.describe "When adding a page", type: :system do
 
   context "when not logged in" do
     it "returns a 404 error" do
-      visit "/admin/pages/#{homepage.id}/edit"
+      visit "/admin/cms/pages/#{homepage.id}/edit"
       expect(page.html).to include("The page you were looking for doesn't exist.")
     end
   end
@@ -18,7 +18,7 @@ RSpec.describe "When adding a page", type: :system do
   context "when not logged in as an administrator" do
     it "returns a 404 error" do
       login_as_user
-      visit "/admin/pages/#{homepage.id}/edit"
+      visit "/admin/cms/pages/#{homepage.id}/edit"
       expect(page.html).to include("The page you were looking for doesn't exist.")
     end
   end
@@ -27,7 +27,7 @@ RSpec.describe "When adding a page", type: :system do
     context "when using the add page form" do
       before(:each) do
         login_as_admin
-        visit "/admin/pages/new"
+        visit "/admin/cms/pages/new"
         # Allow page to stabilize before assertions
         sleep 1
         # Use page.html check instead of have_content to avoid Ferrum issues
@@ -163,7 +163,7 @@ RSpec.describe "When adding a page", type: :system do
           end
 
           # Now create a second-level page under the first-level page
-          visit "/admin/pages/new"
+          visit "/admin/cms/pages/new"
           select "- First Level Page", from: "page_parent_id"
           trigger_slug_generation("Second Level Page")
           # Path should be set correctly for second level
@@ -195,14 +195,14 @@ RSpec.describe "When adding a page", type: :system do
           end
 
           # Create a second-level page
-          visit "/admin/pages/new"
+          visit "/admin/cms/pages/new"
           select "- Level One", from: "page_parent_id"
           trigger_slug_generation("Level Two")
           select "Page", from: "page_panda_cms_template_id"
           click_button "Create Page"
 
           # Create a third-level page
-          visit "/admin/pages/new"
+          visit "/admin/cms/pages/new"
           select "-- Level Two", from: "page_parent_id"
           trigger_slug_generation("Level Three")
           # Path should be set correctly for third level
@@ -227,7 +227,7 @@ RSpec.describe "When adding a page", type: :system do
     context "when navigating from pages index" do
       before(:each) do
         login_as_admin
-        visit "/admin/pages"
+        visit "/admin/cms/pages"
       end
 
       it "can access the pages index first" do
@@ -239,7 +239,7 @@ RSpec.describe "When adding a page", type: :system do
       end
 
       it "shows validation errors when adding a page with invalid details" do
-        visit "/admin/pages/new"
+        visit "/admin/cms/pages/new"
         sleep 1  # Allow page to stabilize
         fill_in "page_title", with: "Test Page"
         fill_in "page_path", with: "invalid-url"
@@ -250,7 +250,7 @@ RSpec.describe "When adding a page", type: :system do
       end
 
       it "shows validation errors when adding a page with missing title input" do
-        visit "/admin/pages/new"
+        visit "/admin/cms/pages/new"
         sleep 1  # Allow page to stabilize
         fill_in "page_path", with: "/test-page"
         click_on "Create Page"
@@ -260,7 +260,7 @@ RSpec.describe "When adding a page", type: :system do
       end
 
       it "shows validation errors when adding a page with missing URL input" do
-        visit "/admin/pages/new"
+        visit "/admin/cms/pages/new"
         sleep 1  # Allow page to stabilize
         fill_in "page_title", with: "Test Page"
         fill_in "page_path", with: ""
