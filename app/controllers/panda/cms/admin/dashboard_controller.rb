@@ -17,7 +17,7 @@ module Panda
         private
 
         def set_initial_breadcrumb
-          add_breadcrumb "Dashboard", Panda::CMS.route_namespace
+          add_breadcrumb "Dashboard", admin_dashboard_path
         end
       end
     end

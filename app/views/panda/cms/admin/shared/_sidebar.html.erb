@@ -17,13 +17,13 @@
       </li>
     <% end %>
     <li>
-      <%= button_to admin_logout_path, method: :delete, id: "logout-link", data: { turbo: false }, class: nav_highlight_colour_classes(request) + " w-full" do %>
+      <%= button_to panda_core.admin_logout_path, method: :delete, id: "logout-link", data: { turbo: false }, class: nav_highlight_colour_classes(request) + " w-full" do %>
         <span class="text-center"><i class="text-xl fa-regular fa-door-open fa-fw"></i></span>
         <span class="mt-1">Logout</span>
       <% end %>
     </li>
     <li class="mt-auto">
-      <%= link_to edit_admin_my_profile_path, class: nav_highlight_colour_classes(request) + " w-full", title: "Edit my Profile" do %>
+      <%= link_to panda_core.edit_admin_my_profile_path, class: nav_highlight_colour_classes(request) + " w-full", title: "Edit my Profile" do %>
         <% if !current_user.image_url.to_s.empty? %>
           <span class="text-center"><img src="<%= current_user.image_url %>" class="w-auto h-7 rounded-full"></span>
         <% else %>
