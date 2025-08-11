@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_08_09_231125) do
+ActiveRecord::Schema[8.0].define(version: 2025_08_11_111000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -140,7 +140,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_09_231125) do
     t.string "title"
     t.string "slug"
     t.datetime "published_at"
-    t.uuid "user_id", null: false
+    t.uuid "user_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.enum "status", default: "draft", null: false, enum_type: "panda_cms_post_status"
