@@ -3,7 +3,7 @@
 module Panda
   module CMS
     module Admin
-      class BlockContentsController < ::Panda::Core::AdminController
+      class BlockContentsController < ::Panda::CMS::Admin::BaseController
         before_action :set_page, only: %i[update]
         before_action :set_block_content, only: %i[update]
 

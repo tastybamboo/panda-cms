@@ -3,7 +3,7 @@
 source "https://rubygems.org"
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
-# Use panda-core from GitHub for CI/production
+# Use panda-core from GitHub for CI
 gem "panda-core", github: "tastybamboo/panda-core", branch: "feature/auth-migration-from-cms"
 
 # Specify your gem's dependencies in panda-cms.gemspec.

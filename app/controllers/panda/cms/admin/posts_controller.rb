@@ -5,7 +5,7 @@ require "json"
 module Panda
   module CMS
     module Admin
-      class PostsController < ::Panda::Core::AdminController
+      class PostsController < ::Panda::CMS::Admin::BaseController
         before_action :set_initial_breadcrumb, only: %i[index edit new create update]
 
         # Get all posts

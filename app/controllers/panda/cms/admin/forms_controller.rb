@@ -3,7 +3,7 @@
 module Panda
   module CMS
     module Admin
-      class FormsController < ::Panda::Core::AdminController
+      class FormsController < ::Panda::CMS::Admin::BaseController
         before_action :set_initial_breadcrumb, only: %i[index show]
 
         # Lists all forms

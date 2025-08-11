@@ -3,7 +3,7 @@
 module Panda
   module CMS
     module Admin
-      class FilesController < ::Panda::Core::AdminController
+      class FilesController < ::Panda::CMS::Admin::BaseController
 
         def create
           file = params[:image]

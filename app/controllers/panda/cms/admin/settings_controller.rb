@@ -3,7 +3,7 @@
 module Panda
   module CMS
     module Admin
-      class SettingsController < ::Panda::Core::AdminController
+      class SettingsController < ::Panda::CMS::Admin::BaseController
         before_action :set_initial_breadcrumb, only: %i[index show]
 
         def index
