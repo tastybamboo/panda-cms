@@ -2,16 +2,23 @@
 name: "Auto Release on Version Change"
 
 "on": # yamllint disable-line rule:truthy
-  push:
-    branches:
-      - main
-    paths:
-      - 'lib/panda-cms/version.rb'
+  workflow_run:
+    workflows: ["CI"]
+    branches: [main]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      force_release:
+        description: "Force release even if version exists"
+        required: false
+        default: false
+        type: boolean
 
 jobs:
   check-version:
     name: "Check Version Change"
     runs-on: "ubuntu-latest"
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     outputs:
       version_changed: ${{ steps.version_check.outputs.changed }}
       new_version: ${{ steps.version_check.outputs.version }}
@@ -19,7 +26,8 @@ jobs:
     steps:
       - uses: "actions/checkout@v4"
         with:
-          fetch-depth: 2
+          fetch-depth: 0
+          ref: ${{ github.event.workflow_run.head_branch }}
 
       - name: "Check if version changed"
         id: version_check
@@ -27,22 +35,52 @@ jobs:
           # Get the current version
           CURRENT_VERSION=$(ruby -r ./lib/panda-cms/version.rb -e "puts Panda::CMS::VERSION")
           echo "Current version: $CURRENT_VERSION"
+          echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+          echo "tag=v$CURRENT_VERSION" >> $GITHUB_OUTPUT
 
-          # Get the previous version
-          git checkout HEAD~1
-          PREVIOUS_VERSION=$(ruby -r ./lib/panda-cms/version.rb -e "puts Panda::CMS::VERSION" 2>/dev/null || echo "0.0.0")
-          git checkout -
-          echo "Previous version: $PREVIOUS_VERSION"
-
-          # Check if version changed
-          if [ "$CURRENT_VERSION" != "$PREVIOUS_VERSION" ]; then
-            echo "Version changed from $PREVIOUS_VERSION to $CURRENT_VERSION"
-            echo "changed=true" >> $GITHUB_OUTPUT
-            echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
-            echo "tag=v$CURRENT_VERSION" >> $GITHUB_OUTPUT
+          # For manual runs, check if version already exists
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "Manual run - checking if version already exists..."
+            
+            # Check if tag exists
+            if git ls-remote --tags origin | grep -q "refs/tags/v$CURRENT_VERSION"; then
+              if [ "${{ inputs.force_release }}" == "true" ]; then
+                echo "Tag v$CURRENT_VERSION exists but force_release is true"
+                echo "changed=true" >> $GITHUB_OUTPUT
+              else
+                echo "Tag v$CURRENT_VERSION already exists. Use force_release to override."
+                echo "changed=false" >> $GITHUB_OUTPUT
+              fi
+            else
+              echo "Tag v$CURRENT_VERSION does not exist. Proceeding with release."
+              echo "changed=true" >> $GITHUB_OUTPUT
+            fi
           else
-            echo "Version unchanged"
-            echo "changed=false" >> $GITHUB_OUTPUT
+            # For automatic runs, check if version file was changed
+            CHANGED_FILES=$(git diff --name-only ${{ github.event.workflow_run.head_commit.id }}^ ${{ github.event.workflow_run.head_commit.id }} 2>/dev/null || git diff --name-only HEAD^ HEAD)
+            echo "Changed files: $CHANGED_FILES"
+            
+            if echo "$CHANGED_FILES" | grep -q "lib/panda-cms/version.rb"; then
+              echo "Version file was changed"
+              
+              # Get the previous version
+              git checkout HEAD~1
+              PREVIOUS_VERSION=$(ruby -r ./lib/panda-cms/version.rb -e "puts Panda::CMS::VERSION" 2>/dev/null || echo "0.0.0")
+              git checkout -
+              echo "Previous version: $PREVIOUS_VERSION"
+
+              # Check if version actually changed
+              if [ "$CURRENT_VERSION" != "$PREVIOUS_VERSION" ]; then
+                echo "Version changed from $PREVIOUS_VERSION to $CURRENT_VERSION"
+                echo "changed=true" >> $GITHUB_OUTPUT
+              else
+                echo "Version file changed but version number unchanged"
+                echo "changed=false" >> $GITHUB_OUTPUT
+              fi
+            else
+              echo "Version file not changed in this commit"
+              echo "changed=false" >> $GITHUB_OUTPUT
+            fi
           fi
 
       - name: "Check if tag already exists"
@@ -89,40 +127,6 @@ jobs:
         uses: "ruby/setup-ruby@v1"
         with:
           bundler-cache: true
-
-      - name: "Setup test database"
-        env:
-          DATABASE_URL: "postgres://postgres:password@localhost:5432/test"
-          RAILS_ENV: test
-        run: |
-          bundle exec rails db:create
-          bundle exec rails db:schema:load
-
-      - name: "Compile assets for tests"
-        working-directory: spec/dummy
-        env:
-          DATABASE_URL: "postgres://postgres:password@localhost:5432/test"
-          RAILS_ENV: test
-        run: |
-          echo "🔧 Compiling assets for test environment..."
-          # Compile Core assets first
-          bundle exec rake panda:core:assets:compile || echo "Core assets compilation not available"
-          # Then compile CMS assets
-          bundle exec rake panda:cms:assets:compile
-          echo "✅ Asset compilation complete"
-
-          # Verify assets exist
-          echo "Verifying compiled assets:"
-          ls -la public/panda-cms-assets/
-
-      - name: "Run tests"
-        env:
-          DATABASE_URL: "postgres://postgres:password@localhost:5432/test"
-          RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
-          RAILS_ENV: test
-        run: |
-          echo "🧪 Running test suite..."
-          bundle exec rspec --tag ~skip --fail-fast
 
       - name: "Build gem"
         run: |
