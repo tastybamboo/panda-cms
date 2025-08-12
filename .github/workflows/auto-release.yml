@@ -3,7 +3,7 @@ name: "Auto Release on Version Change"
 
 "on": # yamllint disable-line rule:truthy
   workflow_run:
-    workflows: ["CI"]
+    workflows: ["App Tests"]
     branches: [main]
     types: [completed]
   workflow_dispatch:
