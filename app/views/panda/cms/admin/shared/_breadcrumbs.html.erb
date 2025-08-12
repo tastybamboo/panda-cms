@@ -19,7 +19,7 @@
   </nav>
 
   <% if content_for :sidebar %>
-    <div class="pt-4 pr-8 text-black/80" tabindex="-1">
+    <div class="pt-4 pr-8 text-black/80" tabindex="-1" data-controller="toggle">
       <a href="#" id="slideover-toggle" data-action="click->toggle#toggle touch->toggle#toggle" class="text-sm font-light">
         <i class="mr-1 fa-light fa-gear"></i> <%= yield :sidebar_title %>
       </a>

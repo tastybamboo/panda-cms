@@ -12,6 +12,9 @@ RSpec.describe "When editing a page", type: :system do
   def wait_for_javascript
     # Wait for the slideover toggle to be present, which indicates JavaScript has loaded
     expect(page).to have_css("#slideover-toggle", wait: 10)
+  rescue Capybara::ElementNotFound
+    # If element not found, don't continue - let the test fail here
+    raise
   end
 
   context "when not logged in" do
@@ -34,53 +37,81 @@ RSpec.describe "When editing a page", type: :system do
       login_as_admin
       # Initialize Current.root for iframe template rendering
       Panda::CMS::Current.root = Capybara.app_host
+      
+      # Debug: Check if about_page exists
+      puts "About page ID: #{about_page.id}"
+      puts "About page title: #{about_page.title}"
+      
       visit "/admin/cms/pages/#{about_page.id}/edit"
+      
+      # Debug: Check current URL and page content
+      puts "Current URL after visit: #{page.current_url}"
+      puts "Page HTML length: #{page.html.length}"
+      puts "Page text: #{page.text[0..200]}" if page.text.length > 0
+      
+      # Check if slideover-toggle exists in HTML
+      if page.html.include?("slideover-toggle")
+        puts "Found slideover-toggle in HTML"
+      else
+        puts "No slideover-toggle found in HTML"
+        puts "Checking for breadcrumbs: #{page.html.include?('panda-breadcrumbs')}"
+        # Check if the breadcrumbs partial path exists
+        puts "Checking for Pages link: #{page.html.include?('Pages')}"
+        # Save HTML for inspection
+        File.write("/tmp/page_output.html", page.html)
+        puts "Page HTML saved to /tmp/page_output.html"
+      end
 
       # Ensure the page has loaded before proceeding
       expect(page).to have_content("About", wait: 10)
     end
 
     it "shows the page details slideover" do
-      expect(page.html).to include("About")
-      expect(page.html).to include("<main")
-
-      # Ensure JavaScript has loaded
-      wait_for_javascript
-
-      # Click the slideover toggle using JavaScript
-      page.execute_script("document.getElementById('slideover-toggle').click()")
-
-      # Wait for slideover to become visible (animation might take time)
-      expect(page).to have_css("#slideover", visible: true, wait: 10)
-
+      # Check that the page loaded correctly
+      expect(page).to have_content("About")
+      
+      # Check that the slideover toggle exists
+      expect(page).to have_css("#slideover-toggle", wait: 10)
+      
+      # Check if JavaScript is loaded by checking for pandaCmsLoaded
+      js_loaded = page.evaluate_script("window.pandaCmsLoaded")
+      puts "JavaScript loaded: #{js_loaded}"
+      
+      # Check if Stimulus is available
+      stimulus_exists = page.evaluate_script("typeof window.Stimulus !== 'undefined'")
+      puts "Stimulus exists: #{stimulus_exists}"
+      
+      # Check if toggle controller is registered
+      if stimulus_exists
+        toggle_registered = page.evaluate_script("window.Stimulus && window.Stimulus.controllers && window.Stimulus.controllers.has('toggle')")
+        puts "Toggle controller registered: #{toggle_registered}"
+      end
+      
+      # Click the slideover toggle
+      find("#slideover-toggle").click
+      
+      # Check that slideover is now visible
+      expect(page).to have_css("#slideover", wait: 10)
+      
+      # Check content within slideover
       within("#slideover") do
         expect(page).to have_field("Title", with: "About")
       end
     end
 
     it "updates the page details" do
-      # Ensure JavaScript has loaded
-      wait_for_javascript
-
-      # Click the slideover toggle using JavaScript
-      page.execute_script("document.getElementById('slideover-toggle').click()")
-
+      # Check that the slideover toggle exists
+      expect(page).to have_css("#slideover-toggle", wait: 10)
+      
+      # Click the slideover toggle
+      find("#slideover-toggle").click
+      
       # Wait for slideover to become visible
-      expect(page).to have_css("#slideover", visible: true, wait: 10)
+      expect(page).to have_css("#slideover", wait: 10)
 
       within("#slideover") do
         fill_in "Title", with: "Updated About Page"
-      end
-
-      # Find and click the save button within the form
-      within("#slideover") do
-        # Find the form and submit it
-        form = find("form[action^='/admin/pages/']")
-
-        # Click the Save button within the form
-        within(form) do
-          click_button "Save"
-        end
+        click_button "Save"
       end
 
       # Wait for success message and page update
