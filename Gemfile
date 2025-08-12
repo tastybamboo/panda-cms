@@ -6,6 +6,9 @@ git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 # Use panda-core from GitHub
 gem "panda-core", github: "tastybamboo/panda-core", branch: "feature/auth-migration-from-cms"
 
+# Use panda-editor gem
+gem "panda-editor", "~> 0.1.0"
+
 # Specify your gem's dependencies in panda-cms.gemspec.
 gemspec
 

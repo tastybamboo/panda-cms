@@ -78,13 +78,13 @@ module Panda
                   else
                     # If not valid EditorJS, try to convert from HTML
                     begin
-                      editor_content = Panda::CMS::HtmlToEditorJsConverter.convert(@content)
+                      editor_content = Panda::Editor::HtmlToEditorJsConverter.convert(@content)
                       if valid_editor_js_content?(editor_content)
                         editor_content
                       else
                         empty_editor_js_content
                       end
-                    rescue Panda::CMS::HtmlToEditorJsConverter::ConversionError => e
+                    rescue Panda::Editor::HtmlToEditorJsConverter::ConversionError => e
                       Rails.logger.error("HTML conversion error: #{e.message}")
                       empty_editor_js_content
                     end
@@ -93,13 +93,13 @@ module Panda
                   Rails.logger.error("JSON parse error: #{e.message}")
                   # Try to convert from HTML
                   begin
-                    editor_content = Panda::CMS::HtmlToEditorJsConverter.convert(@content)
+                    editor_content = Panda::Editor::HtmlToEditorJsConverter.convert(@content)
                     if valid_editor_js_content?(editor_content)
                       editor_content
                     else
                       empty_editor_js_content
                     end
-                  rescue Panda::CMS::HtmlToEditorJsConverter::ConversionError => e
+                  rescue Panda::Editor::HtmlToEditorJsConverter::ConversionError => e
                     Rails.logger.error("HTML conversion error: #{e.message}")
                     empty_editor_js_content
                   end
@@ -129,7 +129,7 @@ module Panda
                       parsed_content["blocks"][0]["data"]["text"].blank?
                     "<p></p>".html_safe
                   else
-                    renderer = Panda::CMS::EditorJs::Renderer.new(parsed_content)
+                    renderer = Panda::Editor::Renderer.new(parsed_content)
                     rendered = renderer.render
                     rendered.presence&.html_safe || "<p></p>".html_safe
                   end

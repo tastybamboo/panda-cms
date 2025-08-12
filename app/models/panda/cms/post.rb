@@ -5,7 +5,7 @@ require "awesome_nested_set"
 module Panda
   module CMS
     class Post < ApplicationRecord
-      include ::Panda::CMS::EditorJsContent
+      include ::Panda::Editor::Content
 
       after_commit :clear_menu_cache
       before_validation :format_slug

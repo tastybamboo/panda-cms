@@ -3,7 +3,7 @@
 module Panda
   module CMS
     class BlockContent < ApplicationRecord
-      include EditorJsContent
+      include ::Panda::Editor::Content
 
       self.table_name = "panda_cms_block_contents"
 

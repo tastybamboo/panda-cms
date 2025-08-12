@@ -33,6 +33,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "importmap-rails", ">= 2"
   spec.add_dependency "invisible_captcha"
   spec.add_dependency "panda-core"
+  spec.add_dependency "panda-editor"
   spec.add_dependency "pg"
   spec.add_dependency "propshaft"
   spec.add_dependency "rails", ">= 7.0"

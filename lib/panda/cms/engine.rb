@@ -3,6 +3,8 @@
 require "rubygems"
 require "panda/core"
 require "panda/core/engine"
+require "panda/editor"
+require "panda/editor/engine"
 require "panda/cms/railtie"
 
 require "invisible_captcha"
