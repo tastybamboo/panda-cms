@@ -27,7 +27,7 @@ jobs:
       - uses: "actions/checkout@v4"
         with:
           fetch-depth: 0
-          ref: ${{ github.event.workflow_run.head_branch }}
+          ref: ${{ github.event_name == 'workflow_dispatch' && github.ref || github.event.workflow_run.head_branch }}
 
       - name: "Check if version changed"
         id: version_check
@@ -57,7 +57,11 @@ jobs:
             fi
           else
             # For automatic runs, check if version file was changed
-            CHANGED_FILES=$(git diff --name-only ${{ github.event.workflow_run.head_commit.id }}^ ${{ github.event.workflow_run.head_commit.id }} 2>/dev/null || git diff --name-only HEAD^ HEAD)
+            if [ -n "${{ github.event.workflow_run.head_commit.id }}" ]; then
+              CHANGED_FILES=$(git diff --name-only ${{ github.event.workflow_run.head_commit.id }}^ ${{ github.event.workflow_run.head_commit.id }} 2>/dev/null || git diff --name-only HEAD^ HEAD)
+            else
+              CHANGED_FILES=$(git diff --name-only HEAD^ HEAD 2>/dev/null || echo "")
+            fi
             echo "Changed files: $CHANGED_FILES"
             
             if echo "$CHANGED_FILES" | grep -q "lib/panda-cms/version.rb"; then
