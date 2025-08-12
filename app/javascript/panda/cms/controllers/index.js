@@ -21,21 +21,7 @@ pandaCmsApplication.register("slug", SlugController)
 import EditorIframeController from "panda/cms/controllers/editor_iframe_controller"
 pandaCmsApplication.register("editor-iframe", EditorIframeController)
 
-console.debug("[Panda CMS] Registering components...")
-import ThemeFormController from "panda/cms/controllers/theme_form_controller";
-pandaCmsApplication.register("theme-form", ThemeFormController);
-
-// Import and register all TailwindCSS Components or just the ones you need
-import { Alert, Autosave, ColorPreview, Dropdown, Modal, Tabs, Popover, Toggle, Slideover } from "tailwindcss-stimulus-components"
-pandaCmsApplication.register('alert', Alert)
-pandaCmsApplication.register('autosave', Autosave)
-pandaCmsApplication.register('color-preview', ColorPreview)
-pandaCmsApplication.register('dropdown', Dropdown)
-pandaCmsApplication.register('modal', Modal)
-pandaCmsApplication.register('popover', Popover)
-pandaCmsApplication.register('slideover', Slideover)
-pandaCmsApplication.register('tabs', Tabs)
-pandaCmsApplication.register('toggle', Toggle)
+console.debug("[Panda CMS] Components registration moved to panda-core...")
 
 console.debug("[Panda CMS] Components registered...")
 
