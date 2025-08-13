@@ -41,7 +41,7 @@ jobs:
           # For manual runs, check if version already exists
           if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
             echo "Manual run - checking if version already exists..."
-            
+
             # Check if tag exists
             if git ls-remote --tags origin | grep -q "refs/tags/v$CURRENT_VERSION"; then
               if [ "${{ inputs.force_release }}" == "true" ]; then
@@ -63,10 +63,10 @@ jobs:
               CHANGED_FILES=$(git diff --name-only HEAD^ HEAD 2>/dev/null || echo "")
             fi
             echo "Changed files: $CHANGED_FILES"
-            
+
             if echo "$CHANGED_FILES" | grep -q "lib/panda-cms/version.rb"; then
               echo "Version file was changed"
-              
+
               # Get the previous version
               git checkout HEAD~1
               PREVIOUS_VERSION=$(ruby -r ./lib/panda-cms/version.rb -e "puts Panda::CMS::VERSION" 2>/dev/null || echo "0.0.0")
