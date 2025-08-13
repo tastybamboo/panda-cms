@@ -117,7 +117,7 @@ jobs:
           rm -rf db/migrate
           mkdir -p db/migrate
           bundle exec rails db:drop db:create
-          bundle exec rails panda_core:install:migrations
+          # Don't copy migrations - they're already available from the gem
           bundle exec rails db:migrate
 
       - name: "Compile assets"
