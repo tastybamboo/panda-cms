@@ -193,6 +193,10 @@ RSpec.configure do |config|
   OmniAuth.config.test_mode = true
 
   config.before(:suite) do
+    # Allow DATABASE_URL in CI environment
+    if ENV["DATABASE_URL"]
+      DatabaseCleaner.allow_remote_database_url = true
+    end
     DatabaseCleaner.clean_with :truncation
 
     # Global check for JavaScript loading issues in CI
