@@ -57,7 +57,7 @@ jobs:
           --health-retries 5
 
     steps:
-      - uses: "actions/checkout@v4"
+      - uses: "actions/checkout@v5"
         with:
           fetch-depth: 0 # Need full history for version bumping
 

@@ -38,7 +38,7 @@ jobs:
           --health-retries 5
 
     steps:
-      - uses: "actions/checkout@v4"
+      - uses: "actions/checkout@v5"
 
       - name: "Setup Ruby"
         uses: "ruby/setup-ruby@v1"
@@ -255,7 +255,7 @@ jobs:
       PANDA_CMS_USE_GITHUB_ASSETS: "true"
 
     steps:
-      - uses: "actions/checkout@v4"
+      - uses: "actions/checkout@v5"
 
       - name: "Setup Ruby"
         uses: "ruby/setup-ruby@v1"
