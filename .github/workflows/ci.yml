@@ -123,7 +123,7 @@ jobs:
           DATABASE_URL: "postgres://postgres:password@postgres:5432/test"
           RAILS_ENV: test
         run: |
-          bundle exec rake panda_cms:assets:compile
+          bundle exec rake panda:cms:assets:compile
           echo "✅ Asset compilation complete"
           echo "Assets in public directory:"
           ls -la public/panda-cms-assets/ || echo "No assets directory"

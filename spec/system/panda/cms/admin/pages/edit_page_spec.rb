@@ -12,9 +12,6 @@ RSpec.describe "When editing a page", type: :system do
   def wait_for_javascript
     # Wait for the slideover toggle to be present, which indicates JavaScript has loaded
     expect(page).to have_css("#slideover-toggle", wait: 10)
-  rescue Capybara::ElementNotFound
-    # If element not found, don't continue - let the test fail here
-    raise
   end
 
   context "when not logged in" do
