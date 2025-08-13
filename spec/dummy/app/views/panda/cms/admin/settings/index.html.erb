@@ -1,7 +1,7 @@
-<%= render Panda::CMS::Admin::ContainerComponent.new do |component| %>
+<%= render Panda::Core::Admin::ContainerComponent.new do |component| %>
   <% component.with_heading(text: "Settings", level: 1) %>
 
-  <%= render Panda::CMS::Admin::PanelComponent.new do |panel| %>
+  <%= render Panda::Core::Admin::PanelComponent.new do |panel| %>
     <% panel.with_heading(text: "System Status") %>
 
     <p class="text-base leading-loose"><i class="mr-2 text-active fa fa-check-circle"></i> <span class="font-medium">Panda CMS:</span> v<%= Panda::CMS::VERSION %></p>
@@ -10,7 +10,7 @@
     <p class="text-base leading-loose"><i class="mr-2 text-active fa fa-check-circle"></i> <span class="font-medium">Environment:</span> <%= Rails.env.titleize %></p>
   <% end %>
 
-  <%= render Panda::CMS::Admin::PanelComponent.new do |panel| %>
+  <%= render Panda::Core::Admin::PanelComponent.new do |panel| %>
     <% panel.with_heading(text: "Integrations") %>
 
     <p class="text-base leading-loose"><i class="mr-2 text-active fa-brands fa-instagram"></i> <span class="font-medium">Instagram:</span> <%= Panda::CMS.config.instagram[:enabled] ? "Connected (@#{Panda::CMS.config.instagram[:username]})" : "Not Connected" %></p>

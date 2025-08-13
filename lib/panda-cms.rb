@@ -7,44 +7,64 @@ require "view_component"
 
 module Panda
   module CMS
-    extend Dry::Configurable
+    class Configuration
+      attr_accessor :title, :require_login_to_view, :authentication,
+        :posts, :url, :editor_js_tools,
+        :editor_js_tool_config, :instagram, :analytics
 
-    setting :title, default: "Demo Site"
-    setting :admin_path, default: "/admin"
-    setting :require_login_to_view, default: false
-    setting :authentication, default: {}
-    setting :posts, default: {enabled: true, prefix: "blog"}
-    setting :route_namespace, default: "/admin"
-    setting :url
-    setting :editor_js_tools, default: []
-    setting :editor_js_tool_config, default: {}
+      def initialize
+        @title = "Demo Site"
+        @require_login_to_view = false
+        @authentication = {}
+        @posts = {enabled: true, prefix: "blog"}
+        @url = nil
+        @editor_js_tools = []
+        @editor_js_tool_config = {}
+        @instagram = {
+          enabled: false,
+          username: nil,
+          access_token: nil
+        }
+        @analytics = {
+          google_analytics: {
+            enabled: false,
+            tracking_id: nil
+          }
+        }
+      end
+    end
 
-    setting :instagram, default: {
-      enabled: false,
-      username: nil,
-      access_token: nil
-    }
+    class << self
+      attr_writer :configuration
 
-    setting :analytics, default: {
-      google_analytics: {
-        enabled: false,
-        tracking_id: nil
-      }
-    }
+      def configuration
+        @configuration ||= Configuration.new
+      end
+
+      def config
+        configuration
+      end
+
+      def configure
+        yield configuration if block_given?
+      end
+
+      def reset_configuration!
+        @configuration = Configuration.new
+      end
+    end
 
     def self.root_path
-      config.admin_path
+      # Delegate to Panda::Core's admin_path configuration
+      Panda::Core.configuration.admin_path
     end
 
     class << self
       attr_accessor :loader
 
       def route_namespace
-        config.admin_path
-      end
-
-      def configure
-        yield config if block_given?
+        # Delegate to Panda::Core's admin_path configuration
+        Panda::Core.configuration.admin_path
       end
     end
   end
@@ -75,16 +95,6 @@ require_relative "panda/cms/exceptions_app"
 require_relative "panda/cms/engine"
 require_relative "panda/cms/demo_site_generator"
 require_relative "panda/cms/asset_loader"
-require_relative "panda/cms/editor_js"
-require_relative "panda/cms/editor_js_content"
-require_relative "panda/cms/editor_js/renderer"
-require_relative "panda/cms/editor_js/blocks/alert"
-require_relative "panda/cms/editor_js/blocks/header"
-require_relative "panda/cms/editor_js/blocks/image"
-require_relative "panda/cms/editor_js/blocks/list"
-require_relative "panda/cms/editor_js/blocks/paragraph"
-require_relative "panda/cms/editor_js/blocks/quote"
-require_relative "panda/cms/editor_js/blocks/table"
 require_relative "panda/cms/slug"
 
 Panda::CMS.loader.setup

@@ -1,10 +1,12 @@
 # frozen_string_literal: true
 
-require_relative "../app/constraints/panda/cms/admin_constraint"
-
 Panda::CMS::Engine.routes.draw do
-  constraints Panda::CMS::AdminConstraint.new(&:present?) do
-    namespace Panda::CMS.route_namespace, as: :admin, module: :admin do
+  constraints Panda::Core::AdminConstraint.new(&:present?) do
+    # CMS-specific dashboard (using Core's admin_path)
+    admin_path = Panda::Core.configuration.admin_path
+    get "#{admin_path}/cms", to: "admin/dashboard#show", as: :admin_cms_dashboard
+
+    namespace admin_path.delete_prefix("/").to_sym, path: "#{admin_path}/cms", as: :admin_cms, module: :admin do
       resources :files
       resources :forms, only: %i[index show]
       resources :menus
@@ -15,28 +17,18 @@ Panda::CMS::Engine.routes.draw do
 
       get "settings", to: "settings#index"
 
-      resource :my_profile, only: %i[edit update], controller: :my_profile
+      # Profile management moved to panda-core at /admin/my_profile
 
       namespace :settings, as: :settings do
         get "bulk_editor", to: "bulk_editor#new"
         post "bulk_editor", to: "bulk_editor#create"
       end
     end
-
-    get Panda::CMS.route_namespace, to: "admin/dashboard#show", as: :admin_dashboard
   end
 
   ### PUBLIC ROUTES ###
 
-  # Authentication routes
-  get Panda::CMS.route_namespace, to: "admin/sessions#new", as: :admin_login
-  # Get and post options here are for OmniAuth coming back in, not going out
-  match "#{Panda::CMS.route_namespace}/auth/:provider/callback", to: "admin/sessions#create",
-    as: :admin_login_callback, via: %i[get post]
-  match "#{Panda::CMS.route_namespace}/auth/failure", to: "admin/sessions#failure", as: :admin_login_failure,
-    via: %i[get post]
-  # OmniAuth additionally adds a GET route for "#{Panda::CMS.route_namespace}/auth/:provider" but doesn't name it
-  delete Panda::CMS.route_namespace, to: "admin/sessions#destroy", as: :admin_logout
+  # Authentication routes are now handled by Panda::Core
 
   ### APPENDED ROUTES ###
 

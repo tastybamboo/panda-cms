@@ -3,14 +3,24 @@
 source "https://rubygems.org"
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
+# Use panda-core gem
+gem "panda-core", "~> 0.2.1"
+
+# Use panda-editor gem
+gem "panda-editor", "~> 0.2.0"
+
 # Specify your gem's dependencies in panda-cms.gemspec.
 gemspec
+
+# Development-only dependencies
+group :development do
+  gem "better_errors"
+  gem "binding_of_caller"
+end
 
 # Development and testing dependencies
 group :development, :test do
   gem "annotaterb"
-  gem "better_errors"
-  gem "binding_of_caller"
   gem "brakeman"
   gem "bullet"
   gem "bundler-audit"

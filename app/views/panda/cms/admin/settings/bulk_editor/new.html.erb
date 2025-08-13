@@ -1,4 +1,4 @@
-<%= render Panda::CMS::Admin::ContainerComponent.new do |component| %>
+<%= render Panda::Core::Admin::ContainerComponent.new do |component| %>
   <% component.with_heading(text: "Bulk Editor", level: 1) %>
 
   <% if @debug && @debug[:error].any? %>

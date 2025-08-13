@@ -1,13 +1,26 @@
 # frozen_string_literal: true
 
+require "panda/core"
+
 module Panda
   module CMS
     module AssetHelper
+      include Panda::Core::AssetHelper if defined?(Panda::Core::AssetHelper)
       # Include Panda CMS JavaScript and CSS assets
       # Automatically chooses between GitHub-hosted assets (production)
       # and local development assets
       def panda_cms_assets
-        Panda::CMS::AssetLoader.asset_tags.html_safe
+        tags = []
+
+        # Include Core assets first (if Core is available)
+        if defined?(Panda::Core::AssetHelper)
+          tags << panda_core_assets
+        end
+
+        # Then include CMS-specific assets
+        tags << Panda::CMS::AssetLoader.asset_tags
+
+        tags.join("\n").html_safe
       end
 
       # Include only Panda CMS JavaScript

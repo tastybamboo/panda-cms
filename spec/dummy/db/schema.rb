@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_05_04_221812) do
+ActiveRecord::Schema[8.0].define(version: 2025_08_11_111000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -140,7 +140,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_05_04_221812) do
     t.string "title"
     t.string "slug"
     t.datetime "published_at"
-    t.uuid "user_id", null: false
+    t.uuid "user_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.enum "status", default: "draft", null: false, enum_type: "panda_cms_post_status"
@@ -204,6 +204,18 @@ ActiveRecord::Schema[8.0].define(version: 2025_05_04_221812) do
     t.index ["user_id"], name: "index_panda_cms_visits_on_user_id"
   end
 
+  create_table "panda_core_users", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "firstname", null: false
+    t.string "lastname", null: false
+    t.string "email", null: false
+    t.string "image_url"
+    t.boolean "admin", default: false, null: false
+    t.string "current_theme", default: "default"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["email"], name: "index_panda_core_users_on_email", unique: true
+  end
+
   create_table "panda_social_instagram_posts", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "instagram_id", null: false
     t.text "caption"
@@ -226,11 +238,11 @@ ActiveRecord::Schema[8.0].define(version: 2025_05_04_221812) do
   add_foreign_key "panda_cms_menus", "panda_cms_pages", column: "start_page_id"
   add_foreign_key "panda_cms_pages", "panda_cms_pages", column: "parent_id"
   add_foreign_key "panda_cms_pages", "panda_cms_templates"
-  add_foreign_key "panda_cms_posts", "panda_cms_users", column: "author_id"
-  add_foreign_key "panda_cms_posts", "panda_cms_users", column: "user_id"
+  add_foreign_key "panda_cms_posts", "panda_core_users", column: "author_id"
+  add_foreign_key "panda_cms_posts", "panda_core_users", column: "user_id"
   add_foreign_key "panda_cms_redirects", "panda_cms_pages", column: "destination_panda_cms_page_id"
   add_foreign_key "panda_cms_redirects", "panda_cms_pages", column: "origin_panda_cms_page_id"
   add_foreign_key "panda_cms_visits", "panda_cms_pages", column: "page_id"
   add_foreign_key "panda_cms_visits", "panda_cms_redirects", column: "redirect_id"
-  add_foreign_key "panda_cms_visits", "panda_cms_users", column: "user_id"
+  add_foreign_key "panda_cms_visits", "panda_core_users", column: "user_id"
 end

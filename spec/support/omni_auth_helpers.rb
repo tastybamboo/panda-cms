@@ -2,9 +2,17 @@
 
 module OmniAuthHelpers
   def login_as_admin
+    # Ensure admin user exists in database first
+    admin_user = Panda::Core::User.find_or_create_by!(email: "admin@example.com") do |user|
+      user.firstname = "Admin"
+      user.lastname = "User"
+      user.admin = true
+    end
+
     if ENV["GITHUB_ACTIONS"] == "true"
       puts "\n[CI Debug] Starting admin login process..."
       puts "   Current URL before login: #{page.current_url}"
+      puts "   Admin user created: #{admin_user.email} (admin: #{admin_user.admin?})"
     end
 
     OmniAuth.config.test_mode = true
@@ -18,7 +26,8 @@ module OmniAuthHelpers
     )
 
     begin
-      visit "/auth/google_oauth2"
+      visit "/admin/login"
+      click_button "button-sign-in-google_oauth2"
     rescue => e
       if ENV["GITHUB_ACTIONS"] == "true"
         puts "[CI Debug] Login navigation failed: #{e.message}"
@@ -45,6 +54,13 @@ module OmniAuthHelpers
   end
 
   def login_as_user
+    # Ensure regular user exists in database first
+    Panda::Core::User.find_or_create_by!(email: "user@example.com") do |user|
+      user.firstname = "Regular"
+      user.lastname = "User"
+      user.admin = false
+    end
+
     OmniAuth.config.test_mode = true
     OmniAuth.config.mock_auth[:google_oauth2] = OmniAuth::AuthHash.new(
       provider: "google_oauth2",
@@ -54,6 +70,7 @@ module OmniAuthHelpers
         name: "Regular User"
       }
     )
-    visit "/auth/google_oauth2"
+    visit "/admin/login"
+    click_button "button-sign-in-google_oauth2"
   end
 end

@@ -1,0 +1,266 @@
+---
+name: "Auto Release on Version Change"
+
+"on": # yamllint disable-line rule:truthy
+  workflow_run:
+    workflows: ["App Tests"]
+    branches: [main]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      force_release:
+        description: "Force release even if version exists"
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  check-version:
+    name: "Check Version Change"
+    runs-on: "ubuntu-latest"
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    outputs:
+      version_changed: ${{ steps.version_check.outputs.changed }}
+      new_version: ${{ steps.version_check.outputs.version }}
+      tag_name: ${{ steps.version_check.outputs.tag }}
+    steps:
+      - uses: "actions/checkout@v4"
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event_name == 'workflow_dispatch' && github.ref || github.event.workflow_run.head_branch }}
+
+      - name: "Check if version changed"
+        id: version_check
+        run: |
+          # Get the current version
+          CURRENT_VERSION=$(ruby -r ./lib/panda-cms/version.rb -e "puts Panda::CMS::VERSION")
+          echo "Current version: $CURRENT_VERSION"
+          echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+          echo "tag=v$CURRENT_VERSION" >> $GITHUB_OUTPUT
+
+          # For manual runs, check if version already exists
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "Manual run - checking if version already exists..."
+
+            # Check if tag exists
+            if git ls-remote --tags origin | grep -q "refs/tags/v$CURRENT_VERSION"; then
+              if [ "${{ inputs.force_release }}" == "true" ]; then
+                echo "Tag v$CURRENT_VERSION exists but force_release is true"
+                echo "changed=true" >> $GITHUB_OUTPUT
+              else
+                echo "Tag v$CURRENT_VERSION already exists. Use force_release to override."
+                echo "changed=false" >> $GITHUB_OUTPUT
+              fi
+            else
+              echo "Tag v$CURRENT_VERSION does not exist. Proceeding with release."
+              echo "changed=true" >> $GITHUB_OUTPUT
+            fi
+          else
+            # For automatic runs, check if version file was changed
+            if [ -n "${{ github.event.workflow_run.head_commit.id }}" ]; then
+              CHANGED_FILES=$(git diff --name-only ${{ github.event.workflow_run.head_commit.id }}^ ${{ github.event.workflow_run.head_commit.id }} 2>/dev/null || git diff --name-only HEAD^ HEAD)
+            else
+              CHANGED_FILES=$(git diff --name-only HEAD^ HEAD 2>/dev/null || echo "")
+            fi
+            echo "Changed files: $CHANGED_FILES"
+
+            if echo "$CHANGED_FILES" | grep -q "lib/panda-cms/version.rb"; then
+              echo "Version file was changed"
+
+              # Get the previous version
+              git checkout HEAD~1
+              PREVIOUS_VERSION=$(ruby -r ./lib/panda-cms/version.rb -e "puts Panda::CMS::VERSION" 2>/dev/null || echo "0.0.0")
+              git checkout -
+              echo "Previous version: $PREVIOUS_VERSION"
+
+              # Check if version actually changed
+              if [ "$CURRENT_VERSION" != "$PREVIOUS_VERSION" ]; then
+                echo "Version changed from $PREVIOUS_VERSION to $CURRENT_VERSION"
+                echo "changed=true" >> $GITHUB_OUTPUT
+              else
+                echo "Version file changed but version number unchanged"
+                echo "changed=false" >> $GITHUB_OUTPUT
+              fi
+            else
+              echo "Version file not changed in this commit"
+              echo "changed=false" >> $GITHUB_OUTPUT
+            fi
+          fi
+
+      - name: "Check if tag already exists"
+        if: steps.version_check.outputs.changed == 'true'
+        run: |
+          TAG="${{ steps.version_check.outputs.tag }}"
+          if git ls-remote --tags origin | grep -q "refs/tags/$TAG"; then
+            echo "❌ Tag $TAG already exists. Skipping release."
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "✅ Tag $TAG does not exist. Proceeding with release."
+          fi
+
+  release:
+    name: "Release to RubyGems"
+    needs: check-version
+    if: needs.check-version.outputs.version_changed == 'true'
+    runs-on: "ubuntu-latest"
+    permissions:
+      contents: write # For creating tags and releases
+    env:
+      BUNDLE_PATH: "vendor/bundle"
+      RAILS_ENV: test
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: "actions/checkout@v4"
+        with:
+          fetch-depth: 0
+
+      - name: "Setup Ruby"
+        uses: "ruby/setup-ruby@v1"
+        with:
+          bundler-cache: true
+
+      - name: "Build gem"
+        run: |
+          echo "💎 Building gem..."
+          gem build panda-cms.gemspec
+
+          # Verify gem was built
+          GEM_FILE="panda-cms-${{ needs.check-version.outputs.new_version }}.gem"
+          if [ ! -f "$GEM_FILE" ]; then
+            echo "❌ Gem file not found: $GEM_FILE"
+            exit 1
+          fi
+
+          echo "✅ Gem built: $GEM_FILE ($(du -h $GEM_FILE | cut -f1))"
+
+      - name: "Create tag"
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+
+          TAG="${{ needs.check-version.outputs.tag_name }}"
+          git tag -a "$TAG" -m "Release ${{ needs.check-version.outputs.new_version }}"
+          git push origin "$TAG"
+
+      - name: "Wait for asset compilation"
+        run: |
+          echo "⏳ Waiting for asset compilation workflow to complete..."
+
+          # The release-assets workflow is triggered by the tag push above
+          # Wait for it to start
+          sleep 30
+
+          # Poll for workflow completion (max 10 minutes)
+          ASSET_FOUND=false
+          for i in {1..20}; do
+            echo "Checking asset workflow status (attempt $i/20)..."
+
+            # Check if release exists and has assets
+            if gh release view ${{ needs.check-version.outputs.tag_name }} --json assets -q '.assets | length' > /dev/null 2>&1; then
+              ASSET_COUNT=$(gh release view ${{ needs.check-version.outputs.tag_name }} --json assets -q '.assets | length')
+              if [ "$ASSET_COUNT" -gt 0 ]; then
+                echo "✅ Assets uploaded successfully!"
+                gh release view ${{ needs.check-version.outputs.tag_name }} --json assets -q '.assets[].name'
+                ASSET_FOUND=true
+                break
+              fi
+            fi
+
+            if [ $i -eq 20 ]; then
+              echo "⚠️ Asset compilation timeout - continuing anyway"
+              echo "Assets may still be compiling. Check: https://github.com/tastybamboo/panda-cms/actions/workflows/release-assets.yml"
+            else
+              sleep 30
+            fi
+          done
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: "Generate release notes"
+        id: release_notes
+        run: |
+          # Get the previous tag
+          PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+
+          if [ -n "$PREVIOUS_TAG" ]; then
+            echo "## What's Changed" > release_notes.md
+            echo "" >> release_notes.md
+
+            # Generate changelog
+            git log --pretty=format:"- %s (%an)" "$PREVIOUS_TAG"..HEAD | grep -v "Merge pull request" | head -20 >> release_notes.md
+
+            echo "" >> release_notes.md
+            echo "**Full Changelog**: https://github.com/tastybamboo/panda-cms/compare/$PREVIOUS_TAG...${{ needs.check-version.outputs.tag_name }}" >> release_notes.md
+          else
+            echo "Initial release!" > release_notes.md
+          fi
+
+          cat release_notes.md
+
+      - name: "Push to RubyGems"
+        env:
+          GEM_HOST_API_KEY: ${{ secrets.RUBYGEMS_API_KEY }}
+        run: |
+          echo "📤 Publishing gem to RubyGems..."
+
+          # Set up credentials
+          mkdir -p ~/.gem
+          echo "---" > ~/.gem/credentials
+          echo ":rubygems_api_key: $GEM_HOST_API_KEY" >> ~/.gem/credentials
+          chmod 0600 ~/.gem/credentials
+
+          # Publish gem
+          GEM_FILE="panda-cms-${{ needs.check-version.outputs.new_version }}.gem"
+          if gem push "$GEM_FILE"; then
+            echo "✅ Gem published successfully!"
+          else
+            echo "❌ Failed to publish gem"
+            exit 1
+          fi
+
+          # Clean up credentials
+          rm ~/.gem/credentials
+
+      - name: "Update GitHub Release"
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ needs.check-version.outputs.tag_name }}
+          name: ${{ needs.check-version.outputs.tag_name }}
+          body_path: release_notes.md
+          files: panda-cms-${{ needs.check-version.outputs.new_version }}.gem
+          generate_release_notes: false
+
+      - name: "Verify release"
+        run: |
+          echo "🔍 Verifying release..."
+
+          # Wait a bit for RubyGems to update
+          sleep 30
+
+          # Check if gem is available on RubyGems
+          if gem list -r panda-cms -a | grep -q "${{ needs.check-version.outputs.new_version }}"; then
+            echo "✅ Gem is available on RubyGems!"
+          else
+            echo "⚠️ Gem not yet visible on RubyGems (this may take a few minutes)"
+          fi
+
+          echo ""
+          echo "📋 Release Summary:"
+          echo "  Version: ${{ needs.check-version.outputs.new_version }}"
+          echo "  Tag: ${{ needs.check-version.outputs.tag_name }}"
+          echo "  Gem: panda-cms-${{ needs.check-version.outputs.new_version }}.gem"
+          echo ""
+          echo "🎉 Release complete!"

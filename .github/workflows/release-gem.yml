@@ -85,7 +85,10 @@ jobs:
           RAILS_ENV: test
         run: |
           echo "🔧 Compiling assets for test environment..."
-          bundle exec rake panda_cms:assets:compile
+          # Compile Core assets first
+          bundle exec rake panda:core:assets:compile || echo "Core assets compilation not available"
+          # Then compile CMS assets
+          bundle exec rake panda:cms:assets:compile
           echo "✅ Asset compilation complete"
 
           # Verify assets exist

@@ -3,14 +3,14 @@
 require "rails_helper"
 
 RSpec.describe Panda::CMS::Post, type: :model do
-  fixtures :panda_cms_users
   describe "editor content", :editorjs do
+    let(:admin_user) { create_admin_user }
     let(:post) do
       Panda::CMS::Post.create!(
         title: "Test Post",
         slug: "/test-post",
-        user: panda_cms_users(:admin_user),
-        author: panda_cms_users(:admin_user),
+        user: admin_user,
+        author: admin_user,
         status: "active"
       )
     end

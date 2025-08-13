@@ -22,7 +22,7 @@
           "slug-target": "output_text"
         } %>
   </div>
-  <%= f.select :author_id, Panda::CMS::User.admin.map { |u| [u.name, u.id] }, {}, class: "block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-mid focus:ring-1 focus:ring-inset focus:ring-dark sm:leading-6 hover:pointer" %>
+  <%= f.select :author_id, Panda::Core::User.admin.map { |u| [u.name, u.id] }, {}, class: "block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-mid focus:ring-1 focus:ring-inset focus:ring-dark sm:leading-6 hover:pointer" %>
   <%= f.datetime_field :published_at, class: "block w-full rounded-md border-0 p-2 text-gray-900 ring-1 ring-inset ring-mid placeholder:text-gray-300 focus:ring-1 focus:ring-inset focus:ring-dark sm:leading-6 hover:pointer" %>
   <%= f.select :status, options_for_select([["Active", "active"], ["Draft", "draft"], ["Hidden", "hidden"], ["Archived", "archived"]], selected: post.status), {}, class: "block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-mid focus:ring-1 focus:ring-inset focus:ring-dark sm:leading-6 hover:pointer" %>
 

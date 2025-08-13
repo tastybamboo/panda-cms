@@ -24,8 +24,8 @@ module Panda
       end
 
       def panda_cms_editor
-        if Current.user&.admin
-          content_tag(:a, "🐼", href: edit_admin_page_url(Current.page), class: "text-3xl inline absolute right-2 top-2")
+        if Panda::Core::Current.user&.admin
+          content_tag(:a, "🐼", href: edit_admin_cms_page_url(Panda::CMS::Current.page), class: "text-3xl inline absolute right-2 top-2")
         end
       end
 
@@ -45,7 +45,7 @@ module Panda
       end
 
       def panda_cms_form_with(**options, &)
-        options[:builder] = Panda::CMS::FormBuilder
+        options[:builder] = Panda::Core::FormBuilder
         options[:class] = ["block visible p-6 bg-mid/5 rounded-lg border-mid border", options[:class]].compact.join(" ")
         form_with(**options, &)
       end

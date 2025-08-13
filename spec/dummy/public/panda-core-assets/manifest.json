@@ -1,0 +1,20 @@
+{
+  "version": "0.1.16",
+  "compiled_at": "2025-08-12T10:24:25Z",
+  "files": [
+    {
+      "filename": "panda-core-0.1.16.css",
+      "size": 437,
+      "sha256": "5e414c2c5460427cc2dd03f1b848b0f186837fbcdd8a8af1957a6a110bf7e787"
+    },
+    {
+      "filename": "panda-core-0.1.16.js",
+      "size": 6686,
+      "sha256": "75f4f6eadbc4cbf4a5266fb2e53cce1e70b759e9959de5e7c22b19e515cee61d"
+    }
+  ],
+  "cdn_base_url": "https://github.com/tastybamboo/panda-core/releases/download/v0.1.16/",
+  "integrity": {
+    "algorithm": "sha256"
+  }
+}

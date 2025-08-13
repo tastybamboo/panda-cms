@@ -8,6 +8,8 @@ For comprehensive developer documentation, see the `docs/` directory which conta
 
 Panda CMS is a Rails engine that provides content management functionality for Rails applications. It's built as a gem and follows the Rails Engine architecture pattern. The project uses modern Rails features and focuses on developer experience.
 
+**Important**: This project depends on `panda-core` gem which is located at `../core` in development. The Gemfile uses a local path reference for development and testing.
+
 ## Architecture
 
 ### Engine Structure
@@ -35,6 +37,14 @@ Panda CMS is a Rails engine that provides content management functionality for R
 - Uses OmniAuth with support for GitHub, Google, and Microsoft providers
 - User management with admin roles
 - Configuration in engine initializers
+
+## Development Setup
+
+### Panda-Core Gem Dependency
+The project depends on the panda-core gem for user authentication:
+- **For local development**: Change Gemfile to use `gem "panda-core", path: "../core"`
+- **For CI/production**: Use `gem "panda-core", github: "tastybamboo/panda-core", branch: "feature/auth-migration-from-cms"`
+- **Important**: CI cannot access local paths, so always commit with GitHub reference
 
 ## Development Commands
 
@@ -193,10 +203,28 @@ bin/dev
 ## Testing Strategy
 
 ### Test Structure
-- Uses RSpec with fixtures instead of factories
+- Uses RSpec with fixtures instead of factories (with exceptions below)
 - Fixtures in `spec/fixtures/` with YAML format
 - System tests use Cuprite (Chrome headless) for browser automation
 - EditorJS tests are excluded by default (use `INCLUDE_EDITORJS=true` to include)
+
+### User and Post Testing (IMPORTANT)
+- **Users are created programmatically**, NOT via fixtures (panda_core_users table is in another gem)
+- **Posts in fixtures have NULL user references** - tests must set them when needed
+- **User references are nullable** - user_id and author_id columns allow NULL in panda_cms_posts
+- See `spec/TEST_WRITING_GUIDE.md` for detailed patterns and CI considerations
+- Use `create_admin_user` and `create_regular_user` helper methods
+- These helpers use fixed IDs for consistent references:
+  - Admin: `8f481fcb-d9c8-55d7-ba17-5ea5d9ed8b7a`
+  - Regular: `9a8b7c6d-5e4f-3a2b-1c0d-9e8f7a6b5c4d`
+
+**Common pattern for tests with posts:**
+```ruby
+before do
+  @admin = create_admin_user
+  panda_cms_posts(:first_post).update!(user: @admin, author: @admin)
+end
+```
 
 ### Validation Tests
 - **Important**: See `docs/developers/testing/validation-testing.md` for complete validation testing patterns

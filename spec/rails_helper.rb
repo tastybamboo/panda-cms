@@ -2,6 +2,7 @@
 
 require "rubygems"
 require "panda/core"
+require "panda/core/engine"
 require "panda/cms/railtie"
 
 require "rails/all"
@@ -41,6 +42,9 @@ rescue ActiveRecord::PendingMigrationError => e
   abort e.to_s.strip
 end
 
+# Ensure Panda::Core models are loaded before support files
+Rails.application.eager_load!
+
 # Load support files first
 Dir[Rails.root.join("../support/**/*.rb")].sort.each { |f| require f }
 
@@ -52,7 +56,8 @@ ActiveRecord::FixtureSet.context_class.send :include, ActiveSupport::Testing::Ti
 module PandaCmsFixtures
   def self.get_class_name(fixture_set_name)
     case fixture_set_name
-    when "panda_cms_users" then "Panda::CMS::User"
+    when "panda_cms_users" then "Panda::Core::User"  # Use Core::User
+    # panda_core_users fixtures are not supported - users must be created programmatically
     when "panda_cms_posts" then "Panda::CMS::Post"
     when "panda_cms_pages" then "Panda::CMS::Page"
     when "panda_cms_templates" then "Panda::CMS::Template"
@@ -164,8 +169,15 @@ RSpec.configure do |config|
   # Configure fixtures path and enable fixtures
   config.fixture_paths = [File.expand_path("fixtures", __dir__)]
   config.use_transactional_fixtures = true
-  # Load fixtures globally for all tests
-  config.global_fixtures = :all
+  # Load fixtures globally for all tests EXCEPT those that require users
+  # panda_core_users are created programmatically
+  # panda_cms_posts require users to exist first
+  fixture_files = Dir[File.expand_path("fixtures/*.yml", __dir__)].map do |f|
+    File.basename(f, ".yml").to_sym
+  end
+  fixture_files.delete(:panda_core_users)
+  fixture_files.delete(:panda_cms_posts)
+  config.global_fixtures = fixture_files
 
   if defined?(Bullet) && Bullet.enable?
     config.before(:each) do
@@ -181,6 +193,10 @@ RSpec.configure do |config|
   OmniAuth.config.test_mode = true
 
   config.before(:suite) do
+    # Allow DATABASE_URL in CI environment
+    if ENV["DATABASE_URL"]
+      DatabaseCleaner.allow_remote_database_url = true
+    end
     DatabaseCleaner.clean_with :truncation
 
     # Global check for JavaScript loading issues in CI
@@ -230,7 +246,7 @@ RSpec.configure do |config|
 
         # Check if basic models can be loaded
         begin
-          user_count = Panda::CMS::User.count
+          user_count = Panda::Core::User.count
           puts "   User model access: ✅ OK (#{user_count} users)"
         rescue => e
           puts "   User model access: ❌ FAILED - #{e.message}"

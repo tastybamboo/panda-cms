@@ -3,6 +3,9 @@
 require 'active_support/core_ext/integer/time'
 
 Rails.application.configure do
+  # Always disable Better Errors in development environment by default
+  ENV['DISABLE_BETTER_ERRORS'] = 'true'
+  
   # Settings specified here will take precedence over those in config/application.rb.
   config.cache_classes = false
   config.eager_load = false

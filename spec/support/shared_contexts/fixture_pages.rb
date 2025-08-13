@@ -10,8 +10,8 @@ RSpec.shared_context "with fixture pages" do
   let(:page_template) { panda_cms_templates(:page_template) }
   let(:different_page_template) { panda_cms_templates(:different_page_template) }
 
-  let(:admin_user) { panda_cms_users(:admin_user) }
-  let(:regular_user) { panda_cms_users(:regular_user) }
+  let(:admin_user) { panda_core_users(:admin_user) }
+  let(:regular_user) { panda_core_users(:regular_user) }
 
   let(:homepage) { panda_cms_pages(:homepage) }
   let(:about_page) { panda_cms_pages(:about_page) }
@@ -28,7 +28,7 @@ RSpec.shared_context "with fixture pages" do
   def verify_fixture_data
     expect(Panda::CMS::Template.count).to be >= 3
     expect(Panda::CMS::Page.count).to be >= 5
-    expect(Panda::CMS::User.count).to be >= 2
+    expect(Panda::Core::User.count).to be >= 2
     expect(homepage.path).to eq("/")
     expect(homepage_template.max_uses).to eq(1)
   end

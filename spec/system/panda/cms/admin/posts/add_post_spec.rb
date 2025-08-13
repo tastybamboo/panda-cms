@@ -3,8 +3,6 @@
 require "system_helper"
 
 RSpec.describe "Adding a post", type: :system do
-  fixtures :panda_cms_users
-
   before do
     login_as_admin
 
@@ -20,9 +18,9 @@ RSpec.describe "Adding a post", type: :system do
       end}"
     end
 
-    visit "/admin/posts"
+    visit "/admin/cms/posts"
     # Navigate directly to add post page to avoid DOM node issues
-    visit "/admin/posts/new"
+    visit "/admin/cms/posts/new"
 
     # Debug CI navigation issues for post page
     if ENV["GITHUB_ACTIONS"] == "true"
@@ -54,7 +52,7 @@ RSpec.describe "Adding a post", type: :system do
 
   it "creates a new post with valid details" do
     # Ensure clean state for this test
-    visit "/admin/posts/new"
+    visit "/admin/cms/posts/new"
 
     # Wait for JavaScript to load
     # Add a small wait to ensure JavaScript executes
@@ -107,15 +105,15 @@ RSpec.describe "Adding a post", type: :system do
     sleep 1
 
     # Check if we were redirected to login (session expired)
-    if page.has_css?("#button-sign-in-google")
+    if page.has_css?("#button-sign-in-google_oauth2")
       # Log back in and check the posts
       login_as_admin
-      visit "/admin/posts"
+      visit "/admin/cms/posts"
       # Check if the post was created
       expect(page.html).to include(unique_title)
     else
       # Check we're on the edit page (indicates successful creation and redirect)
-      expect(page.current_url).to match(%r{/admin/posts/[^/]+/edit})
+      expect(page.current_url).to match(%r{/admin/cms/posts/[^/]+/edit})
       # Check the page shows we're editing the created post
       expect(page).to have_button("Update Post")
       html_content = page.html
@@ -135,7 +133,7 @@ RSpec.describe "Adding a post", type: :system do
 
   it "shows validation errors when title is missing" do
     # REQUIRED: Clean state for validation test (see docs/developers/testing/validation-testing.md)
-    visit "/admin/posts/new"
+    visit "/admin/cms/posts/new"
     sleep 1  # Allow page to stabilize
 
     # Wait for EditorJS to initialize and enable the submit button
@@ -156,7 +154,7 @@ RSpec.describe "Adding a post", type: :system do
 
   it "shows validation errors when URL is missing", skip: "Post model auto-generates slug from date when blank" do
     # REQUIRED: Clean state for validation test (see docs/developers/testing/validation-testing.md)
-    visit "/admin/posts/new"
+    visit "/admin/cms/posts/new"
     sleep 1  # Allow page to stabilize
 
     # Wait for EditorJS to initialize and enable the submit button
@@ -182,7 +180,7 @@ RSpec.describe "Adding a post", type: :system do
 
   it "shows the add post form with required fields" do
     # Ensure clean state for this test
-    visit "/admin/posts/new"
+    visit "/admin/cms/posts/new"
 
     # Use string-based checks for form presence
     html_content = page.html

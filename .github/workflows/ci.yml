@@ -13,13 +13,27 @@ jobs:
   seclint:
     name: "Security Checks & Linters"
     runs-on: "ubuntu-latest"
+    container:
+      image: ghcr.io/tastybamboo/panda-ci:ruby-3.4.5
     env:
       BUNDLE_PATH: "vendor/bundle"
     steps:
       - uses: "actions/checkout@v5"
-      - uses: "ruby/setup-ruby@v1"
+
+      - name: "Cache gems"
+        uses: actions/cache@v4
         with:
-          bundler-cache: true
+          path: vendor/bundle
+          key: ${{ runner.os }}-gems-lint-${{ hashFiles('**/Gemfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-gems-lint-
+            ${{ runner.os }}-gems-
+
+      - name: "Bundle install"
+        run: |
+          bundle config path vendor/bundle
+          bundle install --jobs 4 --retry 3
+
       - name: "Bundler Audit"
         run: "bundle exec bundle-audit --update"
       - name: "Brakeman"
@@ -34,12 +48,15 @@ jobs:
   specs:
     name: "App Specs"
     runs-on: "ubuntu-latest"
+    container:
+      image: ghcr.io/tastybamboo/panda-ci:ruby-3.4.5
     permissions:
       contents: read
       pull-requests: write
     env:
       BUNDLE_PATH: "vendor/bundle"
       RAILS_ENV: test
+      DISPLAY: ':99'
     services:
       postgres:
         image: postgres:latest
@@ -47,7 +64,6 @@ jobs:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: password
           POSTGRES_DB: test
-        ports: ["5432:5432"]
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -62,121 +78,68 @@ jobs:
         run: |
           echo "${VERSION}" >> VERSION
 
-      - name: "Set timezone"
+      - name: "Start Xvfb"
         run: |
-          sudo timedatectl set-timezone Europe/London
-
-      - name: "Install xvfb"
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y xvfb libvips
-          export DISPLAY=':99.0'
           Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
-      - name: "Setup Ruby"
-        uses: "ruby/setup-ruby@v1"
-        with:
-          bundler-cache: true
 
-      - name: "Setup test environment"
+      - name: "Cache gems"
+        uses: actions/cache@v4
+        with:
+          path: vendor/bundle
+          key: ${{ runner.os }}-gems-test-${{ hashFiles('**/Gemfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-gems-test-
+            ${{ runner.os }}-gems-
+
+      - name: "Bundle install"
+        run: |
+          bundle config path vendor/bundle
+          bundle install --jobs 4 --retry 3
+
+      - name: "Cache assets"
+        uses: actions/cache@v4
+        with:
+          path: |
+            spec/dummy/public/panda-cms-assets
+            spec/dummy/tmp/cache/assets
+          key: ${{ runner.os }}-assets-${{ hashFiles('app/assets/**/*', 'app/javascript/**/*') }}
+          restore-keys: |
+            ${{ runner.os }}-assets-
+
+      - name: "Setup test database"
         env:
-          DATABASE_URL: "postgres://postgres:password@localhost:5432/test"
-          REDIS_URL: "redis://localhost:6379/0"
+          DATABASE_URL: "postgres://postgres:password@postgres:5432/test"
           RAILS_ENV: "test"
           PG_USER: "postgres"
-          RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
-          PT_SILENCE_AR_COMPAT_WARNING: true
         run: |
-          bundle exec rails db:create
-          bundle exec rails db:schema:load
+          cd spec/dummy
+          # Clean up ALL migrations in dummy app to start fresh
+          rm -rf db/migrate
+          mkdir -p db/migrate
+          bundle exec rails db:drop db:create
+          # Run CMS migrations from the engine directory
+          cd ../..
+          bundle exec rails db:migrate RAILS_ENV=test
 
       - name: "Compile assets"
         working-directory: spec/dummy
         env:
-          DATABASE_URL: "postgres://postgres:password@localhost:5432/test"
+          DATABASE_URL: "postgres://postgres:password@postgres:5432/test"
           RAILS_ENV: test
         run: |
-          bundle exec rake panda_cms:assets:compile
+          bundle exec rake panda:cms:assets:compile
           echo "✅ Asset compilation complete"
+          echo "Assets in public directory:"
+          ls -la public/panda-cms-assets/ || echo "No assets directory"
 
-      - name: "Verify compiled assets"
-        run: |
-          echo "Compiled assets in tmp:"
-          ls -la spec/dummy/tmp/panda_cms_assets/
-          echo ""
-          echo "Assets copied to test location:"
-          ls -la spec/dummy/public/panda-cms-assets/
-          echo ""
-          echo "Asset sizes:"
-          du -h spec/dummy/public/panda-cms-assets/*
-          echo ""
-          echo "JavaScript bundle first 10 lines:"
-          head -10 spec/dummy/public/panda-cms-assets/panda-cms-0.7.4.js
-          echo ""
-          echo "JavaScript bundle last 10 lines:"
-          tail -10 spec/dummy/public/panda-cms-assets/panda-cms-0.7.4.js
-          echo ""
-          echo "Bundle size and key content check:"
-          wc -l spec/dummy/public/panda-cms-assets/panda-cms-0.7.4.js
-          grep -c "pandaCmsLoaded" spec/dummy/public/panda-cms-assets/panda-cms-0.7.4.js || echo "pandaCmsLoaded not found"
-          grep -c "Stimulus.register" spec/dummy/public/panda-cms-assets/panda-cms-0.7.4.js || echo "Stimulus.register not found"
-          echo ""
-          echo "Check for specific initialization variables:"
-          grep "pandaCmsStimulus" spec/dummy/public/panda-cms-assets/panda-cms-0.7.4.js || echo "pandaCmsStimulus not found"
-          grep "window\." spec/dummy/public/panda-cms-assets/panda-cms-0.7.4.js | head -5
-          echo ""
-          echo "Check if Rails can serve the asset correctly:"
-          cd spec/dummy
-          timeout 10s bundle exec rails runner "puts 'Rails can load the asset: ' + File.exist?(Rails.public_path.join('panda-cms-assets/panda-cms-0.7.4.js')).to_s"
-          echo "Asset file permissions:"
-          ls -la public/panda-cms-assets/panda-cms-0.7.4.js
-
-      - name: "Run tests"
+      - name: "Run specs"
         env:
-          DATABASE_URL: "postgres://postgres:password@localhost:5432/test"
-          REDIS_URL: "redis://localhost:6379/0"
+          DATABASE_URL: "postgres://postgres:password@postgres:5432/test"
           RAILS_ENV: "test"
-          PG_USER: "postgres"
-          PANDA_CMS_USE_GITHUB_ASSETS: "false"
-          CAPYBARA_ARTIFACTS: "../tmp/capybara"
-          RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
-          PT_SILENCE_AR_COMPAT_WARNING: true
-          DEBUG: "true"
-          FERRUM_INTERMITTENT_SLEEP: "0.5"
         run: |
-          mkdir -p tmp
-          mkdir -p test-results
-          # Run tests and capture all output to file
-          xvfb-run -a bundle exec rspec --tag ~skip --format documentation 2>&1 | tee test-results/test-output.log
-          # Capture exit code from the pipeline
-          TEST_EXIT_CODE=${PIPESTATUS[0]}
-          echo $TEST_EXIT_CODE > test-results/exit-code.txt
-          # Also create a summary
-          echo "Test run completed at $(date)" > test-results/summary.txt
-          echo "Exit code: $TEST_EXIT_CODE" >> test-results/summary.txt
-          tail -20 test-results/test-output.log >> test-results/summary.txt
-          # Exit with the actual test exit code
-          exit $TEST_EXIT_CODE
-      - name: Display test summary
-        if: always()
-        run: |
-          echo "=== Test Summary ==="
-          cat test-results/summary.txt || echo "No summary found"
-          echo ""
-          echo "=== Last 50 lines of test output ==="
-          tail -50 test-results/test-output.log || echo "No test output found"
+          bundle exec rspec --tag ~skip
 
-      - name: Upload test results
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: test-results
-          path: |
-            test-results/
-            spec/tmp/capybara/
-          if-no-files-found: ignore
-          retention-days: 7
-
-      - name: Keep screenshots from failed system tests
+      - name: "Upload screenshots on failure"
         uses: actions/upload-artifact@v4
         if: failure()
         with:

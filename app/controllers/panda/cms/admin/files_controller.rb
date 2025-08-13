@@ -3,9 +3,7 @@
 module Panda
   module CMS
     module Admin
-      class FilesController < ApplicationController
-        before_action :authenticate_admin_user!
-
+      class FilesController < ::Panda::CMS::Admin::BaseController
         def create
           file = params[:image]
           return render json: {success: 0} unless file

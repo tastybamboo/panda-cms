@@ -1,5 +1,5 @@
 <% if flash.any? %>
   <% flash.each do |kind, message| %>
-    <%= render Panda::CMS::Admin::FlashMessageComponent.new(kind: kind, message: message) %>
+    <%= render Panda::Core::Admin::FlashMessageComponent.new(kind: kind, message: message) %>
   <% end %>
 <% end %>

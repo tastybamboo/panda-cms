@@ -3,10 +3,9 @@
 module Panda
   module CMS
     module Admin
-      class BlockContentsController < ApplicationController
+      class BlockContentsController < ::Panda::CMS::Admin::BaseController
         before_action :set_page, only: %i[update]
         before_action :set_block_content, only: %i[update]
-        before_action :authenticate_admin_user!
 
         # @type PATCH/PUT
         # @return

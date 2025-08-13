@@ -3,16 +3,37 @@
 require "system_helper"
 
 RSpec.describe "Editing a post", type: :system do
-  fixtures :panda_cms_users, :panda_cms_posts
-
   before do
+    # Create users first
+    @admin = create_admin_user
+    @regular = create_regular_user
+
+    # Create post programmatically
+    @post = Panda::CMS::Post.create!(
+      title: "Test Post 1",
+      slug: "/#{Time.current.strftime("%Y/%m")}/test-post-1",
+      status: "active",
+      user: @admin,
+      author: @admin,
+      published_at: Time.current,
+      content: {
+        "time" => Time.current.to_i * 1000,
+        "blocks" => [
+          {"type" => "header", "data" => {"text" => "Test Header", "level" => 2}},
+          {"type" => "paragraph", "data" => {"text" => "Test content"}}
+        ],
+        "version" => "2.28.2"
+      },
+      cached_content: "<h2>Test Header</h2><p>Test content</p>"
+    )
+
     login_as_admin
   end
 
-  let(:post) { panda_cms_posts(:first_post) }
+  let(:post) { @post }
 
   it "updates an existing post", :editorjs do
-    visit "/admin/posts/#{post.id}/edit"
+    visit "/admin/cms/posts/#{post.id}/edit"
     # Use JavaScript evaluation instead of CSS selector to avoid Ferrum issues
     using_wait_time(10) do
       editor_exists = page.evaluate_script("document.querySelector(\"[data-controller='editor-form'] .codex-editor\") !== null")
@@ -46,7 +67,7 @@ RSpec.describe "Editing a post", type: :system do
   end
 
   it "shows validation errors", :editorjs do
-    visit "/admin/posts/#{post.id}/edit"
+    visit "/admin/cms/posts/#{post.id}/edit"
     # Use JavaScript evaluation instead of CSS selector to avoid Ferrum issues
     using_wait_time(10) do
       editor_exists = page.evaluate_script("document.querySelector(\"[data-controller='editor-form'] .codex-editor\") !== null")

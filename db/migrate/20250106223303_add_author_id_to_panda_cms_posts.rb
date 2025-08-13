@@ -2,6 +2,8 @@
 
 class AddAuthorIdToPandaCMSPosts < ActiveRecord::Migration[8.0]
   def change
-    add_reference :panda_cms_posts, :author, type: :uuid, foreign_key: {to_table: :panda_cms_users}
+    unless column_exists?(:panda_cms_posts, :author_id)
+      add_reference :panda_cms_posts, :author, type: :uuid, foreign_key: {to_table: :panda_core_users}
+    end
   end
 end

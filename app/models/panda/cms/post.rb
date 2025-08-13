@@ -5,15 +5,15 @@ require "awesome_nested_set"
 module Panda
   module CMS
     class Post < ApplicationRecord
-      include ::Panda::CMS::EditorJsContent
+      include ::Panda::Editor::Content
 
       after_commit :clear_menu_cache
       before_validation :format_slug
 
       self.table_name = "panda_cms_posts"
 
-      belongs_to :user, class_name: "Panda::CMS::User"
-      belongs_to :author, class_name: "Panda::CMS::User", optional: true
+      belongs_to :user, class_name: "Panda::Core::User"
+      belongs_to :author, class_name: "Panda::Core::User", optional: true
       has_many :block_contents, as: :blockable, dependent: :destroy
       has_many :blocks, through: :block_contents
 

@@ -2,6 +2,8 @@
 
 class CreatePandaSocialInstagramPosts < ActiveRecord::Migration[7.1]
   def change
+    return if table_exists?(:panda_social_instagram_posts)
+
     create_table :panda_social_instagram_posts, id: :uuid do |t|
       t.string :instagram_id, null: false
       t.text :caption

@@ -2,7 +2,7 @@
 
 require "rails_helper"
 
-RSpec.describe Panda::CMS::FormBuilder do
+RSpec.describe Panda::Core::FormBuilder do
   let(:lookup_context) { ActionView::LookupContext.new(ActionController::Base.view_paths) }
   let(:assigns) { {} }
   let(:controller) { ActionController::Base.new }
@@ -15,7 +15,7 @@ RSpec.describe Panda::CMS::FormBuilder do
       allow(object).to receive(:email).and_return("test@example.com")
       result = builder.email_field(:email)
       expect(result).to include('type="email"')
-      expect(result).to include('class="panda-cms-field-container')
+      expect(result).to include('class="panda-core-field-container')
     end
   end
 
@@ -24,7 +24,7 @@ RSpec.describe Panda::CMS::FormBuilder do
       allow(object).to receive(:published_at).and_return(Time.current)
       result = builder.datetime_field(:published_at)
       expect(result).to include('type="datetime')
-      expect(result).to include('class="panda-cms-field-container')
+      expect(result).to include('class="panda-core-field-container')
     end
   end
 
@@ -32,7 +32,7 @@ RSpec.describe Panda::CMS::FormBuilder do
     it "renders a time zone select with label and container" do
       allow(object).to receive(:time_zone)
       result = builder.time_zone_select(:time_zone)
-      expect(result).to include('class="panda-cms-field-container')
+      expect(result).to include('class="panda-core-field-container')
       expect(result).to include("<select")
     end
   end

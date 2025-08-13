@@ -5,8 +5,8 @@ module Panda
     class MinimalTestSeed
       def self.load
         # Create a single admin user if it doesn't exist
-        unless Panda::CMS::User.exists?(email: "admin@example.com")
-          Panda::CMS::User.create!(
+        unless Panda::Core::User.exists?(email: "admin@example.com")
+          Panda::Core::User.create!(
             firstname: "Admin",
             lastname: "User",
             email: "admin@example.com",
@@ -16,8 +16,8 @@ module Panda
         end
 
         # Create a regular user if it doesn't exist
-        unless Panda::CMS::User.exists?(email: "regular@example.com")
-          Panda::CMS::User.create!(
+        unless Panda::Core::User.exists?(email: "regular@example.com")
+          Panda::Core::User.create!(
             firstname: "Regular",
             lastname: "User",
             email: "regular@example.com",

@@ -38,7 +38,7 @@ RSpec.shared_context "with standard pages" do
   end
 
   let!(:admin_user) do
-    @admin_user ||= Panda::CMS::User.find_or_create_by!(email: "admin@example.com") do |user|
+    @admin_user ||= Panda::Core::User.find_or_create_by!(email: "admin@example.com") do |user|
       user.firstname = "Admin"
       user.lastname = "User"
       user.admin = true
@@ -46,7 +46,7 @@ RSpec.shared_context "with standard pages" do
   end
 
   let!(:regular_user) do
-    @regular_user ||= Panda::CMS::User.find_or_create_by!(email: "user@example.com") do |user|
+    @regular_user ||= Panda::Core::User.find_or_create_by!(email: "user@example.com") do |user|
       user.firstname = "Regular"
       user.lastname = "User"
       user.admin = false

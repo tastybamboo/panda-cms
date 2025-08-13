@@ -3,9 +3,8 @@
 module Panda
   module CMS
     module Admin
-      class SettingsController < ApplicationController
+      class SettingsController < ::Panda::CMS::Admin::BaseController
         before_action :set_initial_breadcrumb, only: %i[index show]
-        before_action :authenticate_admin_user!
 
         def index
         end
@@ -16,7 +15,7 @@ module Panda
         private
 
         def set_initial_breadcrumb
-          add_breadcrumb "Settings", admin_settings_path
+          add_breadcrumb "Settings", admin_cms_settings_path
         end
       end
     end
