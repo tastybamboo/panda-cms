@@ -117,8 +117,9 @@ jobs:
           rm -rf db/migrate
           mkdir -p db/migrate
           bundle exec rails db:drop db:create
-          # Don't copy migrations - they're already available from the gem
-          bundle exec rails db:migrate
+          # Run CMS migrations from the engine directory
+          cd ../..
+          bundle exec rails db:migrate RAILS_ENV=test
 
       - name: "Compile assets"
         working-directory: spec/dummy
