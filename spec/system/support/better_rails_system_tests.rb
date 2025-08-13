@@ -97,7 +97,11 @@ RSpec.configure do |config|
       begin
         # Wait for any pending JavaScript to complete
         # Cuprite has direct network idle support
-        page.driver.wait_for_network_idle rescue nil
+        begin
+          page.driver.wait_for_network_idle
+        rescue
+          nil
+        end
 
         # Wait for DOM to be ready
         sleep 0.5

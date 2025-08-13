@@ -11,15 +11,15 @@ module Panda
       # and local development assets
       def panda_cms_assets
         tags = []
-        
+
         # Include Core assets first (if Core is available)
         if defined?(Panda::Core::AssetHelper)
           tags << panda_core_assets
         end
-        
+
         # Then include CMS-specific assets
         tags << Panda::CMS::AssetLoader.asset_tags
-        
+
         tags.join("\n").html_safe
       end
 

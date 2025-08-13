@@ -12,7 +12,7 @@ gem "panda-editor", "~> 0.2.0"
 # Specify your gem's dependencies in panda-cms.gemspec.
 gemspec
 
-# Development-only dependencies  
+# Development-only dependencies
 group :development do
   gem "better_errors"
   gem "binding_of_caller"

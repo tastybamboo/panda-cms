@@ -23,7 +23,7 @@ module FixtureHelpers
       raise "Unknown user fixture: #{name}"
     end
   end
-  
+
   # Alias for backwards compatibility
   alias_method :panda_cms_users, :panda_core_users
 

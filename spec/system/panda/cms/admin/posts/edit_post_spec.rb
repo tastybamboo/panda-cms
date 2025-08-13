@@ -7,7 +7,7 @@ RSpec.describe "Editing a post", type: :system do
     # Create users first
     @admin = create_admin_user
     @regular = create_regular_user
-    
+
     # Create post programmatically
     @post = Panda::CMS::Post.create!(
       title: "Test Post 1",
@@ -26,7 +26,7 @@ RSpec.describe "Editing a post", type: :system do
       },
       cached_content: "<h2>Test Header</h2><p>Test content</p>"
     )
-    
+
     login_as_admin
   end
 

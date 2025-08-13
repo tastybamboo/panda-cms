@@ -37,26 +37,26 @@ RSpec.describe "When editing a page", type: :system do
       login_as_admin
       # Initialize Current.root for iframe template rendering
       Panda::CMS::Current.root = Capybara.app_host
-      
+
       # Debug: Check if about_page exists
       puts "About page ID: #{about_page.id}"
       puts "About page title: #{about_page.title}"
-      
+
       visit "/admin/cms/pages/#{about_page.id}/edit"
-      
+
       # Debug: Check current URL and page content
       puts "Current URL after visit: #{page.current_url}"
       puts "Page HTML length: #{page.html.length}"
       puts "Page text: #{page.text[0..200]}" if page.text.length > 0
-      
+
       # Check if slideover-toggle exists in HTML
       if page.html.include?("slideover-toggle")
         puts "Found slideover-toggle in HTML"
       else
         puts "No slideover-toggle found in HTML"
-        puts "Checking for breadcrumbs: #{page.html.include?('panda-breadcrumbs')}"
+        puts "Checking for breadcrumbs: #{page.html.include?("panda-breadcrumbs")}"
         # Check if the breadcrumbs partial path exists
-        puts "Checking for Pages link: #{page.html.include?('Pages')}"
+        puts "Checking for Pages link: #{page.html.include?("Pages")}"
         # Save HTML for inspection
         File.write("/tmp/page_output.html", page.html)
         puts "Page HTML saved to /tmp/page_output.html"
@@ -69,10 +69,10 @@ RSpec.describe "When editing a page", type: :system do
     it "shows the page details slideover" do
       # Check that the page loaded correctly
       expect(page).to have_content("About")
-      
+
       # Check that the slideover toggle exists
       expect(page).to have_css("#slideover-toggle", wait: 10)
-      
+
       # Since JavaScript might not be fully loaded, we'll manually show the slideover
       # by removing the hidden class using JavaScript
       page.execute_script("
@@ -83,10 +83,10 @@ RSpec.describe "When editing a page", type: :system do
           console.log('Slideover shown manually');
         }
       ")
-      
+
       # Check that slideover is now visible
       expect(page).to have_css("#slideover", visible: true, wait: 5)
-      
+
       # Check content within slideover
       within("#slideover") do
         expect(page).to have_field("Title", with: "About")
@@ -96,7 +96,7 @@ RSpec.describe "When editing a page", type: :system do
     it "updates the page details" do
       # Check that the slideover toggle exists
       expect(page).to have_css("#slideover-toggle", wait: 10)
-      
+
       # Manually show the slideover since JavaScript might not be loaded
       page.execute_script("
         const slideover = document.querySelector('#slideover');
@@ -105,7 +105,7 @@ RSpec.describe "When editing a page", type: :system do
           slideover.style.display = 'block';
         }
       ")
-      
+
       # Wait for slideover to become visible
       expect(page).to have_css("#slideover", visible: true, wait: 5)
 

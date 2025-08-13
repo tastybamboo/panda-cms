@@ -8,9 +8,9 @@ require "view_component"
 module Panda
   module CMS
     class Configuration
-      attr_accessor :title, :require_login_to_view, :authentication, 
-                    :posts, :url, :editor_js_tools, 
-                    :editor_js_tool_config, :instagram, :analytics
+      attr_accessor :title, :require_login_to_view, :authentication,
+        :posts, :url, :editor_js_tools,
+        :editor_js_tool_config, :instagram, :analytics
 
       def initialize
         @title = "Demo Site"

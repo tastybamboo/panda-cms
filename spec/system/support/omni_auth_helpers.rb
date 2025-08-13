@@ -30,7 +30,7 @@ module OmniAuthHelpers
     # In test mode, we need to bypass the normal flow and go directly to callback
     # Set the auth hash in the environment
     Rails.application.env_config["omniauth.auth"] = OmniAuth.config.mock_auth[:google_oauth2]
-    
+
     # Visit the callback URL directly
     visit "/admin/auth/google_oauth2/callback"
 
@@ -82,7 +82,7 @@ module OmniAuthHelpers
     # In test mode, we need to bypass the normal flow and go directly to callback
     # Set the auth hash in the environment
     Rails.application.env_config["omniauth.auth"] = OmniAuth.config.mock_auth[:github]
-    
+
     # Visit the callback URL directly
     visit "/admin/auth/github/callback"
 
@@ -111,7 +111,7 @@ module OmniAuthHelpers
     # In test mode, we need to bypass the normal flow and go directly to callback
     # Set the auth hash in the environment
     Rails.application.env_config["omniauth.auth"] = OmniAuth.config.mock_auth[:microsoft_graph]
-    
+
     # Visit the callback URL directly
     visit "/admin/auth/microsoft_graph/callback"
 

@@ -37,9 +37,9 @@ module UserHelpers
     ensure_columns_loaded
     @regular_user ||= Panda::Core::User.find_by(email: "user@example.com") || create_regular_user
   end
-  
+
   private
-  
+
   def ensure_columns_loaded
     return if @columns_loaded
     Panda::Core::User.connection.schema_cache.clear!

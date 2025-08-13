@@ -141,36 +141,36 @@ module Panda
           # Customize login page
           config.login_logo_path = "/panda-cms-assets/panda-nav.png"
           config.login_page_title = "Panda CMS Admin"
-          
+
           # Set dashboard redirect path to CMS dashboard (using Core's admin_path)
           config.dashboard_redirect_path = "#{Panda::Core.configuration.admin_path}/cms"
-          
+
           # Customize initial breadcrumb
           config.initial_admin_breadcrumb = ->(controller) {
             # Use CMS dashboard path - just use the string path
             ["Admin", "#{Panda::Core.configuration.admin_path}/cms"]
           }
-          
+
           # Dashboard widgets
           config.admin_dashboard_widgets = ->(user) {
             widgets = []
-            
+
             # Add CMS statistics widgets if CMS is available
             if defined?(Panda::CMS)
               widgets << Panda::CMS::Admin::StatisticsComponent.new(
-                metric: "Views Today", 
+                metric: "Views Today",
                 value: Panda::CMS::Visit.group_by_day(:visited_at, last: 1).count.values.first || 0
               )
               widgets << Panda::CMS::Admin::StatisticsComponent.new(
-                metric: "Views Last Week", 
+                metric: "Views Last Week",
                 value: Panda::CMS::Visit.group_by_week(:visited_at, last: 1).count.values.first || 0
               )
               widgets << Panda::CMS::Admin::StatisticsComponent.new(
-                metric: "Views Last Month", 
+                metric: "Views Last Month",
                 value: Panda::CMS::Visit.group_by_month(:visited_at, last: 1).count.values.first || 0
               )
             end
-            
+
             widgets
           }
         end

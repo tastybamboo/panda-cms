@@ -15,7 +15,7 @@ RSpec.describe "Admin dashboard", type: :system do
     it "redirects to login page" do
       login_with_google(regular_user, expect_success: false)
       expect(page).to have_current_path("/admin/login")
-      
+
       # Regular users cannot access the dashboard
       # We've already verified they're redirected to login above
     end

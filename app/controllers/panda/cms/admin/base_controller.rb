@@ -9,7 +9,7 @@ module Panda
       class BaseController < ::Panda::Core::AdminController
         # Include CMS helpers so views have access to panda_cms_form_with, etc.
         helper Panda::CMS::ApplicationHelper
-        
+
         # Include the helper methods in the controller as well
         include Panda::CMS::ApplicationHelper
       end

@@ -111,15 +111,15 @@ module Panda
             version = asset_version
             js_url = "/panda-cms-assets/panda-cms-#{version}.js"
             css_url = "/panda-cms-assets/panda-cms-#{version}.css"
-            
+
             tags = []
-            
+
             # JavaScript tag
             tags << content_tag(:script, "", {
               src: js_url,
               defer: true
             })
-            
+
             # CSS tag if exists
             if cached_asset_exists?(css_url)
               tags << tag(:link, {
@@ -127,7 +127,7 @@ module Panda
                 href: css_url
               })
             end
-            
+
             tags.join("\n").html_safe
           else
             # In development, just use a simple script tag

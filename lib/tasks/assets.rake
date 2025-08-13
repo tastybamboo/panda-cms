@@ -3,155 +3,155 @@
 namespace :panda do
   namespace :cms do
     namespace :assets do
-    desc "Compile Panda CMS assets for GitHub release distribution"
-    task :compile do
-      puts "🐼 Compiling Panda CMS assets..."
-      puts "Rails.root: #{Rails.root}"
-      puts "Working directory: #{Dir.pwd}"
+      desc "Compile Panda CMS assets for GitHub release distribution"
+      task :compile do
+        puts "🐼 Compiling Panda CMS assets..."
+        puts "Rails.root: #{Rails.root}"
+        puts "Working directory: #{Dir.pwd}"
 
-      # Create output directory
-      output_dir = Rails.root.join("tmp", "panda_cms_assets")
-      FileUtils.mkdir_p(output_dir)
+        # Create output directory
+        output_dir = Rails.root.join("tmp", "panda_cms_assets")
+        FileUtils.mkdir_p(output_dir)
 
-      version = Panda::CMS::VERSION
-      puts "Version: #{version}"
-      puts "Output directory: #{output_dir}"
+        version = Panda::CMS::VERSION
+        puts "Version: #{version}"
+        puts "Output directory: #{output_dir}"
 
-      # Compile JavaScript bundle
-      js_bundle = compile_javascript_bundle(version)
-      js_file = output_dir.join("panda-cms-#{version}.js")
-      File.write(js_file, js_bundle)
-      puts "✅ JavaScript compiled: #{js_file} (#{File.size(js_file)} bytes)"
+        # Compile JavaScript bundle
+        js_bundle = compile_javascript_bundle(version)
+        js_file = output_dir.join("panda-cms-#{version}.js")
+        File.write(js_file, js_bundle)
+        puts "✅ JavaScript compiled: #{js_file} (#{File.size(js_file)} bytes)"
 
-      # Compile CSS bundle (if any CSS files exist)
-      css_bundle = compile_css_bundle(version)
-      if css_bundle && !css_bundle.strip.empty?
-        css_file = output_dir.join("panda-cms-#{version}.css")
-        File.write(css_file, css_bundle)
-        puts "✅ CSS compiled: #{css_file} (#{File.size(css_file)} bytes)"
+        # Compile CSS bundle (if any CSS files exist)
+        css_bundle = compile_css_bundle(version)
+        if css_bundle && !css_bundle.strip.empty?
+          css_file = output_dir.join("panda-cms-#{version}.css")
+          File.write(css_file, css_bundle)
+          puts "✅ CSS compiled: #{css_file} (#{File.size(css_file)} bytes)"
+        end
+
+        # Create manifest file
+        manifest = create_asset_manifest(version)
+        manifest_file = output_dir.join("manifest.json")
+        File.write(manifest_file, JSON.pretty_generate(manifest))
+        puts "✅ Manifest created: #{manifest_file}"
+
+        # Copy assets to test environment location for consistent testing
+        # Rails.root is the dummy app, so we need to go to its public directory
+        test_asset_dir = Rails.root.join("public", "panda-cms-assets")
+        FileUtils.mkdir_p(test_asset_dir)
+
+        js_file_name = "panda-cms-#{version}.js"
+        css_file_name = "panda-cms-#{version}.css"
+
+        # Copy JavaScript file
+        if File.exist?(output_dir.join(js_file_name))
+          FileUtils.cp(output_dir.join(js_file_name), test_asset_dir.join(js_file_name))
+          puts "✅ Copied JavaScript to test location: #{test_asset_dir.join(js_file_name)}"
+        end
+
+        # Copy CSS file
+        if File.exist?(output_dir.join(css_file_name))
+          FileUtils.cp(output_dir.join(css_file_name), test_asset_dir.join(css_file_name))
+          puts "✅ Copied CSS to test location: #{test_asset_dir.join(css_file_name)}"
+        end
+
+        # Copy manifest
+        if File.exist?(output_dir.join("manifest.json"))
+          FileUtils.cp(output_dir.join("manifest.json"), test_asset_dir.join("manifest.json"))
+          puts "✅ Copied manifest to test location: #{test_asset_dir.join("manifest.json")}"
+        end
+
+        puts "🎉 Asset compilation complete!"
+        puts "📁 Output directory: #{output_dir}"
+        puts "📁 Test assets directory: #{test_asset_dir}"
       end
 
-      # Create manifest file
-      manifest = create_asset_manifest(version)
-      manifest_file = output_dir.join("manifest.json")
-      File.write(manifest_file, JSON.pretty_generate(manifest))
-      puts "✅ Manifest created: #{manifest_file}"
+      desc "Upload compiled assets to GitHub release"
+      task upload: :compile do
+        version = Panda::CMS::VERSION
+        output_dir = Rails.root.join("tmp", "panda_cms_assets")
 
-      # Copy assets to test environment location for consistent testing
-      # Rails.root is the dummy app, so we need to go to its public directory
-      test_asset_dir = Rails.root.join("public", "panda-cms-assets")
-      FileUtils.mkdir_p(test_asset_dir)
+        puts "📤 Uploading assets to GitHub release v#{version}..."
 
-      js_file_name = "panda-cms-#{version}.js"
-      css_file_name = "panda-cms-#{version}.css"
-
-      # Copy JavaScript file
-      if File.exist?(output_dir.join(js_file_name))
-        FileUtils.cp(output_dir.join(js_file_name), test_asset_dir.join(js_file_name))
-        puts "✅ Copied JavaScript to test location: #{test_asset_dir.join(js_file_name)}"
-      end
-
-      # Copy CSS file
-      if File.exist?(output_dir.join(css_file_name))
-        FileUtils.cp(output_dir.join(css_file_name), test_asset_dir.join(css_file_name))
-        puts "✅ Copied CSS to test location: #{test_asset_dir.join(css_file_name)}"
-      end
-
-      # Copy manifest
-      if File.exist?(output_dir.join("manifest.json"))
-        FileUtils.cp(output_dir.join("manifest.json"), test_asset_dir.join("manifest.json"))
-        puts "✅ Copied manifest to test location: #{test_asset_dir.join("manifest.json")}"
-      end
-
-      puts "🎉 Asset compilation complete!"
-      puts "📁 Output directory: #{output_dir}"
-      puts "📁 Test assets directory: #{test_asset_dir}"
-    end
-
-    desc "Upload compiled assets to GitHub release"
-    task upload: :compile do
-      version = Panda::CMS::VERSION
-      output_dir = Rails.root.join("tmp", "panda_cms_assets")
-
-      puts "📤 Uploading assets to GitHub release v#{version}..."
-
-      # Check if gh CLI is available
-      unless system("gh --version > /dev/null 2>&1")
-        puts "❌ GitHub CLI (gh) not found. Please install: https://cli.github.com/"
-        exit 1
-      end
-
-      # Check if release exists
-      unless system("gh release view v#{version} > /dev/null 2>&1")
-        puts "❌ Release v#{version} not found. Create it first with: gh release create v#{version}"
-        exit 1
-      end
-
-      # Upload each asset file
-      Dir.glob(output_dir.join("*")).each do |file|
-        filename = File.basename(file)
-        puts "Uploading #{filename}..."
-
-        if system("gh release upload v#{version} #{file} --clobber")
-          puts "✅ Uploaded: #{filename}"
-        else
-          puts "❌ Failed to upload: #{filename}"
+        # Check if gh CLI is available
+        unless system("gh --version > /dev/null 2>&1")
+          puts "❌ GitHub CLI (gh) not found. Please install: https://cli.github.com/"
           exit 1
         end
-      end
 
-      puts "🎉 All assets uploaded successfully!"
-    end
-
-    desc "Download assets from GitHub release for local development"
-    task :download do
-      version = Panda::CMS::VERSION
-      output_dir = Rails.root.join("public", "panda-cms-assets", version)
-      FileUtils.mkdir_p(output_dir)
-
-      puts "📥 Downloading assets from GitHub release v#{version}..."
-
-      # Download manifest first to know what files to get
-      manifest_url = "https://github.com/pandacms/panda-cms/releases/download/v#{version}/manifest.json"
-
-      begin
-        require "net/http"
-        require "uri"
-
-        uri = URI(manifest_url)
-        response = Net::HTTP.get_response(uri)
-
-        if response.code == "200"
-          manifest = JSON.parse(response.body)
-          puts "✅ Downloaded manifest"
-
-          # Download each file listed in manifest
-          manifest["files"].each do |file_info|
-            filename = file_info["filename"]
-            file_url = "https://github.com/pandacms/panda-cms/releases/download/v#{version}/#{filename}"
-
-            puts "Downloading #{filename}..."
-            file_uri = URI(file_url)
-            file_response = Net::HTTP.get_response(file_uri)
-
-            if file_response.code == "200"
-              File.write(output_dir.join(filename), file_response.body)
-              puts "✅ Downloaded: #{filename}"
-            else
-              puts "❌ Failed to download: #{filename}"
-            end
-          end
-
-          puts "🎉 Assets downloaded to: #{output_dir}"
-        else
-          puts "❌ Failed to download manifest from: #{manifest_url}"
-          puts "Response: #{response.code} #{response.message}"
+        # Check if release exists
+        unless system("gh release view v#{version} > /dev/null 2>&1")
+          puts "❌ Release v#{version} not found. Create it first with: gh release create v#{version}"
+          exit 1
         end
-      rescue => e
-        puts "❌ Error downloading assets: #{e.message}"
-        puts "Falling back to local development mode..."
+
+        # Upload each asset file
+        Dir.glob(output_dir.join("*")).each do |file|
+          filename = File.basename(file)
+          puts "Uploading #{filename}..."
+
+          if system("gh release upload v#{version} #{file} --clobber")
+            puts "✅ Uploaded: #{filename}"
+          else
+            puts "❌ Failed to upload: #{filename}"
+            exit 1
+          end
+        end
+
+        puts "🎉 All assets uploaded successfully!"
       end
-    end
+
+      desc "Download assets from GitHub release for local development"
+      task :download do
+        version = Panda::CMS::VERSION
+        output_dir = Rails.root.join("public", "panda-cms-assets", version)
+        FileUtils.mkdir_p(output_dir)
+
+        puts "📥 Downloading assets from GitHub release v#{version}..."
+
+        # Download manifest first to know what files to get
+        manifest_url = "https://github.com/pandacms/panda-cms/releases/download/v#{version}/manifest.json"
+
+        begin
+          require "net/http"
+          require "uri"
+
+          uri = URI(manifest_url)
+          response = Net::HTTP.get_response(uri)
+
+          if response.code == "200"
+            manifest = JSON.parse(response.body)
+            puts "✅ Downloaded manifest"
+
+            # Download each file listed in manifest
+            manifest["files"].each do |file_info|
+              filename = file_info["filename"]
+              file_url = "https://github.com/pandacms/panda-cms/releases/download/v#{version}/#{filename}"
+
+              puts "Downloading #{filename}..."
+              file_uri = URI(file_url)
+              file_response = Net::HTTP.get_response(file_uri)
+
+              if file_response.code == "200"
+                File.write(output_dir.join(filename), file_response.body)
+                puts "✅ Downloaded: #{filename}"
+              else
+                puts "❌ Failed to download: #{filename}"
+              end
+            end
+
+            puts "🎉 Assets downloaded to: #{output_dir}"
+          else
+            puts "❌ Failed to download manifest from: #{manifest_url}"
+            puts "Response: #{response.code} #{response.message}"
+          end
+        rescue => e
+          puts "❌ Error downloading assets: #{e.message}"
+          puts "Falling back to local development mode..."
+        end
+      end
     end
   end
 end

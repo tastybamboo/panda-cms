@@ -5,7 +5,7 @@ Panda::CMS::Engine.routes.draw do
     # CMS-specific dashboard (using Core's admin_path)
     admin_path = Panda::Core.configuration.admin_path
     get "#{admin_path}/cms", to: "admin/dashboard#show", as: :admin_cms_dashboard
-    
+
     namespace admin_path.delete_prefix("/").to_sym, path: "#{admin_path}/cms", as: :admin_cms, module: :admin do
       resources :files
       resources :forms, only: %i[index show]

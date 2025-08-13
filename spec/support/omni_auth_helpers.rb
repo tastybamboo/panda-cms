@@ -8,7 +8,7 @@ module OmniAuthHelpers
       user.lastname = "User"
       user.admin = true
     end
-    
+
     if ENV["GITHUB_ACTIONS"] == "true"
       puts "\n[CI Debug] Starting admin login process..."
       puts "   Current URL before login: #{page.current_url}"
@@ -55,12 +55,12 @@ module OmniAuthHelpers
 
   def login_as_user
     # Ensure regular user exists in database first
-    regular_user = Panda::Core::User.find_or_create_by!(email: "user@example.com") do |user|
+    Panda::Core::User.find_or_create_by!(email: "user@example.com") do |user|
       user.firstname = "Regular"
       user.lastname = "User"
       user.admin = false
     end
-    
+
     OmniAuth.config.test_mode = true
     OmniAuth.config.mock_auth[:google_oauth2] = OmniAuth::AuthHash.new(
       provider: "google_oauth2",
