@@ -386,3 +386,9 @@ If any of these values are `nil` or `false`, the JavaScript bundle is not execut
 
 ## Code Quality Memories
 - Always run "yamllint -c .yamllint ." if you make changes to .yml or .yaml files.
+
+## PR Readiness Checker Agent
+- Use the `pr-readiness-checker` agent when preparing to raise pull requests
+- The agent validates code changes, runs tests, checks linting, and ensures CI requirements are met
+- **Important**: The agent should always merge in the latest main branch before pushing changes
+- This agent helps prevent CI failures by running equivalent checks locally first
