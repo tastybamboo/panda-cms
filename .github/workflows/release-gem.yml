@@ -32,9 +32,6 @@ jobs:
   release-gem:
     name: "Release Gem to RubyGems"
     runs-on: "ubuntu-latest"
-    environment:
-      name: production
-      url: https://rubygems.org/gems/panda-cms
     permissions:
       contents: write # For creating tags and releases
       pull-requests: write # For creating PRs
