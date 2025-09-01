@@ -2,8 +2,15 @@
 
 class ConvertHtmlContentToEditorJs < ActiveRecord::Migration[7.1]
   def up
-    # First, let's ensure we have the converter available in the migration
-    require Panda::CMS::Engine.root.join("app/services/panda/cms/html_to_editor_js_converter")
+    # First, let's check if the converter service exists
+    converter_path = Panda::CMS::Engine.root.join("app/services/panda/cms/html_to_editor_js_converter.rb")
+    
+    unless File.exist?(converter_path)
+      Rails.logger.info "HtmlToEditorJsConverter service not found. Skipping HTML to EditorJS conversion."
+      return
+    end
+    
+    require converter_path
 
     # Check if we have any existing valid EditorJS content
     existing_editor_js = Panda::CMS::BlockContent.find_each.any? do |block_content|
