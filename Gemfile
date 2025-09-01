@@ -4,7 +4,7 @@ source "https://rubygems.org"
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
 # Use panda-core gem
-gem "panda-core", "~> 0.2.1"
+gem "panda-core"
 
 # Use panda-editor gem
 gem "panda-editor", "~> 0.2.0"
