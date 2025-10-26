@@ -75,11 +75,17 @@ jobs:
           DATABASE_URL: "postgres://postgres:password@localhost:5432/test"
           RAILS_ENV: test
         run: |
-          # Compile Core assets first
-          bundle exec rake panda:core:assets:compile || echo "Core assets compilation not available"
-          # Then compile CMS assets
+          # Note: Core CSS is provided by Panda Core gem at /panda-core-assets/panda-core.css
+          # CMS only compiles JavaScript (CSS compilation removed as it's now in Core)
           bundle exec rake panda:cms:assets:compile
-          echo "✅ Asset compilation complete"
+          echo "✅ Asset compilation complete (JavaScript only)"
+
+          # Verify Core CSS is available
+          if [ -f "public/panda-core-assets/panda-core.css" ]; then
+            echo "✅ Panda Core CSS available at public/panda-core-assets/panda-core.css"
+          else
+            echo "⚠️  Panda Core CSS not found - may need to be committed to dummy app"
+          fi
 
       - name: "List compiled assets"
         run: |

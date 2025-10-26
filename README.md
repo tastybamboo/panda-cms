@@ -32,6 +32,16 @@ The easiest way for you to get started is to visit http://localhost:3000/admin a
 
 When you're ready to configure further, you can set your own configuration in `config/initializers/panda/cms.rb`. Make sure to turn off the default `github` account creation options!
 
+## Panda CMS Pro
+
+Commercial features such as structured **Collections** live in the `panda-cms-pro` gem. Once the pro gem is installed you can:
+
+- Model repeatable content with collections and items.
+- Loop over entries inside layouts using helpers like `panda_cms_collection_items("trustees")`.
+- Keep the feature hidden in open-source installs thanks to `Panda::CMS::Features`.
+
+See `docs/collections.md` for the editor workflow and template examples, and `docs/private-gem-server.md` for hosting the private gem server.
+
 ### Existing applications
 
 Add the following to `Gemfile`:
@@ -52,6 +62,70 @@ rails db:seed
 You may want to check this does not re-run any of your existing seeds!
 
 If you don't want to use GitHub to login (or are at a URL other than http://localhost:3000/), you'll need to configure a user provider (in `config/initializers/panda/cms.rb`), and then set your user's `admin` attribute to `true` once you've first tried to login.
+
+## Configuration
+
+### Admin Path
+
+By default, the admin interface is available at `/admin`. You can customize this by setting the `PANDA_ADMIN_PATH` environment variable in your Panda Core initializer:
+
+```ruby
+# config/initializers/panda_core.rb
+Panda::Core.configure do |config|
+  # Read from environment variable (requires dotenv-rails or similar)
+  config.admin_path = ENV.fetch("PANDA_ADMIN_PATH", "/admin")
+end
+```
+
+Then set the environment variable:
+
+```bash
+# .env
+PANDA_ADMIN_PATH=/manage
+```
+
+**Important**: You'll need a gem like `dotenv-rails` to load environment variables from `.env` files:
+
+```ruby
+# Gemfile
+gem "dotenv-rails"
+
+# config/boot.rb (add before requiring bootsnap)
+require "dotenv/load"
+```
+
+See the [Panda Core README](https://github.com/tastybamboo/panda-core#admin-path) for more details on admin path configuration.
+
+### Engine Mounting
+
+**The Panda CMS engine automatically mounts itself** via an `after_initialize` hook. You do **not** need to manually add `mount Panda::CMS::Engine => "/"` to your routes file. The engine will:
+
+- Mount itself at the root path
+- Add admin routes under the configured admin path (e.g., `/admin/cms` or `/manage/cms`)
+- Set up a catch-all route for CMS pages (excluding admin paths)
+
+The admin interface structure will be:
+- `{admin_path}` - Panda Core admin dashboard (authentication, profile)
+- `{admin_path}/cms` - Panda CMS admin (pages, posts, menus, files)
+
+## Styling
+
+**Panda CMS does not compile or manage its own CSS.** All admin interface styling is provided by [Panda Core](https://github.com/tastybamboo/panda-core).
+
+The CMS automatically loads Core's compiled stylesheet:
+
+```erb
+<link rel="stylesheet" href="/panda-core-assets/panda-core.css">
+```
+
+Core's Rack middleware serves this file from the gem, so:
+- ✅ No CSS copying or compilation needed
+- ✅ Styles update automatically when Core updates
+- ✅ Consistent design across all Panda gems
+
+For details on customizing styles, development workflows, and troubleshooting, see [docs/STYLING.md](docs/STYLING.md).
+
+For CSS compilation (when contributing to styling), see [Panda Core Asset Compilation Guide](https://github.com/tastybamboo/panda-core/blob/main/docs/ASSET_COMPILATION.md).
 
 ## Gotchas
 

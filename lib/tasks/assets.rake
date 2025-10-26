@@ -23,13 +23,8 @@ namespace :panda do
         File.write(js_file, js_bundle)
         puts "✅ JavaScript compiled: #{js_file} (#{File.size(js_file)} bytes)"
 
-        # Compile CSS bundle (if any CSS files exist)
-        css_bundle = compile_css_bundle(version)
-        if css_bundle && !css_bundle.strip.empty?
-          css_file = output_dir.join("panda-cms-#{version}.css")
-          File.write(css_file, css_bundle)
-          puts "✅ CSS compiled: #{css_file} (#{File.size(css_file)} bytes)"
-        end
+        # CSS is now provided by Panda Core
+        puts "ℹ️  CSS is provided by Panda Core at /panda-core-assets/panda-core.css"
 
         # Create manifest file
         manifest = create_asset_manifest(version)
@@ -43,18 +38,11 @@ namespace :panda do
         FileUtils.mkdir_p(test_asset_dir)
 
         js_file_name = "panda-cms-#{version}.js"
-        css_file_name = "panda-cms-#{version}.css"
 
         # Copy JavaScript file
         if File.exist?(output_dir.join(js_file_name))
           FileUtils.cp(output_dir.join(js_file_name), test_asset_dir.join(js_file_name))
           puts "✅ Copied JavaScript to test location: #{test_asset_dir.join(js_file_name)}"
-        end
-
-        # Copy CSS file
-        if File.exist?(output_dir.join(css_file_name))
-          FileUtils.cp(output_dir.join(css_file_name), test_asset_dir.join(css_file_name))
-          puts "✅ Copied CSS to test location: #{test_asset_dir.join(css_file_name)}"
         end
 
         # Copy manifest
@@ -186,44 +174,9 @@ def compile_javascript_bundle(version)
   bundle.join("\n")
 end
 
-def compile_css_bundle(version)
-  puts "Creating simplified CSS bundle for CI testing..."
-
-  # Create a minimal CSS bundle with basic styles
-  bundle = []
-  bundle << "/* Panda CMS CSS Bundle v#{version} */"
-  bundle << "/* Compiled: #{Time.now.utc.iso8601} */"
-  bundle << "/* This is a simplified bundle for CI testing purposes */"
-  bundle << ""
-
-  # Add some basic styles that might be expected
-  bundle << "/* Basic Panda CMS Styles */"
-  bundle << ".panda-cms-admin {"
-  bundle << "  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;"
-  bundle << "  line-height: 1.5;"
-  bundle << "}"
-  bundle << ""
-  bundle << ".panda-cms-editor {"
-  bundle << "  min-height: 200px;"
-  bundle << "  border: 1px solid #e5e7eb;"
-  bundle << "  border-radius: 0.375rem;"
-  bundle << "  padding: 1rem;"
-  bundle << "}"
-  bundle << ""
-  bundle << ".panda-cms-hidden {"
-  bundle << "  display: none !important;"
-  bundle << "}"
-  bundle << ""
-  bundle << "/* Editor ready state */"
-  bundle << ".editor-ready {"
-  bundle << "  opacity: 1;"
-  bundle << "  transition: opacity 0.3s ease-in-out;"
-  bundle << "}"
-  bundle << ""
-
-  puts "✅ Created simplified CSS bundle (#{bundle.join("\n").length} chars)"
-  bundle.join("\n")
-end
+# CSS compilation removed - all CSS is now provided by Panda Core
+# The panda-core.css file includes all admin interface styling including
+# EditorJS styles, theme variables, and component styles
 
 def create_asset_manifest(version)
   output_dir = Rails.root.join("tmp", "panda_cms_assets")
