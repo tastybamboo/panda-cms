@@ -9,6 +9,12 @@ Bundler.require(*Rails.groups)
 require 'panda/core'
 require 'panda/cms'
 
+begin
+  require 'panda-cms-pro'
+rescue LoadError
+  # panda-cms-pro is optional in the dummy app; skip if unavailable
+end
+
 module Dummy
   class Application < Rails::Application
     config.load_defaults Rails::VERSION::STRING.to_f
@@ -16,11 +22,10 @@ module Dummy
     # Handle frozen arrays if needed
     config.autoload_paths = config.autoload_paths.dup if config.autoload_paths.frozen?
     config.eager_load_paths = config.eager_load_paths.dup if config.eager_load_paths.frozen?
-
     # Please, add to the `ignore` list any other `lib` subdirectories that do
     # not contain `.rb` files, or that should not be reloaded or eager loaded.
     # Common ones are `templates`, `generators`, or `middleware`, for example.
-    config.autoload_lib(ignore: %w[assets tasks])
+    config.autoload_lib(ignore: %w[assets tasks panda-cms-pro])
 
     # Configuration for the application, engines, and railties goes here.
     #

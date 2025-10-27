@@ -95,6 +95,7 @@ require_relative "panda/cms/exceptions_app"
 require_relative "panda/cms/engine"
 require_relative "panda/cms/demo_site_generator"
 require_relative "panda/cms/asset_loader"
+require_relative "panda/cms/features"
 require_relative "panda/cms/slug"
 
 Panda::CMS.loader.setup

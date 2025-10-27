@@ -44,6 +44,20 @@ module Panda
         link_to(name, options, html_options, &)
       end
 
+      def panda_cms_collection(slug, include_unpublished: false)
+        Panda::CMS::Features.require!(:collections)
+        Panda::CMS::Collections.fetch(slug, include_unpublished: include_unpublished)
+      end
+
+      def panda_cms_collection_items(slug, include_unpublished: false)
+        Panda::CMS::Features.require!(:collections)
+        Panda::CMS::Collections.items(slug, include_unpublished: include_unpublished)
+      end
+
+      def panda_cms_feature_enabled?(name)
+        Panda::CMS::Features.enabled?(name)
+      end
+
       def panda_cms_form_with(**options, &)
         options[:builder] = Panda::Core::FormBuilder
         options[:class] = ["block visible p-6 bg-mid/5 rounded-lg border-mid border", options[:class]].compact.join(" ")

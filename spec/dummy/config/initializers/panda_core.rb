@@ -2,9 +2,14 @@
 
 # Configure Panda Core authentication
 Panda::Core.configure do |config|
+  # Customize branding for CMS dummy app
+  config.login_logo_path = "/panda-cms-assets/panda-nav.png"
+  config.login_page_title = "Panda CMS"
+  config.admin_title = "Panda CMS"
+
   # Set up authentication providers from CMS config
   cms_auth = Panda::CMS.config.authentication || {}
-  
+
   config.authentication_providers = {}
   
   # Microsoft authentication

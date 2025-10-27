@@ -30,7 +30,7 @@ Then run `bin/dev`. You'll see a basic website has automatically been created fo
 
 The easiest way for you to get started is to visit http://localhost:3000/admin and login with your GitHub credentials. As the first user, you'll automatically have an administrator account created.
 
-When you're ready to configure further, you can set your own configuration in `config/initializers/panda/cms.rb`. Make sure to turn off the default `github` account creation options!
+When you're ready to configure further, you can set your own configuration in `config/initializers/panda.rb`. Make sure to configure your authentication providers and update the domain restriction!
 
 ## Panda CMS Pro
 
@@ -54,47 +54,52 @@ For initial setup, run:
 
 ```shell
 bundle install
-rails generate panda_cms:install
-rails panda_cms:install:migrations
+rails generate panda:cms:install
+rails panda:cms:install:migrations
+rails db:migrate
 rails db:seed
 ```
 
 You may want to check this does not re-run any of your existing seeds!
 
-If you don't want to use GitHub to login (or are at a URL other than http://localhost:3000/), you'll need to configure a user provider (in `config/initializers/panda/cms.rb`), and then set your user's `admin` attribute to `true` once you've first tried to login.
+If you don't want to use GitHub to login (or are at a URL other than http://localhost:3000/), you'll need to configure authentication providers (in `config/initializers/panda.rb`), and then set your user's `admin` attribute to `true` once you've first tried to login.
 
 ## Configuration
 
-### Admin Path
-
-By default, the admin interface is available at `/admin`. You can customize this by setting the `PANDA_ADMIN_PATH` environment variable in your Panda Core initializer:
+All Panda configuration is managed in `config/initializers/panda.rb`. The generator creates this file with sensible defaults including Google OAuth authentication:
 
 ```ruby
-# config/initializers/panda_core.rb
+# config/initializers/panda.rb
 Panda::Core.configure do |config|
-  # Read from environment variable (requires dotenv-rails or similar)
-  config.admin_path = ENV.fetch("PANDA_ADMIN_PATH", "/admin")
+  config.admin_path = "/admin"
+
+  config.login_page_title = "Panda Admin"
+  config.admin_title = "Panda Admin"
+
+  config.authentication_providers = {
+    google_oauth2: {
+      enabled: true,
+      name: "Google",
+      client_id: Rails.application.credentials.dig(:google, :client_id),
+      client_secret: Rails.application.credentials.dig(:google, :client_secret),
+      options: {
+        scope: "email,profile",
+        prompt: "select_account",
+        hd: "yourdomain.com" # Restrict to specific domain
+      }
+    }
+  }
+
+  # Core settings
+  config.session_token_cookie = :panda_session
+  config.user_class = "Panda::Core::User"
+  config.user_identity_class = "Panda::Core::UserIdentity"
 end
 ```
 
-Then set the environment variable:
+**Important**: Update `hd: "yourdomain.com"` to your organization's domain to restrict admin access, or remove this line to allow any Google account.
 
-```bash
-# .env
-PANDA_ADMIN_PATH=/manage
-```
-
-**Important**: You'll need a gem like `dotenv-rails` to load environment variables from `.env` files:
-
-```ruby
-# Gemfile
-gem "dotenv-rails"
-
-# config/boot.rb (add before requiring bootsnap)
-require "dotenv/load"
-```
-
-See the [Panda Core README](https://github.com/tastybamboo/panda-core#admin-path) for more details on admin path configuration.
+See the [Configuration Documentation](docs/developers/configuration/) for detailed information on all available settings.
 
 ### Engine Mounting
 

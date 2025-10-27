@@ -1,0 +1,14 @@
+<div id="collections-demo" class="space-y-4">
+  <% if panda_cms_feature_enabled?(:collections) %>
+    <% panda_cms_collection_items("trustees").each do |trustee| %>
+      <article class="trustee-entry border border-gray-200 rounded-lg p-4">
+        <h2 class="text-xl font-semibold"><%= trustee.value_for("name") %></h2>
+        <p class="text-sm text-gray-600"><%= trustee.value_for("biography") %></p>
+      </article>
+    <% end %>
+  <% else %>
+    <div class="rounded bg-amber-100 text-amber-900 p-4">
+      Collections are unavailable without panda-cms-pro.
+    </div>
+  <% end %>
+</div>
