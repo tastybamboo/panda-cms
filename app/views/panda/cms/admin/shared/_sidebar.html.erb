@@ -1,6 +1,6 @@
 <nav class="flex flex-col flex-1">
   <ul role="list" class="flex flex-col flex-1">
-    <a class="block p-0 mt-4 mb-4 ml-2 text-xl font-medium text-white"><%= Panda::Core.configuration.admin_title %></a>
+    <a class="block p-0 mt-4 mb-4 ml-2 text-xl font-medium text-white">Panda CMS</a>
     <% links = [
       { path: admin_cms_dashboard_path, text: "Dashboard", icon: "fa-house", matcher: :exact },
       { path: admin_cms_pages_path, text: "Pages", icon: "fa-page", matcher: :starts_with },
@@ -8,8 +8,7 @@
       { path: admin_cms_forms_path, text: "Forms", icon: "fa-cabinet-filing", matcher: :starts_with },
       { path: admin_cms_menus_path, text: "Menus", icon: "fa-list-dropdown", matcher: :starts_with },
       { path: admin_cms_settings_path, text: "Settings", icon: "fa-cog", matcher: :starts_with },
-    ]
-    %>
+    ] %>
     <% if panda_cms_feature_enabled?(:collections) && respond_to?(:admin_cms_collections_path) %>
       <% links.insert(2, { path: admin_cms_collections_path, text: "Collections", icon: "fa-grid-2", matcher: :starts_with }) %>
     <% end %>
