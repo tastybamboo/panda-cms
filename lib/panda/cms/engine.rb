@@ -94,7 +94,7 @@ module Panda
           get "/_maintenance", to: "panda/cms/errors#error_503", as: :panda_cms_maintenance
 
           # Catch-all route for CMS pages, but exclude admin paths
-          admin_path = Panda::Core.configuration.admin_path.delete_prefix("/")
+          admin_path = Panda::Core.config.admin_path.delete_prefix("/")
           constraints = ->(request) { !request.path.start_with?("/#{admin_path}") }
           get "/*path", to: "panda/cms/pages#show", as: :panda_cms_page, constraints: constraints
 
@@ -148,12 +148,12 @@ module Panda
 
           # Redirect to CMS dashboard after login
           # Apps can override this if they want different behavior
-          config.dashboard_redirect_path = "#{Panda::Core.configuration.admin_path}/cms"
+          config.dashboard_redirect_path = "#{config.admin_path}/cms"
 
           # Customize initial breadcrumb
           config.initial_admin_breadcrumb = ->(controller) {
             # Use CMS dashboard path - just use the string path
-            ["Admin", "#{Panda::Core.configuration.admin_path}/cms"]
+            ["Admin", "#{config.admin_path}/cms"]
           }
 
           # Dashboard widgets
@@ -178,19 +178,6 @@ module Panda
 
             widgets
           }
-        end
-      end
-
-      config.before_initialize do |_app|
-        # Default configuration
-        Panda::CMS.configure do |config|
-          # Array of additional EditorJS tools to load
-          # Example: [{ url: "https://cdn.jsdelivr.net/npm/@editorjs/image@latest" }]
-          config.editor_js_tools ||= []
-
-          # Hash of EditorJS tool configurations
-          # Example: { image: { class: 'ImageTool', config: { ... } } }
-          config.editor_js_tool_config ||= {}
         end
       end
     end
