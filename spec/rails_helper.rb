@@ -15,8 +15,6 @@ SimpleCov.formatter = SimpleCov::Formatter::JSONFormatter
 SimpleCov.start
 
 require "propshaft"
-require "stimulus-rails"
-require "turbo-rails"
 
 ENV["RAILS_ENV"] ||= "test"
 

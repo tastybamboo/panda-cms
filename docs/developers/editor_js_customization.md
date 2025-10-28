@@ -30,8 +30,8 @@ There are three ways to customize EditorJS in your application:
 Create an initializer in your application to configure EditorJS tools:
 
 ```ruby
-# config/initializers/panda_cms.rb
-Panda::CMS.configure do |config|
+# config/initializers/panda_editor.rb
+Panda::Editor.configure do |config|
   # Add additional EditorJS tools
   config.editor_js_tools = [
     { url: "https://cdn.jsdelivr.net/npm/@editorjs/code@2.8.0" }
@@ -136,8 +136,8 @@ Later configurations can override earlier ones.
 ### Adding an Image Upload Tool
 
 ```ruby
-# config/initializers/panda_cms.rb
-Panda::CMS.configure do |config|
+# config/initializers/panda_editor.rb
+Panda::Editor.configure do |config|
   config.editor_js_tools = [
     { url: "https://cdn.jsdelivr.net/npm/@editorjs/image@2.8.1" }
   ]

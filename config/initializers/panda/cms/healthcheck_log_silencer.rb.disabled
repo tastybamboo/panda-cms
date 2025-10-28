@@ -1,0 +1,31 @@
+# frozen_string_literal: true
+
+require "silencer/rails/logger"
+
+# Don't log requests to the healthcheck endpoint
+Rails.application.configure do
+  # Rails 8 renamed Rails::Rack::Logger to ActionDispatch::Request::Logger
+  # Determine which logger middleware class to use
+  logger_class = if Object.const_defined?("ActionDispatch::Request::Logger")
+    ActionDispatch::Request::Logger
+  elsif Object.const_defined?("Rails::Rack::Logger")
+    Rails::Rack::Logger
+  else
+    # If neither exists, skip the middleware swap
+    nil
+  end
+
+  if logger_class
+    begin
+      config.middleware.swap(
+        logger_class,
+        Silencer::Logger,
+        config.log_tags,
+        silence: ["/up"]
+      )
+    rescue RuntimeError => e
+      # Silently fail if middleware doesn't exist in stack
+      raise unless e.message.include?("No such middleware")
+    end
+  end
+end

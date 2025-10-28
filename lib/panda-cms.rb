@@ -9,8 +9,7 @@ module Panda
   module CMS
     class Configuration
       attr_accessor :title, :require_login_to_view, :authentication,
-        :posts, :url, :editor_js_tools,
-        :editor_js_tool_config, :instagram, :analytics
+        :posts, :url, :instagram, :analytics
 
       def initialize
         @title = "Demo Site"
@@ -18,8 +17,6 @@ module Panda
         @authentication = {}
         @posts = {enabled: true, prefix: "blog"}
         @url = nil
-        @editor_js_tools = []
-        @editor_js_tool_config = {}
         @instagram = {
           enabled: false,
           username: nil,
@@ -56,7 +53,7 @@ module Panda
 
     def self.root_path
       # Delegate to Panda::Core's admin_path configuration
-      Panda::Core.configuration.admin_path
+      Panda::Core.config.admin_path
     end
 
     class << self
@@ -64,7 +61,7 @@ module Panda
 
       def route_namespace
         # Delegate to Panda::Core's admin_path configuration
-        Panda::Core.configuration.admin_path
+        Panda::Core.config.admin_path
       end
     end
   end

@@ -79,8 +79,18 @@ config.user_class            # User model class (default: "Panda::Core::User")
 config.user_identity_class   # User identity class (default: "Panda::Core::UserIdentity")
 config.storage_provider      # Storage backend (default: :active_storage)
 config.cache_store          # Cache configuration (default: :memory_store)
-config.editor_js_tools       # Additional EditorJS tools to load (default: [])
-config.editor_js_tool_config # EditorJS tool configurations (default: {})
+```
+
+### Editor Settings (Optional)
+
+For EditorJS customization, use the Panda::Editor configuration:
+
+```ruby
+Panda::Editor.configure do |config|
+  config.editor_js_tools       # Additional EditorJS tools to load (default: [])
+  config.editor_js_tool_config # EditorJS tool configurations (default: {})
+  config.custom_renderers      # Custom block renderers (default: {})
+end
 ```
 
 ### CMS-Specific Settings (Optional)

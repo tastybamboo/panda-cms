@@ -39,14 +39,19 @@ Panda::Core.configure do |config|
 
   # Configure the cache store (default: :memory_store)
   # config.cache_store = :memory_store
-
-  # Configure EditorJS tools (optional)
-  # config.editor_js_tools = []
-  # config.editor_js_tool_config = {}
 end
 
 # Optional CMS-specific configuration
 # Panda::CMS.configure do |config|
 #   # Site access control
 #   config.require_login_to_view = false
+# end
+
+# Optional EditorJS configuration
+# Panda::Editor.configure do |config|
+#   # Additional EditorJS tools to load
+#   # config.editor_js_tools = []
+#
+#   # EditorJS tool configurations
+#   # config.editor_js_tool_config = {}
 # end

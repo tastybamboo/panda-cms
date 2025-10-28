@@ -3,7 +3,7 @@
 Panda::CMS::Engine.routes.draw do
   constraints Panda::Core::AdminConstraint.new(&:present?) do
     # CMS-specific dashboard (using Core's admin_path)
-    admin_path = Panda::Core.configuration.admin_path
+    admin_path = Panda::Core.config.admin_path
     get "#{admin_path}/cms", to: "admin/dashboard#show", as: :admin_cms_dashboard
 
     namespace admin_path.delete_prefix("/").to_sym, path: "#{admin_path}/cms", as: :admin_cms, module: :admin do

@@ -3,8 +3,8 @@
 source "https://rubygems.org"
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
-# Use panda-core gem
-gem "panda-core"
+# Use panda-core gem (local path for development)
+gem "panda-core", path: "../core"
 
 # Use panda-editor gem
 gem "panda-editor", "~> 0.2.0"
