@@ -146,9 +146,9 @@ module Panda
           # Core now provides the admin interface foundation
           # Apps using CMS can customize login_logo_path, login_page_title, etc. in their own initializers
 
-          # Don't redirect dashboard - let Core handle it
-          # Apps can override this if they want to go straight to CMS
-          # config.dashboard_redirect_path = "#{Panda::Core.configuration.admin_path}/cms"
+          # Redirect to CMS dashboard after login
+          # Apps can override this if they want different behavior
+          config.dashboard_redirect_path = "#{Panda::Core.configuration.admin_path}/cms"
 
           # Customize initial breadcrumb
           config.initial_admin_breadcrumb = ->(controller) {
