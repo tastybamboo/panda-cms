@@ -148,7 +148,7 @@ module Panda
 
           # Redirect to CMS dashboard after login
           # Apps can override this if they want different behavior
-          config.dashboard_redirect_path = "#{config.admin_path}/cms"
+          config.dashboard_redirect_path = -> { "#{Panda::Core.config.admin_path}/cms" }
 
           # Customize initial breadcrumb
           config.initial_admin_breadcrumb = ->(controller) {

@@ -4,8 +4,10 @@ module Panda
   module CMS
     module Admin
       # Base controller for all CMS admin controllers
-      # Inherits from Panda::Core::AdminController for authentication and base admin functionality
-      class BaseController < ::Panda::Core::AdminController
+      # Inherits from Panda::Core::Admin::BaseController for authentication and base admin functionality
+      class BaseController < ::Panda::Core::Admin::BaseController
+        layout "panda/cms/application"
+
         # Override set_current_request_details to also set CMS-specific attributes
         def set_current_request_details
           super # Call Core's implementation first

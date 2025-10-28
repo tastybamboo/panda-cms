@@ -5,8 +5,8 @@ require_relative "lib/panda-cms/version"
 Gem::Specification.new do |spec|
   spec.name = "panda-cms"
   spec.version = Panda::CMS::VERSION
-  spec.author = ["Otaina Limited t/a Tasty Bamboo", "James Inman"]
-  spec.email = ["bamboo@pandacms.io"]
+  spec.author = ["Otaina Limited", "James Inman"]
+  spec.email = ["james@otaina.co.uk"]
   spec.homepage = "https://pandacms.io"
   spec.summary = "Better websites on Rails."
   spec.license = "BSD-3-Clause"
