@@ -6,7 +6,6 @@ Panda::Core.configure do |config|
   config.admin_path = "/admin"
 
   config.login_page_title = "Panda Admin"
-  config.admin_title = "Panda Admin"
 
   # Configure authentication providers
   # Uncomment and configure the providers you want to use
