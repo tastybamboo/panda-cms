@@ -2,162 +2,224 @@
 
 module Panda
   module CMS
-    # Text component
-    # @param key [Symbol] The key to use for the text component
-    # @param text [String] The text to display
+    # Rich text component for EditorJS-based content editing
+    # @param key [Symbol] The key to use for the rich text component
+    # @param text [String] The default text to display
     # @param editable [Boolean] If the text is editable or not (defaults to true)
-    # @param options [Hash] The options to pass to the content_tag
-    class RichTextComponent < ViewComponent::Base
+    class RichTextComponent < Panda::Core::Base
       class ComponentError < StandardError; end
 
       KIND = "rich_text"
 
-      attr_accessor :editable, :content, :options
+      prop :key, Symbol, default: :text_component
+      prop :text, String, default: "Lorem ipsum..."
+      prop :editable, _Boolean, default: true
 
-      def initialize(key: :text_component, text: "Lorem ipsum...", editable: true, **options)
-        @key = key
-        @text = text
-        @options = options || {}
-        @editable = editable
+      attr_accessor :content, :block_content_id
+
+      def view_template
+        div(class: "panda-cms-content", **element_attrs) do
+          if @editable_state
+            # Empty div for EditorJS to initialize into
+          else
+            raw(@rendered_content.html_safe)
+          end
+        end
       end
 
-      # Check if the element is editable and set up the content
-      def before_render
-        @editable &&= params[:embed_id].present? && params[:embed_id] == Current.page.id && Current.user.admin?
+      def before_template
+        setup_editability
+        load_block_content
+        prepare_content
+      rescue ActiveRecord::RecordNotFound => e
+        handle_error(ComponentError.new("Database record not found: #{e.message}"))
+      rescue ActiveRecord::RecordInvalid => e
+        handle_error(ComponentError.new("Invalid record: #{e.message}"))
+      rescue => e
+        handle_error(e)
+      end
 
-        block = Panda::CMS::Block.find_by(kind: "rich_text", key: @key,
-          panda_cms_template_id: Current.page.panda_cms_template_id)
+      private
+
+      def setup_editability
+        @editable_state = @editable &&
+          helpers.params[:embed_id].present? &&
+          helpers.params[:embed_id] == Current.page.id &&
+          Current.user&.admin?
+      end
+
+      def load_block_content
+        block = Panda::CMS::Block.find_by(
+          kind: KIND,
+          key: @key,
+          panda_cms_template_id: Current.page.panda_cms_template_id
+        )
         raise ComponentError, "Block not found for key: #{@key}" unless block
 
-        block_content = block.block_contents.find_by(panda_cms_page_id: Current.page.id)
-        if block_content.nil?
-          block_content = Panda::CMS::BlockContent.create!(
+        @block_content = block.block_contents.find_by(panda_cms_page_id: Current.page.id)
+
+        if @block_content.nil?
+          @block_content = Panda::CMS::BlockContent.create!(
             block: block,
             panda_cms_page_id: Current.page.id,
             content: empty_editor_js_content
           )
         end
 
-        raw_content = block_content.cached_content || block_content.content
+        @block_content_id = @block_content.id
+        raw_content = @block_content.cached_content || @block_content.content
         @content = raw_content.presence || empty_editor_js_content
-        @options[:id] = block_content.id
-
-        # Debug log the content
-        Rails.logger.debug("RichTextComponent content before processing: #{@content.inspect}")
-
-        if @editable
-          @options[:data] = {
-            page_id: Current.page.id,
-            mode: "rich_text"
-          }
-
-          # For editable mode, always ensure we have a valid EditorJS structure
-          @content = if @content.blank? || @content == "{}"
-            empty_editor_js_content
-          else
-            begin
-              if @content.is_a?(String)
-                # Try to parse as JSON first
-                begin
-                  parsed = JSON.parse(@content)
-                  if valid_editor_js_content?(parsed)
-                    # Ensure the content is properly structured
-                    {
-                      "time" => parsed["time"] || Time.current.to_i * 1000,
-                      "blocks" => parsed["blocks"].map do |block|
-                        {
-                          "type" => block["type"],
-                          "data" => block["data"].merge(
-                            "text" => block["data"]["text"].to_s.presence || ""
-                          ),
-                          "tunes" => block["tunes"]
-                        }.compact
-                      end,
-                      "version" => parsed["version"] || "2.28.2"
-                    }
-                  else
-                    # If not valid EditorJS, try to convert from HTML
-                    begin
-                      editor_content = Panda::Editor::HtmlToEditorJsConverter.convert(@content)
-                      if valid_editor_js_content?(editor_content)
-                        editor_content
-                      else
-                        empty_editor_js_content
-                      end
-                    rescue Panda::Editor::HtmlToEditorJsConverter::ConversionError => e
-                      Rails.logger.error("HTML conversion error: #{e.message}")
-                      empty_editor_js_content
-                    end
-                  end
-                rescue JSON::ParserError => e
-                  Rails.logger.error("JSON parse error: #{e.message}")
-                  # Try to convert from HTML
-                  begin
-                    editor_content = Panda::Editor::HtmlToEditorJsConverter.convert(@content)
-                    if valid_editor_js_content?(editor_content)
-                      editor_content
-                    else
-                      empty_editor_js_content
-                    end
-                  rescue Panda::Editor::HtmlToEditorJsConverter::ConversionError => e
-                    Rails.logger.error("HTML conversion error: #{e.message}")
-                    empty_editor_js_content
-                  end
-                end
-              else
-                # If it's not a string, assume it's already in the correct format
-                valid_editor_js_content?(@content) ? @content : empty_editor_js_content
-              end
-            rescue => e
-              Rails.logger.error("Content processing error: #{e.message}\nContent: #{@content.inspect}")
-              empty_editor_js_content
-            end
-          end
-        else
-          # For non-editable mode, handle content display
-          @content = if @content.blank? || @content == "{}"
-            "<p></p>".html_safe
-          else
-            begin
-              # Try to parse as JSON if it looks like EditorJS format
-              if @content.is_a?(String) && @content.strip.match?(/^\{.*"blocks":\s*\[.*\].*\}$/m)
-                parsed_content = JSON.parse(@content)
-                if valid_editor_js_content?(parsed_content)
-                  # Check if it's just an empty paragraph
-                  if parsed_content["blocks"].length == 1 &&
-                      parsed_content["blocks"][0]["type"] == "paragraph" &&
-                      parsed_content["blocks"][0]["data"]["text"].blank?
-                    "<p></p>".html_safe
-                  else
-                    renderer = Panda::Editor::Renderer.new(parsed_content)
-                    rendered = renderer.render
-                    rendered.presence&.html_safe || "<p></p>".html_safe
-                  end
-                else
-                  process_html(@content)
-                end
-              else
-                process_html(@content)
-              end
-            rescue JSON::ParserError
-              process_html(@content)
-            rescue => e
-              Rails.logger.error("RichTextComponent render error: #{e.message}\nContent: #{@content.inspect}")
-              "<p></p>".html_safe
-            end
-          end
-        end
-      rescue ActiveRecord::RecordNotFound => e
-        raise ComponentError, "Database record not found: #{e.message}"
-      rescue ActiveRecord::RecordInvalid => e
-        raise ComponentError, "Invalid record: #{e.message}"
-      rescue => e
-        Rails.logger.error("RichTextComponent error: #{e.message}\nContent: #{@content.inspect}")
-        @content = @editable ? empty_editor_js_content : "<p></p>".html_safe
-        nil
       end
 
-      private
+      def prepare_content
+        if @editable_state
+          prepare_editable_content
+        else
+          prepare_display_content
+        end
+      end
+
+      def prepare_editable_content
+        @editor_content = if @content.blank? || @content == "{}"
+          empty_editor_js_content
+        else
+          process_content_for_editor(@content)
+        end
+
+        @encoded_data = Base64.strict_encode64(@editor_content.to_json)
+      rescue => e
+        Rails.logger.error("Content processing error: #{e.message}\nContent: #{@content.inspect}")
+        @editor_content = empty_editor_js_content
+        @encoded_data = Base64.strict_encode64(@editor_content.to_json)
+      end
+
+      def prepare_display_content
+        @rendered_content = if @content.blank? || @content == "{}"
+          "<p></p>"
+        else
+          render_content_for_display(@content)
+        end
+      rescue => e
+        Rails.logger.error("RichTextComponent render error: #{e.message}\nContent: #{@content.inspect}")
+        @rendered_content = "<p></p>"
+      end
+
+      def process_content_for_editor(content)
+        parsed = if content.is_a?(String)
+          JSON.parse(content)
+        else
+          content
+        end
+
+        if valid_editor_js_content?(parsed)
+          normalize_editor_content(parsed)
+        else
+          convert_html_to_editor_js(content)
+        end
+      rescue JSON::ParserError
+        convert_html_to_editor_js(content)
+      end
+
+      def normalize_editor_content(parsed)
+        {
+          "time" => parsed["time"] || Time.current.to_i * 1000,
+          "blocks" => (parsed["blocks"] || []).map { |block| normalize_block(block) },
+          "version" => parsed["version"] || "2.28.2"
+        }
+      end
+
+      def normalize_block(block)
+        case block["type"]
+        when "paragraph"
+          block.merge("data" => block["data"].merge("text" => block["data"]["text"].to_s.presence || ""))
+        when "header"
+          block.merge("data" => block["data"].merge(
+            "text" => block["data"]["text"].to_s.presence || "",
+            "level" => block["data"]["level"].to_i
+          ))
+        when "list"
+          block.merge("data" => block["data"].merge(
+            "items" => (block["data"]["items"] || []).map { |item| item.to_s.presence || "" }
+          ))
+        else
+          block
+        end
+      end
+
+      def convert_html_to_editor_js(content)
+        editor_content = Panda::Editor::HtmlToEditorJsConverter.convert(content.to_s)
+        valid_editor_js_content?(editor_content) ? editor_content : empty_editor_js_content
+      rescue Panda::Editor::HtmlToEditorJsConverter::ConversionError => e
+        Rails.logger.error("HTML conversion error: #{e.message}")
+        empty_editor_js_content
+      end
+
+      def render_content_for_display(content)
+        # Try to parse as JSON if it looks like EditorJS format
+        if content.is_a?(String) && content.strip.match?(/^\{.*"blocks":\s*\[.*\].*\}$/m)
+          parsed_content = JSON.parse(content)
+          if valid_editor_js_content?(parsed_content)
+            render_editor_js_content(parsed_content)
+          else
+            process_html_content(content)
+          end
+        else
+          process_html_content(content)
+        end
+      rescue JSON::ParserError
+        process_html_content(content)
+      end
+
+      def render_editor_js_content(parsed_content)
+        # Check if it's just an empty paragraph
+        if parsed_content["blocks"].length == 1 &&
+            parsed_content["blocks"][0]["type"] == "paragraph" &&
+            parsed_content["blocks"][0]["data"]["text"].blank?
+          "<p></p>"
+        else
+          renderer = Panda::Editor::Renderer.new(parsed_content)
+          rendered = renderer.render
+          rendered.presence || "<p></p>"
+        end
+      end
+
+      def process_html_content(content)
+        return "<p></p>" if content.blank?
+
+        # If it's already HTML, return it
+        if content.match?(/<[^>]+>/)
+          content
+        else
+          # Wrap plain text in paragraph tags
+          "<p>#{content}</p>"
+        end
+      end
+
+      def element_attrs
+        attrs = {class: "panda-cms-content"}
+
+        if @editable_state
+          attrs.merge!(
+            id: "editor-#{@block_content_id}",
+            data: {
+              "editable-previous-data": @encoded_data,
+              "editable-content": @encoded_data,
+              "editable-initialized": "false",
+              "editable-version": "2.28.2",
+              "editable-autosave": "false",
+              "editable-tools": '{"paragraph":true,"header":true,"list":true,"quote":true,"table":true}',
+              "editable-kind": "rich_text",
+              "editable-block-content-id": @block_content_id,
+              "editable-page-id": Current.page.id,
+              controller: "editor-js",
+              "editor-js-initialized-value": "false",
+              "editor-js-content-value": @encoded_data
+            }
+          )
+        end
+
+        attrs
+      end
 
       def empty_editor_js_content
         {
@@ -173,21 +235,17 @@ module Panda
         false
       end
 
-      def process_html(content)
-        return "<p></p>".html_safe if content.blank?
+      def handle_error(error)
+        Rails.logger.error("RichTextComponent error: #{error.message}\nContent: #{@content.inspect}")
 
-        # If it's already HTML, just return it
-        if content.match?(/<[^>]+>/)
-          content.html_safe
+        if @editable_state
+          @editor_content = empty_editor_js_content
+          @encoded_data = Base64.strict_encode64(@editor_content.to_json)
         else
-          # Wrap plain text in paragraph tags
-          "<p>#{content}</p>".html_safe
+          @rendered_content = "<p></p>"
         end
-      end
 
-      # Only render the component if there is some content set, or if the component is editable
-      def render?
-        true # Always render, we'll show empty content if needed
+        nil
       end
     end
   end

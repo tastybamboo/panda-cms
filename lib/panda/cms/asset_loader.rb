@@ -161,19 +161,24 @@ module Panda
         end
 
         def development_javascript_url
-          # Try cached assets first, then importmap
-          version = asset_version
-          # Try root level first (standalone bundle), then versioned directory
-          root_path = "/panda-cms-assets/panda-cms-#{version}.js"
-          versioned_path = "/panda-cms-assets/#{version}/panda-cms-#{version}.js"
-
-          if cached_asset_exists?(root_path)
-            root_path
-          elsif cached_asset_exists?(versioned_path)
-            versioned_path
+          # In development, use importmap for live-reloading
+          # Only use compiled assets in test/CI environments
+          if Rails.env.development?
+            "/assets/panda/cms/application_panda_cms.js"
           else
-            # Fallback to importmap or engine asset
-            "/assets/panda/cms/controllers/index.js"
+            # Try cached assets for test environment
+            version = asset_version
+            root_path = "/panda-cms-assets/panda-cms-#{version}.js"
+            versioned_path = "/panda-cms-assets/#{version}/panda-cms-#{version}.js"
+
+            if cached_asset_exists?(root_path)
+              root_path
+            elsif cached_asset_exists?(versioned_path)
+              versioned_path
+            else
+              # Fallback to importmap
+              "/assets/panda/cms/application_panda_cms.js"
+            end
           end
         end
 
@@ -251,7 +256,7 @@ module Panda
 
         def engine_assets_available?
           # Check if engine's JavaScript files are available
-          engine_js_path = Rails.root.join("..", "..", "app", "javascript", "panda", "cms", "controllers", "index.js")
+          engine_js_path = Panda::CMS::Engine.root.join("app", "javascript", "panda", "cms", "controllers", "index.js")
           File.exist?(engine_js_path)
         end
 

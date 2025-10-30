@@ -2,40 +2,71 @@
 
 module Panda
   module CMS
-    class MenuComponent < ViewComponent::Base
-      #
-      # Renders the menu item and its children
-      #
-      # @param [String] name The name of the menu
-      # @param [String] current_path The current path of the request (request.path)
-      # @param [Hash] styles
-      #  The CSS classes to apply to the menu items, containing "default", "inactive" and "active" keys.
-      #  The "default" key is applied to all menu items. "inactive" and "active" are set based on the
-      #  current path.
-      # @return [void]
-      def initialize(name:, current_path: "", styles: {}, overrides: {}, render_page_menu: false, page_menu_styles: {})
-        @menu = Panda::CMS::Menu.find_by(name: name)
-        @menu_items = @menu.menu_items
-        @menu_items = @menu_items.where("depth <= ?", @menu.depth) if @menu.depth
-        @menu_items = @menu_items.order(:lft)
-        @current_path = current_path.to_s
-        @render_page_menu = render_page_menu
+    # Menu component for rendering navigational menus
+    # @param name [String] The name of the menu to render
+    # @param current_path [String] The current request path for highlighting active items
+    # @param styles [Hash] CSS classes for menu items (default, active, inactive)
+    # @param overrides [Hash] Menu item overrides (currently unused)
+    # @param render_page_menu [Boolean] Whether to render sub-page menus
+    # @param page_menu_styles [Hash] Styles for the page menu component
+    class MenuComponent < Panda::Core::Base
+      prop :name, String
+      prop :current_path, String, default: ""
+      prop :styles, Hash, default: -> { {}.freeze }
+      prop :overrides, Hash, default: -> { {}.freeze }
+      prop :render_page_menu, _Boolean, default: false
+      prop :page_menu_styles, Hash, default: -> { {}.freeze }
 
-        @menu_items = @menu_items.order(:lft).map do |menu_item|
-          if is_active?(menu_item)
-            menu_item.define_singleton_method(:css_classes) { "#{styles[:default]} #{styles[:active]}" }
-          else
-            menu_item.define_singleton_method(:css_classes) { "#{styles[:default]} #{styles[:inactive]}" }
+      def view_template
+        return unless @menu
+
+        @processed_menu_items.each do |menu_item|
+          a(href: menu_item.resolved_link, class: menu_item.css_classes) { menu_item.text }
+
+          if @render_page_menu && menu_item.page
+            render Panda::CMS::PageMenuComponent.new(
+              page: menu_item.page,
+              start_depth: 1,
+              styles: @page_menu_styles,
+              show_heading: false
+            )
           end
+        end
+      end
 
+      def before_template
+        load_menu_items
+      end
+
+      private
+
+      def load_menu_items
+        @menu = Panda::CMS::Menu.find_by(name: @name)
+        return unless @menu
+
+        menu_items = @menu.menu_items
+        menu_items = menu_items.where("depth <= ?", @menu.depth) if @menu.depth
+        menu_items = menu_items.order(:lft)
+
+        @processed_menu_items = menu_items.map do |menu_item|
+          add_css_classes_to_item(menu_item)
           menu_item
         end
 
-        # TODO: Surely don't need this but Current.page isn't working in the component
-        return unless @render_page_menu
+        # Load current page for page menu rendering
+        if @render_page_menu
+          @current_page = Panda::CMS::Page.find_by(path: @current_path)
+        end
+      end
 
-        @current_page = Panda::CMS::Page.find_by(path: @current_path)
-        @page_menu_styles = page_menu_styles
+      def add_css_classes_to_item(menu_item)
+        css_class = if is_active?(menu_item)
+          "#{@styles[:default]} #{@styles[:active]}"
+        else
+          "#{@styles[:default]} #{@styles[:inactive]}"
+        end
+
+        menu_item.define_singleton_method(:css_classes) { css_class }
       end
 
       def is_active?(menu_item)
@@ -46,13 +77,14 @@ module Panda
       end
 
       def active_link?(path, match: :starts_with)
-        if match == :starts_with
-          return @current_path.starts_with?(path)
-        elsif match == :exact
-          return (@current_path == path)
+        case match
+        when :starts_with
+          @current_path.starts_with?(path)
+        when :exact
+          @current_path == path
+        else
+          false
         end
-
-        false
       end
     end
   end

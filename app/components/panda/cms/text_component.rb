@@ -2,69 +2,102 @@
 
 module Panda
   module CMS
-    # Text component
+    # Text component for editable plain text content
     # @param key [Symbol] The key to use for the text component
-    # @param text [String] The text to display
+    # @param text [String] The default text to display
     # @param editable [Boolean] If the text is editable or not (defaults to true)
-    # @param options [Hash] The options to pass to the content_tag
-    class TextComponent < ViewComponent::Base
+    class TextComponent < Panda::Core::Base
       KIND = "plain_text"
 
-      # Allows accessing the plain text of the component directly
+      prop :key, Symbol, default: :text_component
+      prop :text, String, default: "Lorem ipsum..."
+      prop :editable, _Boolean, default: true
+
       attr_accessor :plain_text
 
-      def initialize(key: :text_component, text: "Lorem ipsum...", editable: true, **options)
-        @key = key
-        @text = text
-        @options = options || {}
-        @options[:id] ||= "text-#{key.to_s.dasherize}"
-        @editable = editable
+      def view_template
+        return unless @content
+
+        span(**element_attrs) { unsafe_raw(@content) }
+      rescue => e
+        handle_error(e)
       end
 
-      def call
-        content_tag(:span, @content, @options, false) # Don't escape the content
-      rescue
-        if !Rails.env.production? || is_defined?(Sentry)
-          raise Panda::CMS::MissingBlockError, "Block with key #{@key} not found for page #{Current.page.title}"
+      def before_template
+        prepare_content
+      end
+
+      private
+
+      def prepare_content
+        @editable_state = @editable && is_editable_context?
+
+        block = find_block
+        return false if block.nil?
+
+        block_content = find_block_content(block)
+        @plain_text = block_content&.content.to_s
+
+        if @editable_state
+          setup_editable_content(block_content)
+        else
+          @content = prepare_content_for_display(@plain_text)
+        end
+      end
+
+      def find_block
+        Panda::CMS::Block.find_by(
+          kind: KIND,
+          key: @key,
+          panda_cms_template_id: Current.page.panda_cms_template_id
+        )
+      end
+
+      def find_block_content(block)
+        block.block_contents.find_by(panda_cms_page_id: Current.page.id)
+      end
+
+      def setup_editable_content(block_content)
+        @content = @plain_text
+        @block_content_id = block_content&.id
+      end
+
+      def element_attrs
+        attrs = @attrs.merge(id: element_id)
+
+        if @editable_state
+          attrs.merge!(
+            contenteditable: "plaintext-only",
+            data: {
+              "editable-kind": "plain_text",
+              "editable-page-id": Current.page.id,
+              "editable-block-content-id": @block_content_id
+            }
+          )
         end
 
-        false
+        attrs
       end
 
-      #
-      # Prepares content for display
-      #
-      # @usage Do not use this when rendering editable content
+      def element_id
+        @editable_state ? "editor-#{@block_content_id}" : "text-#{@key.to_s.dasherize}"
+      end
+
       def prepare_content_for_display(content)
         # Replace \n characters with <br> tags
         content.gsub("\n", "<br>")
       end
 
-      # Check if the element is editable
-      # TODO: Check user permissions
-      def before_render
-        @editable &&= params[:embed_id].present? && params[:embed_id] == Current.page.id
+      def is_editable_context?
+        helpers.params[:embed_id].present? && helpers.params[:embed_id] == Current.page.id
+      end
 
-        block = Panda::CMS::Block.find_by(kind: KIND, key: @key,
-          panda_cms_template_id: Current.page.panda_cms_template_id)
-
-        return false if block.nil?
-
-        block_content = block.block_contents.find_by(panda_cms_page_id: Current.page.id)
-        plain_text = block_content&.content.to_s
-        if @editable
-          @options[:contenteditable] = "plaintext-only"
-          @options[:data] = {
-            "editable-kind": "plain_text",
-            "editable-page-id": Current.page.id,
-            "editable-block-content-id": block_content&.id
-          }
-
-          @options[:id] = "editor-#{block_content&.id}"
-          @content = plain_text
-        else
-          @content = prepare_content_for_display(plain_text)
+      def handle_error(error)
+        if !Rails.env.production? || defined?(Sentry)
+          raise Panda::CMS::MissingBlockError, "Block with key #{@key} not found for page #{Current.page.title}"
         end
+
+        false
       end
     end
   end

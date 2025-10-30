@@ -136,6 +136,15 @@ module Panda
         app.config.view_component.preview_paths << root.join("spec/components/previews")
         app.config.view_component.generate.sidecar = true
         app.config.view_component.generate.preview = true
+
+        # Add preview directories to autoload paths in development
+        if Rails.env.development?
+          # Handle frozen autoload_paths array
+          if app.config.autoload_paths.frozen?
+            app.config.autoload_paths = app.config.autoload_paths.dup
+          end
+          app.config.autoload_paths << root.join("spec/components/previews")
+        end
       end
 
       # Authentication is now handled by Panda::Core::Engine
@@ -145,6 +154,64 @@ module Panda
         Panda::Core.configure do |config|
           # Core now provides the admin interface foundation
           # Apps using CMS can customize login_logo_path, login_page_title, etc. in their own initializers
+
+          # Register CMS navigation items
+          config.admin_navigation_items = ->(user) {
+            items = []
+
+            # Dashboard
+            items << {
+              path: "#{config.admin_path}/cms",
+              label: "Dashboard",
+              icon: "fa-solid fa-house"
+            }
+
+            # Pages
+            items << {
+              path: "#{config.admin_path}/cms/pages",
+              label: "Pages",
+              icon: "fa-solid fa-file"
+            }
+
+            # Collections (if enabled)
+            if Panda::CMS::Features.enabled?(:collections)
+              items << {
+                path: "#{config.admin_path}/cms/collections",
+                label: "Collections",
+                icon: "fa-solid fa-table-cells"
+              }
+            end
+
+            # Posts
+            items << {
+              path: "#{config.admin_path}/cms/posts",
+              label: "Posts",
+              icon: "fa-solid fa-newspaper"
+            }
+
+            # Forms
+            items << {
+              path: "#{config.admin_path}/cms/forms",
+              label: "Forms",
+              icon: "fa-solid fa-inbox"
+            }
+
+            # Menus
+            items << {
+              path: "#{config.admin_path}/cms/menus",
+              label: "Menus",
+              icon: "fa-solid fa-bars"
+            }
+
+            # Settings
+            items << {
+              path: "#{config.admin_path}/cms/settings",
+              label: "Settings",
+              icon: "fa-solid fa-gear"
+            }
+
+            items
+          }
 
           # Redirect to CMS dashboard after login
           # Apps can override this if they want different behavior

@@ -33,7 +33,7 @@ module Panda
         if match == :starts_with
           return request.path.starts_with?(path)
         elsif match == :exact
-          return (request.path == path)
+          return request.path == path
         end
 
         false

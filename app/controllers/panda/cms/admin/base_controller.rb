@@ -5,9 +5,8 @@ module Panda
     module Admin
       # Base controller for all CMS admin controllers
       # Inherits from Panda::Core::Admin::BaseController for authentication and base admin functionality
+      # Uses Core's admin layout with registered CMS navigation
       class BaseController < ::Panda::Core::Admin::BaseController
-        layout "panda/cms/application"
-
         # Override set_current_request_details to also set CMS-specific attributes
         def set_current_request_details
           super # Call Core's implementation first
@@ -25,6 +24,7 @@ module Panda
 
         # Include CMS helpers so views have access to panda_cms_form_with, etc.
         helper Panda::CMS::ApplicationHelper
+        helper Panda::CMS::AssetHelper if defined?(Panda::CMS::AssetHelper)
 
         # Include the helper methods in the controller as well
         include Panda::CMS::ApplicationHelper

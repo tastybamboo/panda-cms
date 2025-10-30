@@ -21,11 +21,8 @@ pandaCmsApplication.register("slug", SlugController)
 import EditorIframeController from "panda/cms/controllers/editor_iframe_controller"
 pandaCmsApplication.register("editor-iframe", EditorIframeController)
 
-// Import and register TailwindCSS Stimulus Components needed by CMS
-import { Toggle } from "tailwindcss-stimulus-components"
-pandaCmsApplication.register("toggle", Toggle)
-
-console.debug("[Panda CMS] Registered Toggle controller for slideover functionality")
+// Note: Toggle, Slideover, and other TailwindCSS Stimulus Components
+// are now registered by Panda Core since the admin layout lives there
 
 console.debug("[Panda CMS] Components registered...")
 
