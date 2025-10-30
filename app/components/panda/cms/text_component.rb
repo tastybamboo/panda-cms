@@ -18,7 +18,7 @@ module Panda
       def view_template
         return unless @content
 
-        span(**element_attrs) { unsafe_raw(@content) }
+        span(**element_attrs) { raw(@content.html_safe) }
       rescue => e
         handle_error(e)
       end

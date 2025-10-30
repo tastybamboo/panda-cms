@@ -97,12 +97,9 @@ RSpec.configure do |config|
   config.include ViewComponent::TestHelpers, type: :view_component
   config.include Capybara::RSpecMatchers, type: :view_component
 
-  # Use transactions, so we don't have to worry about cleaning up the database
-  # The idea is to start each example with a clean database, create whatever data
-  # is necessary for that example, and then remove that data by simply rolling
-  # back the transaction at the end of the example.
-  # NB: If you use before(:context), you must use after(:context) too
-  # Normally, use before(:each) and after(:each)
+  # Use transactions for all tests including system tests
+  # System tests can use transactional fixtures because we're using
+  # shared database connections (see capybara_setup.rb)
   config.use_transactional_fixtures = true
 
   # Infer an example group's spec type from the file location.
@@ -170,12 +167,13 @@ RSpec.configure do |config|
   # Load fixtures globally for all tests EXCEPT those that require users
   # panda_core_users are created programmatically
   # panda_cms_posts require users to exist first
+  # Note: For system tests, fixtures are loaded explicitly in the around block below
   fixture_files = Dir[File.expand_path("fixtures/*.yml", __dir__)].map do |f|
     File.basename(f, ".yml").to_sym
   end
   fixture_files.delete(:panda_core_users)
   fixture_files.delete(:panda_cms_posts)
-  config.global_fixtures = fixture_files
+  config.global_fixtures = fixture_files unless ENV["SKIP_GLOBAL_FIXTURES"]
 
   if defined?(Bullet) && Bullet.enable?
     config.before(:each) do
