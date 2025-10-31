@@ -4,6 +4,7 @@ require "system_helper"
 
 RSpec.describe "When editing a page", type: :system do
   include EditorHelpers
+
   fixtures :all
 
   let(:homepage) { panda_cms_pages(:homepage) }

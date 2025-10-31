@@ -97,9 +97,9 @@ Rails.application.configure do
       # Ensure compiled assets exist in public directory
       version = Panda::CMS::VERSION
       compiled_js = Rails.public_path.join("panda-cms-assets", "panda-cms-#{version}.js")
-      compiled_css = Rails.public_path.join("panda-cms-assets", "panda-cms-#{version}.css")
-      
-      if compiled_js.exist? && compiled_css.exist?
+      # CSS is now provided by Panda Core, only check for JS
+
+      if compiled_js.exist?
         puts "[Panda CMS Test] Using local compiled assets: #{compiled_js}"
       else
         puts "[Panda CMS Test] Compiled assets not found at #{compiled_js}"

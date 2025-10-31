@@ -91,23 +91,29 @@ end
 
 Override the default login page template:
 
-```ruby
-# app/views/panda/cms/admin/sessions/new.html.erb
-<%= render "panda/cms/admin/shared/header" %>
-
+```erb
+# app/views/panda/core/admin/sessions/new.html.erb
 <div class="login-container">
-  <h2><%= t(".title") %></h2>
+  <h2><%= Panda::Core.config.login_page_title || "Sign in to your account" %></h2>
 
-  <% if Panda::CMS.config.authentication.google.enabled? %>
-    <%= link_to manage_auth_google_path, class: "login-button google" do %>
-      <%= icon "fab", "google" %> Sign in with Google
+  <% Panda::Core.config.authentication_providers.each do |provider, provider_config| %>
+    <% provider_name = provider_config&.dig(:name) || provider.to_s.humanize %>
+    <% provider_path = provider_config&.dig(:path_name) || provider %>
+
+    <%= form_tag "#{Panda::Core.config.admin_path}/auth/#{provider_path}", method: "post", data: {turbo: false} do %>
+      <button type="submit" class="login-button <%= provider %>">
+        <i class="fa-brands fa-<%= oauth_provider_icon(provider) %>"></i>
+        Sign in with <%= provider_name %>
+      </button>
     <% end %>
   <% end %>
 
   <!-- Add custom login options here -->
-  <%= render "custom_login_options" %>
+  <%= render "custom_login_options" if lookup_context.exists?("custom_login_options") %>
 </div>
 ```
+
+**Important:** OAuth login forms must use POST method for CSRF protection (CVE-2015-9284). Do not use `link_to` for OAuth authentication endpoints.
 
 ### Error Messages
 

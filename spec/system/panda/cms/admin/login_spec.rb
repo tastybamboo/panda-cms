@@ -21,7 +21,7 @@ RSpec.describe "Admin authentication", type: :system do
       it "logs in admin successfully" do
         # Enable GitHub in both CMS and Core configs
         Panda::CMS.config.authentication[:github][:enabled] = true
-        Panda::Core.configuration.authentication_providers[:github] = {
+        Panda::Core.config.authentication_providers[:github] = {
           client_id: "test_client_id",
           client_secret: "test_client_secret"
         }
@@ -38,7 +38,7 @@ RSpec.describe "Admin authentication", type: :system do
       it "logs in admin successfully" do
         # Enable Microsoft in both CMS and Core configs
         Panda::CMS.config.authentication[:microsoft][:enabled] = true
-        Panda::Core.configuration.authentication_providers[:microsoft_graph] = {
+        Panda::Core.config.authentication_providers[:microsoft_graph] = {
           client_id: "test_client_id",
           client_secret: "test_client_secret"
         }

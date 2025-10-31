@@ -4,10 +4,10 @@ source "https://rubygems.org"
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
 # Use panda-core gem
-gem "panda-core"
+gem "panda-core", "~> 0.4.1"
 
 # Use panda-editor gem
-gem "panda-editor", "~> 0.2.0"
+gem "panda-editor", "~> 0.4.0"
 
 # Specify your gem's dependencies in panda-cms.gemspec.
 gemspec
@@ -21,6 +21,7 @@ end
 # Development and testing dependencies
 group :development, :test do
   gem "annotaterb"
+  gem "awesome_print"
   gem "brakeman"
   gem "bullet"
   gem "bundler-audit"

@@ -1,6 +1,5 @@
 <%= render Panda::Core::Admin::ContainerComponent.new do |component| %>
-  <% component.with_heading(text: "Add Page", level: 1) do |heading| %>
-  <% end %>
+  <% component.heading(text: "Add Form", level: 1) %>
   <%= panda_cms_form_with model: page, url: admin_cms_pages_path, method: :post do |f| %>
     <% options = nested_set_options(Panda::CMS::Page, page) { |i| "#{"-" * i.level} #{i.title} (#{i.path})" } %>
     <div data-controller="slug">

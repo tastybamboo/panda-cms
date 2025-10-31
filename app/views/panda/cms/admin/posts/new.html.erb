@@ -1,5 +1,5 @@
 <%= render Panda::Core::Admin::ContainerComponent.new do |component| %>
-  <% component.with_heading(text: "Add Post", level: 1) do |heading| %>
+  <% component.heading(text: "Add Post", level: 1) do |heading| %>
   <% end %>
 
   <%= render "form", post: post, url: url, method: :post %>

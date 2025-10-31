@@ -10,11 +10,8 @@ module Generators
         desc "Adds the basic configuration for Panda CMS to your Rails app."
 
         def create_initializer_file
-          # Add the initializer
-          initializer_path = "config/initializers/panda/cms.rb"
-          unless File.exist?("#{::Rails.root}/#{initializer_path}")
-            FileUtils.cp "#{::Panda::CMS::Engine.root}/#{initializer_path}", "#{::Rails.root}/#{initializer_path}"
-          end
+          # Skip creating initializer - Panda::Core already creates config/initializers/panda.rb
+          # See config/initializers/panda/cms.rb in the gem for an example configuration
 
           # Add the seed loader to the seeds.rb file
           unless File.read("#{::Rails.root}/db/seeds.rb")&.include?("Panda::CMS::Engine.load_seed")

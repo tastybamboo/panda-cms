@@ -7,27 +7,29 @@ class MigrateUsersToPandaCore < ActiveRecord::Migration[8.0]
     if table_exists?(:panda_cms_users) && table_exists?(:panda_core_users)
       # Check if there's any data to migrate
       cms_user_count = ActiveRecord::Base.connection.select_value("SELECT COUNT(*) FROM panda_cms_users")
-      return if cms_user_count == 0
-      # Copy all user data
-      execute <<-SQL
-        INSERT INTO panda_core_users (
-          id, name, email, image_url, is_admin, created_at, updated_at
-        )
-        SELECT 
-          id,
-          COALESCE(name, CONCAT(firstname, ' ', lastname), 'Unknown User'),
-          email,
-          image_url,
-          COALESCE(admin, false),
-          created_at,
-          updated_at
-        FROM panda_cms_users
-        WHERE NOT EXISTS (
-          SELECT 1 FROM panda_core_users WHERE panda_core_users.id = panda_cms_users.id
-        )
-      SQL
 
-      # Update foreign key references in other tables
+      if cms_user_count > 0
+        # Copy all user data
+        execute <<-SQL
+          INSERT INTO panda_core_users (
+            id, name, email, image_url, is_admin, created_at, updated_at
+          )
+          SELECT
+            id,
+            COALESCE(name, CONCAT(firstname, ' ', lastname), 'Unknown User'),
+            email,
+            image_url,
+            COALESCE(admin, false),
+            created_at,
+            updated_at
+          FROM panda_cms_users
+          WHERE NOT EXISTS (
+            SELECT 1 FROM panda_core_users WHERE panda_core_users.id = panda_cms_users.id
+          )
+        SQL
+      end
+
+      # Update foreign key references in other tables (always do this, even if no data)
 
       # Posts author_id
       if column_exists?(:panda_cms_posts, :author_id)
@@ -47,7 +49,7 @@ class MigrateUsersToPandaCore < ActiveRecord::Migration[8.0]
         add_foreign_key :panda_cms_visits, :panda_core_users, column: :user_id, primary_key: :id
       end
 
-      # Drop the old table
+      # Always drop the old table if it exists (even if it was empty)
       drop_table :panda_cms_users
     end
   end

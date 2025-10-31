@@ -1,5 +1,5 @@
 <%= render Panda::Core::Admin::ContainerComponent.new do |component| %>
-  <% component.with_heading(text: "Forms", level: 1) do |heading| %>
+  <% component.heading(text: "Forms", level: 1) do |heading| %>
   <% end %>
 
   <%= render Panda::Core::Admin::TableComponent.new(term: "form", rows: forms) do |table| %>

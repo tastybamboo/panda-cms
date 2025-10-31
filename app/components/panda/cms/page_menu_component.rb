@@ -2,34 +2,115 @@
 
 module Panda
   module CMS
-    class PageMenuComponent < ViewComponent::Base
-      attr_accessor :page, :menu_item, :styles
+    # Page menu component for rendering hierarchical page navigation
+    # @param page [Panda::CMS::Page] The current page
+    # @param start_depth [Integer] The depth level to start the menu from
+    # @param styles [Hash] CSS classes for styling menu elements
+    # @param show_heading [Boolean] Whether to show the top-level heading
+    class PageMenuComponent < Panda::Core::Base
+      prop :page, Object
+      prop :start_depth, Integer
+      prop :styles, Hash, default: -> { {}.freeze }
+      prop :show_heading, _Boolean, default: true
 
-      def initialize(page:, start_depth:, styles: {}, show_heading: true)
-        @page = page
+      def view_template
+        return unless should_render?
 
+        nav(class: @styles[:container]) do
+          ul(role: "list", class: "p-0 m-0") do
+            render_heading if @show_heading
+            render_menu_items
+          end
+        end
+      end
+
+      def before_template
         return if @page.nil?
 
-        start_page = if @page.depth == start_depth
+        @start_page = if @page.depth == @start_depth
           @page
         else
-          @page.ancestors.find { |anc| anc.depth == start_depth }
+          @page.ancestors.find { |anc| anc.depth == @start_depth }
         end
 
-        menu = start_page&.page_menu
+        menu = @start_page&.page_menu
         return if menu.nil?
 
         @menu_item = menu.menu_items.order(:lft)&.first
 
-        @show_heading = show_heading
-
-        # Set some default styles for sanity
-        @styles = styles
-        @styles[:indent_with] ||= "pl-2"
+        # Set default styles if not already set
+        @styles[:indent_with] ||= "pl-2" if @styles
       end
 
-      def render?
+      private
+
+      def should_render?
         @page&.path != "/" && @menu_item.present?
+      end
+
+      def render_heading
+        li do
+          a(
+            href: @menu_item.page.path,
+            class: heading_class
+          ) { @menu_item.text }
+        end
+      end
+
+      def heading_class
+        if @menu_item.page == Panda::CMS::Current.page
+          @styles[:current_page_active]
+        else
+          @styles[:current_page_inactive]
+        end
+      end
+
+      def render_menu_items
+        ul do
+          Panda::CMS::MenuItem.includes(:page).each_with_level(@menu_item.descendants) do |submenu_item, level|
+            next if should_skip_item?(submenu_item, level)
+
+            render_menu_item(submenu_item, level)
+          end
+        end
+      end
+
+      def should_skip_item?(submenu_item, level)
+        # Skip if we're on the top menu item and level > 1
+        return true if Panda::CMS::Current.page == @menu_item.page && level > 1
+
+        # Skip if path contains parameter placeholder
+        return true if submenu_item.page&.path&.include?(":")
+
+        # Skip if page is nil or Current.page is nil
+        return true if submenu_item&.page.nil? || Panda::CMS::Current.page.nil?
+
+        # Skip if submenu page is deeper than current page and not an ancestor
+        (submenu_item.page&.depth&.to_i&.> Panda::CMS::Current.page&.depth&.to_i) &&
+          !Panda::CMS::Current.page&.in?(submenu_item.page.ancestors)
+      end
+
+      def render_menu_item(submenu_item, level)
+        li(
+          data: {
+            level: level,
+            page_id: submenu_item.page.id
+          },
+          class: menu_item_class(submenu_item)
+        ) do
+          a(
+            href: submenu_item.page&.path,
+            class: helpers.menu_indent(submenu_item, indent_with: @styles[:indent_with])
+          ) { submenu_item.page&.title }
+        end
+      end
+
+      def menu_item_class(submenu_item)
+        if submenu_item.page == Panda::CMS::Current.page
+          @styles[:active]
+        else
+          @styles[:inactive]
+        end
       end
     end
   end

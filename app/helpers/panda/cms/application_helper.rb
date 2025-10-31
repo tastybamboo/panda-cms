@@ -33,7 +33,7 @@ module Panda
         if match == :starts_with
           return request.path.starts_with?(path)
         elsif match == :exact
-          return (request.path == path)
+          return request.path == path
         end
 
         false
@@ -42,6 +42,20 @@ module Panda
       def block_link_to(name = nil, options = nil, html_options = {}, &)
         html_options[:class] = "block-link"
         link_to(name, options, html_options, &)
+      end
+
+      def panda_cms_collection(slug, include_unpublished: false)
+        Panda::CMS::Features.require!(:collections)
+        Panda::CMS::Collections.fetch(slug, include_unpublished: include_unpublished)
+      end
+
+      def panda_cms_collection_items(slug, include_unpublished: false)
+        Panda::CMS::Features.require!(:collections)
+        Panda::CMS::Collections.items(slug, include_unpublished: include_unpublished)
+      end
+
+      def panda_cms_feature_enabled?(name)
+        Panda::CMS::Features.enabled?(name)
       end
 
       def panda_cms_form_with(**options, &)

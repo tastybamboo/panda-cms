@@ -250,7 +250,7 @@ user = panda_cms_users(:admin_user)
 ### Engine Configuration
 - Primary config in `config/initializers/panda/cms.rb`
 - Authentication providers configured in engine initializer
-- EditorJS tools and configuration customizable via `config.editor_js_tools`
+- EditorJS tools and configuration customizable via Panda::Editor (see `config/initializers/panda_editor.rb`)
 
 ### Asset Distribution
 - Static assets served from `public/panda-cms-assets/`

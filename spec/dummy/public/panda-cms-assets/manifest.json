@@ -1,29 +1,19 @@
 {
-  "version": "0.8.0",
-  "compiled_at": "2025-08-12T20:34:37Z",
+  "version": "0.8.3",
+  "compiled_at": "2025-10-28T09:42:56Z",
   "files": [
     {
-      "filename": "panda-cms-0.7.5.css",
-      "size": 548,
-      "sha256": "7ffa2137727f37d075f6c245271abb978af7b6a75b099bbdc17d20383bb199ec"
-    },
-    {
-      "filename": "panda-cms-0.7.5.js",
-      "size": 6675,
-      "sha256": "7bd1113a9e8307b7e806e91a1b2b212a74be94657a655a63880e5c03357f1660"
-    },
-    {
-      "filename": "panda-cms-0.8.0.css",
-      "size": 548,
-      "sha256": "6ce1a87eab9fa3bf72ba3fff05ffa0b67859cd844cb5a65a19ab16bef0eabd56"
-    },
-    {
-      "filename": "panda-cms-0.8.0.js",
+      "filename": "panda-cms-0.8.2.js",
       "size": 7797,
-      "sha256": "afe487c4718a64802e9bc5cd6e6f70107511f4bbeff4f117f3d633d3dc523a18"
+      "sha256": "803facf2c4d33920c2fc896575840e376c75a342f744abc9e2f3a51457d4bade"
+    },
+    {
+      "filename": "panda-cms-0.8.3.js",
+      "size": 7797,
+      "sha256": "89f544cc0ddc258d11a4d1b1b37d3c04f39cd571dce201b678c45a88c72c7fae"
     }
   ],
-  "cdn_base_url": "https://github.com/tastybamboo/panda-cms/releases/download/v0.8.0/",
+  "cdn_base_url": "https://github.com/tastybamboo/panda-cms/releases/download/v0.8.3/",
   "integrity": {
     "algorithm": "sha256"
   }

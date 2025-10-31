@@ -92,7 +92,12 @@ module Panda
           mount Panda::CMS::Engine => "/", :as => "panda_cms"
           post "/_forms/:id", to: "panda/cms/form_submissions#create", as: :panda_cms_form_submit
           get "/_maintenance", to: "panda/cms/errors#error_503", as: :panda_cms_maintenance
-          get "/*path", to: "panda/cms/pages#show", as: :panda_cms_page
+
+          # Catch-all route for CMS pages, but exclude admin paths
+          admin_path = Panda::Core.config.admin_path.delete_prefix("/")
+          constraints = ->(request) { !request.path.start_with?("/#{admin_path}") }
+          get "/*path", to: "panda/cms/pages#show", as: :panda_cms_page, constraints: constraints
+
           root to: "panda/cms/pages#root"
         end
       end
@@ -131,24 +136,91 @@ module Panda
         app.config.view_component.preview_paths << root.join("spec/components/previews")
         app.config.view_component.generate.sidecar = true
         app.config.view_component.generate.preview = true
+
+        # Add preview directories to autoload paths in development
+        if Rails.env.development?
+          # Handle frozen autoload_paths array
+          if app.config.autoload_paths.frozen?
+            app.config.autoload_paths = app.config.autoload_paths.dup
+          end
+          app.config.autoload_paths << root.join("spec/components/previews")
+        end
       end
 
       # Authentication is now handled by Panda::Core::Engine
 
-      # Configure Core for CMS
-      initializer "panda.cms.configure_core" do |app|
+      # Configure Core for CMS (runs before app initializers so apps can override)
+      initializer "panda.cms.configure_core", before: :load_config_initializers do |app|
         Panda::Core.configure do |config|
-          # Customize login page
-          config.login_logo_path = "/panda-cms-assets/panda-nav.png"
-          config.login_page_title = "Panda CMS Admin"
+          # Core now provides the admin interface foundation
+          # Apps using CMS can customize login_logo_path, login_page_title, etc. in their own initializers
 
-          # Set dashboard redirect path to CMS dashboard (using Core's admin_path)
-          config.dashboard_redirect_path = "#{Panda::Core.configuration.admin_path}/cms"
+          # Register CMS navigation items
+          config.admin_navigation_items = ->(user) {
+            items = []
+
+            # Dashboard
+            items << {
+              path: "#{config.admin_path}/cms",
+              label: "Dashboard",
+              icon: "fa-solid fa-house"
+            }
+
+            # Pages
+            items << {
+              path: "#{config.admin_path}/cms/pages",
+              label: "Pages",
+              icon: "fa-solid fa-file"
+            }
+
+            # Collections (if enabled)
+            if Panda::CMS::Features.enabled?(:collections)
+              items << {
+                path: "#{config.admin_path}/cms/collections",
+                label: "Collections",
+                icon: "fa-solid fa-table-cells"
+              }
+            end
+
+            # Posts
+            items << {
+              path: "#{config.admin_path}/cms/posts",
+              label: "Posts",
+              icon: "fa-solid fa-newspaper"
+            }
+
+            # Forms
+            items << {
+              path: "#{config.admin_path}/cms/forms",
+              label: "Forms",
+              icon: "fa-solid fa-inbox"
+            }
+
+            # Menus
+            items << {
+              path: "#{config.admin_path}/cms/menus",
+              label: "Menus",
+              icon: "fa-solid fa-bars"
+            }
+
+            # Settings
+            items << {
+              path: "#{config.admin_path}/cms/settings",
+              label: "Settings",
+              icon: "fa-solid fa-gear"
+            }
+
+            items
+          }
+
+          # Redirect to CMS dashboard after login
+          # Apps can override this if they want different behavior
+          config.dashboard_redirect_path = -> { "#{Panda::Core.config.admin_path}/cms" }
 
           # Customize initial breadcrumb
           config.initial_admin_breadcrumb = ->(controller) {
             # Use CMS dashboard path - just use the string path
-            ["Admin", "#{Panda::Core.configuration.admin_path}/cms"]
+            ["Admin", "#{config.admin_path}/cms"]
           }
 
           # Dashboard widgets
@@ -173,19 +245,6 @@ module Panda
 
             widgets
           }
-        end
-      end
-
-      config.before_initialize do |_app|
-        # Default configuration
-        Panda::CMS.configure do |config|
-          # Array of additional EditorJS tools to load
-          # Example: [{ url: "https://cdn.jsdelivr.net/npm/@editorjs/image@latest" }]
-          config.editor_js_tools ||= []
-
-          # Hash of EditorJS tool configurations
-          # Example: { image: { class: 'ImageTool', config: { ... } } }
-          config.editor_js_tool_config ||= {}
         end
       end
     end

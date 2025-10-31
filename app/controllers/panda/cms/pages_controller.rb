@@ -16,9 +16,9 @@ module Panda
 
       def show
         page = if @overrides&.dig(:page_path_match)
-          Panda::CMS::Page.find_by(path: @overrides[:page_path_match])
+          Panda::CMS::Page.includes(:template).find_by(path: @overrides[:page_path_match])
         else
-          Panda::CMS::Page.find_by(path: "/#{params[:path]}")
+          Panda::CMS::Page.includes(:template).find_by(path: "/#{params[:path]}")
         end
 
         Panda::CMS::Current.page = page || Panda::CMS::Page.find_by(path: "/404")

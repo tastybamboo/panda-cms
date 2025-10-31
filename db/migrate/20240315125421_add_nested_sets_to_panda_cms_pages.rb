@@ -8,7 +8,12 @@ class AddNestedSetsToPandaCMSPages < ActiveRecord::Migration[7.1]
 
     # This is necessary to update :lft and :rgt columns
     Panda::CMS::Page.reset_column_information
-    Panda::CMS::Page.rebuild!
+
+    # Only rebuild if there are existing pages
+    # On fresh installs, there won't be any pages yet
+    if Panda::CMS::Page.any?
+      Panda::CMS::Page.rebuild!
+    end
   end
 
   def self.down
