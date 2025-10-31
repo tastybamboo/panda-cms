@@ -3,11 +3,11 @@
 source "https://rubygems.org"
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
-# Use panda-core gem (local path for development)
-gem "panda-core", path: "../core"
+# Use panda-core gem
+gem "panda-core", "~> 0.4.1"
 
 # Use panda-editor gem
-gem "panda-editor", "~> 0.2.0"
+gem "panda-editor", "~> 0.4.0"
 
 # Specify your gem's dependencies in panda-cms.gemspec.
 gemspec
