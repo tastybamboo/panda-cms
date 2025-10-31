@@ -21,6 +21,7 @@ end
 # Development and testing dependencies
 group :development, :test do
   gem "annotaterb"
+  gem "awesome_print"
   gem "brakeman"
   gem "bullet"
   gem "bundler-audit"

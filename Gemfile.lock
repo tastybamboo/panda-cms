@@ -1,7 +1,7 @@
 PATH
   remote: ../core
   specs:
-    panda-core (0.3.0)
+    panda-core (0.4.0)
       importmap-rails
       literal (~> 1.8)
       omniauth
@@ -123,6 +123,7 @@ GEM
     ast (2.4.3)
     awesome_nested_set (3.8.0)
       activerecord (>= 4.0.0, < 8.1)
+    awesome_print (1.9.2)
     base64 (0.3.0)
     benchmark (0.5.0)
     better_errors (2.10.1)
@@ -654,6 +655,7 @@ PLATFORMS
 
 DEPENDENCIES
   annotaterb
+  awesome_print
   better_errors
   binding_of_caller
   brakeman
@@ -720,6 +722,7 @@ CHECKSUMS
   annotaterb (4.20.0) sha256=871b2e898d1d60c23bdc59b72a5b840678a56355bf5f6fdeb8c79d317ff98bf7
   ast (2.4.3) sha256=954615157c1d6a382bc27d690d973195e79db7f55e9765ac7c481c60bdb4d383
   awesome_nested_set (3.8.0) sha256=469daff411d80291dbb80d1973133e498048a7afc2519c545f62d2cdebc60eda
+  awesome_print (1.9.2) sha256=e99b32b704acff16d768b3468680793ced40bfdc4537eb07e06a4be11133786e
   base64 (0.3.0) sha256=27337aeabad6ffae05c265c450490628ef3ebd4b67be58257393227588f5a97b
   benchmark (0.5.0) sha256=465df122341aedcb81a2a24b4d3bd19b6c67c1530713fd533f3ff034e419236c
   better_errors (2.10.1) sha256=f798f1bac93f3e775925b7fcb24cffbcf0bb62ee2210f5350f161a6b75fc0a73
@@ -824,7 +827,7 @@ CHECKSUMS
   omniauth-rails_csrf_protection (1.0.2) sha256=1170fd672aff092b9b7ebebc1453559f073ed001e3ce62a1df616e32f8dc5fe0
   open4 (1.3.4) sha256=a1df037310624ecc1ea1d81264b11c83e96d0c3c1c6043108d37d396dcd0f4b1
   panda-cms (0.8.3)
-  panda-core (0.3.0)
+  panda-core (0.4.0)
   panda-editor (0.2.1) sha256=1a21e3f17146014b6a69ba4bc1278fbeb04b284593951d9c455ba3927f6b3d64
   parallel (1.27.0) sha256=4ac151e1806b755fb4e2dc2332cbf0e54f2e24ba821ff2d3dcf86bf6dc4ae130
   parser (3.3.10.0) sha256=ce3587fa5cc55a88c4ba5b2b37621b3329aadf5728f9eafa36bbd121462aabd6
