@@ -1,4 +1,4 @@
-<%= render Panda::Core::Admin::ContainerComponent.new do |component| %>
+<%= render Panda::Core::Admin::ContainerComponent.new(full_height: true) do |component| %>
   <% component.heading(text: "#{page.title}", level: 1) %>
   <% component.with_slideover(title: "Page Details") do %>
     <%= panda_cms_form_with model: page, url: admin_cms_page_path, method: :put do |f| %>
