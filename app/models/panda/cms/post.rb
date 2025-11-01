@@ -6,6 +6,7 @@ module Panda
   module CMS
     class Post < ApplicationRecord
       include ::Panda::Editor::Content
+      include Panda::CMS::Pro::Versionable
 
       after_commit :clear_menu_cache
       before_validation :format_slug
