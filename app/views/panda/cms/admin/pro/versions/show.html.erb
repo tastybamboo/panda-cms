@@ -1,0 +1,149 @@
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <!-- Header -->
+  <div class="mb-8">
+    <div class="flex items-center justify-between">
+      <div>
+        <div class="flex items-center gap-3 mb-2">
+          <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+            Version <%= @version.version_number %>
+          </h1>
+          <% if @version == @post.latest_version %>
+            <span class="px-3 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 text-sm font-semibold rounded-full">
+              Current Version
+            </span>
+          <% end %>
+        </div>
+        <p class="text-sm text-gray-600 dark:text-gray-400">
+          <%= @post.title %>
+        </p>
+      </div>
+      <%= link_to "Back to History", admin_cms_post_versions_path(@post),
+          class: "px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition" %>
+    </div>
+  </div>
+
+  <!-- Version Metadata -->
+  <div class="mb-6 bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">Created By</p>
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 bg-indigo-500 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+            <%= @version.user.firstname[0] %><%= @version.user.lastname[0] %>
+          </div>
+          <span class="text-sm font-medium text-gray-900 dark:text-white">
+            <%= @version.user.firstname %> <%= @version.user.lastname %>
+          </span>
+        </div>
+      </div>
+
+      <div>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">Created At</p>
+        <p class="text-sm font-medium text-gray-900 dark:text-white">
+          <%= @version.created_at.strftime("%B %d, %Y") %>
+        </p>
+        <p class="text-xs text-gray-500 dark:text-gray-400">
+          <%= @version.created_at.strftime("%I:%M %p") %>
+        </p>
+      </div>
+
+      <div>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">Source</p>
+        <span class="inline-block px-2 py-1 <%= @version.source == 'ai_generated' ? 'bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200' : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200' %> text-xs rounded">
+          <%= @version.source.humanize %>
+        </span>
+      </div>
+
+      <div>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">Actions</p>
+        <div class="flex gap-2">
+          <% if @version != @post.latest_version %>
+            <%= link_to "Compare", diff_admin_cms_post_version_path(@post, @version.version_number),
+                class: "text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-medium" %>
+            <%= button_to "Restore", restore_admin_cms_post_version_path(@post, @version.version_number),
+                method: :post,
+                data: { confirm: "Restore to this version?" },
+                class: "text-sm bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded transition" %>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <% if @version.change_summary.present? %>
+      <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+        <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">Change Summary</p>
+        <p class="text-sm text-gray-900 dark:text-white">
+          <%= @version.change_summary %>
+        </p>
+      </div>
+    <% end %>
+  </div>
+
+  <!-- Content Preview -->
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow">
+    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+      <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+        Content Snapshot
+      </h2>
+    </div>
+
+    <div class="p-6">
+      <% if @version.content.is_a?(Hash) %>
+        <% if @version.content['blocks'] %>
+          <!-- EditorJS Content -->
+          <div class="prose dark:prose-invert max-w-none">
+            <% @version.content['blocks'].each do |block| %>
+              <% case block['type'] %>
+              <% when 'paragraph' %>
+                <p class="mb-4"><%= sanitize block['data']['text'] %></p>
+              <% when 'header' %>
+                <% level = block['data']['level'] || 2 %>
+                <h<%= level %> class="font-bold mb-3 mt-6">
+                  <%= sanitize block['data']['text'] %>
+                </h<%= level %>>
+              <% when 'list' %>
+                <% if block['data']['style'] == 'ordered' %>
+                  <ol class="list-decimal list-inside mb-4">
+                    <% block['data']['items'].each do |item| %>
+                      <li><%= sanitize item %></li>
+                    <% end %>
+                  </ol>
+                <% else %>
+                  <ul class="list-disc list-inside mb-4">
+                    <% block['data']['items'].each do |item| %>
+                      <li><%= sanitize item %></li>
+                    <% end %>
+                  </ul>
+                <% end %>
+              <% when 'quote' %>
+                <blockquote class="border-l-4 border-gray-300 dark:border-gray-600 pl-4 py-2 my-4 italic">
+                  <%= sanitize block['data']['text'] %>
+                  <% if block['data']['caption'].present? %>
+                    <footer class="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                      — <%= sanitize block['data']['caption'] %>
+                    </footer>
+                  <% end %>
+                </blockquote>
+              <% else %>
+                <div class="mb-4 p-3 bg-gray-100 dark:bg-gray-700 rounded">
+                  <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">
+                    Block type: <%= block['type'] %>
+                  </p>
+                  <pre class="text-xs"><%= JSON.pretty_generate(block['data']) %></pre>
+                </div>
+              <% end %>
+            <% end %>
+          </div>
+        <% else %>
+          <!-- JSON Content -->
+          <pre class="bg-gray-50 dark:bg-gray-900 p-4 rounded text-sm overflow-auto"><%= JSON.pretty_generate(@version.content) %></pre>
+        <% end %>
+      <% else %>
+        <!-- Plain Text Content -->
+        <div class="prose dark:prose-invert max-w-none">
+          <%= simple_format @version.content %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

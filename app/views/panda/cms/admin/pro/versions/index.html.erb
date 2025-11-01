@@ -1,0 +1,136 @@
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <!-- Header -->
+  <div class="mb-8">
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+          Version History
+        </h1>
+        <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+          <%= @post.title %>
+        </p>
+      </div>
+      <%= link_to "Back to Post", edit_admin_cms_post_path(@post),
+          class: "px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition" %>
+    </div>
+  </div>
+
+  <!-- Contributors Summary -->
+  <div class="mb-8 bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+    <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+      Contributors
+    </h2>
+    <div class="flex flex-wrap gap-3">
+      <% @contributors.each do |contributor| %>
+        <div class="flex items-center gap-2 px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg">
+          <div class="w-8 h-8 bg-indigo-500 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+            <%= contributor.firstname[0] %><%= contributor.lastname[0] %>
+          </div>
+          <span class="text-sm text-gray-900 dark:text-white">
+            <%= contributor.firstname %> <%= contributor.lastname %>
+          </span>
+        </div>
+      <% end %>
+    </div>
+    <p class="mt-4 text-sm text-gray-600 dark:text-gray-400">
+      <%= pluralize(@post.contributors_count, 'contributor') %> •
+      <%= pluralize(@versions.total_count, 'version') %> •
+      Last updated <%= time_ago_in_words(@post.updated_at) %> ago
+    </p>
+  </div>
+
+  <!-- Version Timeline -->
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow">
+    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+      <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+        Version Timeline
+      </h2>
+    </div>
+
+    <div class="divide-y divide-gray-200 dark:divide-gray-700">
+      <% if @versions.any? %>
+        <% @versions.each do |version| %>
+          <div class="px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+            <div class="flex items-start justify-between">
+              <!-- Version Info -->
+              <div class="flex-1">
+                <div class="flex items-center gap-3 mb-2">
+                  <!-- Version Number Badge -->
+                  <span class="px-3 py-1 bg-indigo-100 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200 text-sm font-semibold rounded-full">
+                    v<%= version.version_number %>
+                  </span>
+
+                  <!-- Current Version Badge -->
+                  <% if version == @post.latest_version %>
+                    <span class="px-3 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 text-xs font-semibold rounded-full">
+                      Current
+                    </span>
+                  <% end %>
+
+                  <!-- Source Badge -->
+                  <span class="px-2 py-1 <%= version.source == 'ai_generated' ? 'bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200' : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200' %> text-xs rounded">
+                    <%= version.source.humanize %>
+                  </span>
+                </div>
+
+                <!-- Change Summary -->
+                <p class="text-gray-900 dark:text-white font-medium mb-1">
+                  <%= version.change_summary %>
+                </p>
+
+                <!-- Metadata -->
+                <div class="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+                  <span class="flex items-center gap-1">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                    <%= version.user.firstname %> <%= version.user.lastname %>
+                  </span>
+                  <span class="flex items-center gap-1">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <%= version.created_at.strftime("%B %d, %Y at %I:%M %p") %>
+                  </span>
+                </div>
+              </div>
+
+              <!-- Actions -->
+              <div class="flex items-center gap-2 ml-4">
+                <%= link_to "View", admin_cms_post_version_path(@post, version.version_number),
+                    class: "px-3 py-1.5 text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-medium" %>
+
+                <% if version != @post.latest_version %>
+                  <%= link_to "Compare", diff_admin_cms_post_version_path(@post, version.version_number),
+                      class: "px-3 py-1.5 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-300 font-medium" %>
+
+                  <%= button_to "Restore", restore_admin_cms_post_version_path(@post, version.version_number),
+                      method: :post,
+                      data: { confirm: "Are you sure you want to restore to version #{version.version_number}? This will create a new version." },
+                      class: "px-3 py-1.5 text-sm bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition" %>
+                <% end %>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      <% else %>
+        <div class="px-6 py-12 text-center">
+          <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No versions yet</h3>
+          <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            Versions will appear here when content is saved.
+          </p>
+        </div>
+      <% end %>
+    </div>
+
+    <!-- Pagination -->
+    <% if @versions.total_pages > 1 %>
+      <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700">
+        <%= paginate @versions, theme: 'twitter-bootstrap-4' %>
+      </div>
+    <% end %>
+  </div>
+</div>

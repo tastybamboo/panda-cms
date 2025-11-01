@@ -1,0 +1,172 @@
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <!-- Header -->
+  <div class="mb-8">
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+          Compare Versions
+        </h1>
+        <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+          <%= @post.title %>
+        </p>
+      </div>
+      <%= link_to "Back to History", admin_cms_post_versions_path(@post),
+          class: "px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition" %>
+    </div>
+  </div>
+
+  <!-- Comparison Info -->
+  <div class="mb-6 bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+    <div class="grid grid-cols-2 gap-6">
+      <!-- Current Version -->
+      <div>
+        <div class="flex items-center gap-2 mb-2">
+          <span class="px-3 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 text-sm font-semibold rounded-full">
+            Current Version
+          </span>
+          <span class="text-sm text-gray-600 dark:text-gray-400">
+            v<%= @post.latest_version&.version_number || 'N/A' %>
+          </span>
+        </div>
+        <p class="text-sm text-gray-900 dark:text-white">
+          Last updated <%= time_ago_in_words(@post.updated_at) %> ago
+        </p>
+      </div>
+
+      <!-- Selected Version -->
+      <div>
+        <div class="flex items-center gap-2 mb-2">
+          <span class="px-3 py-1 bg-indigo-100 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200 text-sm font-semibold rounded-full">
+            Version <%= @version.version_number %>
+          </span>
+          <span class="text-sm text-gray-600 dark:text-gray-400">
+            <%= @version.source.humanize %>
+          </span>
+        </div>
+        <p class="text-sm text-gray-900 dark:text-white">
+          Created <%= time_ago_in_words(@version.created_at) %> ago by <%= @version.user.firstname %> <%= @version.user.lastname %>
+        </p>
+      </div>
+    </div>
+
+    <% if @diff_data[:changes_since] > 0 %>
+      <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+        <p class="text-sm text-gray-600 dark:text-gray-400">
+          <%= pluralize(@diff_data[:changes_since], 'version') %> changed since this version
+        </p>
+      </div>
+    <% end %>
+  </div>
+
+  <!-- Side-by-Side Comparison -->
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+      <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+        Content Comparison
+      </h2>
+    </div>
+
+    <div class="grid grid-cols-2 divide-x divide-gray-200 dark:divide-gray-700">
+      <!-- Version Content -->
+      <div class="p-6">
+        <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4 sticky top-0 bg-white dark:bg-gray-800 py-2">
+          Version <%= @version.version_number %> Content
+        </h3>
+        <div class="prose dark:prose-invert prose-sm max-w-none">
+          <% if @version_content.is_a?(Hash) && @version_content['blocks'] %>
+            <% @version_content['blocks'].each do |block| %>
+              <% case block['type'] %>
+              <% when 'paragraph' %>
+                <p class="mb-3"><%= sanitize block['data']['text'] %></p>
+              <% when 'header' %>
+                <% level = block['data']['level'] || 2 %>
+                <h<%= level %> class="font-bold mb-2 mt-4">
+                  <%= sanitize block['data']['text'] %>
+                </h<%= level %>>
+              <% when 'list' %>
+                <% if block['data']['style'] == 'ordered' %>
+                  <ol class="list-decimal list-inside mb-3">
+                    <% block['data']['items'].each do |item| %>
+                      <li class="mb-1"><%= sanitize item %></li>
+                    <% end %>
+                  </ol>
+                <% else %>
+                  <ul class="list-disc list-inside mb-3">
+                    <% block['data']['items'].each do |item| %>
+                      <li class="mb-1"><%= sanitize item %></li>
+                    <% end %>
+                  </ul>
+                <% end %>
+              <% when 'quote' %>
+                <blockquote class="border-l-4 border-gray-300 dark:border-gray-600 pl-3 py-2 my-3 italic text-sm">
+                  <%= sanitize block['data']['text'] %>
+                </blockquote>
+              <% else %>
+                <div class="mb-3 p-2 bg-gray-50 dark:bg-gray-900 rounded text-xs">
+                  <%= block['type'] %>
+                </div>
+              <% end %>
+            <% end %>
+          <% else %>
+            <pre class="text-xs bg-gray-50 dark:bg-gray-900 p-3 rounded overflow-auto"><%= JSON.pretty_generate(@version_content) %></pre>
+          <% end %>
+        </div>
+      </div>
+
+      <!-- Current Content -->
+      <div class="p-6 bg-gray-50 dark:bg-gray-900">
+        <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4 sticky top-0 bg-gray-50 dark:bg-gray-900 py-2">
+          Current Content
+        </h3>
+        <div class="prose dark:prose-invert prose-sm max-w-none">
+          <% if @current_content.is_a?(Hash) && @current_content['blocks'] %>
+            <% @current_content['blocks'].each do |block| %>
+              <% case block['type'] %>
+              <% when 'paragraph' %>
+                <p class="mb-3"><%= sanitize block['data']['text'] %></p>
+              <% when 'header' %>
+                <% level = block['data']['level'] || 2 %>
+                <h<%= level %> class="font-bold mb-2 mt-4">
+                  <%= sanitize block['data']['text'] %>
+                </h<%= level %>>
+              <% when 'list' %>
+                <% if block['data']['style'] == 'ordered' %>
+                  <ol class="list-decimal list-inside mb-3">
+                    <% block['data']['items'].each do |item| %>
+                      <li class="mb-1"><%= sanitize item %></li>
+                    <% end %>
+                  </ol>
+                <% else %>
+                  <ul class="list-disc list-inside mb-3">
+                    <% block['data']['items'].each do |item| %>
+                      <li class="mb-1"><%= sanitize item %></li>
+                    <% end %>
+                  </ul>
+                <% end %>
+              <% when 'quote' %>
+                <blockquote class="border-l-4 border-gray-300 dark:border-gray-600 pl-3 py-2 my-3 italic text-sm">
+                  <%= sanitize block['data']['text'] %>
+                </blockquote>
+              <% else %>
+                <div class="mb-3 p-2 bg-gray-50 dark:bg-gray-900 rounded text-xs">
+                  <%= block['type'] %>
+                </div>
+              <% end %>
+            <% end %>
+          <% else %>
+            <pre class="text-xs bg-gray-100 dark:bg-gray-800 p-3 rounded overflow-auto"><%= JSON.pretty_generate(@current_content) %></pre>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Restore Action -->
+  <div class="mt-6 flex justify-end">
+    <%= button_to "Restore to Version #{@version.version_number}",
+        restore_admin_cms_post_version_path(@post, @version.version_number),
+        method: :post,
+        data: { confirm: "Are you sure you want to restore to version #{@version.version_number}? This will create a new version with this content." },
+        class: "px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition shadow-sm" %>
+  </div>
+</div>
