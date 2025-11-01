@@ -23,9 +23,19 @@ module Panda
       initializer "panda.cms.session", before: :load_config_initializers do |app|
         app.config.middleware = app.config.middleware.dup if app.config.middleware.frozen?
 
-        app.config.session_store :cookie_store, key: "_panda_cms_session"
-        app.config.middleware.use ActionDispatch::Cookies
-        app.config.middleware.use ActionDispatch::Session::CookieStore, app.config.session_options
+        # Use Redis for sessions in test environment to support Capybara cross-process auth
+        # Use cookie store in other environments for simplicity
+        if Rails.env.test?
+          require 'rack/session/redis'
+          app.config.session_store Rack::Session::Redis,
+            redis_server: "redis://localhost:6379/1",
+            expire_after: 1.hour,
+            key: "_panda_cms_session"
+        else
+          app.config.session_store :cookie_store, key: "_panda_cms_session"
+          app.config.middleware.use ActionDispatch::Cookies
+          app.config.middleware.use ActionDispatch::Session::CookieStore, app.config.session_options
+        end
       end
 
       config.to_prepare do

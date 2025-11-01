@@ -3,8 +3,8 @@
 source "https://rubygems.org"
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
-# Use panda-core gem
-gem "panda-core", "~> 0.4.1"
+# Use local panda-core for development
+gem "panda-core", path: "../core"
 
 # Use panda-editor gem
 gem "panda-editor", "~> 0.4.0"
@@ -45,6 +45,8 @@ group :development, :test do
   gem "propshaft"
   gem "puma"
   gem "rake"
+  gem "redis", "~> 5.0"  # For Redis-backed sessions in tests
+  gem "redis-rack", "~> 3.0"  # Redis session store for Rails
   gem "rspec"
   gem "rspec-core"
   gem "rspec-github"

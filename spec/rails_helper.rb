@@ -43,7 +43,13 @@ end
 # Ensure Panda::Core models are loaded before support files
 Rails.application.eager_load!
 
-# Load support files first
+# Load Panda::Core support files (authentication helpers, etc.)
+panda_core_support_path = Gem.loaded_specs["panda-core"]&.full_gem_path
+if panda_core_support_path
+  Dir[File.join(panda_core_support_path, "spec/support/**/*.rb")].sort.each { |f| require f }
+end
+
+# Load CMS support files
 Dir[Rails.root.join("../support/**/*.rb")].sort.each { |f| require f }
 
 # Configure fixtures
