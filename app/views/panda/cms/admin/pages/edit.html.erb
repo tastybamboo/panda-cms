@@ -1,5 +1,29 @@
 <%= render Panda::Core::Admin::ContainerComponent.new do |component| %>
-  <% component.heading(text: "#{page.title}", level: 1) %>
+  <% component.heading(text: "#{page.title}", level: 1) do |heading| %>
+    <%
+      # Generate correct public URL based on page's path
+      view_page_url = begin
+        page.path
+      rescue => e
+        Rails.logger.error "View Page URL error: #{e.message}"
+        "#"
+      end
+
+      version_history_url = begin
+        admin_cms_page_versions_path(page.id)
+      rescue => e
+        Rails.logger.error "Version History URL error: #{e.message}"
+        nil
+      end
+    %>
+    <% heading.button(action: :view, text: "View Page", href: view_page_url) %>
+    <% if version_history_url %>
+      <% heading.button(action: :custom, text: "Version History", href: version_history_url) %>
+    <% else %>
+      <%# Route helper failed - button not shown %>
+    <% end %>
+  <% end %>
+
   <% component.with_slideover(title: "Page Details") do %>
     <%= panda_cms_form_with model: page, url: admin_cms_page_path, method: :put do |f| %>
       <%= f.text_field :title %>
@@ -8,18 +32,19 @@
       <%= f.submit "Save" %>
     <% end %>
   <% end %>
+
   <div id="successMessage" class="hidden">
-    <%= render Panda::Core::Admin::FlashMessageComponent.new(kind: "success", message: "This page was successfully updated!", temporary: false) %>
+    <%= render Panda::Core::Admin::FlashMessageComponent.new(kind: :success, message: "This page was successfully updated!", temporary: false) %>
   </div>
   <div id="errorMessage" class="hidden">
-    <%= render Panda::Core::Admin::FlashMessageComponent.new(kind: "error", message: "There was an error updating this page.", temporary: false) %>
+    <%= render Panda::Core::Admin::FlashMessageComponent.new(kind: :error, message: "There was an error updating this page.", temporary: false) %>
   </div>
   <div class="grid grid-cols-2 mb-4 -mt-5">
     <div>
       <a class="inline-block mb-2 text-sm text-black/60" target="_blank" href="<%= @page.path %>"><%= @page.path %> <i class="ml-2 fa-solid fa-arrow-up-right-from-square"></i></a>
     </div>
     <div class="relative -mt-5">
-      <span class="absolute right-0"><%= render Panda::Core::Admin::ButtonComponent.new(text: "Save Changes", action: :save_inactive, icon: "check", link: "#", size: :regular, id: "saveEditableButton") %></span>
+      <span class="absolute right-0"><%= render Panda::Core::Admin::ButtonComponent.new(text: "Save Changes", action: :save_inactive, icon: "check", href: "#", size: :regular, id: "saveEditableButton") %></span>
     </div>
   </div>
   <%= content_tag :iframe, nil,
