@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class CreatePandaCmsProUserRoles < ActiveRecord::Migration[8.0]
+class CreatePandaCMSProUserRoles < ActiveRecord::Migration[8.0]
   def change
     create_table :panda_cms_pro_user_roles, id: :uuid do |t|
       t.uuid :user_id, null: false

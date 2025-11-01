@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class CreatePandaCmsProContentSuggestions < ActiveRecord::Migration[8.0]
+class CreatePandaCMSProContentSuggestions < ActiveRecord::Migration[8.0]
   def change
     # Create enum for suggestion status
     create_enum :panda_cms_pro_suggestion_status,

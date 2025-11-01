@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class CreatePandaCmsProContentSyncLogs < ActiveRecord::Migration[8.0]
+class CreatePandaCMSProContentSyncLogs < ActiveRecord::Migration[8.0]
   def change
     # Create enum for sync type
     create_enum :panda_cms_pro_sync_type, ["push", "pull"]

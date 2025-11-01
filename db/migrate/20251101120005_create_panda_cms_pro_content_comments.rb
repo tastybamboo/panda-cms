@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class CreatePandaCmsProContentComments < ActiveRecord::Migration[8.0]
+class CreatePandaCMSProContentComments < ActiveRecord::Migration[8.0]
   def change
     create_table :panda_cms_pro_content_comments, id: :uuid do |t|
       t.string :commentable_type, null: false

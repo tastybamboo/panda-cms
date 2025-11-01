@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class CreatePandaCmsProContentSources < ActiveRecord::Migration[8.0]
+class CreatePandaCMSProContentSources < ActiveRecord::Migration[8.0]
   def change
     # Create enum for trust level
     create_enum :panda_cms_pro_source_trust_level,

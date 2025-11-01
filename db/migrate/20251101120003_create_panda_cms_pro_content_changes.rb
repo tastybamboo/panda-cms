@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class CreatePandaCmsProContentChanges < ActiveRecord::Migration[8.0]
+class CreatePandaCMSProContentChanges < ActiveRecord::Migration[8.0]
   def change
     # Create enum for change types
     create_enum :panda_cms_pro_content_change_type,

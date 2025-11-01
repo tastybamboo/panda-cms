@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class CreatePandaCmsProContentVersions < ActiveRecord::Migration[8.0]
+class CreatePandaCMSProContentVersions < ActiveRecord::Migration[8.0]
   def change
     create_table :panda_cms_pro_content_versions, id: :uuid do |t|
       t.string :versionable_type, null: false
