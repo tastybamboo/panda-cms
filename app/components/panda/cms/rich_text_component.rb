@@ -43,8 +43,8 @@ module Panda
 
       def setup_editability
         @editable_state = @editable &&
-          helpers.params[:embed_id].present? &&
-          helpers.params[:embed_id] == Current.page.id &&
+          view_context.params[:embed_id].present? &&
+          view_context.params[:embed_id] == Current.page.id &&
           Current.user&.admin?
       end
 

@@ -74,7 +74,7 @@ module Panda
 
       def is_embedded?
         # TODO: Check security on this - embed_id should match something?
-        helpers.request.params[:embed_id].present?
+        view_context.request.params[:embed_id].present?
       end
 
       def handle_error(error)

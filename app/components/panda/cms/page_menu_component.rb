@@ -100,7 +100,7 @@ module Panda
         ) do
           a(
             href: submenu_item.page&.path,
-            class: helpers.menu_indent(submenu_item, indent_with: @styles[:indent_with])
+            class: view_context.menu_indent(submenu_item, indent_with: @styles[:indent_with])
           ) { submenu_item.page&.title }
         end
       end
