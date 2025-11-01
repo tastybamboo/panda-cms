@@ -1,4 +1,4 @@
-<%= render Panda::Core::Admin::ContainerComponent.new do |component| %>
+<%= render Panda::Core::Admin::ContainerComponent.new(full_height: true) do |component| %>
   <% component.heading(text: "#{page.title}", level: 1) do |heading| %>
     <%
       # Generate correct public URL based on page's path
