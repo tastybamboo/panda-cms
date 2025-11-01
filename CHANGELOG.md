@@ -1,0 +1,43 @@
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [0.8.3] - 2025-11-01
+
+### Added
+- Debug utility wrapper module for testing diagnostics
+
+### Changed
+- **BREAKING**: Migrated to unified `panda.rb` configuration file (replacing separate `panda_cms.rb` and `panda_editor.rb` files)
+- Updated to panda-core v0.4.1 for unified authentication and admin functionality
+- Updated to panda-editor v0.4.0 for improved editor integration
+- Renamed rake tasks to use consistent `panda:cms` namespace (e.g., `panda:cms:assets:compile`)
+- Base admin controller now inherits from `Panda::Core::AdminController` for shared functionality
+
+### Fixed
+- Phlex component rendering compatibility with modern Phlex API (v2.3+)
+- Phlex component prop accessors throughout panda-cms codebase
+- Admin layout navigation to use CMS-specific layout with proper sidebar
+- Dashboard redirect to `/admin/cms` after successful login
+- JavaScript asset detection to only check for JS files (CSS loaded from Core)
+- Test environment to load both compiled CMS bundle and importmap for dependencies
+- Removed deprecated `admin_title` configuration option from examples and dummy app
+
+### Technical Improvements
+- Centralized admin interface styling in Panda Core for consistency
+- Improved OAuth test infrastructure with Redis session store for cross-process testing
+- Documented known testing limitations with Capybara cross-process architecture
+- Updated test suite to properly skip tests with documented cross-process limitations
+
+## [0.8.2] - 2025-01-XX
+
+### Fixed
+- Broken migration that required non-existent service
+
+## [0.8.1] - 2025-01-XX
+
+### Initial Release
+- Initial versioned release of Panda CMS
