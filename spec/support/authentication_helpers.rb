@@ -26,7 +26,8 @@ module AuthenticationHelpers
   # Logs in as an admin user in system tests
   def login_as_admin
     admin = create_admin_user
-    OmniAuth.config.add_mock(:developer, {
+    OmniAuth.config.mock_auth[:developer] = OmniAuth::AuthHash.new({
+      provider: "developer",
       uid: admin.id,
       info: {
         email: admin.email,
@@ -40,7 +41,8 @@ module AuthenticationHelpers
   # Logs in as a regular user in system tests
   def login_as_user
     user = create_regular_user
-    OmniAuth.config.add_mock(:developer, {
+    OmniAuth.config.mock_auth[:developer] = OmniAuth::AuthHash.new({
+      provider: "developer",
       uid: user.id,
       info: {
         email: user.email,

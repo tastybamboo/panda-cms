@@ -1,7 +1,10 @@
 # frozen_string_literal: true
 
 Rails.application.routes.draw do
-  # Mount Panda CMS engine (includes Core authentication)
+  # Mount Panda Core engine for authentication
+  mount Panda::Core::Engine => "/"
+
+  # Mount Panda CMS engine
   mount Panda::CMS::Engine => "/"
 
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
