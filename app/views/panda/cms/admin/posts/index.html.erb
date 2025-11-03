@@ -12,9 +12,15 @@
         </span>
       </div>
     <% end %>
-    <% table.column("Status") { |post| render Panda::Core::Admin::TagComponent.new(status: post.status) } %>
-    <% table.column("Published") { |post| render Panda::CMS::Admin::UserActivityComponent.new(at: post.published_at, user: post.author)} %>
-    <% table.column("Last Updated") { |post| render Panda::CMS::Admin::UserActivityComponent.new(at: post.updated_at)} %>
+    <% table.column("Status") { |post| render Panda::Core::Admin::TagComponent.new(status: post.status.to_sym) } %>
+    <% table.column("Published") do |post|
+      if post.published_at
+        "#{time_ago_in_words(post.published_at)} ago"
+      else
+        "-"
+      end
+    end %>
+    <% table.column("Last Updated") { |post| "#{time_ago_in_words(post.updated_at)} ago" } %>
   <% end %>
 
 <% end %>

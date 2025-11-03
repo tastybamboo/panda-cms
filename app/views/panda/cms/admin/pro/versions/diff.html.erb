@@ -7,10 +7,10 @@
           Compare Versions
         </h1>
         <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
-          <%= @post.title %>
+          <%= @versionable.title %>
         </p>
       </div>
-      <%= link_to "Back to History", admin_cms_post_versions_path(@post),
+      <%= link_to "Back to History", polymorphic_path([:admin_cms, @versionable, :versions]),
           class: "px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition" %>
     </div>
   </div>
@@ -25,11 +25,11 @@
             Current Version
           </span>
           <span class="text-sm text-gray-600 dark:text-gray-400">
-            v<%= @post.latest_version&.version_number || 'N/A' %>
+            v<%= @versionable.latest_version&.version_number || 'N/A' %>
           </span>
         </div>
         <p class="text-sm text-gray-900 dark:text-white">
-          Last updated <%= time_ago_in_words(@post.updated_at) %> ago
+          Last updated <%= time_ago_in_words(@versionable.updated_at) %> ago
         </p>
       </div>
 
@@ -74,35 +74,38 @@
         </h3>
         <div class="prose dark:prose-invert prose-sm max-w-none">
           <% if @version_content.is_a?(Hash) && @version_content['blocks'] %>
+            <% current_blocks = @current_content.is_a?(Hash) ? (@current_content['blocks'] || []) : [] %>
             <% @version_content['blocks'].each do |block| %>
+              <% is_removed = !block_in_version?(block, current_blocks) %>
+              <% diff_class = is_removed ? 'bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500 pl-3 -ml-3' : '' %>
               <% case block['type'] %>
               <% when 'paragraph' %>
-                <p class="mb-3"><%= sanitize block['data']['text'] %></p>
+                <p class="mb-3 <%= diff_class %>"><%= sanitize block['data']['text'] %></p>
               <% when 'header' %>
                 <% level = block['data']['level'] || 2 %>
-                <h<%= level %> class="font-bold mb-2 mt-4">
+                <h<%= level %> class="font-bold mb-2 mt-4 <%= diff_class %>">
                   <%= sanitize block['data']['text'] %>
                 </h<%= level %>>
               <% when 'list' %>
                 <% if block['data']['style'] == 'ordered' %>
-                  <ol class="list-decimal list-inside mb-3">
+                  <ol class="list-decimal list-inside mb-3 <%= diff_class %>">
                     <% block['data']['items'].each do |item| %>
                       <li class="mb-1"><%= sanitize item %></li>
                     <% end %>
                   </ol>
                 <% else %>
-                  <ul class="list-disc list-inside mb-3">
+                  <ul class="list-disc list-inside mb-3 <%= diff_class %>">
                     <% block['data']['items'].each do |item| %>
                       <li class="mb-1"><%= sanitize item %></li>
                     <% end %>
                   </ul>
                 <% end %>
               <% when 'quote' %>
-                <blockquote class="border-l-4 border-gray-300 dark:border-gray-600 pl-3 py-2 my-3 italic text-sm">
+                <blockquote class="border-l-4 border-gray-300 dark:border-gray-600 pl-3 py-2 my-3 italic text-sm <%= diff_class %>">
                   <%= sanitize block['data']['text'] %>
                 </blockquote>
               <% else %>
-                <div class="mb-3 p-2 bg-gray-50 dark:bg-gray-900 rounded text-xs">
+                <div class="mb-3 p-2 bg-gray-50 dark:bg-gray-900 rounded text-xs <%= diff_class %>">
                   <%= block['type'] %>
                 </div>
               <% end %>
@@ -120,35 +123,38 @@
         </h3>
         <div class="prose dark:prose-invert prose-sm max-w-none">
           <% if @current_content.is_a?(Hash) && @current_content['blocks'] %>
+            <% version_blocks = @version_content.is_a?(Hash) ? (@version_content['blocks'] || []) : [] %>
             <% @current_content['blocks'].each do |block| %>
+              <% is_added = !block_in_version?(block, version_blocks) %>
+              <% diff_class = is_added ? 'bg-green-50 dark:bg-green-900/20 border-l-4 border-green-500 pl-3 -ml-3' : '' %>
               <% case block['type'] %>
               <% when 'paragraph' %>
-                <p class="mb-3"><%= sanitize block['data']['text'] %></p>
+                <p class="mb-3 <%= diff_class %>"><%= sanitize block['data']['text'] %></p>
               <% when 'header' %>
                 <% level = block['data']['level'] || 2 %>
-                <h<%= level %> class="font-bold mb-2 mt-4">
+                <h<%= level %> class="font-bold mb-2 mt-4 <%= diff_class %>">
                   <%= sanitize block['data']['text'] %>
                 </h<%= level %>>
               <% when 'list' %>
                 <% if block['data']['style'] == 'ordered' %>
-                  <ol class="list-decimal list-inside mb-3">
+                  <ol class="list-decimal list-inside mb-3 <%= diff_class %>">
                     <% block['data']['items'].each do |item| %>
                       <li class="mb-1"><%= sanitize item %></li>
                     <% end %>
                   </ol>
                 <% else %>
-                  <ul class="list-disc list-inside mb-3">
+                  <ul class="list-disc list-inside mb-3 <%= diff_class %>">
                     <% block['data']['items'].each do |item| %>
                       <li class="mb-1"><%= sanitize item %></li>
                     <% end %>
                   </ul>
                 <% end %>
               <% when 'quote' %>
-                <blockquote class="border-l-4 border-gray-300 dark:border-gray-600 pl-3 py-2 my-3 italic text-sm">
+                <blockquote class="border-l-4 border-gray-300 dark:border-gray-600 pl-3 py-2 my-3 italic text-sm <%= diff_class %>">
                   <%= sanitize block['data']['text'] %>
                 </blockquote>
               <% else %>
-                <div class="mb-3 p-2 bg-gray-50 dark:bg-gray-900 rounded text-xs">
+                <div class="mb-3 p-2 bg-gray-50 dark:bg-gray-900 rounded text-xs <%= diff_class %>">
                   <%= block['type'] %>
                 </div>
               <% end %>
@@ -164,7 +170,7 @@
   <!-- Restore Action -->
   <div class="mt-6 flex justify-end">
     <%= button_to "Restore to Version #{@version.version_number}",
-        restore_admin_cms_post_version_path(@post, @version.version_number),
+        polymorphic_path([:restore, :admin_cms, @versionable, @version]),
         method: :post,
         data: { confirm: "Are you sure you want to restore to version #{@version.version_number}? This will create a new version with this content." },
         class: "px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition shadow-sm" %>

@@ -40,4 +40,16 @@ Panda::Core.configure do |config|
       options: {}
     }
   end
+
+  # Developer authentication (development/test only)
+  # This provides a simple form-based login for local development
+  if Rails.env.development? || Rails.env.test?
+    config.authentication_providers[:developer] = {
+      name: "Developer",
+      options: {
+        fields: [:name, :email],
+        uid_field: :email
+      }
+    }
+  end
 end

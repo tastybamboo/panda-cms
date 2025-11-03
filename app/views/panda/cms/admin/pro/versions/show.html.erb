@@ -7,17 +7,17 @@
           <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
             Version <%= @version.version_number %>
           </h1>
-          <% if @version == @post.latest_version %>
+          <% if @version == @versionable.latest_version %>
             <span class="px-3 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 text-sm font-semibold rounded-full">
               Current Version
             </span>
           <% end %>
         </div>
         <p class="text-sm text-gray-600 dark:text-gray-400">
-          <%= @post.title %>
+          <%= @versionable.title %>
         </p>
       </div>
-      <%= link_to "Back to History", admin_cms_post_versions_path(@post),
+      <%= link_to "Back to History", polymorphic_path([:admin_cms, @versionable, :versions]),
           class: "px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition" %>
     </div>
   </div>
@@ -57,10 +57,10 @@
       <div>
         <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">Actions</p>
         <div class="flex gap-2">
-          <% if @version != @post.latest_version %>
-            <%= link_to "Compare", diff_admin_cms_post_version_path(@post, @version.version_number),
+          <% if @version != @versionable.latest_version %>
+            <%= link_to "Compare", polymorphic_path([:diff, :admin_cms, @versionable, @version]),
                 class: "text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-medium" %>
-            <%= button_to "Restore", restore_admin_cms_post_version_path(@post, @version.version_number),
+            <%= button_to "Restore", polymorphic_path([:restore, :admin_cms, @versionable, @version]),
                 method: :post,
                 data: { confirm: "Restore to this version?" },
                 class: "text-sm bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded transition" %>

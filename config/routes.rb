@@ -14,6 +14,14 @@ Panda::CMS::Engine.routes.draw do
       resources :menus
       resources :pages do
         resources :block_contents, only: %i[update]
+        scope module: :pro do
+          resources :versions, only: %i[index show] do
+            member do
+              get :diff
+              post :restore
+            end
+          end
+        end
       end
       resources :posts do
         scope module: :pro do

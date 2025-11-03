@@ -1,7 +1,32 @@
+<%# DEBUG: View loaded at <%= Time.current %> %>
 <%= render Panda::Core::Admin::ContainerComponent.new do |component| %>
   <% component.heading(text: post.title, level: 1) do |heading| %>
-    <% heading.button(action: :view, text: "View Post", link: post_path(post.admin_param)) %>
-    <% heading.button(action: :custom, text: "Version History", link: admin_cms_post_versions_path(post.admin_param)) %>
+    <%
+      # Generate correct public URL based on post's slug format
+      view_post_url = begin
+        if post.year && post.month
+          post_with_date_path(**post.route_params)
+        else
+          post_path(post.to_param)
+        end
+      rescue => e
+        Rails.logger.error "View Post URL error: #{e.message}"
+        "#"
+      end
+
+      version_history_url = begin
+        admin_cms_post_versions_path(post.id)
+      rescue => e
+        Rails.logger.error "Version History URL error: #{e.message}"
+        nil
+      end
+    %>
+    <% heading.button(action: :view, text: "View Post", href: view_post_url) %>
+    <% if version_history_url %>
+      <% heading.button(action: :custom, text: "Version History", href: version_history_url) %>
+    <% else %>
+      <%# Route helper failed - button not shown %>
+    <% end %>
   <% end %>
 
   <%= render "form", post: post, url: admin_cms_post_path(post.admin_param), method: :patch %>

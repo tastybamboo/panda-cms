@@ -7,10 +7,10 @@
           Version History
         </h1>
         <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
-          <%= @post.title %>
+          <%= @versionable.title %>
         </p>
       </div>
-      <%= link_to "Back to Post", edit_admin_cms_post_path(@post),
+      <%= link_to "Back to #{@versionable.class.name.demodulize}", polymorphic_path([:edit, :admin_cms, @versionable]),
           class: "px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition" %>
     </div>
   </div>
@@ -33,9 +33,9 @@
       <% end %>
     </div>
     <p class="mt-4 text-sm text-gray-600 dark:text-gray-400">
-      <%= pluralize(@post.contributors_count, 'contributor') %> •
-      <%= pluralize(@versions.total_count, 'version') %> •
-      Last updated <%= time_ago_in_words(@post.updated_at) %> ago
+      <%= pluralize(@versionable.contributors_count, 'contributor') %> •
+      <%= pluralize(@versions.count, 'version') %> •
+      Last updated <%= time_ago_in_words(@versionable.updated_at) %> ago
     </p>
   </div>
 
@@ -61,7 +61,7 @@
                   </span>
 
                   <!-- Current Version Badge -->
-                  <% if version == @post.latest_version %>
+                  <% if version == @versionable.latest_version %>
                     <span class="px-3 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 text-xs font-semibold rounded-full">
                       Current
                     </span>
@@ -97,14 +97,14 @@
 
               <!-- Actions -->
               <div class="flex items-center gap-2 ml-4">
-                <%= link_to "View", admin_cms_post_version_path(@post, version.version_number),
+                <%= link_to "View", polymorphic_path([:admin_cms, @versionable, version]),
                     class: "px-3 py-1.5 text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-medium" %>
 
-                <% if version != @post.latest_version %>
-                  <%= link_to "Compare", diff_admin_cms_post_version_path(@post, version.version_number),
+                <% if version != @versionable.latest_version %>
+                  <%= link_to "Compare", polymorphic_path([:diff, :admin_cms, @versionable, version]),
                       class: "px-3 py-1.5 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-300 font-medium" %>
 
-                  <%= button_to "Restore", restore_admin_cms_post_version_path(@post, version.version_number),
+                  <%= button_to "Restore", polymorphic_path([:restore, :admin_cms, @versionable, version]),
                       method: :post,
                       data: { confirm: "Are you sure you want to restore to version #{version.version_number}? This will create a new version." },
                       class: "px-3 py-1.5 text-sm bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition" %>
@@ -125,12 +125,5 @@
         </div>
       <% end %>
     </div>
-
-    <!-- Pagination -->
-    <% if @versions.total_pages > 1 %>
-      <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700">
-        <%= paginate @versions, theme: 'twitter-bootstrap-4' %>
-      </div>
-    <% end %>
   </div>
 </div>
