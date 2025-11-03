@@ -53,9 +53,20 @@ module Panda
           javascript_include_tag(js_url, **defer_option)
         # Standalone bundle - don't use type: "module"
         else
-          # Importmap asset - use type: "module"
-          defer_option = (ENV["GITHUB_ACTIONS"] == "true") ? {} : {defer: true}
-          javascript_include_tag(js_url, type: "module", **defer_option)
+          # Development mode - Load JavaScript with import map
+          # Files are served by Rack::Static middleware from engine's app/javascript
+          importmap_html = <<~HTML
+            <script type="importmap">
+              {
+                "imports": {
+                  "@hotwired/stimulus": "/panda/core/vendor/@hotwired--stimulus.js",
+                  "@hotwired/turbo": "/panda/core/vendor/@hotwired--turbo.js"
+                }
+              }
+            </script>
+            <script type="module" src="/panda/cms/application_panda_cms.js"></script>
+          HTML
+          importmap_html.html_safe
         end
       end
 

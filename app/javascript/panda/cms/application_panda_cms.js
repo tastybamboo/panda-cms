@@ -1,6 +1,6 @@
 import "@hotwired/turbo"
 console.debug("[Panda CMS] Controllers loading...");
-import "controllers"
+import "./controllers/index.js"
 console.debug("[Panda CMS] Controllers loaded...");
 
 // Editor resources are now handled by panda-editor gem

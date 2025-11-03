@@ -59,6 +59,18 @@ module Panda
         root: Panda::CMS::Engine.root.join("public")
       )
 
+      # Make JavaScript files available for importmap
+      # Serve from app/javascript with proper MIME types
+      config.app_middleware.use(
+        Rack::Static,
+        urls: ["/panda/cms"],
+        root: Panda::CMS::Engine.root.join("app/javascript"),
+        header_rules: [
+          [:all, {"Cache-Control" => Rails.env.development? ? "no-cache, no-store, must-revalidate" : "public, max-age=31536000",
+                  "Content-Type" => "text/javascript; charset=utf-8"}]
+        ]
+      )
+
       # Custom error handling
       # config.exceptions_app = Panda::CMS::ExceptionsApp.new(exceptions_app: routes)
 
@@ -96,21 +108,24 @@ module Panda
         end
       end
 
-      config.after_initialize do |app|
-        # Append routes to the routes file
-        app.routes.append do
-          mount Panda::CMS::Engine => "/", :as => "panda_cms"
-          post "/_forms/:id", to: "panda/cms/form_submissions#create", as: :panda_cms_form_submit
-          get "/_maintenance", to: "panda/cms/errors#error_503", as: :panda_cms_maintenance
-
-          # Catch-all route for CMS pages, but exclude admin paths
-          admin_path = Panda::Core.config.admin_path.delete_prefix("/")
-          constraints = ->(request) { !request.path.start_with?("/#{admin_path}") }
-          get "/*path", to: "panda/cms/pages#show", as: :panda_cms_page, constraints: constraints
-
-          root to: "panda/cms/pages#root"
-        end
-      end
+      # Auto-mount disabled for development server compatibility
+      # Puma cluster preloading interferes with after_initialize route mounting
+      # For manual mounting example, see spec/dummy/config/routes.rb
+      # config.after_initialize do |app|
+      #   # Append routes to the routes file
+      #   app.routes.append do
+      #     mount Panda::CMS::Engine => "/", :as => "panda_cms"
+      #     post "/_forms/:id", to: "panda/cms/form_submissions#create", as: :panda_cms_form_submit
+      #     get "/_maintenance", to: "panda/cms/errors#error_503", as: :panda_cms_maintenance
+      #
+      #     # Catch-all route for CMS pages, but exclude admin paths
+      #     admin_path = Panda::Core.config.admin_path.delete_prefix("/")
+      #     constraints = ->(request) { !request.path.start_with?("/#{admin_path}") }
+      #     get "/*path", to: "panda/cms/pages#show", as: :panda_cms_page, constraints: constraints
+      #
+      #     root to: "panda/cms/pages#root"
+      #   end
+      # end
 
       initializer "#{engine_name}.backtrace_cleaner" do |_app|
         engine_root_regex = Regexp.escape(root.to_s + File::SEPARATOR)

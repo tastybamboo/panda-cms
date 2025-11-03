@@ -1,14 +1,12 @@
 // Stimulus loading utilities for Panda CMS
 // This provides the loading functionality that would normally come from stimulus-rails
 
-import { Application } from "@hotwired/stimulus"
+// Import the shared Stimulus application from Panda Core
+// This ensures all controllers (Core and CMS) are registered in the same application
+import { application } from "/panda/core/application.js"
 
-const application = Application.start()
-
-// Configure debug mode based on environment
-const railsEnv = document.body?.dataset?.environment || "production";
-application.debug = railsEnv === "development"
-window.Stimulus = application
+// The application is already started and configured in Core
+// No need to start it again or configure debug mode
 
 // Auto-registration functionality
 function eagerLoadControllersFrom(context) {
