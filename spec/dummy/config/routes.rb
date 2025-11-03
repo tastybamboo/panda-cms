@@ -1,11 +1,9 @@
 # frozen_string_literal: true
 
 Rails.application.routes.draw do
-  # Mount Panda Core engine for authentication
+  # Mount Panda Core engine for authentication at root
+  # This provides /admin routes for authentication and admin UI
   mount Panda::Core::Engine => "/"
-
-  # Mount Panda CMS engine
-  mount Panda::CMS::Engine => "/"
 
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
@@ -16,8 +14,9 @@ Rails.application.routes.draw do
   # Test-only route that renders a page using panda_cms_collection_items
   get '/collections-demo', to: 'collections_demo#index'
 
-  # Development-only test login
-  if Rails.env.development?
-    get '/admin/test_login/:id', to: 'test_login#show', as: :test_login
-  end
+  # Mount Panda CMS engine - this adds:
+  # - Admin CMS routes under /admin/cms (pages, posts, menus, etc.)
+  # - Form submission handler at /_forms/:id
+  # - Catch-all route for CMS pages at /*path
+  mount Panda::CMS::Engine => "/"
 end

@@ -3,7 +3,7 @@
 Panda::CMS::Engine.routes.draw do
   # Test authentication endpoint moved to panda-core at /admin/test_login/:user_id
 
-  constraints Panda::Core::AdminConstraint.new(&:present?) do
+  constraints Panda::Core::AdminConstraint.new do
     # CMS-specific dashboard (using Core's admin_path)
     admin_path = Panda::Core.config.admin_path
     get "#{admin_path}/cms", to: "admin/dashboard#show", as: :admin_cms_dashboard

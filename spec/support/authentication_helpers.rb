@@ -24,32 +24,53 @@ module AuthenticationHelpers
   end
 
   # Logs in as an admin user in system tests
+  # Directly manipulates Redis session for reliable cross-process authentication
   def login_as_admin
     admin = create_admin_user
-    OmniAuth.config.mock_auth[:developer] = OmniAuth::AuthHash.new({
-      provider: "developer",
-      uid: admin.id,
-      info: {
-        email: admin.email,
-        name: admin.name
-      }
+
+    # Create a session in Redis directly
+    require 'redis'
+    require 'securerandom'
+
+    redis = Redis.new(url: "redis://localhost:6379/1")
+    session_id = SecureRandom.hex(16)
+
+    # Store session data in Redis (matches Rack::Session::Redis format)
+    # Rack::Session::Redis uses the session ID as the key directly (no prefix)
+    session_data = Marshal.dump({"user_id" => admin.id})
+    redis.setex(session_id, 3600, session_data)
+
+    # Set the session cookie in the browser using Cuprite API
+    visit "/up"  # Visit any page to initialize the domain
+    page.driver.set_cookie("_panda_cms_session", session_id, {
+      path: "/",
+      httponly: true,
+      domain: "127.0.0.1"
     })
-    visit "/admin/auth/developer/callback"
+
     admin
   end
 
   # Logs in as a regular user in system tests
   def login_as_user
     user = create_regular_user
-    OmniAuth.config.mock_auth[:developer] = OmniAuth::AuthHash.new({
-      provider: "developer",
-      uid: user.id,
-      info: {
-        email: user.email,
-        name: user.name
-      }
+
+    require 'redis'
+    require 'securerandom'
+
+    redis = Redis.new(url: "redis://localhost:6379/1")
+    session_id = SecureRandom.hex(16)
+
+    session_data = Marshal.dump({"user_id" => user.id})
+    redis.setex(session_id, 3600, session_data)
+
+    visit "/up"
+    page.driver.set_cookie("_panda_cms_session", session_id, {
+      path: "/",
+      httponly: true,
+      domain: "127.0.0.1"
     })
-    visit "/admin/auth/developer/callback"
+
     user
   end
 end
