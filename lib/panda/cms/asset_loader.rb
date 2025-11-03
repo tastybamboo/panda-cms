@@ -164,7 +164,7 @@ module Panda
           # In development, use importmap for live-reloading
           # Only use compiled assets in test/CI environments
           if Rails.env.development?
-            "/assets/panda/cms/application_panda_cms.js"
+            "/panda/cms/application_panda_cms.js"
           else
             # Try cached assets for test environment
             version = asset_version
@@ -177,7 +177,7 @@ module Panda
               versioned_path
             else
               # Fallback to importmap
-              "/assets/panda/cms/application_panda_cms.js"
+              "/panda/cms/application_panda_cms.js"
             end
           end
         end
