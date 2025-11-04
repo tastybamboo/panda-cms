@@ -4,6 +4,12 @@ module Panda
   module CMS
     module Admin
       class FilesController < ::Panda::CMS::Admin::BaseController
+        def index
+          @filter = params[:filter] || "recently_viewed"
+          @files = load_files_by_filter(@filter)
+          @selected_file = @files.first if @files.any?
+        end
+
         def create
           file = params[:image]
           return render json: {success: 0} unless file
@@ -22,6 +28,23 @@ module Panda
               size: blob.byte_size
             }
           }
+        end
+
+        private
+
+        def load_files_by_filter(filter)
+          case filter
+          when "recently_added"
+            ActiveStorage::Blob.order(created_at: :desc)
+          when "recently_viewed"
+            # For now, same as recently added - could track views in future
+            ActiveStorage::Blob.order(created_at: :desc)
+          when "favourited"
+            # Placeholder - could add favourites feature later
+            ActiveStorage::Blob.none
+          else
+            ActiveStorage::Blob.order(created_at: :desc)
+          end
         end
       end
     end

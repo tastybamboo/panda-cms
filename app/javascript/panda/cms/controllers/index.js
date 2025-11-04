@@ -15,6 +15,12 @@ pandaCmsApplication.register("dashboard", DashboardController)
 import SlugController from "./slug_controller.js"
 pandaCmsApplication.register("slug", SlugController)
 
+import TreeController from "./tree_controller.js"
+pandaCmsApplication.register("tree", TreeController)
+
+import FileGalleryController from "./file_gallery_controller.js"
+pandaCmsApplication.register("file-gallery", FileGalleryController)
+
 // Lazy load editor controllers only when needed
 // These will only be loaded when the data-controller attribute is present in the DOM
 class EditorFormLazyController {
