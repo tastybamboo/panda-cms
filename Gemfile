@@ -3,11 +3,11 @@
 source "https://rubygems.org"
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
-# Use local panda-core for development
-gem "panda-core", path: "../core"
+# Use released panda-core
+gem "panda-core", "~> 0.6.0"
 
-# Use panda-editor gem
-gem "panda-editor", "~> 0.4.0"
+# Use released panda-editor
+gem "panda-editor", "~> 0.5.0"
 
 # Specify your gem's dependencies in panda-cms.gemspec.
 gemspec
@@ -46,7 +46,7 @@ group :development, :test do
   gem "puma"
   gem "rake"
   gem "redis", "~> 5.0"  # For Redis-backed sessions in tests
-  gem "redis-rack", "~> 3.0"  # Redis session store for Rails
+  gem "rack-session-redis"  # Redis session store for Rack 3+
   gem "rspec"
   gem "rspec-core"
   gem "rspec-github"

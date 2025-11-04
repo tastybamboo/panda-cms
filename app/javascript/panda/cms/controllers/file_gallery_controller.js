@@ -33,6 +33,15 @@ export default class extends Controller {
     if (slideover && slideover.classList.contains("hidden")) {
       slideover.classList.remove("hidden")
     }
+
+    // Trigger the toggle controller to show the slideover
+    const toggleController = this.application.getControllerForElementAndIdentifier(
+      document.getElementById("panda-inner-container"),
+      "toggle"
+    )
+    if (toggleController) {
+      toggleController.show()
+    }
   }
 
   updateSelectedState(selectedButton) {

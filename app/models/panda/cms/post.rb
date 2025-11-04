@@ -33,6 +33,7 @@ module Panda
       enum :status, {
         active: "active",
         draft: "draft",
+        pending_review: "pending_review",
         hidden: "hidden",
         archived: "archived"
       }

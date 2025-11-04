@@ -3,8 +3,8 @@
 # Base dependencies are now in panda-core (Stimulus, Turbo, Font Awesome, etc.)
 # This file only contains CMS-specific pins
 
-pin "application_panda_cms", to: "panda_cms/application_panda_cms.js", preload: true
-pin "@hotwired/stimulus-loading", to: "panda_cms/stimulus-loading.js", preload: true
+pin "application_panda_cms", to: "panda/cms/application_panda_cms.js", preload: true
+pin "@hotwired/stimulus-loading", to: "panda/cms/stimulus-loading.js", preload: true
 pin "@editorjs/editorjs", to: "panda/cms/editor/editorjs.js" # @2.30.6
 
 # Pin the controllers directory

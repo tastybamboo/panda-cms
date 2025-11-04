@@ -10,7 +10,7 @@ module Panda
             firstname: "Admin",
             lastname: "User",
             email: "admin@example.com",
-            admin: true,
+            is_admin: true,
             image_url: "/panda-cms-assets/panda-nav.png"
           )
         end
@@ -21,7 +21,7 @@ module Panda
             firstname: "Regular",
             lastname: "User",
             email: "regular@example.com",
-            admin: false,
+            is_admin: false,
             image_url: "/panda-cms-assets/panda-nav.png"
           )
         end

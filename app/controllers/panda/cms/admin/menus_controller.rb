@@ -4,7 +4,8 @@ module Panda
   module CMS
     module Admin
       class MenusController < ::Panda::CMS::Admin::BaseController
-        before_action :set_initial_breadcrumb, only: %i[index]
+        before_action :set_initial_breadcrumb, only: %i[index new edit]
+        before_action :set_menu, only: %i[edit update destroy]
 
         # Lists all menus which can be managed by the administrator
         # @type GET
@@ -14,10 +15,53 @@ module Panda
           render :index, locals: {menus: menus}
         end
 
+        # @type GET
+        def new
+          menu = Panda::CMS::Menu.new
+          add_breadcrumb "New Menu", new_admin_cms_menu_path
+          render :new, locals: {menu: menu}
+        end
+
+        # @type POST
+        def create
+          menu = Panda::CMS::Menu.new(menu_params)
+
+          if menu.save
+            redirect_to admin_cms_menus_path, notice: "Menu was successfully created."
+          else
+            render :new, locals: {menu: menu}, status: :unprocessable_entity
+          end
+        end
+
+        # @type GET
+        def edit
+          add_breadcrumb @menu.name, edit_admin_cms_menu_path(@menu)
+          render :edit, locals: {menu: @menu}
+        end
+
+        # @type PATCH/PUT
+        def update
+          if @menu.update(menu_params)
+            redirect_to admin_cms_menus_path, notice: "Menu was successfully updated."
+          else
+            render :edit, locals: {menu: @menu}, status: :unprocessable_entity
+          end
+        end
+
+        # @type DELETE
+        def destroy
+          @menu.destroy
+          redirect_to admin_cms_menus_path, notice: "Menu was successfully deleted."
+        end
+
         private
 
-        def menu
-          @menu ||= Panda::CMS::Menu.find(params[:id])
+        def set_menu
+          @menu = Panda::CMS::Menu.find(params[:id])
+        end
+
+        def menu_params
+          params.require(:menu).permit(:name, :kind, :start_page_id, menu_items_attributes: [:id, :text, :external_url, :panda_cms_page_id, :_destroy])
         end
 
         def set_initial_breadcrumb

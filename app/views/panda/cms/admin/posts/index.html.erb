@@ -1,9 +1,9 @@
 <%= render Panda::Core::Admin::ContainerComponent.new do |component| %>
-  <% component.heading(text: "Posts", level: 1) do |heading| %>
+  <% component.heading(text: "Posts", level: 1, icon: "fa-solid fa-newspaper") do |heading| %>
     <% heading.button(action: :add, text: "Add Post", link: new_admin_cms_post_path) %>
   <% end %>
 
-  <%= render Panda::Core::Admin::TableComponent.new(term: "post", rows: posts) do |table| %>
+  <%= render Panda::Core::Admin::TableComponent.new(term: "post", rows: posts, icon: "fa-solid fa-newspaper") do |table| %>
     <% table.column("Title") do |post| %>
       <div>
         <%= link_to post.title, edit_admin_cms_post_path(post.admin_param), class: "block h-full w-full" %>

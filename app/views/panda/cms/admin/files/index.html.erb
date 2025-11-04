@@ -11,13 +11,7 @@
     </div>
   <% end %>
 
-  <% component.tab_bar(tabs: [
-    { name: "Recently Viewed", url: admin_files_path(filter: "recently_viewed"), current: @filter == "recently_viewed" },
-    { name: "Recently Added", url: admin_files_path(filter: "recently_added"), current: @filter == "recently_added" },
-    { name: "Favourited", url: admin_files_path(filter: "favourited"), current: @filter == "favourited" }
-  ]) %>
-
-  <div data-controller="file-gallery">
+  <div data-controller="file-gallery" class="pb-24">
     <%= render Panda::Core::Admin::FileGalleryComponent.new(files: @files, selected_file: @selected_file) %>
   </div>
 <% end %>

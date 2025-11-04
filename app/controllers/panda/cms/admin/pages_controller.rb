@@ -25,6 +25,11 @@ module Panda
         # Loads the page editor
         # @type GET
         def edit
+          # Add all ancestor pages to breadcrumbs (excluding homepage at depth 0)
+          page.ancestors.select { |anc| anc.depth > 0 }.each do |ancestor|
+            add_breadcrumb ancestor.title, edit_admin_cms_page_path(ancestor)
+          end
+
           add_breadcrumb page.title, edit_admin_cms_page_path(page)
 
           render :edit, locals: {page: page, template: page.template}
@@ -94,7 +99,7 @@ module Panda
         # @type private
         # @return ActionController::StrongParameters
         def page_params
-          params.require(:page).permit(:title, :path, :panda_cms_template_id, :parent_id, :status)
+          params.require(:page).permit(:title, :path, :panda_cms_template_id, :parent_id, :status, :page_type)
         end
       end
     end

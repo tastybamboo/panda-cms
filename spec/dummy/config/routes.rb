@@ -18,5 +18,5 @@ Rails.application.routes.draw do
   # - Admin CMS routes under /admin/cms (pages, posts, menus, etc.)
   # - Form submission handler at /_forms/:id
   # - Catch-all route for CMS pages at /*path
-  mount Panda::CMS::Engine => "/"
+  mount Panda::CMS::Engine => "/", as: "panda_cms"
 end

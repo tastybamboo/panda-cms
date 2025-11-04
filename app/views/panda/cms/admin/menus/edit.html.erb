@@ -1,0 +1,64 @@
+<%= render Panda::Core::Admin::ContainerComponent.new do |component| %>
+  <% component.heading(text: "Edit Menu: #{menu.name}", level: 1) %>
+
+  <%= panda_cms_form_with model: menu, url: admin_cms_menu_path(menu), method: :put do |f| %>
+    <%= render Panda::Core::Admin::FormErrorComponent.new(model: menu) %>
+
+    <%= f.text_field :name %>
+    <%= f.select :kind, options_for_select([["Static", "static"], ["Auto", "auto"]], selected: menu.kind), {}, { data: { action: "change->menu-form#kindChanged" } } %>
+
+    <div data-controller="menu-form">
+      <div data-menu-form-target="startPageField" class="<%= 'hidden' unless menu.kind == 'auto' %>">
+        <%= f.collection_select :start_page_id, Panda::CMS::Page.order(:title), :id, :title, { include_blank: "Select a page..." }, { class: "mt-1" } %>
+      </div>
+
+      <% if menu.kind == "static" %>
+        <%= render Panda::Core::Admin::PanelComponent.new do |panel| %>
+          <% panel.heading(text: "Menu Items") %>
+
+          <div data-controller="nested-form" data-nested-form-wrapper-selector-value=".nested-form-wrapper">
+            <template data-nested-form-target="template">
+              <%= f.fields_for :menu_items, Panda::CMS::MenuItem.new, child_index: "NEW_RECORD" do |item_form| %>
+                <%= render "menu_item_fields", form: item_form %>
+              <% end %>
+            </template>
+
+            <div class="space-y-4">
+              <% if menu.menu_items.any? %>
+                <%= f.fields_for :menu_items, menu.menu_items.sort_by(&:lft) do |item_form| %>
+                  <%= render "menu_item_fields", form: item_form %>
+                <% end %>
+              <% end %>
+            </div>
+
+            <div data-nested-form-target="target"></div>
+
+            <div class="mt-4">
+              <%= render Panda::Core::Admin::ButtonComponent.new(text: "Add Menu Item", action: :add, link: "#", size: :small, data: { action: "click->nested-form#add" }) %>
+            </div>
+          </div>
+        <% end %>
+      <% else %>
+        <%= render Panda::Core::Admin::PanelComponent.new do |panel| %>
+          <% panel.heading(text: "Auto-Generated Menu Items") %>
+
+          <% if menu.menu_items.any? %>
+            <%= render Panda::Core::Admin::TableComponent.new(term: "menu item", rows: menu.menu_items.root.self_and_descendants) do |table| %>
+              <% table.column("Text") do |menu_item| %>
+                <div class="<%= "ml-#{menu_item.depth * 6}" %>">
+                  <%= menu_item.text %>
+                </div>
+              <% end %>
+              <% table.column("Page") { |menu_item| menu_item.page&.title } %>
+              <% table.column("Path") { |menu_item| menu_item.page&.path } %>
+            <% end %>
+          <% else %>
+            <p class="text-sm text-gray-500 dark:text-gray-400">No menu items generated yet. Select a start page and save to generate menu items.</p>
+          <% end %>
+        <% end %>
+      <% end %>
+    </div>
+
+    <%= f.button "Save Menu" %>
+  <% end %>
+<% end %>

@@ -38,12 +38,22 @@ module Panda
       enum :status, {
         active: "active",
         draft: "draft",
+        pending_review: "pending_review",
         hidden: "hidden",
         archived: "archived"
       }
 
+      enum :page_type, {
+        standard: "standard",
+        hidden_type: "hidden",
+        system: "system",
+        posts: "posts",
+        code: "code"
+      }, prefix: :type
+
       # Callbacks
       after_save :handle_after_save
+      before_save :update_cached_last_updated_at
 
       #
       # Update any menus which include this page or its parent as a menu item
@@ -54,6 +64,31 @@ module Panda
       def update_auto_menus
         menus.find_each(&:generate_auto_menu_items)
         menus_of_parent.find_each(&:generate_auto_menu_items)
+      end
+
+      #
+      # Returns the most recent update time between the page and its block contents
+      # Uses cached value for performance
+      #
+      # @return [Time] The most recent updated_at timestamp
+      # @visibility public
+      #
+      def last_updated_at
+        cached_last_updated_at || updated_at
+      end
+
+      #
+      # Refresh the cached last updated timestamp
+      # Used when block contents are updated
+      #
+      # @return [Time] The updated timestamp
+      # @visibility public
+      #
+      def refresh_last_updated_at!
+        block_content_updated_at = block_contents.maximum(:updated_at)
+        new_timestamp = [updated_at, block_content_updated_at].compact.max
+        update_column(:cached_last_updated_at, new_timestamp)
+        new_timestamp
       end
 
       private
@@ -123,6 +158,12 @@ module Panda
           origin_path: old_path,
           destination_path: new_path
         )
+      end
+
+      def update_cached_last_updated_at
+        # Will be set to updated_at automatically during save
+        # Block content updates will call refresh_last_updated_at! separately
+        self.cached_last_updated_at = Time.current
       end
     end
   end

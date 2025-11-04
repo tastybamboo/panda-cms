@@ -1,7 +1,8 @@
 <%= render Panda::Core::Admin::ContainerComponent.new do |component| %>
-  <% component.heading(text: "Forms", level: 1) %>
+  <% component.heading(text: "Forms", level: 1, icon: "fa-solid fa-inbox") do |heading| %>
+  <% end %>
 
-  <%= render Panda::Core::Admin::TableComponent.new(term: "form", rows: forms) do |table| %>
+  <%= render Panda::Core::Admin::TableComponent.new(term: "form", rows: forms, icon: "fa-solid fa-inbox") do |table| %>
     <% table.column("Name") { |form| block_link_to form.name, admin_cms_form_path(form) } %>
     <% table.column("Status") { |form| render Panda::Core::Admin::TagComponent.new(status: :active) } %>
     <% table.column("Last Submission") do |form| %>

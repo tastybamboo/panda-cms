@@ -19,24 +19,8 @@ module Panda
         #{root}/app/services
       ]
 
-      # Basic session setup only
-      initializer "panda.cms.session", before: :load_config_initializers do |app|
-        app.config.middleware = app.config.middleware.dup if app.config.middleware.frozen?
-
-        # Use Redis for sessions in test environment to support Capybara cross-process auth
-        # Use cookie store in other environments for simplicity
-        if Rails.env.test?
-          require 'rack/session/redis'
-          app.config.session_store Rack::Session::Redis,
-            redis_server: "redis://localhost:6379/1",
-            expire_after: 1.hour,
-            key: "_panda_cms_session"
-        else
-          app.config.session_store :cookie_store, key: "_panda_cms_session"
-          app.config.middleware.use ActionDispatch::Cookies
-          app.config.middleware.use ActionDispatch::Session::CookieStore, app.config.session_options
-        end
-      end
+      # Session configuration is left to the consuming application
+      # The CMS engine does not impose session store requirements
 
       config.to_prepare do
         ApplicationController.helper(::ApplicationHelper)
@@ -53,23 +37,19 @@ module Panda
       end
 
       # Make files in public available to the main app (e.g. /panda_cms-assets/favicon.ico)
-      config.app_middleware.use(
-        Rack::Static,
+      config.middleware.use Rack::Static,
         urls: ["/panda-cms-assets"],
         root: Panda::CMS::Engine.root.join("public")
-      )
 
       # Make JavaScript files available for importmap
       # Serve from app/javascript with proper MIME types
-      config.app_middleware.use(
-        Rack::Static,
+      config.middleware.use Rack::Static,
         urls: ["/panda/cms"],
         root: Panda::CMS::Engine.root.join("app/javascript"),
         header_rules: [
           [:all, {"Cache-Control" => Rails.env.development? ? "no-cache, no-store, must-revalidate" : "public, max-age=31536000",
                   "Content-Type" => "text/javascript; charset=utf-8"}]
         ]
-      )
 
       # Custom error handling
       # config.exceptions_app = Panda::CMS::ExceptionsApp.new(exceptions_app: routes)
@@ -108,24 +88,25 @@ module Panda
         end
       end
 
-      # Auto-mount disabled for development server compatibility
-      # Puma cluster preloading interferes with after_initialize route mounting
-      # For manual mounting example, see spec/dummy/config/routes.rb
-      # config.after_initialize do |app|
-      #   # Append routes to the routes file
-      #   app.routes.append do
-      #     mount Panda::CMS::Engine => "/", :as => "panda_cms"
-      #     post "/_forms/:id", to: "panda/cms/form_submissions#create", as: :panda_cms_form_submit
-      #     get "/_maintenance", to: "panda/cms/errors#error_503", as: :panda_cms_maintenance
-      #
-      #     # Catch-all route for CMS pages, but exclude admin paths
-      #     admin_path = Panda::Core.config.admin_path.delete_prefix("/")
-      #     constraints = ->(request) { !request.path.start_with?("/#{admin_path}") }
-      #     get "/*path", to: "panda/cms/pages#show", as: :panda_cms_page, constraints: constraints
-      #
-      #     root to: "panda/cms/pages#root"
-      #   end
-      # end
+      # Auto-mount CMS routes
+      config.after_initialize do |app|
+        # Append routes to the routes file
+        app.routes.append do
+          mount Panda::CMS::Engine => "/", :as => "panda_cms"
+          post "/_forms/:id", to: "panda/cms/form_submissions#create", as: :panda_cms_form_submit
+          get "/_maintenance", to: "panda/cms/errors#error_503", as: :panda_cms_maintenance
+
+          # Catch-all route for CMS pages, but exclude admin paths and assets
+          admin_path = Panda::Core.config.admin_path.delete_prefix("/")
+          constraints = ->(request) {
+            !request.path.start_with?("/#{admin_path}") &&
+              !request.path.start_with?("/panda-cms-assets/")
+          }
+          get "/*path", to: "panda/cms/pages#show", as: :panda_cms_page, constraints: constraints
+
+          root to: "panda/cms/pages#root"
+        end
+      end
 
       initializer "#{engine_name}.backtrace_cleaner" do |_app|
         engine_root_regex = Regexp.escape(root.to_s + File::SEPARATOR)
@@ -219,6 +200,13 @@ module Panda
               path: "#{config.admin_path}/cms/forms",
               label: "Forms",
               icon: "fa-solid fa-inbox"
+            }
+
+            # Files
+            items << {
+              path: "#{config.admin_path}/cms/files",
+              label: "Files",
+              icon: "fa-solid fa-image"
             }
 
             # Menus

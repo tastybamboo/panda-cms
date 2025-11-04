@@ -7,6 +7,7 @@
     <%= f.text_field :title %>
     <%= f.text_field :path, { meta: t(".path.meta") } %>
     <%= f.collection_select :panda_cms_template_id, available_templates, :id, :name %>
+    <%= f.select :page_type, options_for_select([["Active", "standard"], ["Hidden", "hidden"], ["Code", "code"]], selected: "standard") %>
     <%= f.button "Create Page" %>
   <% end %>
 <% end %>

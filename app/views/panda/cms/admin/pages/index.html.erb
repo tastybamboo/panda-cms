@@ -4,16 +4,54 @@
   <% end %>
 
   <% if root_page %>
-    <%= render Panda::Core::Admin::TableComponent.new(term: "page", rows: root_page.self_and_descendants) do |table| %>
-      <% table.column("Name") do |page| %>
-        <div class="<%= table_indent(page) %>">
-          <%= link_to page.title, edit_admin_cms_page_path(page), class: "block h-full w-full" %>
-          <span class="block text-xs text-black/60"><%= page.path %></span>
-        </div>
+    <div data-controller="tree" data-tree-target="container" style="opacity: 0; transition: opacity 0.2s;">
+      <%= render Panda::Core::Admin::TableComponent.new(term: "page", rows: root_page.self_and_descendants) do |table| %>
+        <% table.column("Name") do |page| %>
+          <div class="flex items-start" data-tree-target="row" data-page-id="<%= page.id %>" data-level="<%= page.level %>" data-parent-id="<%= page.parent_id %>">
+            <div class="flex-1 min-w-0">
+              <% # Add indentation for nested levels %>
+              <% indent_class = case page.level
+                 when 0 then ""
+                 when 1 then "ml-4"
+                 when 2 then "ml-8"
+                 else "ml-12"
+                 end %>
+              <div class="flex items-start <%= indent_class %>">
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center gap-2">
+                    <% # Chevron/icon section %>
+                    <% if page.children_count > 0 %>
+                      <% if page.level > 0 %>
+                        <% # Non-root pages with children: show chevron button only %>
+                        <button type="button"
+                                class="text-xs text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary rounded px-1 w-4 flex items-center justify-center"
+                                data-tree-target="toggle"
+                                data-action="click->tree#toggle"
+                                data-page-id="<%= page.id %>">
+                          <i class="fa-solid fa-chevron-right"></i>
+                        </button>
+                      <% else %>
+                        <% # Root page (Home): show folder icon %>
+                        <i class="fa-solid fa-folder text-gray-500 mr-2"></i>
+                      <% end %>
+                    <% else %>
+                      <% # Leaf pages: show file icon %>
+                      <i class="fa-solid fa-file text-gray-400 mr-2"></i>
+                    <% end %>
+                    <%= link_to page.title, edit_admin_cms_page_path(page), class: "font-medium hover:text-primary #{page.children_count > 0 && page.level > 0 ? 'ml-2' : ''}" %>
+                  </div>
+                  <div class="text-xs text-black/60 mt-1 ml-6">
+                    <%= page.path %>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        <% end %>
+        <% table.column("Type", width: "12%") { |page| render Panda::Core::Admin::TagComponent.new(page_type: page.page_type.to_sym) } %>
+        <% table.column("Last Updated", width: "18%") { |page| render Panda::Core::Admin::UserActivityComponent.new(at: page.last_updated_at) } %>
       <% end %>
-      <% table.column("Status") { |page| render Panda::Core::Admin::TagComponent.new(status: page.status.to_sym) } %>
-      <% table.column("Last Updated") { |page| render Panda::Core::Admin::UserActivityComponent.new(model: page) } %>
-    <% end %>
+    </div>
   <% else %>
     <div class="p-6 bg-error/10 text-error rounded-lg">
       <p class="text-base">No homepage (at <code>/</code>) found. Please create a homepage to start building your site.</p>

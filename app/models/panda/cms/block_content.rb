@@ -12,8 +12,17 @@ module Panda
 
       validates :block, presence: true, uniqueness: {scope: :page}
 
+      after_save :refresh_page_cached_timestamp
+      after_destroy :refresh_page_cached_timestamp
+
       store_accessor :content, [], prefix: true
       store_accessor :cached_content, [], prefix: true
+
+      private
+
+      def refresh_page_cached_timestamp
+        page&.refresh_last_updated_at!
+      end
     end
   end
 end

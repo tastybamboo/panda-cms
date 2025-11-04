@@ -15,7 +15,7 @@ module Panda
 
       def view_template
         if @editable_state
-          div(**element_attrs) { raw(@code_content.to_s.html_safe) }
+          render_editable_view
         else
           raw(@code_content.to_s.html_safe)
         end
@@ -53,6 +53,56 @@ module Panda
         block.block_contents.find_by(panda_cms_page_id: Current.page.id)
       end
 
+      def render_editable_view
+        div(class: "code-component-wrapper mb-4", data: {controller: "inline-code-editor", inline_code_editor_page_id_value: Current.page.id, inline_code_editor_block_content_id_value: @block_content_id}) do
+          # Tab Navigation
+          div(class: "border-b border-gray-200 bg-white") do
+            nav(class: "-mb-px flex space-x-4 px-4", "aria-label": "Tabs") do
+              button(type: "button",
+                data: {inline_code_editor_target: "previewTab", action: "click->inline-code-editor#showPreview"},
+                class: "border-primary text-primary whitespace-nowrap border-b-2 py-2 px-1 text-sm font-medium") do
+                plain "Preview"
+              end
+              button(type: "button",
+                data: {inline_code_editor_target: "codeTab", action: "click->inline-code-editor#showCode"},
+                class: "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 whitespace-nowrap border-b-2 py-2 px-1 text-sm font-medium") do
+                plain "Code"
+              end
+            end
+          end
+
+          # Preview View
+          div(data: {inline_code_editor_target: "previewView"}, class: "mt-2") do
+            div(**preview_attrs) { raw(@code_content.to_s.html_safe) }
+          end
+
+          # Code Editor View
+          div(data: {inline_code_editor_target: "codeView"}, class: "mt-2 hidden bg-white p-4 border border-gray-200") do
+            textarea(
+              data: {inline_code_editor_target: "codeInput"},
+              class: "w-full h-64 p-3 font-mono text-sm border border-gray-300 rounded focus:ring-primary focus:border-primary",
+              placeholder: "Enter your HTML/embed code here..."
+            ) { raw(@code_content.to_s) }
+
+            div(class: "mt-3 flex justify-end space-x-2") do
+              button(type: "button",
+                data: {action: "click->inline-code-editor#saveCode"},
+                class: "inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500") do
+                plain "💾 Save Code"
+              end
+            end
+
+            div(data: {inline_code_editor_target: "saveMessage"}, class: "hidden mt-2")
+          end
+        end
+      end
+
+      def preview_attrs
+        {
+          class: "p-4 border border-dashed border-gray-300 bg-gray-50 min-h-32"
+        }
+      end
+
       def element_attrs
         {
           id: "editor-#{@block_content_id}",
@@ -69,7 +119,7 @@ module Panda
 
       def component_is_editable?
         # TODO: Permissions
-        @editable && is_embedded? && Current.user&.admin
+        @editable && is_embedded? && Current.user&.admin?
       end
 
       def is_embedded?
@@ -78,11 +128,17 @@ module Panda
       end
 
       def handle_error(error)
-        unless Rails.env.production?
-          raise Panda::CMS::MissingBlockError, "Block with key #{@key} not found for page #{Current.page.title}"
-        end
+        Rails.logger.error "CodeComponent error: #{error.message}"
+        Rails.logger.error error.backtrace.join("\n")
 
-        false
+        if Rails.env.production?
+          false
+        else
+          div(class: "p-4 bg-red-50 border border-red-200 rounded") do
+            p(class: "text-red-800 font-semibold") { "CodeComponent Error" }
+            p(class: "text-red-600 text-sm") { error.message }
+          end
+        end
       end
 
       class BlockError < StandardError; end

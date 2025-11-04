@@ -2,34 +2,19 @@
   <% component.heading(text: form.name, level: 1) do |heading| %>
   <% end %>
 
-  <div class="overflow-x-auto -mx-4 rounded-lg ring-1 sm:mx-0 sm:rounded-lg ring-mid">
-    <table class="min-w-full divide-y divide-gray-300 border-collapse table-auto">
-      <thead>
-        <tr>
-          <% fields.each do |field, title| %>
-          <th scope="col" class="py-3.5 px-3 text-sm font-semibold text-left text-gray-900"><%= title %></th>
-          <% end %>
-          <th scope="col" class="py-3.5 px-3 text-sm font-semibold text-left text-gray-900">Submitted</th>
-        </tr>
-      </thead>
-      <tbody class="bg-white divide-y divide-gray-200">
-        <% submissions.each do |submission| %>
-        <tr class="relative bg-white cursor-pointer hover:bg-gray-50">
-          <% fields.each do |field| %>
-          <td class="py-5 px-3 text-sm text-gray-500">
-            <% if field[0] == "email" || field[0] == "email_address" %>
-              <a href="mailto:<%= submission.data[field[0]] %>" class="border-b border-gray-500 hover:text-gray-900"><%= submission.data[field[0]] %></a>
-            <% else %>
-              <%= simple_format(submission.data[field[0]]) %>
-            <% end %>
-          </td>
-          <% end %>
-          <td class="py-5 px-3 text-sm text-gray-500 whitespace-nowrap">
-            <div class="text-gray-500"><%= time_ago_in_words(submission.created_at) %> ago</div>
-          </td>
-        </tr>
+  <%= render Panda::Core::Admin::TableComponent.new(term: "submission", rows: submissions) do |table| %>
+    <% fields.each do |field, title| %>
+      <% table.column(title) do |submission| %>
+        <% if field[0] == "email" || field[0] == "email_address" %>
+          <a href="mailto:<%= submission.data[field[0]] %>" class="border-b border-gray-500 hover:text-gray-900"><%= submission.data[field[0]] %></a>
+        <% else %>
+          <%= simple_format(submission.data[field[0]]) %>
         <% end %>
-      </tbody>
-    </table>
-  </div>
+      <% end %>
+    <% end %>
+
+    <% table.column("Submitted") do |submission| %>
+      <%= time_ago_in_words(submission.created_at) %> ago
+    <% end %>
+  <% end %>
 <% end %>

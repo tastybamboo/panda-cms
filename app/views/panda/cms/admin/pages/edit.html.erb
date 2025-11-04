@@ -5,23 +5,29 @@
       <%= f.text_field :title %>
       <%= f.text_field :template, value: template.name, readonly: true, class: "read-only:bg-gray-100" %>
       <%= f.select :status, options_for_select([["Active", "active"], ["Draft", "draft"], ["Hidden", "hidden"], ["Archived", "archived"]], selected: page.status) %>
+      <% if page.page_type.in?(["system", "posts"]) %>
+        <%= f.text_field :page_type, value: page.page_type.humanize, readonly: true, class: "read-only:bg-gray-100" %>
+      <% else %>
+        <%= f.select :page_type, options_for_select([["Active", "standard"], ["Hidden", "hidden"], ["Code", "code"]], selected: page.page_type) %>
+      <% end %>
       <%= f.submit "Save" %>
     <% end %>
   <% end %>
   <div id="successMessage" class="hidden">
-    <%= render Panda::Core::Admin::FlashMessageComponent.new(kind: "success", message: "This page was successfully updated!", temporary: false) %>
+    <%= render Panda::Core::Admin::FlashMessageComponent.new(kind: :success, message: "This page was successfully updated!", temporary: false) %>
   </div>
   <div id="errorMessage" class="hidden">
-    <%= render Panda::Core::Admin::FlashMessageComponent.new(kind: "error", message: "There was an error updating this page.", temporary: false) %>
+    <%= render Panda::Core::Admin::FlashMessageComponent.new(kind: :error, message: "There was an error updating this page.", temporary: false) %>
   </div>
   <div class="grid grid-cols-2 mb-4 -mt-5">
     <div>
       <a class="inline-block mb-2 text-sm text-black/60" target="_blank" href="<%= @page.path %>"><%= @page.path %> <i class="ml-2 fa-solid fa-arrow-up-right-from-square"></i></a>
     </div>
-    <div class="relative -mt-5">
-      <span class="absolute right-0"><%= render Panda::Core::Admin::ButtonComponent.new(text: "Save Changes", action: :save_inactive, icon: "check", link: "#", size: :regular, id: "saveEditableButton") %></span>
+    <div class="flex justify-end">
+      <%= render Panda::Core::Admin::ButtonComponent.new(text: "Save Changes", action: :save, icon: "check", link: "#", size: :regular, id: "saveEditableButton") %>
     </div>
   </div>
+
   <%= content_tag :iframe, nil,
       src: "#{page.path}?embed_id=#{page.id}",
       class: "p-0 m-0 w-full h-full border border-slate-200",
