@@ -317,6 +317,21 @@ module Panda
           end
         end
 
+        # Simple response object for HTTP requests
+        class Response
+          attr_reader :code, :body
+
+          def initialize(success:, code:, body:)
+            @success = success
+            @code = code
+            @body = body
+          end
+
+          def success?
+            @success
+          end
+        end
+
         def fetch_url(url)
           uri = URI(url)
           http = Net::HTTP.new(uri.host, uri.port)
@@ -329,14 +344,14 @@ module Panda
 
           response = http.request(request)
 
-          OpenStruct.new(
-            success?: response.code.to_i == 200,
+          Response.new(
+            success: response.code.to_i == 200,
             code: response.code,
             body: response.body
           )
         rescue => e
           Rails.logger.error "[Panda CMS] Network error: #{e.message}"
-          OpenStruct.new(success?: false, code: "error", body: nil)
+          Response.new(success: false, code: "error", body: nil)
         end
 
         def asset_integrity(version, filename)
