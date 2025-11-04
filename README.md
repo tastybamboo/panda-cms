@@ -32,16 +32,6 @@ The easiest way for you to get started is to visit http://localhost:3000/admin a
 
 When you're ready to configure further, you can set your own configuration in `config/initializers/panda.rb`. Make sure to configure your authentication providers and update the domain restriction!
 
-## Panda CMS Pro
-
-Commercial features such as structured **Collections** live in the `panda-cms-pro` gem. Once the pro gem is installed you can:
-
-- Model repeatable content with collections and items.
-- Loop over entries inside layouts using helpers like `panda_cms_collection_items("trustees")`.
-- Keep the feature hidden in open-source installs thanks to `Panda::CMS::Features`.
-
-See `docs/collections.md` for the editor workflow and template examples, and `docs/private-gem-server.md` for hosting the private gem server.
-
 ### Existing applications
 
 Add the following to `Gemfile`:
@@ -124,6 +114,7 @@ The CMS automatically loads Core's compiled stylesheet:
 ```
 
 Core's Rack middleware serves this file from the gem, so:
+
 - ✅ No CSS copying or compilation needed
 - ✅ Styles update automatically when Core updates
 - ✅ Consistent design across all Panda gems
@@ -136,7 +127,7 @@ For CSS compilation (when contributing to styling), see [Panda Core Asset Compil
 
 This is a non-exhuastive list (there will be many more):
 
-* To date, this has only been tested with Rails 7.1, 7.2 and 8.0
+* To date, this has only been tested with Rails 7.1, 7.2 and 8
 * There may be conflicts if you're not using Tailwind CSS on the frontend. Please report this.
 
 ## Contributing
