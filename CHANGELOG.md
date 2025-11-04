@@ -5,6 +5,36 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.10.0] - 2025-11-04
+
+### Changed
+
+- Updated to panda-core v0.6.0 (from v0.4.1) for improved authentication and admin features
+- Updated to panda-editor v0.5.0 (from v0.4.0) for enhanced editor functionality
+
+### Added
+
+- New JavaScript controllers: code_editor, inline_code_editor, menu_form, nested_form, tree
+- Enhanced file gallery UI with file details view
+- Improved menu management with CRUD operations
+- Page type field to pages model
+- Pending review status for pages and posts
+- Cached last updated timestamp for pages
+- Favicons and branding assets for dummy app
+
+### Fixed
+
+- Route naming conflict in engine mounting (added :as option to prevent duplicate route names)
+- File gallery display and functionality
+- Menu item form handling
+
+### Technical Improvements
+
+- Removed local path reference to panda-core (CI compatibility)
+- Updated all dependencies in Gemfile.lock
+- Auto-fixed StandardRB linting issues
+- All tests passing
+
 ## [0.8.3] - 2025-11-01
 
 ### Added
