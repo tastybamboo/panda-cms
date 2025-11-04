@@ -3,7 +3,6 @@
 module Panda
   module CMS
     # @label Grid
-    # @tags stable
     class GridComponentPreview < ViewComponent::Preview
       # Basic 2-column grid
       # @label Two Columns

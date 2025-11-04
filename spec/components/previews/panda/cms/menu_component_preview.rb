@@ -3,7 +3,6 @@
 module Panda
   module CMS
     # @label Menu
-    # @tags stable
     # Note: This component requires database records (Menu and MenuItem).
     # Previews will only work if you have test data in your development database.
     class MenuComponentPreview < ViewComponent::Preview
