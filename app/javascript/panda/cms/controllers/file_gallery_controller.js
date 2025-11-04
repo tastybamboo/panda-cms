@@ -41,16 +41,16 @@ export default class extends Controller {
     allFileItems.forEach(button => {
       const container = button.closest('.relative').querySelector('.group')
       if (container) {
-        container.classList.remove('ring-2', 'ring-offset-2', 'ring-panda-dark')
-        container.classList.add('focus-within:ring-2', 'focus-within:ring-panda-dark', 'focus-within:ring-offset-2', 'focus-within:ring-offset-gray-100')
+        container.classList.remove('outline', 'outline-2', 'outline-offset-2', 'outline-panda-dark', 'dark:outline-panda-light')
+        container.classList.add('focus-within:outline-2', 'focus-within:outline-offset-2', 'focus-within:outline-indigo-600', 'dark:focus-within:outline-indigo-500')
       }
     })
 
     // Add selected state to clicked item
     const container = selectedButton.closest('.relative').querySelector('.group')
     if (container) {
-      container.classList.add('ring-2', 'ring-offset-2', 'ring-panda-dark')
-      container.classList.remove('focus-within:ring-2', 'focus-within:ring-panda-dark', 'focus-within:ring-offset-2', 'focus-within:ring-offset-gray-100')
+      container.classList.add('outline', 'outline-2', 'outline-offset-2', 'outline-panda-dark', 'dark:outline-panda-light')
+      container.classList.remove('focus-within:outline-2', 'focus-within:outline-offset-2', 'focus-within:outline-indigo-600', 'dark:focus-within:outline-indigo-500')
     }
   }
 
