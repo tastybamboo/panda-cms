@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    panda-cms (0.10.0)
+    panda-cms (0.10.1)
       awesome_nested_set (>= 3.8.0)
       down
       faraday

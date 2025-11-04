@@ -14,9 +14,6 @@ Rails.application.routes.draw do
   # Test-only route that renders a page using panda_cms_collection_items
   get '/collections-demo', to: 'collections_demo#index'
 
-  # Mount Panda CMS engine - this adds:
-  # - Admin CMS routes under /admin/cms (pages, posts, menus, etc.)
-  # - Form submission handler at /_forms/:id
-  # - Catch-all route for CMS pages at /*path
-  mount Panda::CMS::Engine => "/", as: "panda_cms"
+  # Note: Panda CMS engine auto-mounts itself via config.after_initialize
+  # No manual mount needed here - it will be appended automatically
 end
