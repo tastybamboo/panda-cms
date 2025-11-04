@@ -8,6 +8,10 @@ nav_order: 998
 
 Developer documentation is currently limited, but is in progress as we move towards an open source project and our 1.0 release.
 
+### Admin UI Development
+
+- [Admin UI Development](developers/admin-ui.md) - Building admin interfaces with breadcrumbs and components
+
 ### Testing
 
 - [Fixtures Migration Guide](developers/fixtures-migration.md) - Guide for migrating from factories to fixtures in tests
