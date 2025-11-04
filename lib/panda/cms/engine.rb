@@ -252,21 +252,8 @@ module Panda
           config.admin_dashboard_widgets = ->(user) {
             widgets = []
 
-            # Add CMS statistics widgets if CMS is available
-            if defined?(Panda::CMS)
-              widgets << Panda::CMS::Admin::StatisticsComponent.new(
-                metric: "Views Today",
-                value: Panda::CMS::Visit.group_by_day(:visited_at, last: 1).count.values.first || 0
-              )
-              widgets << Panda::CMS::Admin::StatisticsComponent.new(
-                metric: "Views Last Week",
-                value: Panda::CMS::Visit.group_by_week(:visited_at, last: 1).count.values.first || 0
-              )
-              widgets << Panda::CMS::Admin::StatisticsComponent.new(
-                metric: "Views Last Month",
-                value: Panda::CMS::Visit.group_by_month(:visited_at, last: 1).count.values.first || 0
-              )
-            end
+            # TODO: Add CMS statistics widgets when StatisticsComponent is implemented
+            # This was removed along with Pro code migration
 
             widgets
           }
