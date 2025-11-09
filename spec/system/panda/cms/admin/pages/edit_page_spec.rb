@@ -404,5 +404,105 @@ RSpec.describe "When editing a page", type: :system do
         expect(debug_info["errors"]).to be_empty
       end
     end
+
+    context "file upload functionality" do
+      before do
+        # Open the slideover to access SEO settings
+        page.execute_script("
+          const slideover = document.querySelector('#slideover');
+          if (slideover) {
+            slideover.classList.remove('hidden');
+            slideover.style.display = 'block';
+          }
+        ")
+        expect(page).to have_css("#slideover", visible: true, wait: 5)
+      end
+
+      it "shows file upload controller is connected" do
+        within("#slideover") do
+          # Check that file-upload controller is connected
+          controller_connected = page.evaluate_script("
+            const container = document.querySelector('[data-controller~=\"file-upload\"]');
+            container !== null;
+          ")
+          expect(controller_connected).to be true
+        end
+      end
+
+      it "displays file info when a file is selected" do
+        within("#slideover") do
+          # Create a test file path
+          test_file = Rails.root.join("spec", "fixtures", "files", "test_image.png")
+
+          # Attach file to the input
+          attach_file("panda_cms_page_og_image", test_file, make_visible: true)
+
+          # Wait for JavaScript to process the file
+          sleep 1
+
+          # Check that file info is displayed
+          expect(page).to have_css("[data-file-upload-target='fileInfo']", visible: true, wait: 5)
+
+          # Check that the file name is displayed
+          within("[data-file-upload-target='fileInfo']") do
+            expect(page).to have_content("test_image.png")
+          end
+        end
+      end
+
+      it "shows image preview for image files" do
+        within("#slideover") do
+          test_file = Rails.root.join("spec", "fixtures", "files", "test_image.png")
+          attach_file("panda_cms_page_og_image", test_file, make_visible: true)
+
+          # Wait for preview to load
+          sleep 1
+
+          # Check that preview is displayed
+          expect(page).to have_css("[data-file-upload-target='preview'] img", visible: true, wait: 5)
+        end
+      end
+
+      it "allows removing selected file" do
+        within("#slideover") do
+          test_file = Rails.root.join("spec", "fixtures", "files", "test_image.png")
+          attach_file("panda_cms_page_og_image", test_file, make_visible: true)
+
+          # Wait for file info to show
+          expect(page).to have_css("[data-file-upload-target='fileInfo']", visible: true, wait: 5)
+
+          # Click the remove button
+          within("[data-file-upload-target='fileInfo']") do
+            find("button[data-action='click->file-upload#removeFile']").click
+          end
+
+          # Wait for file info to be hidden
+          sleep 0.5
+
+          # Check that file info is hidden
+          expect(page).to have_css("[data-file-upload-target='fileInfo'].hidden", wait: 3)
+
+          # Check that dropzone is visible again
+          expect(page).to have_css("[data-file-upload-target='dropzone']", visible: true, wait: 3)
+        end
+      end
+
+      it "highlights dropzone on drag over" do
+        within("#slideover") do
+          dropzone_highlighted = page.evaluate_script("
+            const dropzone = document.querySelector('[data-file-upload-target=\"dropzone\"]');
+
+            // Simulate dragenter event
+            const dragenterEvent = new DragEvent('dragenter', { bubbles: true });
+            dropzone.dispatchEvent(dragenterEvent);
+
+            // Check if highlight classes were added
+            return dropzone.classList.contains('border-indigo-600');
+          ")
+
+          expect(dropzone_highlighted).to be true
+        end
+      end
+    end
   end
 end

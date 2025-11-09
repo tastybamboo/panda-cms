@@ -31,6 +31,41 @@
     </div>
   </div>
 
+  <%= f.section_heading "SEO Settings" %>
+
+  <div class="space-y-4">
+    <%= f.text_field :seo_title, { meta: "Max 70 characters. Leave blank to use post title." } %>
+    <%= f.text_area :seo_description, { rows: 3, meta: "Max 160 characters. Leave blank to use post excerpt." } %>
+    <%= f.text_field :seo_keywords, { meta: "Comma-separated keywords for search engines." } %>
+    <%= f.radio_button_group :seo_index_mode,
+        [["Visible to search engines", "visible"], ["Hidden from search engines", "invisible"]],
+        { meta: "Control how search engines index this post." } %>
+    <%= f.text_field :canonical_url, { meta: "Optional. Full URL to the canonical version of this post." } %>
+  </div>
+
+  <%= f.section_heading "Social Sharing" %>
+
+  <div class="space-y-4">
+    <%= f.text_field :og_title, { label: "Social Media Title", meta: "Max 60 characters. Leave blank to use SEO title." } %>
+    <%= f.text_area :og_description, { label: "Social Media Description", rows: 2, meta: "Max 200 characters. Used on Facebook, LinkedIn, Twitter." } %>
+    <%= f.select :og_type,
+        options_for_select(
+          [["Website", "website"], ["Article", "article"], ["Profile", "profile"], ["Video", "video"], ["Book", "book"]],
+          selected: post.og_type
+        ),
+        { label: "Content Type" } %>
+    <%= f.file_field :og_image, {
+      label: "Social Media Image",
+      meta: "Recommended: 1200×630px (1.91:1 ratio). Used on Facebook, LinkedIn, Twitter.",
+      accept: "image/png,image/jpeg,image/jpg,image/webp"
+    } %>
+    <% if post.og_image.attached? %>
+      <div class="mt-2">
+        <%= image_tag post.og_image.variant(:og_share), class: "max-w-xs rounded border border-gray-300" %>
+      </div>
+    <% end %>
+  </div>
+
   <%= f.submit post.persisted? ? "Update Post" : "Create Post",
       class: "btn btn-primary",
       data: {

@@ -99,7 +99,11 @@ module Panda
         # @type private
         # @return ActionController::StrongParameters
         def page_params
-          params.require(:page).permit(:title, :path, :panda_cms_template_id, :parent_id, :status, :page_type)
+          params.require(:page).permit(
+            :title, :path, :panda_cms_template_id, :parent_id, :status, :page_type,
+            :seo_title, :seo_description, :seo_keywords, :seo_index_mode, :canonical_url,
+            :og_title, :og_description, :og_type, :og_image, :inherit_seo
+          )
         end
       end
     end
