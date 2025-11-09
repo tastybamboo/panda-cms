@@ -1,4 +1,4 @@
-class AddSeoFieldsToPosts < ActiveRecord::Migration[8.0]
+class AddSEOFieldsToPosts < ActiveRecord::Migration[8.0]
   def change
     # Add SEO basic fields
     add_column :panda_cms_posts, :seo_title, :string

@@ -1,4 +1,4 @@
-class AddSeoFieldsToPages < ActiveRecord::Migration[8.0]
+class AddSEOFieldsToPages < ActiveRecord::Migration[8.0]
   def change
     # Create enum types for SEO fields
     create_enum :panda_cms_seo_index_mode, ["visible", "invisible"]
