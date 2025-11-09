@@ -66,7 +66,7 @@ module Panda
               flash: {success: "This page was successfully updated!"}
           else
             flash[:error] = "There was an error updating the page."
-            render :edit, status: :unprocessable_entity
+            render :edit, locals: {page: page, template: page.template}, status: :unprocessable_entity
           end
         end
 
