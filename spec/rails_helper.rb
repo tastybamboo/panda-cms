@@ -20,6 +20,12 @@ ENV["RAILS_ENV"] ||= "test"
 
 require File.expand_path("dummy/config/environment", __dir__)
 abort("The Rails environment is running in production mode!") if Rails.env.production?
+
+# Point AR at the dummy app's migration path only (not engine migrations)
+ActiveRecord::Migrator.migrations_paths = [
+  File.join(__dir__, "dummy", "db", "migrate")
+]
+
 require "rspec/rails"
 
 # Add additional requires below this line. Rails is not loaded until this point!

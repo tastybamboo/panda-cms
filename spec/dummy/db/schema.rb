@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_11_04_172638) do
+ActiveRecord::Schema[8.0].define(version: 2025_11_10_175631) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -18,6 +18,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_04_172638) do
   # Note that some types may not work with other database engines. Be careful if changing database.
   create_enum "panda_cms_block_kind", ["plain_text", "rich_text", "image", "video", "audio", "file", "code", "iframe", "quote", "list", "table", "form"]
   create_enum "panda_cms_menu_kind", ["static", "auto"]
+  create_enum "panda_cms_og_type", ["website", "article", "profile", "video", "book"]
   create_enum "panda_cms_page_status", ["active", "draft", "hidden", "archived"]
   create_enum "panda_cms_post_status", ["active", "draft", "hidden", "archived"]
   create_enum "panda_cms_pro_content_change_type", ["addition", "deletion", "modification", "callout", "citation"]
@@ -26,6 +27,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_04_172638) do
   create_enum "panda_cms_pro_suggestion_type", ["edit", "addition", "deletion", "comment", "citation"]
   create_enum "panda_cms_pro_sync_status", ["pending", "in_progress", "completed", "failed", "rolled_back"]
   create_enum "panda_cms_pro_sync_type", ["push", "pull"]
+  create_enum "panda_cms_seo_index_mode", ["visible", "invisible"]
 
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
@@ -81,7 +83,10 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_04_172638) do
     t.jsonb "data", default: {}, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "ip_address"
+    t.text "user_agent"
     t.index ["form_id"], name: "index_panda_cms_form_submissions_on_form_id"
+    t.index ["ip_address"], name: "index_panda_cms_form_submissions_on_ip_address"
   end
 
   create_table "panda_cms_forms", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -140,6 +145,15 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_04_172638) do
     t.string "workflow_status", default: "draft"
     t.datetime "cached_last_updated_at"
     t.string "page_type", default: "standard", null: false
+    t.string "seo_title"
+    t.text "seo_description"
+    t.string "seo_keywords"
+    t.enum "seo_index_mode", default: "visible", null: false, enum_type: "panda_cms_seo_index_mode"
+    t.string "canonical_url"
+    t.string "og_title"
+    t.text "og_description"
+    t.enum "og_type", default: "website", null: false, enum_type: "panda_cms_og_type"
+    t.boolean "inherit_seo", default: true, null: false
     t.index ["cached_last_updated_at"], name: "index_panda_cms_pages_on_cached_last_updated_at"
     t.index ["last_contributed_at"], name: "index_panda_cms_pages_on_last_contributed_at"
     t.index ["lft"], name: "index_panda_cms_pages_on_lft"
@@ -165,6 +179,14 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_04_172638) do
     t.integer "contributor_count", default: 0
     t.datetime "last_contributed_at"
     t.string "workflow_status", default: "draft"
+    t.string "seo_title"
+    t.text "seo_description"
+    t.string "seo_keywords"
+    t.enum "seo_index_mode", default: "visible", null: false, enum_type: "panda_cms_seo_index_mode"
+    t.string "canonical_url"
+    t.string "og_title"
+    t.text "og_description"
+    t.enum "og_type", default: "article", null: false, enum_type: "panda_cms_og_type"
     t.index ["author_id"], name: "index_panda_cms_posts_on_author_id"
     t.index ["last_contributed_at"], name: "index_panda_cms_posts_on_last_contributed_at"
     t.index ["slug"], name: "index_panda_cms_posts_on_slug", unique: true

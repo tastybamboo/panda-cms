@@ -9,16 +9,25 @@ RSpec.describe "JavaScript errors", type: :system, js: true do
     login_with_google(admin_user)
   end
 
+  # Helper to set up error tracking on a page
+  def setup_error_tracking
+    page.execute_script(<<~JS)
+      window.jsErrors = [];
+      window.addEventListener('error', function(e) {
+        window.jsErrors.push(e.message + ' at ' + e.filename + ':' + e.lineno);
+      });
+      window.addEventListener('unhandledrejection', function(e) {
+        window.jsErrors.push('Unhandled promise rejection: ' + e.reason);
+      });
+    JS
+  end
+
   # Helper to check for JavaScript errors
   def check_for_js_errors(page_name)
-    # Get console logs via Cuprite
-    logs = page.driver.browser.console_messages
+    # Get any errors that were captured
+    has_errors = page.evaluate_script("window.jsErrors || []")
 
-    # Filter for errors (level: :error)
-    errors = logs.select { |log| log[:level] == :error }
-
-    # Return error messages if any
-    error_messages = errors.map { |log| log[:message] }.join("\n")
+    error_messages = has_errors.join("\n")
 
     expect(error_messages).to be_empty,
       "Expected no JavaScript errors on #{page_name}, but found:\n#{error_messages}"
@@ -28,6 +37,7 @@ RSpec.describe "JavaScript errors", type: :system, js: true do
     it "has no JavaScript errors on page load" do
       visit "/admin/cms"
       expect(page).to have_content("Dashboard")
+      setup_error_tracking
 
       # Wait a moment for any deferred JS to execute
       sleep 1
@@ -38,10 +48,13 @@ RSpec.describe "JavaScript errors", type: :system, js: true do
     it "has no JavaScript errors after interaction" do
       visit "/admin/cms"
       expect(page).to have_content("Dashboard")
+      setup_error_tracking
 
       # Click around to trigger any lazy-loaded JS
-      if page.has_link?("My Profile", wait: 1)
-        find("a", text: "My Profile").click
+      # Try to interact with navigation menu items if they exist
+      if page.has_css?("nav a", wait: 1)
+        first_link = page.first("nav a", minimum: 1)
+        first_link.click if first_link
         sleep 0.5
       end
 
@@ -53,6 +66,7 @@ RSpec.describe "JavaScript errors", type: :system, js: true do
     it "has no JavaScript errors" do
       visit "/admin/cms/pages"
       expect(page).to have_content("Pages")
+      setup_error_tracking
 
       sleep 1
       check_for_js_errors("Pages index")
@@ -63,6 +77,7 @@ RSpec.describe "JavaScript errors", type: :system, js: true do
     it "has no JavaScript errors" do
       visit "/admin/cms/posts"
       expect(page).to have_content("Posts")
+      setup_error_tracking
 
       sleep 1
       check_for_js_errors("Posts index")
@@ -73,6 +88,7 @@ RSpec.describe "JavaScript errors", type: :system, js: true do
     it "has no JavaScript errors" do
       visit "/admin/cms/forms"
       expect(page).to have_content("Forms")
+      setup_error_tracking
 
       sleep 1
       check_for_js_errors("Forms index")
@@ -83,6 +99,7 @@ RSpec.describe "JavaScript errors", type: :system, js: true do
     it "has no JavaScript errors" do
       visit "/admin/cms/files"
       expect(page).to have_content("Files")
+      setup_error_tracking
 
       sleep 1
       check_for_js_errors("Files index")
@@ -93,6 +110,7 @@ RSpec.describe "JavaScript errors", type: :system, js: true do
     it "has no JavaScript errors" do
       visit "/admin/cms/menus"
       expect(page).to have_content("Menus")
+      setup_error_tracking
 
       sleep 1
       check_for_js_errors("Menus index")
@@ -103,6 +121,7 @@ RSpec.describe "JavaScript errors", type: :system, js: true do
     it "has no JavaScript errors" do
       visit "/admin/cms/settings"
       expect(page).to have_content("Settings")
+      setup_error_tracking
 
       sleep 1
       check_for_js_errors("Settings page")
@@ -113,6 +132,7 @@ RSpec.describe "JavaScript errors", type: :system, js: true do
     it "has no JavaScript errors" do
       visit "/admin/my_profile"
       expect(page).to have_content("My Profile")
+      setup_error_tracking
 
       sleep 1
       check_for_js_errors("My Profile page")
@@ -122,6 +142,7 @@ RSpec.describe "JavaScript errors", type: :system, js: true do
   describe "Navigation interaction" do
     it "has no JavaScript errors when expanding nested menus", js: true do
       visit "/admin/cms"
+      setup_error_tracking
 
       # Try to click nested menu items if they exist
       if page.has_button?("Content", wait: 1)

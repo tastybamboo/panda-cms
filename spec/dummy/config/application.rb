@@ -19,6 +19,10 @@ module Dummy
   class Application < Rails::Application
     config.load_defaults Rails::VERSION::STRING.to_f
 
+    # Only use dummy app's migrations, not engine migrations
+    # This allows testing the "copy to host app" migration strategy
+    config.paths["db/migrate"] = ["db/migrate"]
+
     # Handle frozen arrays if needed
     config.autoload_paths = config.autoload_paths.dup if config.autoload_paths.frozen?
     config.eager_load_paths = config.eager_load_paths.dup if config.eager_load_paths.frozen?
