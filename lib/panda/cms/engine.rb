@@ -206,6 +206,15 @@ module Panda
               icon: "fa-solid fa-bars"
             }
 
+            # Tools group
+            items << {
+              label: "Tools",
+              icon: "fa-solid fa-wrench",
+              children: [
+                { label: "Import/Export", path: "#{config.admin_path}/cms/tools/import-export" }
+              ]
+            }
+
             # Settings (standalone)
             items << {
               path: "#{config.admin_path}/cms/settings",
