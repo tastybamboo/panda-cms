@@ -3,23 +3,108 @@
 module Panda
   module CMS
     class FormSubmissionsController < ApplicationController
-      invisible_captcha only: [:create]
+      # Spam protection - invisible honeypot field
+      invisible_captcha only: [:create], on_spam: :log_spam
+
+      # Rate limiting to prevent spam
+      before_action :check_rate_limit, only: [:create]
 
       def create
-        vars = params.except(:authenticity_token, :controller, :action, :id)
-
         form = Panda::CMS::Form.find(params[:id])
-        form_submission = Panda::CMS::FormSubmission.create(form_id: params[:id], data: vars.to_unsafe_h)
-        form.update(submission_count: form.submission_count + 1)
 
-        Panda::CMS::FormMailer.notification_email(form: form, form_submission: form_submission).deliver_now
+        # Additional spam checks
+        if looks_like_spam?(params)
+          log_spam_attempt(form)
+          redirect_to_fallback(form, spam: true)
+          return
+        end
 
-        if (completion_path = form&.completion_path)
-          redirect_to completion_path
+        # Clean parameters - exclude system params and honeypot field
+        vars = params.except(:authenticity_token, :controller, :action, :id, :timestamp, :spinner)
+
+        # Create submission
+        form_submission = Panda::CMS::FormSubmission.create!(
+          form_id: form.id,
+          data: vars.to_unsafe_h,
+          ip_address: request.remote_ip,
+          user_agent: request.user_agent
+        )
+
+        # Update submission count
+        form.increment!(:submission_count)
+
+        # Send notification email (in background if possible)
+        begin
+          Panda::CMS::FormMailer.notification_email(form: form, form_submission: form_submission).deliver_now
+        rescue StandardError => e
+          Rails.logger.error "Failed to send form notification email: #{e.message}"
+          # Don't fail the submission if email fails
+        end
+
+        redirect_to_fallback(form, success: true)
+      rescue ActiveRecord::RecordInvalid => e
+        Rails.logger.error "Form submission validation failed: #{e.message}"
+        redirect_to_fallback(form, error: true)
+      end
+
+      private
+
+      # Check for basic spam indicators
+      def looks_like_spam?(params)
+        # Check for too many URLs in message fields
+        message_fields = params.values.select { |v| v.is_a?(String) && v.length > 20 }
+        message_fields.any? { |field| field.scan(/https?:\/\//).length > 3 }
+      end
+
+      # Rate limiting - max 3 submissions per IP per 5 minutes
+      def check_rate_limit
+        cache_key = "form_submission_rate_limit:#{request.remote_ip}"
+        count = Rails.cache.read(cache_key) || 0
+
+        if count >= 3
+          Rails.logger.warn "Rate limit exceeded for IP: #{request.remote_ip}"
+          render plain: "Too many requests. Please try again later.", status: :too_many_requests
+          return
+        end
+
+        Rails.cache.write(cache_key, count + 1, expires_in: 5.minutes)
+      end
+
+      # Log spam attempt
+      def log_spam_attempt(form)
+        Rails.logger.warn "Spam detected for form #{form.id} from IP: #{request.remote_ip}"
+      end
+
+      # Callback for invisible_captcha spam detection
+      def log_spam
+        Rails.logger.warn "Invisible captcha triggered from IP: #{request.remote_ip}"
+      end
+
+      # Safe redirect that works in engine context
+      def redirect_to_fallback(form, success: false, spam: false, error: false)
+        if spam
+          # Redirect to same page to appear successful (don't tell spammers)
+          redirect_back(fallback_location: main_app.root_path, allow_other_host: false)
+        elsif success && form.completion_path.present?
+          # Redirect to custom completion path
+          redirect_to form.completion_path, notice: "Thank you for your submission!"
+        elsif success
+          # Redirect back to referring page with success message
+          redirect_back(
+            fallback_location: main_app.root_path,
+            notice: "Thank you for your submission!",
+            allow_other_host: false
+          )
+        elsif error
+          # Redirect back with error message
+          redirect_back(
+            fallback_location: main_app.root_path,
+            alert: "There was an error submitting your form. Please try again.",
+            allow_other_host: false
+          )
         else
-          # TODO: This isn't a great fallback, we should do something nice here...
-          # Perhaps a simple JS alert when sent?
-          redirect_to "/"
+          # Default fallback
+          redirect_back(fallback_location: main_app.root_path, allow_other_host: false)
         end
       end
     end
