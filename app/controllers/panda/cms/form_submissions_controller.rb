@@ -14,13 +14,20 @@ module Panda
 
         # Additional spam checks
         if looks_like_spam?(params)
-          log_spam_attempt(form)
+          log_spam_attempt(form, "content")
+          redirect_to_fallback(form, spam: true)
+          return
+        end
+
+        # Timing-based spam detection (honeypot timing)
+        if submitted_too_quickly?(params)
+          log_spam_attempt(form, "timing")
           redirect_to_fallback(form, spam: true)
           return
         end
 
         # Clean parameters - exclude system params and honeypot field
-        vars = params.except(:authenticity_token, :controller, :action, :id, :timestamp, :spinner)
+        vars = params.except(:authenticity_token, :controller, :action, :id, :_form_timestamp, :spinner)
 
         # Create submission
         form_submission = Panda::CMS::FormSubmission.create!(
@@ -56,6 +63,35 @@ module Panda
         message_fields.any? { |field| field.scan(/https?:\/\//).length > 3 }
       end
 
+      # Timing-based spam detection
+      # Rejects submissions that are too fast (< 3 seconds) or too stale (> 24 hours)
+      def submitted_too_quickly?(params)
+        return false unless params[:_form_timestamp].present?
+
+        begin
+          form_loaded_at = Time.zone.at(params[:_form_timestamp].to_i)
+          time_elapsed = Time.current - form_loaded_at
+
+          # Too fast - likely a bot (< 3 seconds)
+          if time_elapsed < 3.seconds
+            Rails.logger.warn "Form submitted too quickly: #{time_elapsed.round(2)}s from IP: #{request.remote_ip}"
+            return true
+          end
+
+          # Too stale - form held too long without interaction (> 24 hours)
+          if time_elapsed > 24.hours
+            Rails.logger.warn "Form submission too old: #{(time_elapsed / 1.hour).round(1)}h from IP: #{request.remote_ip}"
+            return true
+          end
+
+          false
+        rescue ArgumentError, TypeError => e
+          Rails.logger.warn "Invalid form timestamp from IP #{request.remote_ip}: #{e.message}"
+          # Don't reject on invalid timestamp - might be legitimate user with modified form
+          false
+        end
+      end
+
       # Rate limiting - max 3 submissions per IP per 5 minutes
       def check_rate_limit
         cache_key = "form_submission_rate_limit:#{request.remote_ip}"
@@ -70,9 +106,9 @@ module Panda
         Rails.cache.write(cache_key, count + 1, expires_in: 5.minutes)
       end
 
-      # Log spam attempt
-      def log_spam_attempt(form)
-        Rails.logger.warn "Spam detected for form #{form.id} from IP: #{request.remote_ip}"
+      # Log spam attempt with reason
+      def log_spam_attempt(form, reason)
+        Rails.logger.warn "Spam detected (#{reason}) for form #{form.id} from IP: #{request.remote_ip}"
       end
 
       # Callback for invisible_captcha spam detection

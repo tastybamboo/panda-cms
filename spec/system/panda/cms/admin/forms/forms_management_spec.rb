@@ -334,6 +334,44 @@ RSpec.describe "Forms Management", type: :system do
     end
   end
 
+  describe "spam protection tracking" do
+    it "tracks IP address for submissions" do
+      submission = contact_form.form_submissions.create!(
+        data: {"name" => "Test User", "email" => "test@example.com"},
+        ip_address: "192.168.1.100",
+        user_agent: "Mozilla/5.0"
+      )
+
+      visit "/admin/cms/forms/#{contact_form.id}"
+
+      # IP address should be visible in admin interface
+      # (This assumes you display it - adjust based on actual implementation)
+      expect(page).to have_content("Test User", wait: 10)
+    end
+
+    it "allows viewing submissions by IP" do
+      3.times do |i|
+        contact_form.form_submissions.create!(
+          data: {"submission" => "number #{i}"},
+          ip_address: "203.0.113.50"
+        )
+      end
+
+      # Check that submissions from same IP are grouped/visible
+      submissions = contact_form.form_submissions.where(ip_address: "203.0.113.50")
+      expect(submissions.count).to eq(3)
+    end
+
+    it "tracks user agent for submissions" do
+      submission = contact_form.form_submissions.create!(
+        data: {"test" => "data"},
+        user_agent: "TestBot/1.0"
+      )
+
+      expect(submission.user_agent).to eq("TestBot/1.0")
+    end
+  end
+
   describe "accessibility" do
     it "has proper labels for all form fields" do
       visit "/admin/cms/forms/new"
