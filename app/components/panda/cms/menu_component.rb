@@ -44,9 +44,15 @@ module Panda
         @menu = Panda::CMS::Menu.find_by(name: @name)
         return unless @menu
 
-        menu_items = @menu.menu_items
-        menu_items = menu_items.where("depth <= ?", @menu.depth) if @menu.depth
-        menu_items = menu_items.order(:lft)
+        # Fragment caching: Cache menu_items query results
+        # Cache key includes menu's updated_at to auto-invalidate on changes
+        cache_key = "panda_cms_menu/#{@menu.name}/#{@menu.id}/#{@menu.updated_at.to_i}/items"
+
+        menu_items = Rails.cache.fetch(cache_key, expires_in: 1.hour) do
+          items = @menu.menu_items
+          items = items.where("depth <= ?", @menu.depth) if @menu.depth
+          items.order(:lft).to_a  # Convert to array for caching
+        end
 
         @processed_menu_items = menu_items.map do |menu_item|
           add_css_classes_to_item(menu_item)
