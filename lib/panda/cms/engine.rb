@@ -161,7 +161,7 @@ module Panda
           # Core now provides the admin interface foundation
           # Apps using CMS can customize login_logo_path, login_page_title, etc. in their own initializers
 
-          # Register CMS navigation items
+          # Register CMS navigation items with nested structure
           config.admin_navigation_items = ->(user) {
             items = []
 
@@ -172,51 +172,41 @@ module Panda
               icon: "fa-solid fa-house"
             }
 
-            # Pages
-            items << {
-              path: "#{config.admin_path}/cms/pages",
-              label: "Pages",
-              icon: "fa-solid fa-file"
-            }
+            # Content group - Pages, Posts, Collections
+            content_children = [
+              { label: "Pages", path: "#{config.admin_path}/cms/pages" },
+              { label: "Posts", path: "#{config.admin_path}/cms/posts" }
+            ]
 
-            # Collections (if enabled)
+            # Add Collections if enabled
             if Panda::CMS::Features.enabled?(:collections)
-              items << {
-                path: "#{config.admin_path}/cms/collections",
-                label: "Collections",
-                icon: "fa-solid fa-table-cells"
-              }
+              content_children << { label: "Collections", path: "#{config.admin_path}/cms/collections" }
             end
 
-            # Posts
             items << {
-              path: "#{config.admin_path}/cms/posts",
-              label: "Posts",
-              icon: "fa-solid fa-newspaper"
+              label: "Content",
+              icon: "fa-solid fa-file-lines",
+              children: content_children
             }
 
-            # Forms
+            # Forms & Files group
             items << {
-              path: "#{config.admin_path}/cms/forms",
-              label: "Forms",
-              icon: "fa-solid fa-inbox"
+              label: "Forms & Files",
+              icon: "fa-solid fa-folder",
+              children: [
+                { label: "Forms", path: "#{config.admin_path}/cms/forms" },
+                { label: "Files", path: "#{config.admin_path}/cms/files" }
+              ]
             }
 
-            # Files
-            items << {
-              path: "#{config.admin_path}/cms/files",
-              label: "Files",
-              icon: "fa-solid fa-image"
-            }
-
-            # Menus
+            # Menus (standalone)
             items << {
               path: "#{config.admin_path}/cms/menus",
               label: "Menus",
               icon: "fa-solid fa-bars"
             }
 
-            # Settings
+            # Settings (standalone)
             items << {
               path: "#{config.admin_path}/cms/settings",
               label: "Settings",
