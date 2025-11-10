@@ -3,11 +3,11 @@
 source "https://rubygems.org"
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
-# Use released panda-core
-gem "panda-core", "~> 0.6.0"
+# Use panda-core from GitHub main branch for testing
+gem "panda-core", github: "tastybamboo/panda-core", branch: "main"
 
 # Use released panda-editor
-gem "panda-editor", "~> 0.5.0"
+gem "panda-editor"
 
 # Specify your gem's dependencies in panda-cms.gemspec.
 gemspec
@@ -68,6 +68,7 @@ group :development, :test do
 end
 
 group :test do
+  gem "rack_session_access"
 end
 
 gem "rbnacl", "~> 7.1"
