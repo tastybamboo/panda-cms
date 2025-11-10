@@ -112,7 +112,10 @@
           label: "Social Media Image",
           meta: "Recommended: 1200×630px (1.91:1 ratio). Used on Facebook, LinkedIn, Twitter.",
           accept: "image/png,image/jpeg,image/jpg,image/webp",
-          simple: true
+          with_cropper: true,
+          aspect_ratio: 1.91,
+          min_width: 1200,
+          min_height: 630
         } %>
         <% if page.og_image.attached? %>
           <div class="mt-2">

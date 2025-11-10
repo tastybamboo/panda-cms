@@ -57,7 +57,11 @@
     <%= f.file_field :og_image, {
       label: "Social Media Image",
       meta: "Recommended: 1200×630px (1.91:1 ratio). Used on Facebook, LinkedIn, Twitter.",
-      accept: "image/png,image/jpeg,image/jpg,image/webp"
+      accept: "image/png,image/jpeg,image/jpg,image/webp",
+      with_cropper: true,
+      aspect_ratio: 1.91,
+      min_width: 1200,
+      min_height: 630
     } %>
     <% if post.og_image.attached? %>
       <div class="mt-2">
