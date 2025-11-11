@@ -1,18 +1,18 @@
 <%= render Panda::Core::Admin::ContainerComponent.new do |component| %>
-  <% component.heading(text: "Edit Menu: #{menu.name}", level: 1) %>
+  <% component.heading(text: "Edit Menu: #{@menu.name}", level: 1) %>
 
-  <%= panda_cms_form_with model: menu, url: admin_cms_menu_path(menu), method: :put do |f| %>
-    <%= render Panda::Core::Admin::FormErrorComponent.new(model: menu) %>
+  <%= panda_cms_form_with model: @menu, url: admin_cms_menu_path(@menu), method: :put do |f| %>
+    <%= render Panda::Core::Admin::FormErrorComponent.new(model: @menu) %>
 
     <%= f.text_field :name %>
-    <%= f.select :kind, options_for_select([["Static", "static"], ["Auto", "auto"]], selected: menu.kind), {}, { data: { action: "change->menu-form#kindChanged" } } %>
+    <%= f.select :kind, options_for_select([["Static", "static"], ["Auto", "auto"]], selected: @menu.kind), {}, { data: { action: "change->menu-form#kindChanged" } } %>
 
     <div data-controller="menu-form">
-      <div data-menu-form-target="startPageField" class="<%= 'hidden' unless menu.kind == 'auto' %>">
+      <div data-menu-form-target="startPageField" class="<%= 'hidden' unless @menu.kind == 'auto' %>">
         <%= f.collection_select :start_page_id, Panda::CMS::Page.order(:title), :id, :title, { include_blank: "Select a page..." }, { class: "mt-1" } %>
       </div>
 
-      <% if menu.kind == "static" %>
+      <% if @menu.kind == "static" %>
         <%= render Panda::Core::Admin::PanelComponent.new do |panel| %>
           <% panel.heading(text: "Menu Items") %>
 
@@ -24,8 +24,8 @@
             </template>
 
             <div class="space-y-4">
-              <% if menu.menu_items.any? %>
-                <%= f.fields_for :menu_items, menu.menu_items.sort_by(&:lft) do |item_form| %>
+              <% if @menu.menu_items.any? %>
+                <%= f.fields_for :menu_items, @menu.menu_items.sort_by(&:lft) do |item_form| %>
                   <%= render "menu_item_fields", form: item_form %>
                 <% end %>
               <% end %>
@@ -42,8 +42,8 @@
         <%= render Panda::Core::Admin::PanelComponent.new do |panel| %>
           <% panel.heading(text: "Auto-Generated Menu Items") %>
 
-          <% if menu.menu_items.any? %>
-            <%= render Panda::Core::Admin::TableComponent.new(term: "menu item", rows: menu.menu_items.root.self_and_descendants) do |table| %>
+          <% if @menu.menu_items.any? %>
+            <%= render Panda::Core::Admin::TableComponent.new(term: "menu item", rows: @menu.menu_items.root.self_and_descendants) do |table| %>
               <% table.column("Text") do |menu_item| %>
                 <div class="<%= "ml-#{menu_item.depth * 6}" %>">
                   <%= menu_item.text %>

@@ -1,34 +1,146 @@
 <%= render Panda::Core::Admin::ContainerComponent.new(full_height: true) do |component| %>
-  <% component.heading(text: "#{page.title}", level: 1) do |heading| %>
-    <% heading.button(text: "Page Details", action: :settings, icon: "cog", href: "#", id: "slideover-toggle", data: { action: "click->toggle#toggle touch->toggle#toggle" }) %>
+  <% component.heading(text: "#{page.title}", level: 1, meta: (link_to page.path, target: "_blank", class: "text-black/60 hover:text-black/80 inline-flex items-center gap-x-1" do
+    raw("#{page.path}<i class='fa-solid fa-arrow-up-right-from-square text-xs ml-1'></i>")
+  end)) do |h| %>
+    <% h.button(text: "Page Details", action: :secondary, as_button: true, size: :regular, id: "slideover-toggle", icon: "gear", data: { action: "click->toggle#toggle touch->toggle#toggle" }) %>
+    <% h.button(text: "Save Changes", action: :save, href: "#", size: :regular, id: "saveEditableButton", icon: "check") %>
   <% end %>
   <% component.with_slideover(title: "Page Details") do %>
-    <%= panda_cms_form_with model: page, url: admin_cms_page_path, method: :put do |f| %>
-      <%= f.text_field :title %>
-      <%= f.text_field :template, value: template.name, readonly: true, class: "read-only:bg-gray-100" %>
+    <% parent_seo_data = page.parent ? {
+      seoTitle: page.parent.seo_title,
+      seoDescription: page.parent.seo_description,
+      seoKeywords: page.parent.seo_keywords,
+      canonicalUrl: page.parent.canonical_url,
+      ogTitle: page.parent.og_title,
+      ogDescription: page.parent.og_description,
+      ogType: page.parent.og_type
+    }.to_json : '{}' %>
+    <% ai_generation_url = begin
+         admin_cms_pro_ai_generate_seo_path(page.id)
+       rescue NoMethodError
+         nil
+       end %>
+    <%= panda_cms_form_with model: page, url: admin_cms_page_path, method: :put, id: "page-form", data: {
+      controller: "page-form",
+      page_form_parent_seo_data_value: parent_seo_data,
+      page_form_page_id_value: page.id,
+      page_form_ai_generation_url_value: ai_generation_url
+    } do |f| %>
+      <%= f.text_field :title, { data: { page_form_target: "pageTitle" } } %>
+      <%= f.text_field :template, value: template.name, readonly: true %>
       <%= f.select :status, options_for_select([["Active", "active"], ["Draft", "draft"], ["Hidden", "hidden"], ["Archived", "archived"]], selected: page.status) %>
       <% if page.page_type.in?(["system", "posts"]) %>
-        <%= f.text_field :page_type, value: page.page_type.humanize, readonly: true, class: "read-only:bg-gray-100" %>
+        <%= f.text_field :page_type, value: page.page_type.humanize, readonly: true %>
       <% else %>
         <%= f.select :page_type, options_for_select([["Active", "standard"], ["Hidden", "hidden"], ["Code", "code"]], selected: page.page_type) %>
       <% end %>
-      <%= f.submit "Save" %>
+
+      <%= f.section_heading "SEO Settings" %>
+
+      <% if defined?(Panda::CMS::Pro) && ai_generation_url.present? %>
+        <div class="mb-4">
+          <%= render Panda::Core::Admin::ButtonComponent.new(
+            text: "Generate With AI",
+            action: :save,
+            icon: "wand-magic-sparkles",
+            size: :regular,
+            as_button: true,
+            data: {
+              action: "click->page-form#generateSeoWithAI",
+              page_form_target: "generateButton"
+            }
+          ) %>
+          <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Uses AI to analyze page content and generate optimized SEO fields.</p>
+        </div>
+      <% end %>
+
+      <% unless page.parent_id.nil? %>
+        <%= f.check_box :inherit_seo, {
+          label: "Inherit SEO from parent page",
+          data: {
+            page_form_target: "inheritCheckbox",
+            action: "change->page-form#toggleInherit"
+          }
+        } %>
+      <% end %>
+
+      <div class="space-y-4">
+        <%= f.text_field :seo_title, {
+          meta: "Max 70 characters. Leave blank to use page title.",
+          data: { page_form_target: "seoTitle" }
+        } %>
+        <%= f.text_area :seo_description, {
+          rows: 3,
+          meta: "Max 160 characters. Shown in search results.",
+          data: { page_form_target: "seoDescription" }
+        } %>
+        <%= f.text_field :seo_keywords, {
+          meta: "Comma-separated keywords for search engines.",
+          data: { page_form_target: "seoKeywords" }
+        } %>
+        <%= f.radio_button_group :seo_index_mode,
+            [["Visible to search engines", "visible"], ["Hidden from search engines", "invisible"]],
+            { meta: "Control how search engines index this page." } %>
+        <%= f.text_field :canonical_url, {
+          meta: "Optional. Full URL to the canonical version of this page.",
+          data: { page_form_target: "canonicalUrl" }
+        } %>
+      </div>
+
+      <%= f.section_heading "Social Sharing" %>
+
+      <div class="space-y-4">
+        <%= f.text_field :og_title, {
+          label: "Social Media Title",
+          meta: "Max 60 characters. Leave blank to use SEO title.",
+          data: { page_form_target: "ogTitle" }
+        } %>
+        <%= f.text_area :og_description, {
+          label: "Social Media Description",
+          rows: 2,
+          meta: "Max 200 characters. Used on Facebook, LinkedIn, Twitter.",
+          data: { page_form_target: "ogDescription" }
+        } %>
+        <%= f.select :og_type,
+            options_for_select(
+              [["Website", "website"], ["Article", "article"], ["Profile", "profile"], ["Video", "video"], ["Book", "book"]],
+              selected: page.og_type
+            ),
+            { label: "Content Type" },
+            { data: { page_form_target: "ogType" } } %>
+        <%= f.file_field :og_image, {
+          label: "Social Media Image",
+          meta: "Recommended: 1200×630px (1.91:1 ratio). Used on Facebook, LinkedIn, Twitter.",
+          accept: "image/png,image/jpeg,image/jpg,image/webp",
+          with_cropper: true,
+          aspect_ratio: 1.91,
+          min_width: 1200,
+          min_height: 630
+        } %>
+        <% if page.og_image.attached? %>
+          <div class="mt-2">
+            <%= image_tag page.og_image.variant(:og_share), class: "max-w-xs rounded border border-gray-300" %>
+          </div>
+        <% end %>
+      </div>
     <% end %>
   <% end %>
-  <div id="successMessage" class="hidden">
+  <% component.with_footer do %>
+    <button type="button" data-action="click->toggle#toggle touch->toggle#toggle" class="inline-flex items-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-xs inset-ring inset-ring-gray-300 hover:bg-gray-50 cursor-pointer dark:bg-white/10 dark:text-gray-100 dark:shadow-none dark:inset-ring-white/5 dark:hover:bg-white/20">
+      <i class="fa-solid fa-xmark"></i> Cancel
+    </button>
+    <button type="submit" form="page-form" class="inline-flex items-center gap-x-1.5 justify-center rounded-md bg-mid px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-mid/80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mid cursor-pointer dark:shadow-none">
+      <i class="fa-solid fa-check"></i> Save
+    </button>
+  <% end %>
+
+  <%= content_tag :div, id: "successMessage", class: "hidden fixed top-4 right-4 z-50" do %>
     <%= render Panda::Core::Admin::FlashMessageComponent.new(kind: :success, message: "This page was successfully updated!", temporary: false) %>
-  </div>
-  <div id="errorMessage" class="hidden">
+  <% end %>
+
+  <%= content_tag :div, id: "errorMessage", class: "hidden fixed top-4 right-4 z-50" do %>
     <%= render Panda::Core::Admin::FlashMessageComponent.new(kind: :error, message: "There was an error updating this page.", temporary: false) %>
-  </div>
-  <div class="grid grid-cols-2 mb-4 -mt-5">
-    <div>
-      <a class="inline-block mb-2 text-sm text-black/60" target="_blank" href="<%= @page.path %>"><%= @page.path %> <i class="ml-2 fa-solid fa-arrow-up-right-from-square"></i></a>
-    </div>
-    <div class="flex justify-end">
-      <%= render Panda::Core::Admin::ButtonComponent.new(text: "Save Changes", action: :save, icon: "check", link: "#", size: :regular, id: "saveEditableButton") %>
-    </div>
-  </div>
+  <% end %>
 
   <%= content_tag :iframe, nil,
       src: "#{page.path}?embed_id=#{page.id}",

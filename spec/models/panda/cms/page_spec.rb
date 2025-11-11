@@ -385,4 +385,322 @@ RSpec.describe Panda::CMS::Page, type: :model do
       end
     end
   end
+
+  describe "SEO functionality" do
+    let(:test_template) { create_test_template("SEO Test", "layouts/seo_test") }
+
+    before do
+      stub_redirect_creation
+    end
+
+    let(:seo_root) do
+      page = Panda::CMS::Page.new(
+        path: "/seo-test",
+        title: "SEO Test Root",
+        template: test_template,
+        status: "active"
+      )
+      page.save(validate: false)
+      page
+    end
+
+    describe "SEO validations" do
+      it { should validate_length_of(:seo_title).is_at_most(70) }
+      it { should validate_length_of(:seo_description).is_at_most(160) }
+      it { should validate_length_of(:og_title).is_at_most(60) }
+      it { should validate_length_of(:og_description).is_at_most(200) }
+
+      it "validates canonical URL format" do
+        page = Panda::CMS::Page.new(
+          title: "Invalid Canonical",
+          path: "/seo-test/invalid",
+          parent: seo_root,
+          template: test_template,
+          canonical_url: "not-a-url"
+        )
+        expect(page).not_to be_valid
+        expect(page.errors[:canonical_url]).to be_present
+      end
+
+      it "allows valid canonical URL" do
+        page = Panda::CMS::Page.new(
+          title: "Valid Canonical",
+          path: "/seo-test/valid",
+          parent: seo_root,
+          template: test_template,
+          canonical_url: "https://example.com/page"
+        )
+        expect(page).to be_valid
+      end
+
+      it "allows blank canonical URL" do
+        page = Panda::CMS::Page.new(
+          title: "No Canonical",
+          path: "/seo-test/no-canonical",
+          parent: seo_root,
+          template: test_template,
+          canonical_url: nil
+        )
+        expect(page).to be_valid
+      end
+    end
+
+    describe "SEO enums" do
+      it "has seo_index_mode enum" do
+        page = Panda::CMS::Page.create!(
+          title: "Enum Test",
+          path: "/seo-test/enum",
+          parent: seo_root,
+          template: test_template
+        )
+
+        expect(page.seo_visible?).to be true
+        page.seo_invisible!
+        expect(page.seo_invisible?).to be true
+      end
+
+      it "has og_type enum" do
+        page = Panda::CMS::Page.create!(
+          title: "OG Type Test",
+          path: "/seo-test/og-type",
+          parent: seo_root,
+          template: test_template
+        )
+
+        expect(page.og_website?).to be true
+        page.og_article!
+        expect(page.og_article?).to be true
+        page.og_video!
+        expect(page.og_video?).to be true
+      end
+    end
+
+    describe "#effective_seo_title" do
+      it "returns seo_title when present" do
+        page = Panda::CMS::Page.create!(
+          title: "Page Title",
+          seo_title: "Custom SEO Title",
+          path: "/seo-test/seo-title",
+          parent: seo_root,
+          template: test_template
+        )
+
+        expect(page.effective_seo_title).to eq("Custom SEO Title")
+      end
+
+      it "falls back to title when seo_title is blank" do
+        page = Panda::CMS::Page.create!(
+          title: "Page Title",
+          path: "/seo-test/no-seo-title",
+          parent: seo_root,
+          template: test_template
+        )
+
+        expect(page.effective_seo_title).to eq("Page Title")
+      end
+
+      it "inherits from parent when inherit_seo is true" do
+        parent = Panda::CMS::Page.create!(
+          title: "Parent Page",
+          seo_title: "Parent SEO Title",
+          path: "/seo-test/parent",
+          parent: seo_root,
+          template: test_template
+        )
+
+        child = Panda::CMS::Page.create!(
+          title: "Child Page",
+          path: "/seo-test/parent/child",
+          parent: parent,
+          template: test_template,
+          inherit_seo: true
+        )
+
+        expect(child.effective_seo_title).to eq("Parent SEO Title")
+      end
+
+      it "does not inherit when inherit_seo is false" do
+        parent = Panda::CMS::Page.create!(
+          title: "Parent Page",
+          seo_title: "Parent SEO Title",
+          path: "/seo-test/parent-no-inherit",
+          parent: seo_root,
+          template: test_template
+        )
+
+        child = Panda::CMS::Page.create!(
+          title: "Child Page",
+          path: "/seo-test/parent-no-inherit/child",
+          parent: parent,
+          template: test_template,
+          inherit_seo: false
+        )
+
+        expect(child.effective_seo_title).to eq("Child Page")
+      end
+    end
+
+    describe "#effective_seo_description" do
+      it "returns seo_description when present" do
+        page = Panda::CMS::Page.create!(
+          title: "Page",
+          seo_description: "Custom description",
+          path: "/seo-test/desc",
+          parent: seo_root,
+          template: test_template
+        )
+
+        expect(page.effective_seo_description).to eq("Custom description")
+      end
+
+      it "returns nil when seo_description is blank and no inheritance" do
+        page = Panda::CMS::Page.create!(
+          title: "Page",
+          path: "/seo-test/no-desc",
+          parent: seo_root,
+          template: test_template,
+          inherit_seo: false
+        )
+
+        expect(page.effective_seo_description).to be_nil
+      end
+
+      it "inherits from parent when inherit_seo is true" do
+        parent = Panda::CMS::Page.create!(
+          title: "Parent",
+          seo_description: "Parent description",
+          path: "/seo-test/parent-desc",
+          parent: seo_root,
+          template: test_template
+        )
+
+        child = Panda::CMS::Page.create!(
+          title: "Child",
+          path: "/seo-test/parent-desc/child",
+          parent: parent,
+          template: test_template,
+          inherit_seo: true
+        )
+
+        expect(child.effective_seo_description).to eq("Parent description")
+      end
+    end
+
+    describe "#effective_og_title" do
+      it "returns og_title when present" do
+        page = Panda::CMS::Page.create!(
+          title: "Page Title",
+          og_title: "Custom OG Title",
+          path: "/seo-test/og-title",
+          parent: seo_root,
+          template: test_template
+        )
+
+        expect(page.effective_og_title).to eq("Custom OG Title")
+      end
+
+      it "falls back to effective_seo_title" do
+        page = Panda::CMS::Page.create!(
+          title: "Page Title",
+          seo_title: "SEO Title",
+          path: "/seo-test/og-fallback",
+          parent: seo_root,
+          template: test_template
+        )
+
+        expect(page.effective_og_title).to eq("SEO Title")
+      end
+    end
+
+    describe "#effective_og_description" do
+      it "returns og_description when present" do
+        page = Panda::CMS::Page.create!(
+          title: "Page",
+          og_description: "OG description",
+          path: "/seo-test/og-desc",
+          parent: seo_root,
+          template: test_template
+        )
+
+        expect(page.effective_og_description).to eq("OG description")
+      end
+
+      it "falls back to effective_seo_description" do
+        page = Panda::CMS::Page.create!(
+          title: "Page",
+          seo_description: "SEO description",
+          path: "/seo-test/og-desc-fallback",
+          parent: seo_root,
+          template: test_template
+        )
+
+        expect(page.effective_og_description).to eq("SEO description")
+      end
+    end
+
+    describe "#effective_canonical_url" do
+      it "returns canonical_url when present" do
+        page = Panda::CMS::Page.create!(
+          title: "Page",
+          path: "/seo-test/canonical",
+          parent: seo_root,
+          template: test_template,
+          canonical_url: "https://example.com/canonical"
+        )
+
+        expect(page.effective_canonical_url).to eq("https://example.com/canonical")
+      end
+
+      it "falls back to page path" do
+        page = Panda::CMS::Page.create!(
+          title: "Page",
+          path: "/seo-test/path-canonical",
+          parent: seo_root,
+          template: test_template
+        )
+
+        expect(page.effective_canonical_url).to eq("/seo-test/path-canonical")
+      end
+    end
+
+    describe "#robots_meta_content" do
+      it "returns 'index, follow' when visible" do
+        page = Panda::CMS::Page.create!(
+          title: "Page",
+          path: "/seo-test/visible",
+          parent: seo_root,
+          template: test_template,
+          seo_index_mode: "visible"
+        )
+
+        expect(page.robots_meta_content).to eq("index, follow")
+      end
+
+      it "returns 'noindex, nofollow' when invisible" do
+        page = Panda::CMS::Page.create!(
+          title: "Page",
+          path: "/seo-test/invisible",
+          parent: seo_root,
+          template: test_template,
+          seo_index_mode: "invisible"
+        )
+
+        expect(page.robots_meta_content).to eq("noindex, nofollow")
+      end
+    end
+
+    describe "Active Storage attachment" do
+      it "has og_image attachment" do
+        page = Panda::CMS::Page.create!(
+          title: "Page",
+          path: "/seo-test/og-image",
+          parent: seo_root,
+          template: test_template
+        )
+
+        expect(page).to respond_to(:og_image)
+        expect(page.og_image).to be_a(ActiveStorage::Attached::One)
+      end
+    end
+  end
 end

@@ -21,6 +21,12 @@ pandaCmsApplication.register("tree", TreeController)
 import FileGalleryController from "./file_gallery_controller.js"
 pandaCmsApplication.register("file-gallery", FileGalleryController)
 
+import FileUploadController from "./file_upload_controller.js"
+pandaCmsApplication.register("file-upload", FileUploadController)
+
+import PageFormController from "./page_form_controller.js"
+pandaCmsApplication.register("page-form", PageFormController)
+
 import NestedFormController from "./nested_form_controller.js"
 pandaCmsApplication.register("nested-form", NestedFormController)
 
