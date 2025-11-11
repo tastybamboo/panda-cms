@@ -73,11 +73,11 @@ RSpec.describe "When editing a page", type: :system do
 
       # Since JavaScript might not be fully loaded, we'll manually show the slideover
       # by removing the hidden class using JavaScript
+      # Don't set inline display style as it overrides Tailwind's lg:flex
       page.execute_script("
         const slideover = document.querySelector('#slideover');
         if (slideover) {
           slideover.classList.remove('hidden');
-          slideover.style.display = 'block';
           console.log('Slideover shown manually');
         }
       ")
@@ -96,11 +96,11 @@ RSpec.describe "When editing a page", type: :system do
       expect(page).to have_css("#slideover-toggle", wait: 10)
 
       # Manually show the slideover since JavaScript might not be loaded
+      # Don't set inline display style as it overrides Tailwind's lg:flex
       page.execute_script("
         const slideover = document.querySelector('#slideover');
         if (slideover) {
           slideover.classList.remove('hidden');
-          slideover.style.display = 'block';
         }
       ")
 
@@ -410,11 +410,11 @@ RSpec.describe "When editing a page", type: :system do
     context "file upload functionality" do
       before do
         # Open the slideover to access SEO settings
+        # Don't set inline display style as it overrides Tailwind's lg:flex
         page.execute_script("
           const slideover = document.querySelector('#slideover');
           if (slideover) {
             slideover.classList.remove('hidden');
-            slideover.style.display = 'block';
           }
         ")
         expect(page).to have_css("#slideover", visible: true, wait: 5)
