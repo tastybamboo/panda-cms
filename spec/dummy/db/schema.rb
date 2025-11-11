@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_11_05_000001) do
+ActiveRecord::Schema[8.0].define(version: 2025_11_10_175631) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -18,6 +18,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_05_000001) do
   # Note that some types may not work with other database engines. Be careful if changing database.
   create_enum "panda_cms_block_kind", ["plain_text", "rich_text", "image", "video", "audio", "file", "code", "iframe", "quote", "list", "table", "form"]
   create_enum "panda_cms_menu_kind", ["static", "auto"]
+  create_enum "panda_cms_og_type", ["website", "article", "profile", "video", "book"]
   create_enum "panda_cms_page_status", ["active", "draft", "hidden", "archived"]
   create_enum "panda_cms_post_status", ["active", "draft", "hidden", "archived"]
   create_enum "panda_cms_pro_content_change_type", ["addition", "deletion", "modification", "callout", "citation"]
@@ -26,6 +27,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_05_000001) do
   create_enum "panda_cms_pro_suggestion_type", ["edit", "addition", "deletion", "comment", "citation"]
   create_enum "panda_cms_pro_sync_status", ["pending", "in_progress", "completed", "failed", "rolled_back"]
   create_enum "panda_cms_pro_sync_type", ["push", "pull"]
+  create_enum "panda_cms_seo_index_mode", ["visible", "invisible"]
 
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
@@ -140,6 +142,15 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_05_000001) do
     t.string "workflow_status", default: "draft"
     t.datetime "cached_last_updated_at"
     t.string "page_type", default: "standard", null: false
+    t.string "seo_title"
+    t.text "seo_description"
+    t.string "seo_keywords"
+    t.enum "seo_index_mode", default: "visible", null: false, enum_type: "panda_cms_seo_index_mode"
+    t.string "canonical_url"
+    t.string "og_title"
+    t.text "og_description"
+    t.enum "og_type", default: "website", null: false, enum_type: "panda_cms_og_type"
+    t.boolean "inherit_seo", default: true, null: false
     t.index ["cached_last_updated_at"], name: "index_panda_cms_pages_on_cached_last_updated_at"
     t.index ["last_contributed_at"], name: "index_panda_cms_pages_on_last_contributed_at"
     t.index ["lft"], name: "index_panda_cms_pages_on_lft"
@@ -165,12 +176,59 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_05_000001) do
     t.integer "contributor_count", default: 0
     t.datetime "last_contributed_at"
     t.string "workflow_status", default: "draft"
+    t.string "seo_title"
+    t.text "seo_description"
+    t.string "seo_keywords"
+    t.enum "seo_index_mode", default: "visible", null: false, enum_type: "panda_cms_seo_index_mode"
+    t.string "canonical_url"
+    t.string "og_title"
+    t.text "og_description"
+    t.enum "og_type", default: "article", null: false, enum_type: "panda_cms_og_type"
     t.index ["author_id"], name: "index_panda_cms_posts_on_author_id"
     t.index ["last_contributed_at"], name: "index_panda_cms_posts_on_last_contributed_at"
     t.index ["slug"], name: "index_panda_cms_posts_on_slug", unique: true
     t.index ["status"], name: "index_panda_cms_posts_on_status"
     t.index ["user_id"], name: "index_panda_cms_posts_on_user_id"
     t.index ["workflow_status"], name: "index_panda_cms_posts_on_workflow_status"
+  end
+
+  create_table "panda_cms_pro_collection_fields", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "collection_id", null: false
+    t.string "label", null: false
+    t.string "field_type", null: false
+    t.string "key", null: false
+    t.boolean "required", default: false, null: false
+    t.integer "position", default: 0, null: false
+    t.text "instructions"
+    t.jsonb "settings", default: {}, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["collection_id", "key"], name: "idx_panda_cms_pro_collection_fields_keys", unique: true
+    t.index ["collection_id"], name: "index_panda_cms_pro_collection_fields_on_collection_id"
+  end
+
+  create_table "panda_cms_pro_collection_items", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "collection_id", null: false
+    t.string "title", null: false
+    t.jsonb "data", default: {}, null: false
+    t.boolean "visible", default: true, null: false
+    t.integer "position", default: 0, null: false
+    t.datetime "published_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["collection_id", "position"], name: "idx_panda_cms_pro_collection_items_position"
+    t.index ["collection_id"], name: "index_panda_cms_pro_collection_items_on_collection_id"
+  end
+
+  create_table "panda_cms_pro_collections", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "name", null: false
+    t.string "slug", null: false
+    t.string "item_label"
+    t.text "description"
+    t.integer "items_count", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["slug"], name: "index_panda_cms_pro_collections_on_slug", unique: true
   end
 
   create_table "panda_cms_pro_content_changes", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -389,6 +447,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_05_000001) do
   add_foreign_key "panda_cms_pages", "panda_cms_templates"
   add_foreign_key "panda_cms_posts", "panda_core_users", column: "author_id"
   add_foreign_key "panda_cms_posts", "panda_core_users", column: "user_id"
+  add_foreign_key "panda_cms_pro_collection_fields", "panda_cms_pro_collections", column: "collection_id"
+  add_foreign_key "panda_cms_pro_collection_items", "panda_cms_pro_collections", column: "collection_id"
   add_foreign_key "panda_cms_pro_content_changes", "panda_cms_pro_content_versions"
   add_foreign_key "panda_cms_pro_content_comments", "panda_cms_pro_content_comments", column: "parent_id"
   add_foreign_key "panda_cms_pro_content_comments", "panda_core_users", column: "resolved_by_id"
