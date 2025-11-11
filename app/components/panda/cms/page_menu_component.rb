@@ -36,7 +36,15 @@ module Panda
         menu = @start_page&.page_menu
         return if menu.nil?
 
-        @menu_item = menu.menu_items.order(:lft)&.first
+        # Fragment caching: Cache menu items for this page menu
+        # Cache key includes menu's updated_at to auto-invalidate on changes
+        cache_key = "panda_cms_page_menu/#{menu.id}/#{menu.updated_at.to_i}/items"
+
+        cached_items = Rails.cache.fetch(cache_key, expires_in: 1.hour) do
+          menu.menu_items.order(:lft).to_a
+        end
+
+        @menu_item = cached_items.first
 
         # Set default styles if not already set
         @styles[:indent_with] ||= "pl-2" if @styles

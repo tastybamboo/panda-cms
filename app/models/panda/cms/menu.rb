@@ -6,6 +6,7 @@ module Panda
       self.table_name = "panda_cms_menus"
 
       after_save :generate_auto_menu_items, if: -> { kind == "auto" }
+      after_commit :clear_menu_cache
 
       has_many :menu_items, lambda {
         order(lft: :asc)
@@ -49,6 +50,17 @@ module Panda
         return unless kind == "auto" && start_page.nil?
 
         errors.add(:start_page, "can't be blank")
+      end
+
+      #
+      # Clear fragment cache when menu is updated
+      # This ensures menu changes appear immediately on the front-end
+      #
+      # @return nil
+      # @visibility private
+      #
+      def clear_menu_cache
+        Rails.cache.delete("panda_cms_menu/#{name}/#{id}")
       end
     end
   end
