@@ -83,7 +83,10 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_10_175631) do
     t.jsonb "data", default: {}, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "ip_address"
+    t.text "user_agent"
     t.index ["form_id"], name: "index_panda_cms_form_submissions_on_form_id"
+    t.index ["ip_address"], name: "index_panda_cms_form_submissions_on_ip_address"
   end
 
   create_table "panda_cms_forms", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|

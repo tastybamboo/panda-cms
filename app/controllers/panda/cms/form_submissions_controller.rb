@@ -43,7 +43,7 @@ module Panda
         # Send notification email (in background if possible)
         begin
           Panda::CMS::FormMailer.notification_email(form: form, form_submission: form_submission).deliver_now
-        rescue => e
+        rescue StandardError => e
           Rails.logger.error "Failed to send form notification email: #{e.message}"
           # Don't fail the submission if email fails
         end

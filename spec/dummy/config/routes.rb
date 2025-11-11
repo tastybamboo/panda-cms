@@ -16,4 +16,5 @@ Rails.application.routes.draw do
 
   # Note: Panda CMS engine auto-mounts itself via config.after_initialize
   # No manual mount needed here - it will be appended automatically
+  # Root route is defined in lib/panda/cms/engine/route_config.rb line 27
 end
