@@ -224,10 +224,10 @@ module Panda
 
         def compiled_assets_available?
           # Check if compiled assets exist in test location
+          # Note: CSS comes from panda-core now, so we only check for JS
           version = asset_version
           js_file = Rails.public_path.join("panda-cms-assets", "panda-cms-#{version}.js")
-          css_file = Rails.public_path.join("panda-cms-assets", "panda-cms-#{version}.css")
-          js_file.exist? && css_file.exist?
+          js_file.exist?
         end
 
         def development_assets_available?
