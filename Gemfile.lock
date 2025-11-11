@@ -1,4 +1,21 @@
 PATH
+  remote: ../panda/core
+  specs:
+    panda-core (0.8.0)
+      image_processing (~> 1.2)
+      importmap-rails
+      literal (~> 1.8)
+      omniauth
+      omniauth-rails_csrf_protection
+      phlex (~> 2.3)
+      phlex-rails (~> 2.3)
+      propshaft
+      rails (>= 7.0)
+      stimulus-rails
+      tailwind_merge (~> 1.3)
+      turbo-rails
+
+PATH
   remote: .
   specs:
     panda-cms (0.10.1)
@@ -302,19 +319,6 @@ GEM
     omniauth-rails_csrf_protection (1.0.2)
       actionpack (>= 4.2)
       omniauth (~> 2.0)
-    panda-core (0.8.0)
-      image_processing (~> 1.2)
-      importmap-rails
-      literal (~> 1.8)
-      omniauth
-      omniauth-rails_csrf_protection
-      phlex (~> 2.3)
-      phlex-rails (~> 2.3)
-      propshaft
-      rails (>= 7.0)
-      stimulus-rails
-      tailwind_merge (~> 1.3)
-      turbo-rails
     panda-editor (0.6.0)
       dry-configurable (~> 1.0)
       nokogiri (~> 1.15)
@@ -565,7 +569,7 @@ DEPENDENCIES
   omniauth-google-oauth2
   omniauth-microsoft_graph
   panda-cms!
-  panda-core
+  panda-core!
   panda-editor
   propshaft
   puma

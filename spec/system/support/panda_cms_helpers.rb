@@ -20,10 +20,10 @@ module PandaCmsHelpers
         (function() {
           // Always check the top-level window, not iframe
           var topWindow = window.top || window;
-          
-          return topWindow.pandaCmsLoaded === true && 
-                 topWindow.Stimulus && 
-                 topWindow.Stimulus.controllers && 
+
+          return topWindow.pandaCmsLoaded === true &&
+                 topWindow.Stimulus &&
+                 topWindow.Stimulus.controllers &&
                  topWindow.Stimulus.controllers.size > 0;
         })()
       JS
@@ -41,7 +41,7 @@ module PandaCmsHelpers
       (function() {
         // Always check the top-level window, not iframe
         var topWindow = window.top || window;
-        
+
         return {
           pandaCmsLoaded: topWindow.pandaCmsLoaded,
           pandaCmsVersion: topWindow.pandaCmsVersion,
@@ -192,13 +192,13 @@ module PandaCmsHelpers
           if (field) {
             // Set the new value
             field.value = #{with.to_json};
-            
+
             // Trigger comprehensive events to ensure Rails sees the change
             field.dispatchEvent(new Event('input', { bubbles: true }));
             field.dispatchEvent(new Event('change', { bubbles: true }));
             field.dispatchEvent(new Event('blur', { bubbles: true }));
             field.dispatchEvent(new Event('focusout', { bubbles: true }));
-            
+
             return true;
           }
           return false;
@@ -369,7 +369,7 @@ module PandaCmsHelpers
         // Always check the top-level window, not iframe
         var topWindow = window.top || window;
         var topDocument = topWindow.document;
-        
+
         return {
           url: topWindow.location.href,
           pandaCmsLoaded: topWindow.pandaCmsLoaded,
@@ -554,12 +554,12 @@ RSpec.configure do |config|
 
   # Add debugging to system tests
   config.before(:each, type: :system) do
-    debug_log("[Test] Starting test: #{RSpec.current_example.full_description}")
+    debug_log("\nStarting test (debug enabled): #{RSpec.current_example.full_description}\n")
   end
 
   config.after(:each, type: :system) do |example|
     if example.exception
-      debug_log("[Test] Test failed: #{example.exception.message}")
+      debug_log("\n====TEST FAILED====\n#{example.exception.message}\n\n")
 
       # Add immediate page state debugging before other debug info
       current_url = begin
@@ -572,9 +572,10 @@ RSpec.configure do |config|
       rescue
         "unknown"
       end
-      debug_log("[Test] Immediate failure state - URL: #{current_url}, Title: #{page_title}")
+      debug_log("[Test] Immediate post-test failure state - URL: #{current_url}, Title: #{page_title}")
 
       debug_asset_state
+      debug_log("\n\n")
     end
   end
 end
