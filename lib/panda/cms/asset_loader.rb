@@ -239,12 +239,18 @@ module Panda
           return false unless defined?(Rails.application.importmap)
 
           begin
-            # Rails 8+ uses a different API for accessing importmap entries
-            if Rails.application.importmap.respond_to?(:to_json)
-              importmap_json = JSON.parse(Rails.application.importmap.to_json)
-              importmap_json.any? { |name, _| name.include?("panda") }
+            # Try different API methods depending on importmap-rails version
+            if Rails.application.importmap.respond_to?(:packages)
+              # importmap-rails 2.x - check packages hash
+              Rails.application.importmap.packages.keys.any? { |name| name.to_s.include?("panda") }
             elsif Rails.application.importmap.respond_to?(:entries)
+              # importmap-rails 1.x - check entries array
               Rails.application.importmap.entries.any? { |entry| entry.name.include?("panda") }
+            elsif Rails.application.importmap.respond_to?(:to_json)
+              # Fallback with proper resolver
+              # Note: to_json requires a resolver in newer versions
+              # We'll just return false if we can't access packages/entries
+              false
             else
               false
             end
