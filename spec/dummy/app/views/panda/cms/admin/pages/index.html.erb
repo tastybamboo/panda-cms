@@ -11,7 +11,7 @@
           <span class="block text-xs text-black/60"><%= page.path %></span>
         </div>
       <% end %>
-      <% table.column("Status") { |page| render Panda::Core::Admin::TagComponent.new(status: page.status) } %>
+      <% table.column("Status") { |page| render Panda::Core::Admin::TagComponent.new(status: page.status.to_sym) } %>
       <% table.column("Last Updated") { |page| render Panda::CMS::Admin::UserActivityComponent.new(model: page) } %>
     <% end %>
   <% else %>
