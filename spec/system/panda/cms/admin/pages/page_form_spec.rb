@@ -17,12 +17,12 @@ RSpec.describe "Page form SEO functionality", type: :system do
     visit "/admin/cms/pages/#{about_page.id}/edit"
     expect(page).to have_content("About", wait: 10)
 
-    # Open the slideover manually
+    # Open the slideover using the toggle controller's approach (just remove 'hidden' class)
+    # Don't set inline display style as it overrides Tailwind's lg:flex
     page.execute_script("
       const slideover = document.querySelector('#slideover');
       if (slideover) {
         slideover.classList.remove('hidden');
-        slideover.style.display = 'block';
       }
     ")
 
