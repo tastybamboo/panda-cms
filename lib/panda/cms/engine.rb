@@ -14,7 +14,6 @@ require_relative "engine/middleware_config"
 require_relative "engine/asset_config"
 require_relative "engine/route_config"
 require_relative "engine/core_config"
-require_relative "engine/view_component_config"
 require_relative "engine/backtrace_config"
 
 module Panda
@@ -27,7 +26,6 @@ module Panda
       include AssetConfig
       include RouteConfig
       include CoreConfig
-      include ViewComponentConfig
       include BacktraceConfig
 
       # Add services directory to autoload paths
