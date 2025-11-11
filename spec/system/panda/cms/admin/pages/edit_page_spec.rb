@@ -492,14 +492,16 @@ RSpec.describe "When editing a page", type: :system do
       it "highlights dropzone on drag over" do
         within("#slideover") do
           dropzone_highlighted = page.evaluate_script("
-            const dropzone = document.querySelector('[data-file-upload-target=\"dropzone\"]');
+            (() => {
+              const dropzone = document.querySelector('[data-file-upload-target=\"dropzone\"]');
 
-            // Simulate dragenter event
-            const dragenterEvent = new DragEvent('dragenter', { bubbles: true });
-            dropzone.dispatchEvent(dragenterEvent);
+              // Simulate dragenter event
+              const dragenterEvent = new DragEvent('dragenter', { bubbles: true });
+              dropzone.dispatchEvent(dragenterEvent);
 
-            // Check if highlight classes were added
-            return dropzone.classList.contains('border-indigo-600');
+              // Check if highlight classes were added
+              return dropzone.classList.contains('border-indigo-600');
+            })()
           ")
 
           expect(dropzone_highlighted).to be true
