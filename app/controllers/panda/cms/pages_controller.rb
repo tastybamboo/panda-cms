@@ -16,9 +16,9 @@ module Panda
 
       def show
         page = if @overrides&.dig(:page_path_match)
-          Panda::CMS::Page.includes(:template).find_by(path: @overrides[:page_path_match])
+          Panda::CMS::Page.includes(:template, :block_contents).find_by(path: @overrides[:page_path_match])
         else
-          Panda::CMS::Page.includes(:template).find_by(path: "/#{params[:path]}")
+          Panda::CMS::Page.includes(:template, :block_contents).find_by(path: "/#{params[:path]}")
         end
 
         Panda::CMS::Current.page = page || Panda::CMS::Page.find_by(path: "/404")
@@ -30,6 +30,11 @@ module Panda
           # This works for now, but we may want to override in future (e.g. custom 404s)
           render file: "#{Rails.root}/public/404.html", layout: false, status: :not_found and return
         end
+
+        # HTTP caching: Send ETag and Last-Modified headers for efficient caching
+        # Use cached_last_updated_at which includes block content updates
+        # Returns 304 Not Modified if client's cached version is still valid
+        fresh_when(page, last_modified: page.last_updated_at, public: true)
 
         template_vars = {
           page: page,

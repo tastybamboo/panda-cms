@@ -27,13 +27,13 @@ module Panda
 
                 # Content group - Pages, Posts, Collections
                 content_children = [
-                  { label: "Pages", path: "#{config.admin_path}/cms/pages" },
-                  { label: "Posts", path: "#{config.admin_path}/cms/posts" }
+                  {label: "Pages", path: "#{config.admin_path}/cms/pages"},
+                  {label: "Posts", path: "#{config.admin_path}/cms/posts"}
                 ]
 
                 # Add Collections if enabled
                 if Panda::CMS::Features.enabled?(:collections)
-                  content_children << { label: "Collections", path: "#{config.admin_path}/cms/collections" }
+                  content_children << {label: "Collections", path: "#{config.admin_path}/cms/collections"}
                 end
 
                 items << {
@@ -47,8 +47,8 @@ module Panda
                   label: "Forms & Files",
                   icon: "fa-solid fa-folder",
                   children: [
-                    { label: "Forms", path: "#{config.admin_path}/cms/forms" },
-                    { label: "Files", path: "#{config.admin_path}/cms/files" }
+                    {label: "Forms", path: "#{config.admin_path}/cms/forms"},
+                    {label: "Files", path: "#{config.admin_path}/cms/files"}
                   ]
                 }
 
@@ -64,7 +64,7 @@ module Panda
                   label: "Tools",
                   icon: "fa-solid fa-wrench",
                   children: [
-                    { label: "Import/Export", path: "#{config.admin_path}/cms/tools/import-export" }
+                    {label: "Import/Export", path: "#{config.admin_path}/cms/tools/import-export"}
                   ]
                 }
 

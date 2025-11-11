@@ -336,7 +336,7 @@ RSpec.describe "Forms Management", type: :system do
 
   describe "spam protection tracking" do
     it "tracks IP address for submissions" do
-      submission = contact_form.form_submissions.create!(
+      contact_form.form_submissions.create!(
         data: {"name" => "Test User", "email" => "test@example.com"},
         ip_address: "192.168.1.100",
         user_agent: "Mozilla/5.0"
