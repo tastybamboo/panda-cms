@@ -5,7 +5,7 @@ module Panda
     # @label Menu
     # Note: This component requires database records (Menu and MenuItem).
     # Previews will only work if you have test data in your development database.
-    class MenuComponentPreview < ViewComponent::Preview
+    class MenuComponentPreview < Lookbook::Preview
       # Basic menu with default styling
       # @label Default
       def default

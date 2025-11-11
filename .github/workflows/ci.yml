@@ -1,7 +1,7 @@
 ---
-name: "App Tests"
+name: 'App Tests'
 
-"on": # yamllint disable-line rule:truthy
+'on': # yamllint disable-line rule:truthy
   pull_request:
   push:
     branches:
@@ -11,16 +11,16 @@ name: "App Tests"
 
 jobs:
   seclint:
-    name: "Security Checks & Linters"
-    runs-on: "ubuntu-latest"
+    name: 'Security Checks & Linters'
+    runs-on: 'ubuntu-latest'
     container:
-      image: ghcr.io/tastybamboo/panda-ci:ruby-3.4.5
+      image: ghcr.io/tastybamboo/panda-ci:latest
     env:
-      BUNDLE_PATH: "vendor/bundle"
+      BUNDLE_PATH: 'vendor/bundle'
     steps:
-      - uses: "actions/checkout@v5"
+      - uses: 'actions/checkout@v5'
 
-      - name: "Cache gems"
+      - name: 'Cache gems'
         uses: actions/cache@v4
         with:
           path: vendor/bundle
@@ -29,41 +29,45 @@ jobs:
             ${{ runner.os }}-gems-lint-
             ${{ runner.os }}-gems-
 
-      - name: "Bundle install"
+      - name: 'Bundle install'
         run: |
           bundle config path vendor/bundle
+          bundle config without development
           bundle install --jobs 4 --retry 3
 
-      - name: "Bundler Audit"
-        run: "bundle exec bundle-audit --update"
-      - name: "Brakeman"
-        run: "bundle exec brakeman --quiet"
-      - name: "StandardRB Check"
-        run: "bundle exec standardrb"
-      - name: "ERB Check"
-        run: "bundle exec erb_lint app/views --lint-all"
-      - name: "YAML Lint"
-        run: "yamllint -c .yamllint ."
+      - name: 'Bundler Audit'
+        run: 'bundle exec bundle-audit --update'
+      - name: 'Brakeman'
+        run: 'bundle exec brakeman --quiet'
+      - name: 'StandardRB Check'
+        run: 'bundle exec standardrb'
+      - name: 'ERB Check'
+        run: 'bundle exec erb_lint app/views --lint-all'
+      - name: 'YAML Lint'
+        run: 'yamllint -c .yamllint .'
 
   specs:
-    name: "App Specs"
-    runs-on: "ubuntu-latest"
+    name: 'App Specs'
+    runs-on: 'ubuntu-latest'
     container:
-      image: ghcr.io/tastybamboo/panda-ci:ruby-3.4.5
+      image: ghcr.io/tastybamboo/panda-ci:latest
     permissions:
       contents: read
       pull-requests: write
     env:
-      BUNDLE_PATH: "vendor/bundle"
+      BUNDLE_PATH: 'vendor/bundle'
       RAILS_ENV: test
       DISPLAY: ':99'
     services:
       postgres:
         image: postgres:latest
         env:
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: password
           POSTGRES_DB: test
+        # Set health checks to wait until postgres has started
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -71,18 +75,18 @@ jobs:
           --health-retries 5
 
     steps:
-      - uses: "actions/checkout@v5"
-      - name: "Update VERSION"
+      - uses: 'actions/checkout@v5'
+      - name: 'Update VERSION'
         env:
           VERSION: ${{ github.event.pull_request.head.sha }}
         run: |
           echo "${VERSION}" >> VERSION
 
-      - name: "Start Xvfb"
+      - name: 'Start Xvfb'
         run: |
           Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
 
-      - name: "Cache gems"
+      - name: 'Cache gems'
         uses: actions/cache@v4
         with:
           path: vendor/bundle
@@ -91,12 +95,12 @@ jobs:
             ${{ runner.os }}-gems-test-
             ${{ runner.os }}-gems-
 
-      - name: "Bundle install"
+      - name: 'Bundle install'
         run: |
           bundle config path vendor/bundle
           bundle install --jobs 4 --retry 3
 
-      - name: "Cache assets"
+      - name: 'Cache assets'
         uses: actions/cache@v4
         with:
           path: |
@@ -106,13 +110,12 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-assets-
 
-      - name: "Setup test database"
+      - name: 'Setup test database'
+        working-directory: spec/dummy
         env:
-          DATABASE_URL: "postgres://postgres:password@postgres:5432/test"
-          RAILS_ENV: "test"
-          PG_USER: "postgres"
+          DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
+          RAILS_ENV: test
         run: |
-          cd spec/dummy
           # Clean up ALL migrations in dummy app to start fresh
           rm -rf db/migrate
           mkdir -p db/migrate
@@ -120,10 +123,10 @@ jobs:
           # Load schema from schema.rb (much faster than running migrations)
           bundle exec rails db:schema:load
 
-      - name: "Compile assets"
+      - name: 'Compile assets'
         working-directory: spec/dummy
         env:
-          DATABASE_URL: "postgres://postgres:password@postgres:5432/test"
+          DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
           RAILS_ENV: test
         run: |
           bundle exec rake panda:cms:assets:compile
@@ -131,14 +134,21 @@ jobs:
           echo "Assets in public directory:"
           ls -la public/panda-cms-assets/ || echo "No assets directory"
 
-      - name: "Run specs"
+      - name: 'Run specs'
         env:
-          DATABASE_URL: "postgres://postgres:password@postgres:5432/test"
-          RAILS_ENV: "test"
+          DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
+          RAILS_ENV: 'test'
         run: |
           bundle exec rspec --tag ~skip
 
-      - name: "Upload screenshots on failure"
+      - name: 'Upload coverage'
+        uses: actions/upload-artifact@v5
+        if: always()
+        with:
+          name: coverage
+          path: coverage/
+
+      - name: 'Upload screenshots on failure'
         uses: actions/upload-artifact@v5
         if: failure()
         with:
