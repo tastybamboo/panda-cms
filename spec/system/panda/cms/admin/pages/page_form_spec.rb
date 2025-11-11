@@ -2,7 +2,11 @@
 
 require "system_helper"
 
-RSpec.describe "Page form SEO functionality", type: :system do
+# TODO: These tests are currently failing due to page rendering issues
+# See: https://github.com/tastybamboo/panda-cms/issues/150
+# All 15 tests fail with "about:blank" page - needs investigation
+# IMPORTANT: Tests must be skipped at top level to prevent before hooks from polluting browser state
+RSpec.describe "Page form SEO functionality", type: :system, skip: "Page SEO form tests failing - page not rendering (Issue #150)" do
   fixtures :all
 
   let(:homepage) { panda_cms_pages(:homepage) }
@@ -11,13 +15,6 @@ RSpec.describe "Page form SEO functionality", type: :system do
   before do
     login_as_admin
     Panda::CMS::Current.root = Capybara.app_host
-  end
-
-  # TODO: These tests are currently failing due to page rendering issues
-  # See: https://github.com/tastybamboo/panda-cms/issues/150
-  # All 15 tests fail with "about:blank" page - needs investigation
-  before(:each) do
-    skip "Page SEO form tests failing - page not rendering (Issue #150)"
   end
 
   def open_page_details
