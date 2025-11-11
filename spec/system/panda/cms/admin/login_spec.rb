@@ -58,7 +58,7 @@ RSpec.describe "Admin authentication", type: :system do
   end
 
   describe "with sessions" do
-    it "maintains admin session across pages", skip: "Transactional fixtures prevent Capybara server from seeing test data" do
+    it "maintains admin session across pages" do
       login_with_google(admin_user)
       visit "/admin/cms/pages"
       expect(page).not_to have_current_path("/admin/login")
@@ -68,7 +68,7 @@ RSpec.describe "Admin authentication", type: :system do
       expect(html_content).to match(/pages|content/i)
     end
 
-    it "handles logout properly", skip: "Rails UJS not loaded in test environment" do
+    it "handles logout properly" do
       login_with_google(admin_user)
 
       # Simulate logout by deleting the session

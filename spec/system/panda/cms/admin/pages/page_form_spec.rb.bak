@@ -264,9 +264,9 @@ RSpec.describe "Page form SEO functionality", type: :system do
         page.evaluate_script("
           document.querySelector('#page-form').addEventListener('submit', function(e) {
             e.preventDefault();
-            var controller = this.closest('[data-controller~=\"page-form\"]')._stimulusController;
+            const controller = this.closest('[data-controller~=\"page-form\"]')._stimulusController;
             if (controller && controller.validateForm) {
-              var isValid = controller.validateForm(e);
+              const isValid = controller.validateForm(e);
               window.testValidationResult = isValid;
             }
           });
@@ -291,8 +291,8 @@ RSpec.describe "Page form SEO functionality", type: :system do
 
         # Validate
         validation_result = page.evaluate_script("
-          var form = document.querySelector('#page-form');
-          var controller = form.closest('[data-controller~=\"page-form\"]')._stimulusController;
+          const form = document.querySelector('#page-form');
+          const controller = form.closest('[data-controller~=\"page-form\"]')._stimulusController;
           controller ? controller.validateForm() : true
         ")
 

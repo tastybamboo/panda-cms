@@ -10,7 +10,7 @@ RSpec.describe "Editor.js resources", type: :system, editorjs: true do
 
     # Create a test div to load Editor.js into
     page.execute_script(<<~JS)
-      var testDiv = document.createElement('div');
+      const testDiv = document.createElement('div');
       testDiv.id = 'editor-js-test';
       testDiv.style.width = '100%';
       testDiv.style.height = '300px';

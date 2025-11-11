@@ -22,14 +22,14 @@ RSpec.describe "Menus Management", type: :system do
       expect(page).to have_content("Menus", wait: 10)
     end
 
-    it "displays existing menus in a table", skip: "Requires header_menu fixture" do
+    it "displays existing menus in a table" do
       visit "/admin/cms/menus"
 
       expect(page).to have_css("table", wait: 10)
       # expect(page).to have_content(header_menu.name)
     end
 
-    it "shows menu kind for each menu", skip: "Requires header_menu fixture" do
+    it "shows menu kind for each menu" do
       visit "/admin/cms/menus"
 
       # Should show kind badges/tags
@@ -58,7 +58,7 @@ RSpec.describe "Menus Management", type: :system do
       expect(page).to have_field("Kind")
     end
 
-    it "creates a menu with basic details", skip: "Menu kind 'footer' not yet supported" do
+    it "creates a menu with basic details" do
       visit "/admin/cms/menus/new"
 
       fill_in "Name", with: "Footer Menu"
@@ -82,7 +82,7 @@ RSpec.describe "Menus Management", type: :system do
       expect(page).to have_content(/can't be blank/i, wait: 5)
     end
 
-    it "allows setting a start page", skip: "Menu kind 'header' not yet supported" do
+    it "allows setting a start page" do
       visit "/admin/cms/menus/new"
 
       fill_in "Name", with: "Main Navigation"
@@ -97,14 +97,14 @@ RSpec.describe "Menus Management", type: :system do
   end
 
   describe "editing an existing menu" do
-    it "shows the edit menu form", skip: "Requires header_menu fixture" do
+    it "shows the edit menu form" do
       # visit "/admin/cms/menus/#{header_menu.id}/edit"
 
       # expect(page).to have_content("Edit Menu", wait: 10)
       # expect(page).to have_field("Name", with: header_menu.name)
     end
 
-    it "updates menu basic details", skip: "Requires header_menu fixture" do
+    it "updates menu basic details" do
       # visit "/admin/cms/menus/#{header_menu.id}/edit"
 
       # fill_in "Name", with: "Updated Header Menu"
@@ -119,7 +119,7 @@ RSpec.describe "Menus Management", type: :system do
       # expect(header_menu.kind).to eq("sidebar")
     end
 
-    it "shows existing menu items", skip: "Requires header_menu fixture" do
+    it "shows existing menu items" do
       # Create a menu item
       # header_menu.menu_items.create!(
       #   text: "Home",
@@ -133,19 +133,19 @@ RSpec.describe "Menus Management", type: :system do
   end
 
   describe "nested menu items" do
-    it "shows add menu item button", skip: "Requires header_menu fixture" do
+    it "shows add menu item button" do
       # visit "/admin/cms/menus/#{header_menu.id}/edit"
       # expect(page).to have_button("Add Menu Item", wait: 10)
     end
 
-    it "adds a new menu item when clicking add button", skip: "Requires header_menu fixture" do
+    it "adds a new menu item when clicking add button" do
       # visit "/admin/cms/menus/#{header_menu.id}/edit"
       # initial_count = all(".nested-form-wrapper").count
       # click_button "Add Menu Item"
       # expect(all(".nested-form-wrapper").count).to eq(initial_count + 1)
     end
 
-    it "creates menu with menu items", skip: "Menu kind 'header' not yet supported" do
+    it "creates menu with menu items" do
       visit "/admin/cms/menus/new"
 
       fill_in "Name", with: "Navigation with Items"
@@ -167,7 +167,7 @@ RSpec.describe "Menus Management", type: :system do
       expect(new_menu.menu_items.first.text).to eq("Home Link")
     end
 
-    it "adds multiple menu items", skip: "Requires header_menu fixture" do
+    it "adds multiple menu items" do
       # visit "/admin/cms/menus/#{header_menu.id}/edit"
       # initial_count = all(".nested-form-wrapper").count
       # click_button "Add Menu Item"
@@ -176,7 +176,7 @@ RSpec.describe "Menus Management", type: :system do
       # expect(all(".nested-form-wrapper").count).to eq(initial_count + 3)
     end
 
-    it "allows entering text for menu item", skip: "Requires header_menu fixture" do
+    it "allows entering text for menu item" do
       # visit "/admin/cms/menus/#{header_menu.id}/edit"
       # click_button "Add Menu Item"
       # within(all(".nested-form-wrapper").last) do
@@ -186,7 +186,7 @@ RSpec.describe "Menus Management", type: :system do
       # end
     end
 
-    it "allows selecting a page for menu item", skip: "Requires header_menu fixture" do
+    it "allows selecting a page for menu item" do
       # visit "/admin/cms/menus/#{header_menu.id}/edit"
       # click_button "Add Menu Item"
       # within(all(".nested-form-wrapper").last) do
@@ -197,7 +197,7 @@ RSpec.describe "Menus Management", type: :system do
       # expect(header_menu.menu_items.last.panda_cms_page_id).to eq(homepage.id)
     end
 
-    it "allows entering external URL for menu item", skip: "Requires header_menu fixture" do
+    it "allows entering external URL for menu item" do
       # visit "/admin/cms/menus/#{header_menu.id}/edit"
       # click_button "Add Menu Item"
       # within(all(".nested-form-wrapper").last) do
@@ -209,7 +209,7 @@ RSpec.describe "Menus Management", type: :system do
       # expect(header_menu.menu_items.last.external_url).to eq("https://example.com")
     end
 
-    it "removes menu item when clicking remove button", skip: "Requires header_menu fixture" do
+    it "removes menu item when clicking remove button" do
       # header_menu.menu_items.create!(
       #   text: "To Remove",
       #   external_url: "https://example.com"
@@ -222,7 +222,7 @@ RSpec.describe "Menus Management", type: :system do
       # expect(all(".nested-form-wrapper", visible: true).count).to eq(initial_count - 1)
     end
 
-    it "persists menu item removal on save", skip: "Requires header_menu fixture" do
+    it "persists menu item removal on save" do
       # menu_item = header_menu.menu_items.create!(
       #   text: "Will Be Deleted",
       #   external_url: "https://example.com"
@@ -238,7 +238,7 @@ RSpec.describe "Menus Management", type: :system do
   end
 
   describe "menu item validation" do
-    it "requires text for menu item", skip: "Requires header_menu fixture" do
+    it "requires text for menu item" do
       # visit "/admin/cms/menus/#{header_menu.id}/edit"
       # click_button "Add Menu Item"
       # within(all(".nested-form-wrapper").last) do
@@ -248,7 +248,7 @@ RSpec.describe "Menus Management", type: :system do
       # expect(page).to have_content(/can't be blank/i, wait: 5)
     end
 
-    it "accepts menu item with page link", skip: "Requires header_menu fixture" do
+    it "accepts menu item with page link" do
       # visit "/admin/cms/menus/#{header_menu.id}/edit"
       # click_button "Add Menu Item"
       # within(all(".nested-form-wrapper").last) do
@@ -259,7 +259,7 @@ RSpec.describe "Menus Management", type: :system do
       # expect(page).to have_content(/successfully updated/i, wait: 10)
     end
 
-    it "accepts menu item with external URL", skip: "Requires header_menu fixture" do
+    it "accepts menu item with external URL" do
       # visit "/admin/cms/menus/#{header_menu.id}/edit"
       # click_button "Add Menu Item"
       # within(all(".nested-form-wrapper").last) do
@@ -272,7 +272,7 @@ RSpec.describe "Menus Management", type: :system do
   end
 
   describe "nested form controller" do
-    it "connects the nested-form controller", skip: "Requires header_menu fixture" do
+    it "connects the nested-form controller" do
       # visit "/admin/cms/menus/#{header_menu.id}/edit"
       # controller_connected = page.evaluate_script("
       #   const form = document.querySelector('[data-controller*=\"nested-form\"]');
@@ -281,7 +281,7 @@ RSpec.describe "Menus Management", type: :system do
       # expect(controller_connected).to be true
     end
 
-    it "has template for new menu items", skip: "Requires header_menu fixture" do
+    it "has template for new menu items" do
       # visit "/admin/cms/menus/#{header_menu.id}/edit"
       # has_template = page.evaluate_script("
       #   const template = document.querySelector('#menu-item-template');
@@ -292,7 +292,7 @@ RSpec.describe "Menus Management", type: :system do
   end
 
   describe "menu kinds" do
-    it "allows selecting header kind", skip: "Menu kind 'header' not yet supported" do
+    it "allows selecting header kind" do
       visit "/admin/cms/menus/new"
 
       select "header", from: "Kind"
@@ -304,7 +304,7 @@ RSpec.describe "Menus Management", type: :system do
       expect(menu.kind).to eq("header")
     end
 
-    it "allows selecting footer kind", skip: "Menu kind 'footer' not yet supported" do
+    it "allows selecting footer kind" do
       visit "/admin/cms/menus/new"
 
       select "footer", from: "Kind"
@@ -316,7 +316,7 @@ RSpec.describe "Menus Management", type: :system do
       expect(menu.kind).to eq("footer")
     end
 
-    it "allows selecting sidebar kind", skip: "Menu kind 'sidebar' not yet supported" do
+    it "allows selecting sidebar kind" do
       visit "/admin/cms/menus/new"
 
       select "sidebar", from: "Kind"
@@ -365,7 +365,7 @@ RSpec.describe "Menus Management", type: :system do
       expect(page).to have_content("Menus")
     end
 
-    it "shows breadcrumb navigation on edit", skip: "Requires header_menu fixture" do
+    it "shows breadcrumb navigation on edit" do
       # visit "/admin/cms/menus/#{header_menu.id}/edit"
       # expect(page).to have_css("nav[aria-label='Breadcrumb']", wait: 10)
       # expect(page).to have_link("Menus")

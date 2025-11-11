@@ -75,7 +75,7 @@ RSpec.describe "When editing a page", type: :system do
       # by removing the hidden class using JavaScript
       # Don't set inline display style as it overrides Tailwind's lg:flex
       page.execute_script("
-        var slideover = document.querySelector('#slideover');
+        const slideover = document.querySelector('#slideover');
         if (slideover) {
           slideover.classList.remove('hidden');
           console.log('Slideover shown manually');
@@ -98,7 +98,7 @@ RSpec.describe "When editing a page", type: :system do
       # Manually show the slideover since JavaScript might not be loaded
       # Don't set inline display style as it overrides Tailwind's lg:flex
       page.execute_script("
-        var slideover = document.querySelector('#slideover');
+        const slideover = document.querySelector('#slideover');
         if (slideover) {
           slideover.classList.remove('hidden');
         }
@@ -249,7 +249,7 @@ RSpec.describe "When editing a page", type: :system do
         resources_loaded = page.evaluate_script(<<~JS)
           (function() {
             try {
-              var requiredComponents = [
+              const requiredComponents = [
                 'EditorJS',
                 'Paragraph',
                 'Header',
@@ -258,8 +258,8 @@ RSpec.describe "When editing a page", type: :system do
                 'Table'
               ];
 
-              var loadedComponents = [];
-              var missingComponents = [];
+              const loadedComponents = [];
+              const missingComponents = [];
 
               requiredComponents.forEach(component => {
                 if (window[component]) {
@@ -359,7 +359,7 @@ RSpec.describe "When editing a page", type: :system do
 
         debug_info = page.evaluate_script(<<~JS)
           (function() {
-            var info = {
+            const info = {
               timestamp: new Date().toISOString(),
               url: window.location.href,
               userAgent: navigator.userAgent,
@@ -385,7 +385,7 @@ RSpec.describe "When editing a page", type: :system do
             };
 
             // Check for Editor.js components
-            var components = ['Paragraph', 'Header', 'NestedList', 'Quote', 'Table'];
+            const components = ['Paragraph', 'Header', 'NestedList', 'Quote', 'Table'];
             components.forEach(component => {
               try {
                 info.components[component] = {
@@ -412,7 +412,7 @@ RSpec.describe "When editing a page", type: :system do
         # Open the slideover to access SEO settings
         # Don't set inline display style as it overrides Tailwind's lg:flex
         page.execute_script("
-          var slideover = document.querySelector('#slideover');
+          const slideover = document.querySelector('#slideover');
           if (slideover) {
             slideover.classList.remove('hidden');
           }
@@ -424,7 +424,7 @@ RSpec.describe "When editing a page", type: :system do
         within("#slideover") do
           # Check that file-upload controller is connected
           controller_connected = page.evaluate_script("
-            var container = document.querySelector('[data-controller~=\"file-upload\"]');
+            const container = document.querySelector('[data-controller~=\"file-upload\"]');
             container !== null;
           ")
           expect(controller_connected).to be true
@@ -493,10 +493,10 @@ RSpec.describe "When editing a page", type: :system do
         within("#slideover") do
           dropzone_highlighted = page.evaluate_script("
             (() => {
-              var dropzone = document.querySelector('[data-file-upload-target=\"dropzone\"]');
+              const dropzone = document.querySelector('[data-file-upload-target=\"dropzone\"]');
 
               // Simulate dragenter event
-              var dragenterEvent = new DragEvent('dragenter', { bubbles: true });
+              const dragenterEvent = new DragEvent('dragenter', { bubbles: true });
               dropzone.dispatchEvent(dragenterEvent);
 
               // Check if highlight classes were added
