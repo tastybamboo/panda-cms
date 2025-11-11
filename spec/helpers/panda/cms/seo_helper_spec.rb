@@ -2,7 +2,7 @@
 
 require "rails_helper"
 
-RSpec.describe Panda::CMS::SeoHelper, type: :helper do
+RSpec.describe Panda::CMS::SEOHelper, type: :helper do
   let(:test_template) do
     allow(File).to receive(:file?).and_return(true)
     template = Panda::CMS::Template.find_or_create_by!(

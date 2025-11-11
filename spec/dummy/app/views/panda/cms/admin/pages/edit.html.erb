@@ -1,5 +1,7 @@
 <%= render Panda::Core::Admin::ContainerComponent.new(full_height: true) do |component| %>
-  <% component.heading(text: "#{page.title}", level: 1) %>
+  <% component.heading(text: "#{page.title}", level: 1) do |heading| %>
+    <% heading.button(text: "Page Details", action: :settings, icon: "cog", href: "#", id: "slideover-toggle", data: { action: "click->toggle#toggle touch->toggle#toggle" }) %>
+  <% end %>
   <% component.with_slideover(title: "Page Details") do %>
     <%= panda_cms_form_with model: page, url: admin_cms_page_path, method: :put do |f| %>
       <%= f.text_field :title, class: "block w-full rounded-md border-0 p-2 text-gray-900 ring-1 ring-inset ring-mid placeholder:text-gray-300 focus:ring-1 focus:ring-inset focus:ring-dark sm:leading-6 hover:pointer" %>

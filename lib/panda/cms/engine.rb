@@ -9,243 +9,40 @@ require "panda/cms/railtie"
 
 require "invisible_captcha"
 
+# Load engine configuration modules
+require_relative "engine/autoload_config"
+require_relative "engine/middleware_config"
+require_relative "engine/asset_config"
+require_relative "engine/route_config"
+require_relative "engine/core_config"
+require_relative "engine/helper_config"
+require_relative "engine/backtrace_config"
+
 module Panda
   module CMS
     class Engine < ::Rails::Engine
       isolate_namespace Panda::CMS
 
-      # Add services directory to autoload paths
-      config.autoload_paths += %W[
-        #{root}/app/services
-      ]
+      # Include shared configuration modules from panda-core
+      include Panda::Core::Shared::InflectionsConfig
+      include Panda::Core::Shared::GeneratorConfig
+
+      # Include CMS-specific configuration modules
+      include AutoloadConfig
+      include MiddlewareConfig
+      include AssetConfig
+      include RouteConfig
+      include CoreConfig
+      include HelperConfig
+      include BacktraceConfig
 
       # Session configuration is left to the consuming application
       # The CMS engine does not impose session store requirements
 
-      config.to_prepare do
-        ApplicationController.helper(::ApplicationHelper)
-        ApplicationController.helper(Panda::CMS::AssetHelper)
-      end
-
-      # Set our generators
-      config.generators do |g|
-        g.orm :active_record, primary_key_type: :uuid
-        g.test_framework :rspec, fixture: true
-        g.fixture_replacement nil
-        g.view_specs false
-        g.templates.unshift File.expand_path("../templates", __dir__)
-      end
-
-      # Make files in public available to the main app (e.g. /panda_cms-assets/favicon.ico)
-      config.middleware.use Rack::Static,
-        urls: ["/panda-cms-assets"],
-        root: Panda::CMS::Engine.root.join("public")
-
-      # Make JavaScript files available for importmap
-      # Serve from app/javascript with proper MIME types
-      config.middleware.use Rack::Static,
-        urls: ["/panda/cms"],
-        root: Panda::CMS::Engine.root.join("app/javascript"),
-        header_rules: [
-          [:all, {"Cache-Control" => Rails.env.development? ? "no-cache, no-store, must-revalidate" : "public, max-age=31536000",
-                  "Content-Type" => "text/javascript; charset=utf-8"}]
-        ]
-
       # Custom error handling
       # config.exceptions_app = Panda::CMS::ExceptionsApp.new(exceptions_app: routes)
 
-      initializer "panda.cms.assets" do |app|
-        if Rails.configuration.respond_to?(:assets)
-          # Add JavaScript paths
-          app.config.assets.paths << root.join("app/javascript")
-          app.config.assets.paths << root.join("app/javascript/panda")
-          app.config.assets.paths << root.join("app/javascript/panda/cms")
-          app.config.assets.paths << root.join("app/javascript/panda/cms/controllers")
-
-          # Make sure these files are precompiled
-          app.config.assets.precompile += %w[
-            panda_cms_manifest.js
-            panda/cms/controllers/**/*.js
-            panda/cms/application_panda_cms.js
-          ]
-        end
-      end
-
-      # Add importmap paths from the engine
-      initializer "panda.cms.importmap", before: "importmap" do |app|
-        if app.config.respond_to?(:importmap)
-          # Create a new array if frozen
-          app.config.importmap.paths = app.config.importmap.paths.dup if app.config.importmap.paths.frozen?
-
-          # Add our paths
-          app.config.importmap.paths << root.join("config/importmap.rb")
-
-          # Handle cache sweepers similarly
-          if app.config.importmap.cache_sweepers.frozen?
-            app.config.importmap.cache_sweepers = app.config.importmap.cache_sweepers.dup
-          end
-          app.config.importmap.cache_sweepers << root.join("app/javascript")
-        end
-      end
-
-      # Auto-mount CMS routes
-      config.after_initialize do |app|
-        # Append routes to the routes file
-        app.routes.append do
-          mount Panda::CMS::Engine => "/", :as => "panda_cms"
-          post "/_forms/:id", to: "panda/cms/form_submissions#create", as: :panda_cms_form_submit
-          get "/_maintenance", to: "panda/cms/errors#error_503", as: :panda_cms_maintenance
-
-          # Catch-all route for CMS pages, but exclude admin paths and assets
-          admin_path = Panda::Core.config.admin_path.delete_prefix("/")
-          constraints = ->(request) {
-            !request.path.start_with?("/#{admin_path}") &&
-              !request.path.start_with?("/panda-cms-assets/")
-          }
-          get "/*path", to: "panda/cms/pages#show", as: :panda_cms_page, constraints: constraints
-
-          root to: "panda/cms/pages#root"
-        end
-      end
-
-      initializer "#{engine_name}.backtrace_cleaner" do |_app|
-        engine_root_regex = Regexp.escape(root.to_s + File::SEPARATOR)
-
-        # Clean those ERB lines, we don't need the internal autogenerated
-        # ERB method, what we do need (line number in ERB file) is already there
-        Rails.backtrace_cleaner.add_filter do |line|
-          line.sub(/(\.erb:\d+):in `__.*$/, '\\1')
-        end
-
-        # Remove our own engine's path prefix, even if it's
-        # being used from a local path rather than the gem directory.
-        Rails.backtrace_cleaner.add_filter do |line|
-          line.sub(/^#{engine_root_regex}/, "#{engine_name} ")
-        end
-
-        # Keep Umlaut's own stacktrace in the backtrace -- we have to remove Rails
-        # silencers and re-add them how we want.
-        Rails.backtrace_cleaner.remove_silencers!
-
-        # Silence what Rails silenced, UNLESS it looks like
-        # it's from Umlaut engine
-        Rails.backtrace_cleaner.add_silencer do |line|
-          (line !~ Rails::BacktraceCleaner::APP_DIRS_PATTERN) &&
-            (line !~ /^#{engine_root_regex}/) &&
-            (line !~ /^#{engine_name} /)
-        end
-      end
-
-      # Set up ViewComponent
-      initializer "panda.cms.view_component" do |app|
-        app.config.view_component.preview_paths ||= []
-        app.config.view_component.preview_paths << root.join("spec/components/previews")
-        app.config.view_component.generate.sidecar = true
-        app.config.view_component.generate.preview = true
-
-        # Add preview directories to autoload paths in development
-        if Rails.env.development?
-          # Handle frozen autoload_paths array
-          if app.config.autoload_paths.frozen?
-            app.config.autoload_paths = app.config.autoload_paths.dup
-          end
-          app.config.autoload_paths << root.join("spec/components/previews")
-        end
-      end
-
       # Authentication is now handled by Panda::Core::Engine
-
-      # Configure Core for CMS (runs before app initializers so apps can override)
-      initializer "panda.cms.configure_core", before: :load_config_initializers do |app|
-        Panda::Core.configure do |config|
-          # Core now provides the admin interface foundation
-          # Apps using CMS can customize login_logo_path, login_page_title, etc. in their own initializers
-
-          # Register CMS navigation items with nested structure
-          config.admin_navigation_items = ->(user) {
-            items = []
-
-            # Dashboard
-            items << {
-              path: "#{config.admin_path}/cms",
-              label: "Dashboard",
-              icon: "fa-solid fa-house"
-            }
-
-            # Content group - Pages, Posts, Collections
-            content_children = [
-              { label: "Pages", path: "#{config.admin_path}/cms/pages" },
-              { label: "Posts", path: "#{config.admin_path}/cms/posts" }
-            ]
-
-            # Add Collections if enabled
-            if Panda::CMS::Features.enabled?(:collections)
-              content_children << { label: "Collections", path: "#{config.admin_path}/cms/collections" }
-            end
-
-            items << {
-              label: "Content",
-              icon: "fa-solid fa-file-lines",
-              children: content_children
-            }
-
-            # Forms & Files group
-            items << {
-              label: "Forms & Files",
-              icon: "fa-solid fa-folder",
-              children: [
-                { label: "Forms", path: "#{config.admin_path}/cms/forms" },
-                { label: "Files", path: "#{config.admin_path}/cms/files" }
-              ]
-            }
-
-            # Menus (standalone)
-            items << {
-              path: "#{config.admin_path}/cms/menus",
-              label: "Menus",
-              icon: "fa-solid fa-bars"
-            }
-
-            # Tools group
-            items << {
-              label: "Tools",
-              icon: "fa-solid fa-wrench",
-              children: [
-                { label: "Import/Export", path: "#{config.admin_path}/cms/tools/import-export" }
-              ]
-            }
-
-            # Settings (standalone)
-            items << {
-              path: "#{config.admin_path}/cms/settings",
-              label: "Settings",
-              icon: "fa-solid fa-gear"
-            }
-
-            items
-          }
-
-          # Redirect to CMS dashboard after login
-          # Apps can override this if they want different behavior
-          config.dashboard_redirect_path = -> { "#{Panda::Core.config.admin_path}/cms" }
-
-          # Customize initial breadcrumb
-          config.initial_admin_breadcrumb = ->(controller) {
-            # Use CMS dashboard path - just use the string path
-            ["Admin", "#{config.admin_path}/cms"]
-          }
-
-          # Dashboard widgets
-          config.admin_dashboard_widgets = ->(user) {
-            widgets = []
-
-            # TODO: Add CMS statistics widgets when StatisticsComponent is implemented
-            # This was removed along with Pro code migration
-
-            widgets
-          }
-        end
-      end
     end
 
     class MissingBlockError < StandardError; end

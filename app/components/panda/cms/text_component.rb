@@ -90,7 +90,7 @@ module Panda
         view_context.params[:embed_id].present? && view_context.params[:embed_id] == Current.page.id
       end
 
-      def handle_error(error)
+      def handle_error(_error)
         if !Rails.env.production? || defined?(Sentry)
           raise Panda::CMS::MissingBlockError, "Block with key #{@key} not found for page #{Current.page.title}"
         end
