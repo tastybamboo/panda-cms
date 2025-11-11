@@ -4,8 +4,7 @@ module Panda
   module CMS
     class FormSubmissionsController < ApplicationController
       # Spam protection - invisible honeypot field
-      # Skip in test environment due to session/engine routing issues
-      invisible_captcha only: [:create], on_spam: :log_spam unless Rails.env.test?
+      invisible_captcha only: [:create], on_spam: :log_spam
 
       # Rate limiting to prevent spam
       before_action :check_rate_limit, only: [:create]
@@ -44,7 +43,7 @@ module Panda
         # Send notification email (in background if possible)
         begin
           Panda::CMS::FormMailer.notification_email(form: form, form_submission: form_submission).deliver_now
-        rescue StandardError => e
+        rescue => e
           Rails.logger.error "Failed to send form notification email: #{e.message}"
           # Don't fail the submission if email fails
         end
@@ -115,49 +114,33 @@ module Panda
       # Callback for invisible_captcha spam detection
       def log_spam
         Rails.logger.warn "Invisible captcha triggered from IP: #{request.remote_ip}"
-
-        # Handle redirect in engine context (root_path not available)
-        fallback = begin
-          main_app.root_path
-        rescue NoMethodError
-          "/"
-        end
-
-        redirect_back(fallback_location: fallback, allow_other_host: false)
       end
 
       # Safe redirect that works in engine context
       def redirect_to_fallback(form, success: false, spam: false, error: false)
-        # Fallback location - use main_app.root_path if available, otherwise "/"
-        fallback = begin
-          main_app.root_path
-        rescue NoMethodError
-          "/"
-        end
-
         if spam
           # Redirect to same page to appear successful (don't tell spammers)
-          redirect_back(fallback_location: fallback, allow_other_host: false)
+          redirect_back(fallback_location: main_app.root_path, allow_other_host: false)
         elsif success && form.completion_path.present?
           # Redirect to custom completion path
           redirect_to form.completion_path, notice: "Thank you for your submission!"
         elsif success
           # Redirect back to referring page with success message
           redirect_back(
-            fallback_location: fallback,
+            fallback_location: main_app.root_path,
             notice: "Thank you for your submission!",
             allow_other_host: false
           )
         elsif error
           # Redirect back with error message
           redirect_back(
-            fallback_location: fallback,
+            fallback_location: main_app.root_path,
             alert: "There was an error submitting your form. Please try again.",
             allow_other_host: false
           )
         else
           # Default fallback
-          redirect_back(fallback_location: fallback, allow_other_host: false)
+          redirect_back(fallback_location: main_app.root_path, allow_other_host: false)
         end
       end
     end

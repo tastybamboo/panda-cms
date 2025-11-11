@@ -195,6 +195,45 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_10_175631) do
     t.index ["workflow_status"], name: "index_panda_cms_posts_on_workflow_status"
   end
 
+  create_table "panda_cms_pro_collection_fields", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "collection_id", null: false
+    t.string "label", null: false
+    t.string "field_type", null: false
+    t.string "key", null: false
+    t.boolean "required", default: false, null: false
+    t.integer "position", default: 0, null: false
+    t.text "instructions"
+    t.jsonb "settings", default: {}, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["collection_id", "key"], name: "idx_panda_cms_pro_collection_fields_keys", unique: true
+    t.index ["collection_id"], name: "index_panda_cms_pro_collection_fields_on_collection_id"
+  end
+
+  create_table "panda_cms_pro_collection_items", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "collection_id", null: false
+    t.string "title", null: false
+    t.jsonb "data", default: {}, null: false
+    t.boolean "visible", default: true, null: false
+    t.integer "position", default: 0, null: false
+    t.datetime "published_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["collection_id", "position"], name: "idx_panda_cms_pro_collection_items_position"
+    t.index ["collection_id"], name: "index_panda_cms_pro_collection_items_on_collection_id"
+  end
+
+  create_table "panda_cms_pro_collections", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "name", null: false
+    t.string "slug", null: false
+    t.string "item_label"
+    t.text "description"
+    t.integer "items_count", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["slug"], name: "index_panda_cms_pro_collections_on_slug", unique: true
+  end
+
   create_table "panda_cms_pro_content_changes", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "panda_cms_pro_content_version_id", null: false
     t.string "section_identifier"
@@ -411,6 +450,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_10_175631) do
   add_foreign_key "panda_cms_pages", "panda_cms_templates"
   add_foreign_key "panda_cms_posts", "panda_core_users", column: "author_id"
   add_foreign_key "panda_cms_posts", "panda_core_users", column: "user_id"
+  add_foreign_key "panda_cms_pro_collection_fields", "panda_cms_pro_collections", column: "collection_id"
+  add_foreign_key "panda_cms_pro_collection_items", "panda_cms_pro_collections", column: "collection_id"
   add_foreign_key "panda_cms_pro_content_changes", "panda_cms_pro_content_versions"
   add_foreign_key "panda_cms_pro_content_comments", "panda_cms_pro_content_comments", column: "parent_id"
   add_foreign_key "panda_cms_pro_content_comments", "panda_core_users", column: "resolved_by_id"
