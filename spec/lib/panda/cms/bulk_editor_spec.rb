@@ -108,7 +108,7 @@ RSpec.describe Panda::CMS::BulkEditor, type: :model do
 
       it "handles pages with empty block contents" do
         # Create a page - it will have block definitions but no content
-        page = Panda::CMS::Page.create!(
+        Panda::CMS::Page.create!(
           path: "/empty",
           title: "Empty Page",
           template: Panda::CMS::Template.first,
@@ -201,7 +201,7 @@ RSpec.describe Panda::CMS::BulkEditor, type: :model do
 
       it "exports auto menus with start_page_path" do
         # Create an auto menu
-        auto_menu = Panda::CMS::Menu.create!(
+        Panda::CMS::Menu.create!(
           name: "Auto Test Menu",
           kind: "auto",
           start_page: Panda::CMS::Page.find_by(path: "/")
@@ -498,7 +498,11 @@ RSpec.describe Panda::CMS::BulkEditor, type: :model do
         # Check if either the column name or its mapped name exists
         # or if the value is nil/empty (optional fields)
         page = Panda::CMS::Page.first
-        value = page.send(column.to_sym) rescue nil
+        value = begin
+          page.send(column.to_sym)
+        rescue
+          nil
+        end
 
         has_key = exported_keys.include?(export_key)
         is_empty = value.nil? || value.to_s.empty?
@@ -537,7 +541,11 @@ RSpec.describe Panda::CMS::BulkEditor, type: :model do
         post = Panda::CMS::Post.first
         next unless post
 
-        value = post.send(column.to_sym) rescue nil
+        value = begin
+          post.send(column.to_sym)
+        rescue
+          nil
+        end
 
         has_key = exported_keys.include?(export_key)
         is_empty = value.nil? || value.to_s.empty?
