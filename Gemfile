@@ -12,8 +12,6 @@ gemspec
 group :development, :test do
   gem "annotaterb"
   gem "awesome_print"
-  gem "better_errors"
-  gem "binding_of_caller"
   gem "brakeman"
   gem "bullet"
   gem "bundler-audit"
@@ -31,7 +29,6 @@ group :development, :test do
   gem "standard"
   gem "standard-rails"
   gem "stringio"
-  gem "yamllint"
   gem "yard-activerecord"
 
   # OAuth provider gems (optional - host apps install what they need)
@@ -41,6 +38,13 @@ group :development, :test do
   gem "omniauth-microsoft_graph"
 end
 
+# Don't include these in test environment, or parsing test failures is hard
+group :development do
+  gem "better_errors"
+  gem "binding_of_caller"
+end
+
+# We only need these in the test environment
 group :test do
   gem "database_cleaner-active_record"
   gem "rspec"

@@ -13,8 +13,8 @@
       </div>
     <% end %>
     <% table.column("Status") { |post| render Panda::Core::Admin::TagComponent.new(status: post.status.to_sym) } %>
-    <% table.column("Published") { |post| render Panda::CMS::Admin::UserActivityComponent.new(at: post.published_at, user: post.author)} %>
-    <% table.column("Last Updated") { |post| render Panda::CMS::Admin::UserActivityComponent.new(at: post.updated_at)} %>
+    <% table.column("Published") { |post| render Panda::Core::Admin::UserActivityComponent.new(at: post.published_at, user: post.author)} %>
+    <% table.column("Last Updated") { |post| render Panda::Core::Admin::UserActivityComponent.new(at: post.updated_at)} %>
   <% end %>
 
 <% end %>
