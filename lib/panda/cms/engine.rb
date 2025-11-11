@@ -10,6 +10,7 @@ require "panda/cms/railtie"
 require "invisible_captcha"
 
 # Load engine configuration modules
+require_relative "engine/inflections_config"
 require_relative "engine/autoload_config"
 require_relative "engine/middleware_config"
 require_relative "engine/asset_config"
@@ -25,6 +26,7 @@ module Panda
       isolate_namespace Panda::CMS
 
       # Include configuration modules
+      include InflectionsConfig
       include AutoloadConfig
       include MiddlewareConfig
       include AssetConfig
