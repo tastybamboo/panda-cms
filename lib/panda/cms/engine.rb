@@ -85,3 +85,14 @@ module Panda
     class BlockError < StandardError; end
   end
 end
+
+# Register CMS module with panda-core for asset compilation
+Panda::Core::ModuleRegistry.register(
+  gem_name: "panda-cms",
+  engine: "Panda::CMS::Engine",
+  paths: {
+    views: "app/views/panda/cms/**/*.erb",
+    components: "app/components/panda/cms/**/*.rb"
+    # JavaScript paths are auto-discovered from config/importmap.rb
+  }
+)

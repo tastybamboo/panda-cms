@@ -44,6 +44,60 @@ Compiled assets include:
 - **CSS Bundle**: `panda-cms-{version}.css` - Basic styles for admin interface
 - **Manifest**: `manifest.json` - File metadata, sizes, and SHA256 hashes
 
+## Automatic Compilation in Test Environments
+
+**New in v0.10+**: Panda CMS automatically compiles JavaScript when tests run, using **timestamp-based filenames** for automatic cache busting:
+
+```bash
+# First test run - auto-compiles JavaScript
+RAILS_ENV=test bundle exec rspec
+
+# Output:
+# 🐼 [Panda CMS] Auto-compiling JavaScript for test environment...
+# 🐼 [Panda CMS] JavaScript compilation successful (XXXX bytes)
+```
+
+**What gets created:**
+
+- `public/panda-cms-assets/panda-cms-1762886534.js` (timestamp-based)
+- No symlink created (asset loader finds latest timestamp file automatically)
+
+**How it works:**
+
+1. Engine initializer checks for existing compiled JavaScript on Rails boot
+2. If none found, runs `bundle exec rake app:panda:cms:assets:compile` with `VERSION_OVERRIDE`
+3. Creates timestamp-based file using Unix timestamp (e.g., `1762886534`)
+4. Asset loader finds the latest timestamp file automatically
+
+**Benefits:**
+
+- Zero manual compilation needed for testing
+- Automatic cache busting without version bumps
+- Works in both local and CI environments
+- Consistent with panda-core CSS compilation pattern
+
+**Environment variable override:**
+
+```bash
+# Force recompilation
+PANDA_CMS_AUTO_COMPILE=true bundle exec rails server
+```
+
+**Development vs Production:**
+
+- **Development/Test**: Uses timestamp-based files (e.g., `panda-cms-1762886534.js`)
+- **Production/Release**: Uses semantic versioned files (e.g., `panda-cms-0.10.1.js`)
+
+The `VERSION_OVERRIDE` environment variable allows the rake task to create timestamp-based files instead of semantic versioned files:
+
+```bash
+# Development/test compilation (timestamp)
+VERSION_OVERRIDE=1762886534 bundle exec rake app:panda:cms:assets:compile
+
+# Production/release compilation (semantic version)
+bundle exec rake app:panda:cms:assets:compile  # Uses Panda::CMS::VERSION
+```
+
 ## Usage
 
 ### For CI/Testing
