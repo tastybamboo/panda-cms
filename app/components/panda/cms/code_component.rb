@@ -14,10 +14,12 @@ module Panda
       prop :editable, _Boolean, default: true
 
       def view_template
-        if @editable_state
-          render_editable_view
+        # Russian doll caching: Cache component output at block_content level
+        # Only cache in non-editable mode (public-facing pages)
+        if should_cache?
+          raw cache_component_output
         else
-          raw(@code_content.to_s.html_safe)
+          render_content
         end
       rescue => e
         handle_error(e)
@@ -36,9 +38,9 @@ module Panda
         block = find_block
         return false if block.nil?
 
-        block_content = find_block_content(block)
-        @code_content = block_content&.content.to_s
-        @block_content_id = block_content&.id
+        @block_content_obj = find_block_content(block)
+        @code_content = @block_content_obj&.content.to_s
+        @block_content_id = @block_content_obj&.id
       end
 
       def find_block
@@ -139,6 +141,38 @@ module Panda
             p(class: "text-red-600 text-sm") { error.message }
           end
         end
+      end
+
+      def render_content
+        if @editable_state
+          render_editable_view
+        else
+          raw(@code_content.to_s.html_safe)
+        end
+      end
+
+      def should_cache?
+        !@editable_state &&
+          Panda::CMS.config.performance.dig(:fragment_caching, :enabled) != false &&
+          @block_content_obj.present?
+      end
+
+      def cache_component_output
+        cache_key = cache_key_for_component
+        expires_in = Panda::CMS.config.performance.dig(:fragment_caching, :expires_in) || 1.hour
+
+        Rails.cache.fetch(cache_key, expires_in: expires_in) do
+          render_content_to_string
+        end.html_safe
+      end
+
+      def cache_key_for_component
+        "panda_cms/code_component/#{@block_content_obj.cache_key_with_version}/#{@key}"
+      end
+
+      def render_content_to_string
+        # For code component, we just return the raw HTML content
+        @code_content.to_s
       end
 
       class BlockError < StandardError; end
