@@ -199,23 +199,21 @@ module Panda
         attrs = {class: "panda-cms-content"}
 
         if @editable_state
-          attrs.merge!(
-            id: "editor-#{@block_content_id}",
-            data: {
-              "editable-previous-data": @encoded_data,
-              "editable-content": @encoded_data,
-              "editable-initialized": "false",
-              "editable-version": "2.28.2",
-              "editable-autosave": "false",
-              "editable-tools": '{"paragraph":true,"header":true,"list":true,"quote":true,"table":true}',
-              "editable-kind": "rich_text",
-              "editable-block-content-id": @block_content_id,
-              "editable-page-id": Current.page.id,
-              controller: "editor-js",
-              "editor-js-initialized-value": "false",
-              "editor-js-content-value": @encoded_data
-            }
-          )
+          attrs[:id] = "editor-#{@block_content_id}"
+          attrs[:data] = {
+            "editable-previous-data": @encoded_data,
+            "editable-content": @encoded_data,
+            "editable-initialized": "false",
+            "editable-version": "2.28.2",
+            "editable-autosave": "false",
+            "editable-tools": '{"paragraph":true,"header":true,"list":true,"quote":true,"table":true}',
+            "editable-kind": "rich_text",
+            "editable-block-content-id": @block_content_id,
+            "editable-page-id": Current.page.id,
+            controller: "editor-js",
+            "editor-js-initialized-value": "false",
+            "editor-js-content-value": @encoded_data
+          }
         end
 
         attrs

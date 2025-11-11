@@ -66,14 +66,12 @@ module Panda
         attrs = @attrs.merge(id: element_id)
 
         if @editable_state
-          attrs.merge!(
-            contenteditable: "plaintext-only",
-            data: {
-              "editable-kind": "plain_text",
-              "editable-page-id": Current.page.id,
-              "editable-block-content-id": @block_content_id
-            }
-          )
+          attrs[:contenteditable] = "plaintext-only"
+          attrs[:data] = {
+            "editable-kind": "plain_text",
+            "editable-page-id": Current.page.id,
+            "editable-block-content-id": @block_content_id
+          }
         end
 
         attrs
@@ -92,7 +90,7 @@ module Panda
         view_context.params[:embed_id].present? && view_context.params[:embed_id] == Current.page.id
       end
 
-      def handle_error(error)
+      def handle_error(_error)
         if !Rails.env.production? || defined?(Sentry)
           raise Panda::CMS::MissingBlockError, "Block with key #{@key} not found for page #{Current.page.title}"
         end
