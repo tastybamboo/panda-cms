@@ -18,7 +18,7 @@ RSpec.describe "When editing a page", type: :system do
   context "when not logged in" do
     it "returns a 404 error" do
       visit "/admin/cms/pages/#{homepage.id}/edit"
-      expect(page.html).to include("The page you were looking for doesn't exist.")
+      expect(page.html).to include("Routing Error")
     end
   end
 
@@ -26,7 +26,7 @@ RSpec.describe "When editing a page", type: :system do
     it "returns a 404 error" do
       login_as_user
       visit "/admin/cms/pages/#{homepage.id}/edit"
-      expect(page.html).to include("The page you were looking for doesn't exist.")
+      expect(page.html).to include("Routing Error")
     end
   end
 

@@ -1,6 +1,6 @@
 <%= render Panda::Core::Admin::ContainerComponent.new do |component| %>
   <% component.heading(text: "Pages", level: 1) do |heading| %>
-    <% heading.button(action: :add, text: "Add Page", link: new_admin_cms_page_path) %>
+    <% heading.button(action: :add, text: "Add Page", href: new_admin_cms_page_path) %>
   <% end %>
 
   <% if root_page %>
