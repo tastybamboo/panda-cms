@@ -36,7 +36,7 @@ module Panda
         # @type GET
         def edit
           add_breadcrumb @menu.name, edit_admin_cms_menu_path(@menu)
-          render :edit, locals: {menu: @menu}
+          render :edit
         end
 
         # @type PATCH/PUT
@@ -44,7 +44,7 @@ module Panda
           if @menu.update(menu_params)
             redirect_to admin_cms_menus_path, notice: "Menu was successfully updated."
           else
-            render :edit, locals: {menu: @menu}, status: :unprocessable_entity
+            render :edit, status: :unprocessable_entity
           end
         end
 

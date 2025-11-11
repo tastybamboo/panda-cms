@@ -119,7 +119,9 @@ module Panda
             :status,
             :published_at,
             :author_id,
-            :content
+            :content,
+            :seo_title, :seo_description, :seo_keywords, :seo_index_mode, :canonical_url,
+            :og_title, :og_description, :og_type, :og_image
           )
         end
 

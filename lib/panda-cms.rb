@@ -37,7 +37,7 @@ module Panda
             expires_in: 1.hour
           },
           cache_store: {
-            type: :memory_store,
+            type: :memory_store, # :memory_store, :redis_cache_store, :file_store
             redis_url: ENV.fetch("REDIS_URL", "redis://localhost:6379/0"),
             namespace: "panda_cms"
           }

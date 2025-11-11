@@ -29,6 +29,16 @@ en:
         title: Title
         path: URL
         panda_cms_template_id: Template
+        seo_title: SEO Title
+        seo_description: SEO Description
+        seo_keywords: SEO Keywords
+        seo_index_mode: Search Engine Visibility
+        canonical_url: Canonical URL
+        og_title: OpenGraph Title
+        og_description: OpenGraph Description
+        og_type: OpenGraph Type
+        og_image: OpenGraph Image
+        inherit_seo: Inherit Settings
       panda/cms/post:
         title: Title
         slug: URL
@@ -36,6 +46,15 @@ en:
         user_id: Author
         published_at: Published At
         post_content: Content
+        seo_title: SEO Title
+        seo_description: SEO Description
+        seo_keywords: SEO Keywords
+        seo_index_mode: Search Engine Visibility
+        canonical_url: Canonical URL
+        og_title: OpenGraph Title
+        og_description: OpenGraph Description
+        og_type: OpenGraph Type
+        og_image: OpenGraph Image
         statuses:
           active: Active
           draft: Draft
@@ -52,3 +71,24 @@ en:
         lastname: Last Name
         email: Email Address
         current_theme: Theme
+    enums:
+      panda/cms/page:
+        seo_index_mode:
+          visible: Visible to search engines
+          invisible: Hidden from search engines
+        og_type:
+          website: Website
+          article: Article
+          profile: Profile
+          video: Video
+          book: Book
+      panda/cms/post:
+        seo_index_mode:
+          visible: Visible to search engines
+          invisible: Hidden from search engines
+        og_type:
+          website: Website
+          article: Article
+          profile: Profile
+          video: Video
+          book: Book
