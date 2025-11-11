@@ -66,14 +66,12 @@ module Panda
         attrs = @attrs.merge(id: element_id)
 
         if @editable_state
-          attrs.merge!(
-            contenteditable: "plaintext-only",
-            data: {
-              "editable-kind": "plain_text",
-              "editable-page-id": Current.page.id,
-              "editable-block-content-id": @block_content_id
-            }
-          )
+          attrs[:contenteditable] = "plaintext-only"
+          attrs[:data] = {
+            "editable-kind": "plain_text",
+            "editable-page-id": Current.page.id,
+            "editable-block-content-id": @block_content_id
+          }
         end
 
         attrs

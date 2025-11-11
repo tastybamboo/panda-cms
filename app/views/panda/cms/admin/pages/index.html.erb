@@ -9,7 +9,7 @@
         <% table.column("Name") do |page| %>
           <div class="flex items-start" data-tree-target="row" data-page-id="<%= page.id %>" data-level="<%= page.level %>" data-parent-id="<%= page.parent_id %>">
             <div class="flex-1 min-w-0">
-              <% # Add indentation for nested levels %>
+              <%# Add indentation for nested levels %>
               <% indent_class = case page.level
                  when 0 then ""
                  when 1 then "ml-4"
@@ -19,10 +19,10 @@
               <div class="flex items-start <%= indent_class %>">
                 <div class="flex-1 min-w-0">
                   <div class="flex items-center gap-2">
-                    <% # Chevron/icon section %>
+                    <%# Chevron/icon section %>
                     <% if page.children_count > 0 %>
                       <% if page.level > 0 %>
-                        <% # Non-root pages with children: show chevron button only %>
+                        <%# Non-root pages with children: show chevron button only %>
                         <button type="button"
                                 class="text-xs text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary rounded px-1 w-4 flex items-center justify-center"
                                 data-tree-target="toggle"
@@ -31,11 +31,11 @@
                           <i class="fa-solid fa-chevron-right"></i>
                         </button>
                       <% else %>
-                        <% # Root page (Home): show folder icon %>
+                        <%# Root page (Home): show folder icon %>
                         <i class="fa-solid fa-folder text-gray-500 mr-2"></i>
                       <% end %>
                     <% else %>
-                      <% # Leaf pages: show file icon %>
+                      <%# Leaf pages: show file icon %>
                       <i class="fa-solid fa-file text-gray-400 mr-2"></i>
                     <% end %>
                     <%= link_to page.title, edit_admin_cms_page_path(page), class: "font-medium hover:text-primary #{page.children_count > 0 && page.level > 0 ? 'ml-2' : ''}" %>

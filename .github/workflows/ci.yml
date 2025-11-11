@@ -116,10 +116,9 @@ jobs:
           # Clean up ALL migrations in dummy app to start fresh
           rm -rf db/migrate
           mkdir -p db/migrate
-          bundle exec rails db:drop db:create
-          # Run CMS migrations from the engine directory
-          cd ../..
-          bundle exec rails db:migrate RAILS_ENV=test
+          bundle exec rails db:create
+          # Load schema from schema.rb (much faster than running migrations)
+          bundle exec rails db:schema:load
 
       - name: "Compile assets"
         working-directory: spec/dummy
