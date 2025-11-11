@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.10.1] - 2025-11-11
+
+### Changed
+
+- Updated to panda-core v0.8.0 with ModuleRegistry for self-registering asset compilation
+- CMS now self-registers with panda-core for automatic CSS compilation
+- Removed local path reference to panda-core in Gemfile (uses published gem)
+
+### Technical Improvements
+
+- Asset compilation is now orchestrated by panda-core's ModuleRegistry
+- Supports private modules without hardcoded knowledge in Core
+- Scales automatically to future Panda modules
+
 ## [0.10.0] - 2025-11-04
 
 ### Changed
