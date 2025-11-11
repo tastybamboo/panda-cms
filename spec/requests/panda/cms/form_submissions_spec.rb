@@ -31,7 +31,7 @@ RSpec.describe "Form Submissions", type: :request do
           _form_timestamp: timestamp,
           name: "Test User",
           email: "test@example.com"
-        }, headers: { "HTTP_REFERER" => "/" }
+        }, headers: {"HTTP_REFERER" => "/"}
 
         # Debug output
         if response.status != 302
@@ -167,7 +167,7 @@ RSpec.describe "Form Submissions", type: :request do
         post "/_forms/#{form.id}", params: {
           _form_timestamp: timestamp,
           name: "Test User"
-        }, headers: { "REMOTE_ADDR" => "192.168.1.100" }
+        }, headers: {"REMOTE_ADDR" => "192.168.1.100"}
 
         submission = form.form_submissions.last
         expect(submission.ip_address).to eq("192.168.1.100")
@@ -179,7 +179,7 @@ RSpec.describe "Form Submissions", type: :request do
         post "/_forms/#{form.id}", params: {
           _form_timestamp: timestamp,
           name: "Test User"
-        }, headers: { "HTTP_USER_AGENT" => "TestBot/1.0" }
+        }, headers: {"HTTP_USER_AGENT" => "TestBot/1.0"}
 
         submission = form.form_submissions.last
         expect(submission.user_agent).to eq("TestBot/1.0")
@@ -241,7 +241,7 @@ RSpec.describe "Form Submissions", type: :request do
       post "/_forms/#{form.id}", params: {
         _form_timestamp: timestamp,
         name: "Test User"
-      }, headers: { "HTTP_REFERER" => "/contact" }
+      }, headers: {"HTTP_REFERER" => "/contact"}
 
       expect(response).to be_redirect
       expect(flash[:notice]).to eq("Thank you for your submission!")

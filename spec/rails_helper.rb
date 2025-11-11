@@ -22,16 +22,7 @@ require "propshaft"
 require File.expand_path("dummy/config/environment", __dir__)
 abort("The Rails environment is running in production mode!") if Rails.env.production?
 
-<<<<<<< HEAD
-# Point AR at the dummy app's migration path only (not engine migrations)
-ActiveRecord::Migrator.migrations_paths = [
-  File.join(__dir__, "dummy", "db", "migrate")
-]
-
-||||||| 9b4db10
-=======
 # Require RSpec/Rails BEFORE shared infrastructure
->>>>>>> origin/main
 require "rspec/rails"
 
 # Load shared test infrastructure from panda-core (after dummy app and rspec/rails are loaded)
