@@ -1,0 +1,39 @@
+{
+  "ignored_warnings": [
+    {
+      "warning_type": "Dynamic Render Path",
+      "warning_code": 15,
+      "fingerprint": "cbd974174800cbaa06ad90971544cdfb087e88c17ca6ca42d5e9b7e2f62f544f",
+      "check_name": "Render",
+      "message": "Render path contains parameter value",
+      "file": "app/views/panda/cms/admin/menus/edit.html.erb",
+      "line": 5,
+      "link": "https://brakemanscanner.org/docs/warning_types/dynamic_render_path/",
+      "code": "render(action => Panda::Core::Admin::FormErrorComponent.new(:model => Panda::CMS::Menu.find(params[:id])), { :locals => ({ :\"panda::core::admin::formerrorcomponent\" => Panda::Core::Admin::FormErrorComponent.new(:model => Panda::CMS::Menu.find(params[:id])) }) })",
+      "render_path": [
+        {
+          "type": "controller",
+          "class": "Panda::CMS::Admin::MenusController",
+          "method": "edit",
+          "line": 39,
+          "file": "app/controllers/panda/cms/admin/menus_controller.rb",
+          "rendered": {
+            "name": "panda/cms/admin/menus/edit",
+            "file": "app/views/panda/cms/admin/menus/edit.html.erb"
+          }
+        }
+      ],
+      "location": {
+        "type": "template",
+        "template": "panda/cms/admin/menus/edit"
+      },
+      "user_input": "params[:id]",
+      "confidence": "Weak",
+      "cwe_id": [
+        22
+      ],
+      "note": "This is only to render a form's error, rather than anything more worrying."
+    }
+  ],
+  "brakeman_version": "7.1.1"
+}
