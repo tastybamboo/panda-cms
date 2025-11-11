@@ -318,7 +318,7 @@ GEM
     omniauth-rails_csrf_protection (1.0.2)
       actionpack (>= 4.2)
       omniauth (~> 2.0)
-    panda-core (0.7.2)
+    panda-core (0.7.3)
       importmap-rails
       literal (~> 1.8)
       omniauth
