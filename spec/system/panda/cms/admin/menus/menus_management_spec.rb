@@ -228,7 +228,7 @@ RSpec.describe "Menus Management", type: :system do
 
     it "removes menu item when clicking remove button" do
       # Create a menu item first
-      menu_item = header_menu.menu_items.create!(
+      header_menu.menu_items.create!(
         text: "To Remove",
         external_url: "https://example.com"
       )

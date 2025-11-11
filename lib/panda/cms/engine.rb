@@ -10,10 +10,13 @@ require "panda/cms/railtie"
 require "invisible_captcha"
 
 # Load engine configuration modules
+require_relative "engine/autoload_config"
 require_relative "engine/middleware_config"
 require_relative "engine/asset_config"
 require_relative "engine/route_config"
 require_relative "engine/core_config"
+require_relative "engine/helper_config"
+require_relative "engine/generator_config"
 require_relative "engine/backtrace_config"
 
 module Panda
@@ -22,33 +25,17 @@ module Panda
       isolate_namespace Panda::CMS
 
       # Include configuration modules
+      include AutoloadConfig
       include MiddlewareConfig
       include AssetConfig
       include RouteConfig
       include CoreConfig
+      include HelperConfig
+      include GeneratorConfig
       include BacktraceConfig
-
-      # Add services directory to autoload paths
-      config.autoload_paths += %W[
-        #{root}/app/services
-      ]
 
       # Session configuration is left to the consuming application
       # The CMS engine does not impose session store requirements
-
-      config.to_prepare do
-        ApplicationController.helper(::ApplicationHelper)
-        ApplicationController.helper(Panda::CMS::AssetHelper)
-      end
-
-      # Set our generators
-      config.generators do |g|
-        g.orm :active_record, primary_key_type: :uuid
-        g.test_framework :rspec, fixture: true
-        g.fixture_replacement nil
-        g.view_specs false
-        g.templates.unshift File.expand_path("../templates", __dir__)
-      end
 
       # Custom error handling
       # config.exceptions_app = Panda::CMS::ExceptionsApp.new(exceptions_app: routes)

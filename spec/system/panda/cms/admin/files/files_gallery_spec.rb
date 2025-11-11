@@ -35,7 +35,7 @@ RSpec.describe "Files Gallery", type: :system do
     end
 
     it "shows file thumbnails for images" do
-      blob = ActiveStorage::Blob.create_and_upload!(
+      ActiveStorage::Blob.create_and_upload!(
         io: File.open(Rails.root.join("spec/fixtures/files/test_image.png")),
         filename: "thumbnail_test.png",
         content_type: "image/png"
@@ -48,7 +48,7 @@ RSpec.describe "Files Gallery", type: :system do
     end
 
     it "shows file icon for non-image files" do
-      blob = ActiveStorage::Blob.create_and_upload!(
+      ActiveStorage::Blob.create_and_upload!(
         io: StringIO.new("test content"),
         filename: "document.pdf",
         content_type: "application/pdf"
@@ -62,7 +62,7 @@ RSpec.describe "Files Gallery", type: :system do
     end
 
     it "shows file name and size for each file" do
-      blob = ActiveStorage::Blob.create_and_upload!(
+      ActiveStorage::Blob.create_and_upload!(
         io: File.open(Rails.root.join("spec/fixtures/files/test_image.png")),
         filename: "detailed_file.png",
         content_type: "image/png"
@@ -147,7 +147,7 @@ RSpec.describe "Files Gallery", type: :system do
 
     it "can select different files" do
       # Create multiple files
-      blob2 = ActiveStorage::Blob.create_and_upload!(
+      ActiveStorage::Blob.create_and_upload!(
         io: StringIO.new("test content 2"),
         filename: "second_file.txt",
         content_type: "text/plain"
@@ -190,7 +190,7 @@ RSpec.describe "Files Gallery", type: :system do
 
   describe "file metadata" do
     it "displays file creation date" do
-      blob = ActiveStorage::Blob.create_and_upload!(
+      ActiveStorage::Blob.create_and_upload!(
         io: File.open(Rails.root.join("spec/fixtures/files/test_image.png")),
         filename: "dated_file.png",
         content_type: "image/png"
@@ -208,7 +208,7 @@ RSpec.describe "Files Gallery", type: :system do
     end
 
     it "displays file content type" do
-      blob = ActiveStorage::Blob.create_and_upload!(
+      ActiveStorage::Blob.create_and_upload!(
         io: StringIO.new("test content"),
         filename: "typed_file.pdf",
         content_type: "application/pdf"
@@ -225,7 +225,7 @@ RSpec.describe "Files Gallery", type: :system do
     end
 
     it "displays file URL" do
-      blob = ActiveStorage::Blob.create_and_upload!(
+      ActiveStorage::Blob.create_and_upload!(
         io: File.open(Rails.root.join("spec/fixtures/files/test_image.png")),
         filename: "url_file.png",
         content_type: "image/png"
@@ -245,7 +245,7 @@ RSpec.describe "Files Gallery", type: :system do
 
   describe "accessibility" do
     it "has proper ARIA labels for file buttons" do
-      blob = ActiveStorage::Blob.create_and_upload!(
+      ActiveStorage::Blob.create_and_upload!(
         io: File.open(Rails.root.join("spec/fixtures/files/test_image.png")),
         filename: "accessible_file.png",
         content_type: "image/png"
@@ -289,7 +289,6 @@ RSpec.describe "Files Gallery", type: :system do
     it "displays newest files first" do
       # Create files with different timestamps
       old_blob = nil
-      new_blob = nil
 
       Timecop.freeze(2.days.ago) do
         old_blob = ActiveStorage::Blob.create_and_upload!(
@@ -299,7 +298,7 @@ RSpec.describe "Files Gallery", type: :system do
         )
       end
 
-      new_blob = ActiveStorage::Blob.create_and_upload!(
+      ActiveStorage::Blob.create_and_upload!(
         io: StringIO.new("new content"),
         filename: "new_file.txt",
         content_type: "text/plain"
