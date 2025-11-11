@@ -202,7 +202,7 @@ RSpec.describe "Page form SEO functionality", type: :system do
       open_page_details
 
       within("#slideover") do
-        expect(page).to have_field("Inherit Settings")
+        expect(page).to have_field("Inherit SEO from parent page")
       end
     end
 
@@ -211,7 +211,7 @@ RSpec.describe "Page form SEO functionality", type: :system do
 
       within("#slideover") do
         # Check the inherit checkbox
-        check "Inherit Settings"
+        check "Inherit SEO from parent page"
 
         sleep 0.5
 
@@ -232,11 +232,11 @@ RSpec.describe "Page form SEO functionality", type: :system do
 
       within("#slideover") do
         # First check it
-        check "Inherit Settings"
+        check "Inherit SEO from parent page"
         sleep 0.5
 
         # Then uncheck it
-        uncheck "Inherit Settings"
+        uncheck "Inherit SEO from parent page"
         sleep 0.5
 
         # Check that fields are editable again
