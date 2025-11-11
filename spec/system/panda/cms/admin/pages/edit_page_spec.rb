@@ -188,15 +188,17 @@ RSpec.describe "When editing a page", type: :system do
         # Wait for the page to load
         expect(page.html).to include("Basic Page Layout")
 
-        # Find HTML code content and verify it's editable
-        html_area = find('div[data-editable-kind="html"]', wait: 10)
+        # Find code component wrapper with inline code editor
+        code_wrapper = find('div[data-controller="inline-code-editor"]', wait: 10)
 
-        # Verify the element exists and has correct attributes
-        expect(html_area["data-editable-kind"]).to eq("html")
-        expect(html_area["contenteditable"]).to eq("plaintext-only")
+        # Verify the element exists and has the controller
+        expect(code_wrapper["data-controller"]).to eq("inline-code-editor")
 
-        # Verify it has some content
-        expect(html_area.text).not_to be_empty
+        # Verify it has preview and code tabs
+        within(code_wrapper) do
+          expect(page).to have_button("Preview")
+          expect(page).to have_button("Code")
+        end
       end
     end
 
