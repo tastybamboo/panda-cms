@@ -40,7 +40,6 @@ Gem::Specification.new do |spec|
   spec.add_dependency "sanitize"
   spec.add_dependency "silencer"
   spec.add_dependency "tailwindcss-rails"
-  spec.add_dependency "view_component"
 
   spec.post_install_message = "🐼 💜"
 end

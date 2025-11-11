@@ -3,13 +3,12 @@
 require "rubygems"
 require "panda/core"
 require "panda/cms/railtie"
-require "view_component"
 
 module Panda
   module CMS
     class Configuration
       attr_accessor :title, :require_login_to_view, :authentication,
-        :posts, :url, :instagram, :analytics
+        :posts, :url, :instagram, :analytics, :performance
 
       def initialize
         @title = "Demo Site"
@@ -26,6 +25,21 @@ module Panda
           google_analytics: {
             enabled: false,
             tracking_id: nil
+          }
+        }
+        @performance = {
+          http_caching: {
+            enabled: true,
+            public: true
+          },
+          fragment_caching: {
+            enabled: true,
+            expires_in: 1.hour
+          },
+          cache_store: {
+            type: :memory_store, # :memory_store, :redis_cache_store, :file_store
+            redis_url: ENV.fetch("REDIS_URL", "redis://localhost:6379/0"),
+            namespace: "panda_cms"
           }
         }
       end

@@ -2,8 +2,7 @@ module Panda
   module CMS
     module ApplicationHelper
       #
-      # Helper method to render a ViewComponent
-      # @see ViewComponent::Rendering#render
+      # Helper method to render a component
       # @usage <%= component "example", title: "Hello World!" %>
       #
       def component(name, *, **, &)
@@ -60,7 +59,7 @@ module Panda
 
       def panda_cms_form_with(**options, &)
         options[:builder] = Panda::Core::FormBuilder
-        options[:class] = ["block visible p-6 bg-mid/5 rounded-lg border-mid border", options[:class]].compact.join(" ")
+        options[:class] = ["block visible px-4 sm:px-6 pt-4", options[:class]].compact.join(" ")
         form_with(**options, &)
       end
 
