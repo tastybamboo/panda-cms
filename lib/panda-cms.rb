@@ -3,7 +3,6 @@
 require "rubygems"
 require "panda/core"
 require "panda/cms/railtie"
-require "view_component"
 
 module Panda
   module CMS

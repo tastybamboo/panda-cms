@@ -2,8 +2,7 @@ module Panda
   module CMS
     module ApplicationHelper
       #
-      # Helper method to render a ViewComponent
-      # @see ViewComponent::Rendering#render
+      # Helper method to render a component
       # @usage <%= component "example", title: "Hello World!" %>
       #
       def component(name, *, **, &)

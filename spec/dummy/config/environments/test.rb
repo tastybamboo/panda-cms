@@ -14,7 +14,6 @@ Rails.application.configure do
   ENV['DISABLE_BETTER_ERRORS'] = 'true'
 
   # Session store is configured in config/initializers/session_store.rb
-  # This allows it to be loaded after redis-rack is available
 
   config.after_initialize do
     if defined?(Bullet)

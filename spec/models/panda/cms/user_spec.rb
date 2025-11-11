@@ -9,7 +9,7 @@ RSpec.describe Panda::Core::User, type: :model do
         email: "test@example.com",
         firstname: "Test",
         lastname: "User",
-        is_admin: false
+        admin: false
       )
     }
 
@@ -23,7 +23,7 @@ RSpec.describe Panda::Core::User, type: :model do
         firstname: "Test",
         lastname: "User",
         email: "TEST@EXAMPLE.COM",
-        is_admin: false
+        admin: false
       )
       expect(user.email).to eq("test@example.com")
     end
