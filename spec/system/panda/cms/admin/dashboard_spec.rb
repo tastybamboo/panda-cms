@@ -29,7 +29,7 @@ RSpec.describe "Admin dashboard", type: :system do
       expect(page.html).to include("Dashboard")
     end
 
-    it "displays the admin navigation", skip: "Dashboard view has rendering issues" do
+    it "displays the admin navigation" do
       login_as_admin
       visit "/admin/cms"
       # Wait for page to load by checking path

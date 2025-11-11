@@ -75,6 +75,16 @@ bundle exec rspec spec/system/panda/cms/admin/posts/add_post_spec.rb:106
 
 # Include EditorJS tests (excluded by default)
 INCLUDE_EDITORJS=true bundle exec rspec
+
+# Categorize test failures from output
+bundle exec rspec 2>&1 | tee /tmp/test_output.txt
+bin/categorize_test_failures /tmp/test_output.txt
+
+# Or pipe directly
+bundle exec rspec | bin/categorize_test_failures
+
+# Enable debug output in tests (gated by RSPEC_DEBUG)
+RSPEC_DEBUG=true bundle exec rspec
 ```
 
 ### Code Quality

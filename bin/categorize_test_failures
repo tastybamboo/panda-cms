@@ -1,0 +1,106 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Categorize RSpec test failures from output file
+# Usage: bin/categorize_test_failures <output_file>
+#        cat test_output.txt | bin/categorize_test_failures
+
+require "pathname"
+
+def categorize_failures(input)
+  lines = input.readlines
+
+  # Extract summary line
+  summary = lines.grep(/^\d+ examples?, \d+ failures?/).last&.strip
+
+  # Extract pending reasons
+  pending_reasons = {}
+  lines.each_cons(2) do |line1, line2|
+    if line1 =~ /^  \d+\)/
+      if line2 =~ /^     # (.+)/
+        reason = $1
+        pending_reasons[reason] ||= 0
+        pending_reasons[reason] += 1
+      end
+    end
+  end
+
+  # Extract actual failure test names
+  actual_failures = []
+  lines.each_with_index do |line, idx|
+    if line =~ /^  \d+\) (.+)$/
+      test_name = $1
+      # Check if next line has a skip reason
+      next_line = lines[idx + 1]
+      unless next_line&.match?(/^     # /)
+        actual_failures << test_name
+      end
+    end
+  end
+
+  # Group actual failures by pattern
+  failure_groups = Hash.new { |h, k| h[k] = [] }
+  actual_failures.each do |failure|
+    case failure
+    when /Files Gallery/
+      failure_groups["Files Gallery Tests"] << failure
+    when /Page form SEO|Page SEO/
+      failure_groups["Page SEO Form Tests"] << failure
+    when /Post form SEO/
+      failure_groups["Post SEO Form Tests"] << failure
+    when /Menu/
+      failure_groups["Menu Tests"] << failure
+    else
+      failure_groups["Other Tests"] << failure
+    end
+  end
+
+  # Print report
+  puts "\n" + "=" * 80
+  puts "TEST FAILURE CATEGORIZATION"
+  puts "=" * 80
+
+  if summary
+    puts "\n#{summary}"
+  end
+
+  if pending_reasons.any?
+    puts "\n" + "-" * 80
+    puts "PENDING TESTS (#{pending_reasons.values.sum})"
+    puts "-" * 80
+    pending_reasons.sort_by { |_, count| -count }.each do |reason, count|
+      puts sprintf("%3d - %s", count, reason)
+    end
+  end
+
+  if actual_failures.any?
+    puts "\n" + "-" * 80
+    puts "ACTUAL FAILURES (#{actual_failures.size})"
+    puts "-" * 80
+    failure_groups.sort_by { |_, failures| -failures.size }.each do |group, failures|
+      puts "\n#{group} (#{failures.size}):"
+      failures.first(5).each do |failure|
+        puts "  - #{failure}"
+      end
+      if failures.size > 5
+        puts "  ... and #{failures.size - 5} more"
+      end
+    end
+  end
+
+  puts "\n" + "=" * 80
+  puts ""
+end
+
+# Read from file argument or stdin
+if ARGV[0] && File.exist?(ARGV[0])
+  File.open(ARGV[0]) do |file|
+    categorize_failures(file)
+  end
+elsif !$stdin.tty?
+  categorize_failures($stdin)
+else
+  puts "Usage: #{$0} <output_file>"
+  puts "   or: cat output.txt | #{$0}"
+  exit 1
+end

@@ -2,10 +2,15 @@
 
 # Helper methods for Panda CMS system tests
 module PandaCmsHelpers
+  # Debug logging helper - only outputs when RSPEC_DEBUG=true
+  def debug_log(message)
+    puts message if ENV["RSPEC_DEBUG"] == "true"
+  end
+
   # Wait for Panda CMS JavaScript assets to be fully loaded
   # This ensures Stimulus controllers are registered and ready
   def wait_for_panda_cms_assets(timeout: 10)
-    puts "[Test] Waiting for Panda CMS assets to load..."
+    debug_log("[Test] Waiting for Panda CMS assets to load...")
 
     # Wait for the bundle to be loaded and marked as ready
     start_time = Time.now
@@ -24,7 +29,7 @@ module PandaCmsHelpers
       JS
 
       if result
-        puts "[Test] Panda CMS assets loaded successfully"
+        debug_log("[Test] Panda CMS assets loaded successfully")
         return true
       end
 
@@ -51,10 +56,10 @@ module PandaCmsHelpers
       })()
     JS
 
-    puts "[Test] Asset loading timeout. Debug info: #{script_result}"
+    debug_log("[Test] Asset loading timeout. Debug info: #{script_result}")
     false
   rescue => e
-    puts "[Test] Error waiting for assets: #{e.message}"
+    debug_log("[Test] Error waiting for assets: #{e.message}")
     false
   end
 
@@ -66,14 +71,14 @@ module PandaCmsHelpers
     # Then wait for the element
     expect(page).to have_css(selector, wait: timeout)
   rescue RSpec::Expectations::ExpectationNotMetError => e
-    puts "[Test] Element #{selector} not found. Page content length: #{page.html.length}"
-    puts "[Test] Current URL: #{page.current_url}"
+    debug_log("[Test] Element #{selector} not found. Page content length: #{page.html.length}")
+    debug_log("[Test] Current URL: #{page.current_url}")
     raise e
   end
 
   # Wait for iframe to load properly before interacting with it
   def wait_for_iframe_load(iframe_id, timeout: 20)
-    puts "[Test] Waiting for iframe #{iframe_id} to load..."
+    debug_log("[Test] Waiting for iframe #{iframe_id} to load...")
 
     start_time = Time.now
     while Time.now - start_time < timeout
@@ -85,11 +90,11 @@ module PandaCmsHelpers
         iframe = page.find("iframe##{iframe_id}")
         src_attr = iframe["src"]
 
-        puts "[Test] Iframe src: #{src_attr}"
+        debug_log("[Test] Iframe src: #{src_attr}")
 
         # If iframe has no src or about:blank, wait for it to be set
         if src_attr.nil? || src_attr.empty? || src_attr == "about:blank"
-          puts "[Test] Iframe has no proper src attribute, waiting..."
+          debug_log("[Test] Iframe has no proper src attribute, waiting...")
           sleep 0.5
           next
         end
@@ -101,7 +106,7 @@ module PandaCmsHelpers
             # Wait for the iframe to actually load content
             current_url = page.evaluate_script("window.location.href")
             document_ready = page.evaluate_script("document.readyState")
-            puts "[Test] Iframe URL: #{current_url}, readyState: #{document_ready}"
+            debug_log("[Test] Iframe URL: #{current_url}, readyState: #{document_ready}")
 
             iframe_ready = current_url != "about:blank" &&
               !current_url.empty? &&
@@ -109,21 +114,21 @@ module PandaCmsHelpers
               document_ready == "complete"
           end
         rescue Ferrum::NodeNotFoundError => e
-          puts "[Test] Iframe not accessible yet: #{e.message}"
+          debug_log("[Test] Iframe not accessible yet: #{e.message}")
           sleep 0.5
           next
         end
 
         if iframe_ready
-          puts "[Test] Iframe #{iframe_id} loaded successfully"
+          debug_log("[Test] Iframe #{iframe_id} loaded successfully")
           return true
         else
-          puts "[Test] Iframe content not ready yet, continuing to wait..."
+          debug_log("[Test] Iframe content not ready yet, continuing to wait...")
         end
       rescue RSpec::Expectations::ExpectationNotMetError
-        puts "[Test] Iframe element not found yet, waiting..."
+        debug_log("[Test] Iframe element not found yet, waiting...")
       rescue => e
-        puts "[Test] Iframe not ready yet: #{e.message}"
+        debug_log("[Test] Iframe not ready yet: #{e.message}")
       end
 
       sleep 0.5
@@ -133,19 +138,19 @@ module PandaCmsHelpers
     begin
       if page.has_css?("iframe##{iframe_id}")
         iframe = page.find("iframe##{iframe_id}")
-        puts "[Test] Iframe debug - src: #{iframe["src"]}, id: #{iframe["id"]}"
+        debug_log("[Test] Iframe debug - src: #{iframe["src"]}, id: #{iframe["id"]}")
       else
-        puts "[Test] Iframe element not found in DOM"
-        puts "[Test] Available iframes: #{page.all("iframe").map { |f| f["id"] }}"
+        debug_log("[Test] Iframe element not found in DOM")
+        debug_log("[Test] Available iframes: #{page.all("iframe").map { |f| f["id"] }}")
       end
     rescue => e
-      puts "[Test] Error getting iframe debug info: #{e.message}"
+      debug_log("[Test] Error getting iframe debug info: #{e.message}")
     end
 
-    puts "[Test] Timeout waiting for iframe #{iframe_id} to load"
+    debug_log("[Test] Timeout waiting for iframe #{iframe_id} to load")
     false
   rescue => e
-    puts "[Test] Error waiting for iframe: #{e.message}"
+    debug_log("[Test] Error waiting for iframe: #{e.message}")
     false
   end
 
@@ -549,12 +554,12 @@ RSpec.configure do |config|
 
   # Add debugging to system tests
   config.before(:each, type: :system) do
-    puts "[Test] Starting test: #{RSpec.current_example.full_description}"
+    debug_log("[Test] Starting test: #{RSpec.current_example.full_description}")
   end
 
   config.after(:each, type: :system) do |example|
     if example.exception
-      puts "[Test] Test failed: #{example.exception.message}"
+      debug_log("[Test] Test failed: #{example.exception.message}")
 
       # Add immediate page state debugging before other debug info
       current_url = begin
@@ -567,7 +572,7 @@ RSpec.configure do |config|
       rescue
         "unknown"
       end
-      puts "[Test] Immediate failure state - URL: #{current_url}, Title: #{page_title}"
+      debug_log("[Test] Immediate failure state - URL: #{current_url}, Title: #{page_title}")
 
       debug_asset_state
     end

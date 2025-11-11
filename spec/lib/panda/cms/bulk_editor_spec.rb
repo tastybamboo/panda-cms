@@ -37,6 +37,9 @@ RSpec.describe Panda::CMS::BulkEditor, type: :model do
     create_test_template("Page", "layouts/page")
     create_test_template("Different Page", "layouts/different_page")
 
+    # Clear any existing posts to avoid slug conflicts
+    Panda::CMS::Post.delete_all
+
     # Create posts with user reference
     @post1 = Panda::CMS::Post.create!(
       title: "Test Post 1",

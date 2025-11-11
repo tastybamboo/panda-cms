@@ -32,11 +32,12 @@ require "panda/core/testing/rails_helper"
 Rails.application.eager_load!
 
 # Ensures that the test database schema matches the current schema file.
-begin
-  ActiveRecord::Migration.maintain_test_schema!
-rescue ActiveRecord::PendingMigrationError => e
-  abort e.to_s.strip
-end
+# Disabled because we use schema.rb and installed migrations via panda_cms:install:migrations
+# begin
+#   ActiveRecord::Migration.maintain_test_schema!
+# rescue ActiveRecord::PendingMigrationError => e
+#   abort e.to_s.strip
+# end
 
 # Load CMS-specific support files
 Dir[Rails.root.join("../support/**/*.rb")].sort.each { |f| require f }
