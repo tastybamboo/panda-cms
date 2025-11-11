@@ -2,7 +2,7 @@
   <% component.heading(text: "#{page.title}", level: 1, meta: (link_to page.path, target: "_blank", class: "text-black/60 hover:text-black/80 inline-flex items-center gap-x-1" do
     raw("#{page.path}<i class='fa-solid fa-arrow-up-right-from-square text-xs ml-1'></i>")
   end)) do |h| %>
-    <% h.button(text: "Page Details", action: :secondary, as_button: true, size: :regular, id: "page-details-button", icon: "gear", data: { action: "click->toggle#toggle touch->toggle#toggle" }) %>
+    <% h.button(text: "Page Details", action: :secondary, as_button: true, size: :regular, id: "slideover-toggle", icon: "gear", data: { action: "click->toggle#toggle touch->toggle#toggle" }) %>
     <% h.button(text: "Save Changes", action: :save, href: "#", size: :regular, id: "saveEditableButton", icon: "check") %>
   <% end %>
   <% component.with_slideover(title: "Page Details") do %>
@@ -111,7 +111,11 @@
         <%= f.file_field :og_image, {
           label: "Social Media Image",
           meta: "Recommended: 1200×630px (1.91:1 ratio). Used on Facebook, LinkedIn, Twitter.",
-          accept: "image/png,image/jpeg,image/jpg,image/webp"
+          accept: "image/png,image/jpeg,image/jpg,image/webp",
+          with_cropper: true,
+          aspect_ratio: 1.91,
+          min_width: 1200,
+          min_height: 630
         } %>
         <% if page.og_image.attached? %>
           <div class="mt-2">

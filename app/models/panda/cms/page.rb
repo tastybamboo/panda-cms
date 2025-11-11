@@ -267,6 +267,8 @@ module Panda
       def update_cached_last_updated_at
         # Will be set to updated_at automatically during save
         # Block content updates will call refresh_last_updated_at! separately
+        # Only update if column exists (for backwards compatibility with older schemas)
+        return unless self.class.column_names.include?("cached_last_updated_at")
         self.cached_last_updated_at = Time.current
       end
     end

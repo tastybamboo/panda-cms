@@ -12,7 +12,7 @@
           "slug-target": "output_text"
         } %>
   </div>
-  <%= f.select :author_id, Panda::Core::User.admin.map { |u| [u.name, u.id] } %>
+  <%= f.select :author_id, Panda::Core::User.admins.map { |u| [u.name, u.id] } %>
   <%= f.datetime_field :published_at %>
   <%= f.select :status, options_for_select([["Active", "active"], ["Draft", "draft"], ["Hidden", "hidden"], ["Archived", "archived"]], selected: post.status) %>
 
@@ -57,7 +57,11 @@
     <%= f.file_field :og_image, {
       label: "Social Media Image",
       meta: "Recommended: 1200×630px (1.91:1 ratio). Used on Facebook, LinkedIn, Twitter.",
-      accept: "image/png,image/jpeg,image/jpg,image/webp"
+      accept: "image/png,image/jpeg,image/jpg,image/webp",
+      with_cropper: true,
+      aspect_ratio: 1.91,
+      min_width: 1200,
+      min_height: 630
     } %>
     <% if post.og_image.attached? %>
       <div class="mt-2">

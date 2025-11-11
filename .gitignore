@@ -20,3 +20,4 @@
 **/coverage/**
 .claude/settings.local.json
 vendor/bundle/
+node_modules/

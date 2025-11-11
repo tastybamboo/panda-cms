@@ -3,7 +3,7 @@
 module Panda
   module CMS
     # @label Grid
-    class GridComponentPreview < ViewComponent::Preview
+    class GridComponentPreview < Lookbook::Preview
       # Basic 2-column grid
       # @label Two Columns
       def two_columns
