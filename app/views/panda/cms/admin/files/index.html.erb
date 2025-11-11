@@ -12,6 +12,6 @@
   <% end %>
 
   <div data-controller="file-gallery" class="pb-24">
-    <%= render Panda::Core::Admin::FileGalleryComponent.new(files: @files, selected_file: @selected_file) %>
+    <%= Panda::Core::Admin::FileGalleryComponent.new(files: @files, selected_file: @selected_file) %>
   </div>
 <% end %>

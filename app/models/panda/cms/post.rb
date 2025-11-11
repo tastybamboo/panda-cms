@@ -38,6 +38,31 @@ module Panda
         archived: "archived"
       }
 
+      enum :seo_index_mode, {
+        visible: "visible",
+        invisible: "invisible"
+      }, prefix: :seo
+
+      enum :og_type, {
+        website: "website",
+        article: "article",
+        profile: "profile",
+        video: "video",
+        book: "book"
+      }, prefix: :og
+
+      # Active Storage attachment for Open Graph image
+      has_one_attached :og_image do |attachable|
+        attachable.variant :og_share, resize_to_limit: [1200, 630]
+      end
+
+      # SEO validations
+      validates :seo_title, length: {maximum: 70}, allow_blank: true
+      validates :seo_description, length: {maximum: 160}, allow_blank: true
+      validates :og_title, length: {maximum: 60}, allow_blank: true
+      validates :og_description, length: {maximum: 200}, allow_blank: true
+      validates :canonical_url, format: {with: URI::DEFAULT_PARSER.make_regexp(%w[http https])}, allow_blank: true
+
       def to_param
         # For date-based URLs, return just the slug portion
         parts = CGI.unescape(slug).delete_prefix("/").split("/")
@@ -86,6 +111,78 @@ module Panda
 
         text = text.squish if squish
         text.truncate(length).html_safe
+      end
+
+      #
+      # Returns the effective SEO title for this post
+      # Falls back to post title if not set
+      #
+      # @return [String] The SEO title to use
+      # @visibility public
+      #
+      def effective_seo_title
+        seo_title.presence || title
+      end
+
+      #
+      # Returns the effective SEO description for this post
+      # Falls back to excerpt if not set
+      #
+      # @return [String, nil] The SEO description to use
+      # @visibility public
+      #
+      def effective_seo_description
+        seo_description.presence || excerpt(160, squish: true)
+      end
+
+      #
+      # Returns the effective Open Graph title
+      # Falls back to SEO title, then post title
+      #
+      # @return [String] The OG title to use
+      # @visibility public
+      #
+      def effective_og_title
+        og_title.presence || effective_seo_title
+      end
+
+      #
+      # Returns the effective Open Graph description
+      # Falls back to SEO description or excerpt
+      #
+      # @return [String, nil] The OG description to use
+      # @visibility public
+      #
+      def effective_og_description
+        og_description.presence || effective_seo_description
+      end
+
+      #
+      # Returns the effective canonical URL for this post
+      # Falls back to the post's own URL if not explicitly set
+      #
+      # @return [String] The canonical URL to use
+      # @visibility public
+      #
+      def effective_canonical_url
+        canonical_url.presence || slug
+      end
+
+      #
+      # Generates the robots meta tag content based on seo_index_mode
+      #
+      # @return [String] The robots meta tag content (e.g., "index, follow")
+      # @visibility public
+      #
+      def robots_meta_content
+        case seo_index_mode
+        when "visible"
+          "index, follow"
+        when "invisible"
+          "noindex, nofollow"
+        else
+          "index, follow" # Default fallback
+        end
       end
 
       private

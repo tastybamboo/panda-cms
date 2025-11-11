@@ -29,11 +29,10 @@
       },
       "user_input": "params[:id]",
       "confidence": "Weak",
-      "cwe_id": [
-        22
-      ],
-      "note": "This is only to render a form's error, rather than anything more worrying."
+      "cwe_id": [22],
+      "note": "False positive: The component class is hardcoded (Panda::Core::Admin::FormErrorComponent), not dynamically determined. The model parameter is validated through Rails' find method and only used as data to pass to the component, not to determine the rendering path."
     }
   ],
+  "updated": "2025-11-09 00:00:00 +0000",
   "brakeman_version": "7.1.1"
 }

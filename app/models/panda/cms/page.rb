@@ -51,6 +51,31 @@ module Panda
         code: "code"
       }, prefix: :type
 
+      enum :seo_index_mode, {
+        visible: "visible",
+        invisible: "invisible"
+      }, prefix: :seo
+
+      enum :og_type, {
+        website: "website",
+        article: "article",
+        profile: "profile",
+        video: "video",
+        book: "book"
+      }, prefix: :og
+
+      # Active Storage attachment for Open Graph image
+      has_one_attached :og_image do |attachable|
+        attachable.variant :og_share, resize_to_limit: [1200, 630]
+      end
+
+      # SEO validations
+      validates :seo_title, length: {maximum: 70}, allow_blank: true
+      validates :seo_description, length: {maximum: 160}, allow_blank: true
+      validates :og_title, length: {maximum: 60}, allow_blank: true
+      validates :og_description, length: {maximum: 200}, allow_blank: true
+      validates :canonical_url, format: {with: URI::DEFAULT_PARSER.make_regexp(%w[http https])}, allow_blank: true
+
       # Callbacks
       after_save :handle_after_save
       before_save :update_cached_last_updated_at
@@ -89,6 +114,85 @@ module Panda
         new_timestamp = [updated_at, block_content_updated_at].compact.max
         update_column(:cached_last_updated_at, new_timestamp)
         new_timestamp
+      end
+
+      #
+      # Returns the effective SEO title for this page
+      # Falls back to page title if not set, with optional inheritance
+      #
+      # @return [String] The SEO title to use
+      # @visibility public
+      #
+      def effective_seo_title
+        return seo_title if seo_title.present?
+        return title unless inherit_seo
+
+        # Traverse up tree to find inherited value
+        self_and_ancestors.reverse.find { |p| p.seo_title.present? }&.seo_title || title
+      end
+
+      #
+      # Returns the effective SEO description for this page
+      # With optional inheritance from parent pages
+      #
+      # @return [String, nil] The SEO description to use
+      # @visibility public
+      #
+      def effective_seo_description
+        return seo_description if seo_description.present?
+        return nil unless inherit_seo
+
+        self_and_ancestors.reverse.find { |p| p.seo_description.present? }&.seo_description
+      end
+
+      #
+      # Returns the effective Open Graph title
+      # Falls back to SEO title, then page title
+      #
+      # @return [String] The OG title to use
+      # @visibility public
+      #
+      def effective_og_title
+        og_title.presence || effective_seo_title
+      end
+
+      #
+      # Returns the effective Open Graph description
+      # Falls back to SEO description
+      #
+      # @return [String, nil] The OG description to use
+      # @visibility public
+      #
+      def effective_og_description
+        og_description.presence || effective_seo_description
+      end
+
+      #
+      # Returns the effective canonical URL for this page
+      # Falls back to the page's own URL if not explicitly set
+      #
+      # @return [String] The canonical URL to use
+      # @visibility public
+      #
+      def effective_canonical_url
+        canonical_url.presence || path
+      end
+
+      #
+      # Generates the robots meta tag content based on seo_index_mode
+      #
+      # @return [String] The robots meta tag content (e.g., "index, follow")
+      # @visibility public
+      #
+      def robots_meta_content
+        case seo_index_mode
+        when "visible"
+          "index, follow"
+        when "invisible"
+          "noindex, nofollow"
+        else
+          "index, follow" # Default fallback
+        end
       end
 
       private
@@ -163,6 +267,8 @@ module Panda
       def update_cached_last_updated_at
         # Will be set to updated_at automatically during save
         # Block content updates will call refresh_last_updated_at! separately
+        # Only update if column exists (for backwards compatibility with older schemas)
+        return unless self.class.column_names.include?("cached_last_updated_at")
         self.cached_last_updated_at = Time.current
       end
     end

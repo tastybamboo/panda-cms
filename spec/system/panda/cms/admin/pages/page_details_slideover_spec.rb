@@ -1,0 +1,355 @@
+# frozen_string_literal: true
+
+require "system_helper"
+
+RSpec.describe "Page Details Slideover", type: :system do
+  fixtures :all
+
+  let(:homepage) { panda_cms_pages(:homepage) }
+  let(:about_page) { panda_cms_pages(:about_page) }
+
+  before do
+    login_as_admin
+    Panda::CMS::Current.root = Capybara.app_host
+  end
+
+  describe "opening the slideover" do
+    it "opens when clicking the Page Details button" do
+      visit "/admin/cms/pages/#{about_page.id}/edit"
+      expect(page).to have_content("About", wait: 10)
+
+      # Wait for the button to be present
+      expect(page).to have_button("Page Details", wait: 5)
+
+      # Slideover should be hidden initially
+      expect(page).to have_css("#slideover.hidden", visible: :hidden)
+
+      # Click the Page Details button
+      click_button "Page Details"
+
+      # Slideover should now be visible
+      expect(page).to have_css("#slideover", visible: true, wait: 5)
+      expect(page).not_to have_css("#slideover.hidden")
+
+      # Verify slideover title
+      within("#slideover") do
+        expect(page).to have_content("Page Details")
+      end
+    end
+
+    it "shows all form fields when slideover opens" do
+      visit "/admin/cms/pages/#{about_page.id}/edit"
+      click_button "Page Details", wait: 10
+
+      within("#slideover", wait: 5) do
+        # Basic fields
+        expect(page).to have_field("Title")
+        expect(page).to have_field("Template")
+        expect(page).to have_field("Status")
+        expect(page).to have_field("Page Type")
+
+        # SEO fields
+        expect(page).to have_content("SEO Settings")
+        expect(page).to have_field("SEO Title")
+        expect(page).to have_field("SEO Description")
+        expect(page).to have_field("SEO Keywords")
+
+        # Social sharing fields
+        expect(page).to have_content("Social Sharing")
+        expect(page).to have_field("Social Media Title")
+        expect(page).to have_field("Social Media Description")
+        expect(page).to have_field("Content Type")
+        expect(page).to have_field("Social Media Image")
+      end
+    end
+
+    it "loads with existing page data" do
+      about_page.update!(
+        seo_title: "About Us Page",
+        seo_description: "Learn about our company",
+        og_title: "About Our Company"
+      )
+
+      visit "/admin/cms/pages/#{about_page.id}/edit"
+      click_button "Page Details", wait: 10
+
+      within("#slideover", wait: 5) do
+        expect(find_field("Title").value).to eq("About")
+        expect(find_field("SEO Title").value).to eq("About Us Page")
+        expect(find_field("SEO Description").value).to eq("Learn about our company")
+        expect(find_field("Social Media Title").value).to eq("About Our Company")
+      end
+    end
+  end
+
+  describe "closing the slideover" do
+    it "closes when clicking the Cancel button" do
+      visit "/admin/cms/pages/#{about_page.id}/edit"
+      click_button "Page Details", wait: 10
+
+      # Verify it's open
+      expect(page).to have_css("#slideover", visible: true, wait: 5)
+
+      # Click Cancel button in the footer
+      within("#slideover") do
+        click_button "Cancel"
+      end
+
+      # Slideover should be hidden again
+      expect(page).to have_css("#slideover.hidden", visible: :hidden, wait: 5)
+    end
+
+    it "closes when clicking the close button in the header" do
+      visit "/admin/cms/pages/#{about_page.id}/edit"
+      click_button "Page Details", wait: 10
+
+      expect(page).to have_css("#slideover", visible: true, wait: 5)
+
+      # Click the X button (toggle button in slideover header)
+      within("#slideover") do
+        # The close button has the toggle action
+        find("button[data-action*='toggle#toggle']").click
+      end
+
+      expect(page).to have_css("#slideover.hidden", visible: :hidden, wait: 5)
+    end
+
+    it "can be reopened after closing" do
+      visit "/admin/cms/pages/#{about_page.id}/edit"
+
+      # Open
+      click_button "Page Details", wait: 10
+      expect(page).to have_css("#slideover", visible: true, wait: 5)
+
+      # Close
+      within("#slideover") do
+        click_button "Cancel"
+      end
+      expect(page).to have_css("#slideover.hidden", visible: :hidden, wait: 5)
+
+      # Reopen
+      click_button "Page Details"
+      expect(page).to have_css("#slideover", visible: true, wait: 5)
+    end
+  end
+
+  describe "form submission from slideover" do
+    it "saves changes when clicking the Save button in footer" do
+      visit "/admin/cms/pages/#{about_page.id}/edit"
+      click_button "Page Details", wait: 10
+
+      within("#slideover", wait: 5) do
+        fill_in "SEO Title", with: "Updated SEO Title"
+        fill_in "SEO Description", with: "Updated description"
+
+        click_button "Save"
+      end
+
+      # Wait for success message
+      expect(page).to have_content("successfully updated", wait: 10)
+
+      # Verify changes were saved
+      about_page.reload
+      expect(about_page.seo_title).to eq("Updated SEO Title")
+      expect(about_page.seo_description).to eq("Updated description")
+    end
+
+    it "shows validation errors for invalid data" do
+      visit "/admin/cms/pages/#{about_page.id}/edit"
+      click_button "Page Details", wait: 10
+
+      within("#slideover", wait: 5) do
+        # Clear the required title field
+        fill_in "Title", with: ""
+
+        click_button "Save"
+      end
+
+      # Should show error (either inline or flash)
+      expect(page).to have_content(/can't be blank|is required/i, wait: 5)
+    end
+  end
+
+  describe "OG image upload with cropper" do
+    it "shows the file input for OG image" do
+      visit "/admin/cms/pages/#{about_page.id}/edit"
+      click_button "Page Details", wait: 10
+
+      within("#slideover", wait: 5) do
+        expect(page).to have_field("Social Media Image")
+
+        # Verify it's using the cropper (has data-controller attribute)
+        image_field = find_field("Social Media Image")
+        expect(image_field["data-controller"]).to eq("image-cropper")
+      end
+    end
+
+    it "has cropper data attributes configured" do
+      visit "/admin/cms/pages/#{about_page.id}/edit"
+      click_button "Page Details", wait: 10
+
+      within("#slideover", wait: 5) do
+        image_field = find_field("Social Media Image")
+
+        # Check aspect ratio is set to 1.91 (1200x630)
+        expect(image_field["data-image-cropper-aspect-ratio-value"]).to eq("1.91")
+
+        # Check minimum dimensions
+        expect(image_field["data-image-cropper-min-width-value"]).to eq("1200")
+        expect(image_field["data-image-cropper-min-height-value"]).to eq("630")
+      end
+    end
+
+    it "shows the current OG image if one exists" do
+      # Attach a test image to the page
+      about_page.og_image.attach(
+        io: File.open(Rails.root.join("spec/fixtures/files/test_image.png")),
+        filename: "test_image.png",
+        content_type: "image/png"
+      )
+
+      visit "/admin/cms/pages/#{about_page.id}/edit"
+      click_button "Page Details", wait: 10
+
+      within("#slideover", wait: 5) do
+        # Should show the current image
+        expect(page).to have_css("img[alt='OG image']", wait: 5)
+      end
+    end
+  end
+
+  describe "inherit SEO functionality" do
+    before do
+      # Set up parent page with SEO values
+      homepage.update!(
+        seo_title: "Homepage Title",
+        seo_description: "Homepage description"
+      )
+
+      # Make about_page a child of homepage
+      about_page.update!(parent: homepage)
+    end
+
+    it "shows inherit checkbox for child pages" do
+      visit "/admin/cms/pages/#{about_page.id}/edit"
+      click_button "Page Details", wait: 10
+
+      within("#slideover", wait: 5) do
+        expect(page).to have_field("Inherit SEO from parent page")
+      end
+    end
+
+    it "does not show inherit checkbox for root pages" do
+      visit "/admin/cms/pages/#{homepage.id}/edit"
+      click_button "Page Details", wait: 10
+
+      within("#slideover", wait: 5) do
+        expect(page).not_to have_field("Inherit SEO from parent page")
+      end
+    end
+
+    it "fills fields with parent values when inherit is checked" do
+      visit "/admin/cms/pages/#{about_page.id}/edit"
+      click_button "Page Details", wait: 10
+
+      within("#slideover", wait: 5) do
+        check "Inherit SEO from parent page"
+
+        # Wait for JavaScript to fill fields
+        sleep 0.5
+
+        expect(find_field("SEO Title").value).to eq("Homepage Title")
+        expect(find_field("SEO Description").value).to eq("Homepage description")
+      end
+    end
+  end
+
+  describe "character counters" do
+    it "shows character count for SEO Title field" do
+      visit "/admin/cms/pages/#{about_page.id}/edit"
+      click_button "Page Details", wait: 10
+
+      within("#slideover", wait: 5) do
+        seo_title_field = find_field("SEO Title")
+
+        # Type some text
+        seo_title_field.fill_in with: "Test Title"
+
+        # Wait for counter to update
+        sleep 0.5
+
+        # Check counter shows correct count
+        expect(page).to have_content(/10.*70.*characters/i)
+      end
+    end
+
+    it "shows warning when approaching SEO Title limit" do
+      visit "/admin/cms/pages/#{about_page.id}/edit"
+      click_button "Page Details", wait: 10
+
+      within("#slideover", wait: 5) do
+        fill_in "SEO Title", with: "A" * 65
+
+        sleep 0.5
+
+        # Should show warning color (yellow/amber)
+        counter = page.find(".character-counter", match: :first)
+        expect(counter[:class]).to include("text-yellow-600")
+      end
+    end
+
+    it "shows error when exceeding SEO Title limit" do
+      visit "/admin/cms/pages/#{about_page.id}/edit"
+      click_button "Page Details", wait: 10
+
+      within("#slideover", wait: 5) do
+        fill_in "SEO Title", with: "A" * 75
+
+        sleep 0.5
+
+        # Should show error color (red)
+        counter = page.find(".character-counter", match: :first)
+        expect(counter[:class]).to include("text-red-600")
+        expect(counter).to have_content(/over limit/i)
+      end
+    end
+  end
+
+  describe "keyboard accessibility" do
+    it "can be opened with keyboard navigation" do
+      visit "/admin/cms/pages/#{about_page.id}/edit"
+
+      # Tab to the Page Details button and press Enter
+      page.execute_script("document.querySelector('button:contains(\"Page Details\")').focus()")
+      find_button("Page Details").send_keys(:enter)
+
+      expect(page).to have_css("#slideover", visible: true, wait: 5)
+    end
+
+    it "can be closed with Escape key" do
+      visit "/admin/cms/pages/#{about_page.id}/edit"
+      click_button "Page Details", wait: 10
+
+      expect(page).to have_css("#slideover", visible: true, wait: 5)
+
+      # Press Escape
+      find("#slideover").send_keys(:escape)
+
+      # Slideover should close
+      expect(page).to have_css("#slideover.hidden", visible: :hidden, wait: 5)
+    end
+  end
+
+  describe "responsive behavior" do
+    it "opens slideover on mobile viewport", driver: :cuprite_mobile do
+      visit "/admin/cms/pages/#{about_page.id}/edit"
+      click_button "Page Details", wait: 10
+
+      expect(page).to have_css("#slideover", visible: true, wait: 5)
+
+      within("#slideover") do
+        expect(page).to have_field("Title")
+      end
+    end
+  end
+end
