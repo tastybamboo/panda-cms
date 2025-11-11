@@ -49,21 +49,30 @@ module Panda
         # Only auto-compile in test or when explicitly requested
         next unless Rails.env.test? || ENV["PANDA_CMS_AUTO_COMPILE"] == "true"
 
-        version = Panda::CMS::VERSION
-        js_file = Rails.public_path.join("panda-cms-assets", "panda-cms-#{version}.js")
+        # Use timestamp for cache busting in dev/test
+        timestamp = Time.now.to_i
+        assets_dir = Rails.public_path.join("panda-cms-assets")
+        FileUtils.mkdir_p(assets_dir)
 
-        unless js_file.exist?
+        # Check if any compiled JS exists (timestamp-based)
+        existing_js = Dir[assets_dir.join("panda-cms-*.js")].reject { |f| File.basename(f) =~ /^\d+\./ } # Skip manifest files
+
+        if existing_js.empty?
           warn "🐼 [Panda CMS] Auto-compiling JavaScript for test environment..."
 
-          # Run compilation synchronously to ensure it's ready before tests
+          # Run compilation synchronously with timestamp
+          # Set VERSION_OVERRIDE to use timestamp instead of semantic version
           require "open3"
           _, stderr, status = Open3.capture3(
+            {"VERSION_OVERRIDE" => timestamp.to_s},
             "bundle exec rake app:panda:cms:assets:compile",
             chdir: Panda::CMS::Engine.root.to_s
           )
 
-          if status.success?
-            warn "🐼 [Panda CMS] JavaScript compilation successful (#{js_file.size} bytes)"
+          timestamped_js = assets_dir.join("panda-cms-#{timestamp}.js")
+
+          if status.success? && timestamped_js.exist?
+            warn "🐼 [Panda CMS] JavaScript compilation successful (#{timestamped_js.size} bytes)"
           else
             warn "🐼 [Panda CMS] JavaScript compilation failed: #{stderr}"
           end

@@ -13,7 +13,8 @@ namespace :panda do
         output_dir = Rails.root.join("tmp", "panda_cms_assets")
         FileUtils.mkdir_p(output_dir)
 
-        version = Panda::CMS::VERSION
+        # Use VERSION_OVERRIDE for timestamp-based builds in dev/test
+        version = ENV["VERSION_OVERRIDE"] || Panda::CMS::VERSION
         puts "Version: #{version}"
         puts "Output directory: #{output_dir}"
 
