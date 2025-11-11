@@ -18,6 +18,16 @@ module Panda
       attr_accessor :content, :block_content_id
 
       def view_template
+        # Russian doll caching: Cache component output at block_content level
+        # Only cache in non-editable mode (public-facing pages)
+        if should_cache?
+          raw cache_component_output
+        else
+          render_content
+        end
+      end
+
+      def render_content
         div(class: "panda-cms-content", **element_attrs) do
           if @editable_state
             # Empty div for EditorJS to initialize into
@@ -244,6 +254,30 @@ module Panda
         end
 
         nil
+      end
+
+      def should_cache?
+        !@editable_state &&
+          Panda::CMS.config.performance.dig(:fragment_caching, :enabled) != false &&
+          @block_content.present?
+      end
+
+      def cache_component_output
+        cache_key = cache_key_for_component
+        expires_in = Panda::CMS.config.performance.dig(:fragment_caching, :expires_in) || 1.hour
+
+        Rails.cache.fetch(cache_key, expires_in: expires_in) do
+          render_content_to_string
+        end.html_safe
+      end
+
+      def cache_key_for_component
+        "panda_cms/rich_text_component/#{@block_content.cache_key_with_version}/#{@key}"
+      end
+
+      def render_content_to_string
+        # Render the component HTML to a string for caching
+        helpers.content_tag(:div, @rendered_content.html_safe, class: "panda-cms-content", **element_attrs)
       end
     end
   end
