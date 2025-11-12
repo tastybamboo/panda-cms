@@ -4,25 +4,23 @@
 if ENV["RSPEC_DEBUG"] == "true"
   require "capybara/cuprite"
 
-  # Override Cuprite to increase timeout and show more errors
+  # Override Cuprite to show more errors
   Capybara.register_driver :cuprite do |app|
     Capybara::Cuprite::Driver.new(
       app,
-      **{
-        window_size: [1200, 800],
-        browser_options: {
-          "no-sandbox": nil,
-          "disable-dev-shm-usage": nil,
-          "disable-gpu": nil,
-          "disable-software-rasterizer": nil
-        },
-        inspector: ENV["INSPECTOR"],
-        headless: !ENV["INSPECTOR"],
-        process_timeout: ENV.fetch("CUPRITE_PROCESS_TIMEOUT", 10).to_i,
-        timeout: 10,
-        js_errors: true, # Raise on JavaScript errors
-        pending_connection_errors: false
-      }
+      window_size: [1200, 800],
+      browser_options: {
+        "no-sandbox": nil,
+        "disable-dev-shm-usage": nil,
+        "disable-gpu": nil,
+        "disable-software-rasterizer": nil
+      },
+      inspector: ENV["INSPECTOR"],
+      headless: !ENV["INSPECTOR"],
+      process_timeout: ENV.fetch("CUPRITE_PROCESS_TIMEOUT", 2).to_i,
+      timeout: ENV.fetch("CUPRITE_PROCESS_TIMEOUT", 2).to_i,
+      js_errors: true, # Raise on JavaScript errors
+      pending_connection_errors: true
     )
   end
 
@@ -30,7 +28,7 @@ if ENV["RSPEC_DEBUG"] == "true"
   RSpec.configure do |config|
     config.before(:each, type: :system) do |example|
       if ENV["RSPEC_DEBUG"] == "true"
-        puts "\n[Test Debug] Starting test: #{example.full_description}"
+        puts "\nTEST: #{example.full_description}"
       end
     end
 
