@@ -21,79 +21,120 @@ RSpec.describe "Page form SEO functionality", type: :system do
     visit "/admin/cms/pages/#{about_page.id}/edit"
     expect(page).to have_content("About", wait: 10)
 
-    # Open the slideover using the toggle controller's approach (just remove 'hidden' class)
-    # Don't set inline display style as it overrides Tailwind's lg:flex
-    page.execute_script("
-      var slideover = document.querySelector('#slideover');
-      if (slideover) {
-        slideover.classList.remove('hidden');
-      }
-    ")
+    # Click the Page Details button to open the slideover
+    click_button "Page Details"
+
+    # Give JavaScript time to execute
+    sleep 0.5
 
     expect(page).to have_css("#slideover", visible: true, wait: 5)
   end
 
-  describe "character counters", :skip do
-    # TODO: Character counter feature needs to be implemented in panda-core
-    # The form builder needs to support:
-    # 1. Accepting max_length option
-    # 2. Rendering .character-counter element
-    # 3. JavaScript to update counter on input
-    # 4. Warning/error styling (yellow at 90%, red over 100%)
-    it "shows character count for SEO title field" do
-      open_page_details
+  describe "character counters" do
+    context "when inherit is not checked" do
+      before do
+        # Ensure inherit is disabled so fields are editable
+        about_page.update!(inherit_seo: false)
+      end
 
-      within("#slideover") do
-        seo_title_field = find_field("SEO Title")
-        container = seo_title_field.find(:xpath, "ancestor::div[contains(@class, 'panda-core-field-container')]")
+      it "shows character count for SEO title field" do
+        open_page_details
 
-        # Check counter exists
-        expect(container).to have_css(".character-counter")
+        within("#slideover") do
+          seo_title_field = find_field("SEO Title")
+          container = seo_title_field.find(:xpath, "ancestor::div[contains(@class, 'panda-core-field-container')]")
 
-        # Type some text
-        seo_title_field.fill_in with: "Test SEO Title"
+          # Check counter exists
+          expect(container).to have_css(".character-counter")
 
-        # Wait for counter to update
-        sleep 0.5
+          # Type some text
+          seo_title_field.set("Test SEO Title")
 
-        # Check counter shows correct count
-        expect(container.find(".character-counter")).to have_text("15 / 70 characters")
+          # Wait for counter to update
+          sleep 0.3
+
+          # Check counter shows correct count
+          expect(container.find(".character-counter")).to have_text("14 / 70 characters")
+        end
+      end
+
+      it "shows warning when approaching character limit" do
+        open_page_details
+
+        within("#slideover") do
+          seo_title_field = find_field("SEO Title")
+          container = seo_title_field.find(:xpath, "ancestor::div[contains(@class, 'panda-core-field-container')]")
+
+          # Type text close to limit (70 chars)
+          seo_title_field.set("A" * 65)
+
+          sleep 0.5
+
+          counter = container.find(".character-counter")
+          expect(counter).to have_text("65 / 70 characters")
+          expect(counter[:class]).to include("text-yellow-600")
+        end
+      end
+
+      it "shows error when over character limit" do
+        open_page_details
+
+        within("#slideover") do
+          seo_title_field = find_field("SEO Title")
+          container = seo_title_field.find(:xpath, "ancestor::div[contains(@class, 'panda-core-field-container')]")
+
+          # Type text over limit
+          seo_title_field.set("A" * 75)
+
+          sleep 0.5
+
+          counter = container.find(".character-counter")
+          expect(counter).to have_text("75 / 70 characters (5 over limit)")
+          expect(counter[:class]).to include("text-red-600")
+        end
       end
     end
 
-    it "shows warning when approaching character limit" do
-      open_page_details
-
-      within("#slideover") do
-        seo_title_field = find_field("SEO Title")
-        container = seo_title_field.find(:xpath, "ancestor::div[contains(@class, 'panda-core-field-container')]")
-
-        # Type text close to limit (70 chars)
-        seo_title_field.fill_in with: "A" * 65
-
-        sleep 0.5
-
-        counter = container.find(".character-counter")
-        expect(counter).to have_text("65 / 70 characters")
-        expect(counter[:class]).to include("text-yellow-600")
+    context "when inherit is checked" do
+      before do
+        # Set up parent page with SEO values for inheritance
+        homepage.update!(
+          seo_title: "Parent SEO Title with 30 chars",
+          seo_description: "A" * 100
+        )
+        # Enable inheritance for the child page
+        about_page.update!(inherit_seo: true)
       end
-    end
 
-    it "shows error when over character limit" do
-      open_page_details
+      it "shows character count for inherited SEO title" do
+        open_page_details
 
-      within("#slideover") do
-        seo_title_field = find_field("SEO Title")
-        container = seo_title_field.find(:xpath, "ancestor::div[contains(@class, 'panda-core-field-container')]")
+        within("#slideover") do
+          seo_title_field = find_field("SEO Title")
+          container = seo_title_field.find(:xpath, "ancestor::div[contains(@class, 'panda-core-field-container')]")
 
-        # Type text over limit
-        seo_title_field.fill_in with: "A" * 75
+          # Field should be readonly
+          expect(seo_title_field[:readonly]).to eq("true")
 
-        sleep 0.5
+          # Check counter shows correct count for inherited value
+          expect(container.find(".character-counter")).to have_text("30 / 70 characters")
+        end
+      end
 
-        counter = container.find(".character-counter")
-        expect(counter).to have_text("75 / 70 characters (5 over limit)")
-        expect(counter[:class]).to include("text-red-600")
+      it "shows warning when inherited value approaches limit" do
+        # Update parent to have value close to limit
+        homepage.update!(seo_title: "A" * 65)
+
+        open_page_details
+
+        within("#slideover") do
+          seo_title_field = find_field("SEO Title")
+          container = seo_title_field.find(:xpath, "ancestor::div[contains(@class, 'panda-core-field-container')]")
+
+          counter = container.find(".character-counter")
+          expect(counter).to have_text("65 / 70 characters")
+          expect(counter[:class]).to include("text-yellow-600")
+        end
       end
     end
   end

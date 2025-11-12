@@ -131,7 +131,7 @@ module Panda
 
         def development_javascript_url
           # Always use importmap (no compiled bundles)
-          "/panda/cms/application_panda_cms.js"
+          "/panda/cms/application.js"
         end
 
         def development_css_url

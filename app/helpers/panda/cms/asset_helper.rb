@@ -27,7 +27,19 @@ module Panda
       def panda_cms_javascript
         # Use the engine's importmap (loaded in initializer)
         # This keeps the engine's JavaScript separate from the app's importmap
-        javascript_importmap_tags("application_panda_cms", importmap: Panda::CMS.importmap)
+        # Build the importmap JSON manually since paths are already absolute
+        imports = {}
+        Panda::CMS.importmap.instance_variable_get(:@packages).each do |name, package|
+          imports[name] = package[:path]
+        end
+
+        importmap_json = JSON.generate({"imports" => imports})
+
+        <<~HTML.html_safe
+          <script type="importmap">#{importmap_json}</script>
+          <script type="module">import "panda/cms/application"</script>
+          <script type="module">import "panda/cms/controllers/index"</script>
+        HTML
       end
 
       # Include only Panda CMS CSS
