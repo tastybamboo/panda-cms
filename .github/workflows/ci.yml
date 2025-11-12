@@ -116,6 +116,10 @@ jobs:
       - name: 'Run specs'
         env:
           DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_HOST: postgres
+          POSTGRES_PORT: 5432
           RAILS_ENV: 'test'
         run: |
           bundle exec rspec --tag ~skip
