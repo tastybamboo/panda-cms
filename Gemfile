@@ -2,7 +2,7 @@
 
 source "https://rubygems.org"
 
-gem "panda-core"
+gem "panda-core", github: "tastybamboo/panda-core", branch: "release/v0.8.4"
 gem "panda-editor"
 
 # Specify your gem's dependencies in panda-cms.gemspec
@@ -22,6 +22,7 @@ group :development, :test do
   gem "fasterer"
   gem "importmap-rails"
   gem "listen"
+  gem "parallel_tests"
   gem "propshaft"
   gem "puma"
   gem "rake"

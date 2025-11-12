@@ -51,6 +51,7 @@ jobs:
     runs-on: 'ubuntu-latest'
     container:
       image: ghcr.io/tastybamboo/panda-ci:latest
+      options: --shm-size=2gb
     permissions:
       contents: read
       pull-requests: write
