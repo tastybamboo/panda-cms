@@ -271,6 +271,11 @@ RSpec.describe "Page Details Slideover", type: :system do
   end
 
   describe "character counters" do
+    before do
+      # Ensure inherit is disabled so fields are editable
+      about_page.update!(inherit_seo: false)
+    end
+
     it "shows character count for SEO Title field" do
       visit "/admin/cms/pages/#{about_page.id}/edit"
 
@@ -282,8 +287,11 @@ RSpec.describe "Page Details Slideover", type: :system do
         # Type some text
         seo_title_field.fill_in with: "Test Title"
 
+        # Trigger input event to update counter
+        seo_title_field.execute_script("this.dispatchEvent(new Event('input', { bubbles: true }))")
+
         # Wait for counter to update
-        sleep 0.5
+        sleep 0.3
 
         # Check counter shows correct count
         expect(page).to have_content(/10.*70.*characters/i)
@@ -295,9 +303,11 @@ RSpec.describe "Page Details Slideover", type: :system do
       open_page_details
 
       within("#slideover") do
-        fill_in "SEO Title", with: "A" * 65
+        seo_title_field = find_field("SEO Title")
+        seo_title_field.fill_in with: "A" * 65
+        seo_title_field.execute_script("this.dispatchEvent(new Event('input', { bubbles: true }))")
 
-        sleep 0.5
+        sleep 0.3
 
         # Should show warning color (yellow/amber)
         counter = page.find(".character-counter", match: :first)
@@ -310,9 +320,11 @@ RSpec.describe "Page Details Slideover", type: :system do
       open_page_details
 
       within("#slideover") do
-        fill_in "SEO Title", with: "A" * 75
+        seo_title_field = find_field("SEO Title")
+        seo_title_field.fill_in with: "A" * 75
+        seo_title_field.execute_script("this.dispatchEvent(new Event('input', { bubbles: true }))")
 
-        sleep 0.5
+        sleep 0.3
 
         # Should show error color (red)
         counter = page.find(".character-counter", match: :first)
