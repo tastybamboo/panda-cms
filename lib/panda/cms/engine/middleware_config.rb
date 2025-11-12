@@ -20,8 +20,8 @@ module Panda
             urls: ["/panda", "/panda/cms"],
             root: Panda::CMS::Engine.root.join("app/javascript"),
             header_rules: [
-              [:all, {"Cache-Control" => Rails.env.development? ? "no-cache, no-store, must-revalidate" : "public, max-age=31536000",
-                      "Content-Type" => "text/javascript; charset=utf-8"}]
+              # Only set Cache-Control, let Rack::Static handle Content-Type to avoid duplicates
+              [:all, {"Cache-Control" => Rails.env.development? ? "no-cache, no-store, must-revalidate" : "public, max-age=31536000"}]
             ]
         end
       end
