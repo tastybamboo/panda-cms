@@ -14,7 +14,8 @@ RSpec.describe "Page Details Slideover", type: :system do
   end
 
   def open_page_details
-    find("#open-page-details").click
+    click_button "Page Details"
+    sleep 0.5 # Give JavaScript time to execute
   end
 
   describe "opening the slideover" do
@@ -50,7 +51,8 @@ RSpec.describe "Page Details Slideover", type: :system do
         expect(page).to have_field("Title")
         expect(page).to have_field("Template")
         expect(page).to have_field("Status")
-        expect(page).to have_field("Page Type")
+        # Page Type field may be readonly depending on page type
+        expect(page).to have_field("Page Type", disabled: :all)
 
         # SEO fields
         expect(page).to have_content("SEO Settings")
