@@ -32,7 +32,7 @@
       <% if page.page_type.in?(["system", "posts"]) %>
         <%= f.text_field :page_type, value: page.page_type.humanize, readonly: true %>
       <% else %>
-        <%= f.select :page_type, options_for_select([["Active", "standard"], ["Hidden", "hidden"], ["Code", "code"]], selected: page.page_type) %>
+        <%= f.select :page_type, options_for_select([["Standard", "standard"], ["Hidden", "hidden"], ["Code", "code"]], selected: page.page_type) %>
       <% end %>
 
       <%= f.section_heading "SEO Settings" %>
