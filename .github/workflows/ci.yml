@@ -36,7 +36,7 @@ jobs:
           bundle install --jobs 4 --retry 3
 
       - name: 'Bundler Audit'
-        run: 'bundle exec bundle-audit --update'
+        run: 'bundle exec bundle-audit --update && bundle exec bundle-audit check'
       - name: 'Brakeman'
         run: 'bundle exec brakeman --quiet'
       - name: 'StandardRB Check'
