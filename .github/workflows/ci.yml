@@ -119,6 +119,14 @@ jobs:
           which google-chrome || which chromium || which chromium-browser || echo "Chrome not found"
           google-chrome --version || chromium --version || chromium-browser --version || echo "Cannot get Chrome version"
 
+      - name: 'Check shared memory size'
+        run: |
+          echo "💾 Checking /dev/shm size in container..."
+          df -h /dev/shm
+          echo ""
+          echo "If /dev/shm shows 64M, Chrome will crash instantly."
+          echo "We need at least 2GB for Chrome to work properly."
+
       - name: 'Check asset readiness'
         run: |
           echo "📋 Checking compiled CSS assets..."
