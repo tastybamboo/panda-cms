@@ -101,13 +101,15 @@ jobs:
           bundle exec rails db:schema:load
 
       - name: Prepare dummy assets
+        working-directory: spec/dummy
         env:
           RAILS_ENV: test
+          DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
         run: |
           echo "🚧 Preparing dummy assets (compile + importmap + verify)..."
-          bundle exec rake app:panda:core:assets:compile_dummy
-          bundle exec rake app:panda:core:assets:generate_dummy_importmap
-          bundle exec rake app:panda:core:assets:verify_dummy
+          bundle exec rake panda:core:assets:compile_dummy
+          bundle exec rake panda:core:assets:generate_dummy_importmap
+          bundle exec rake panda:core:assets:verify_dummy
 
       - name: Chrome boot smoke test
         env:
