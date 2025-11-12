@@ -180,15 +180,6 @@ jobs:
           echo "First 20 lines of CSS file (if exists):"
           find spec/dummy/public/panda-core-assets/ -name "*.css" -type f | head -1 | xargs head -20 || echo "No CSS file found"
 
-      - name: 'Test Rails server boot'
-        working-directory: spec/dummy
-        env:
-          DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
-          RAILS_ENV: test
-        run: |
-          echo "🚂 Testing if Rails can boot..."
-          bundle exec rails runner "puts '✅ Rails server booted successfully'" || echo "❌ Rails failed to boot"
-
       - name: 'Run Chrome boot test'
         env:
           DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
@@ -205,6 +196,15 @@ jobs:
           echo "This tests if Chrome can start WITHOUT loading any page."
           echo "Isolates Chrome startup issues from server/importmap issues."
           script -q -e -c "bundle exec rspec spec/system/aaa_chrome_boot_spec.rb --format documentation --color --fail-fast" /dev/null
+
+      - name: 'Test Rails server boot'
+        working-directory: spec/dummy
+        env:
+          DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
+          RAILS_ENV: test
+        run: |
+          echo "🚂 Testing if Rails can boot..."
+          bundle exec rails runner "puts '✅ Rails server booted successfully'" || echo "❌ Rails failed to boot"
 
       - name: 'Run server verification'
         env:
