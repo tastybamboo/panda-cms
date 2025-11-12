@@ -121,8 +121,9 @@ jobs:
           POSTGRES_HOST: postgres
           POSTGRES_PORT: 5432
           RAILS_ENV: 'test'
+          RSPEC_DEBUG: 'true'
         run: |
-          bundle exec rspec --tag ~skip
+          bundle exec rspec --tag ~skip --format progress --format documentation
 
       - name: 'Upload coverage'
         uses: actions/upload-artifact@v5
