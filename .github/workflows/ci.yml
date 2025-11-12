@@ -106,7 +106,7 @@ jobs:
           RAILS_ENV: test
           DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
         run: |
-          echo "🚧 Preparing dummy assets (core)
+          echo "🚧 Preparing dummy assets (core)..."
           bundle exec rake app:panda:core:assets:compile_dummy
           bundle exec rake app:panda:core:assets:generate_dummy_importmap
           bundle exec rake app:panda:core:assets:verify_dummy
