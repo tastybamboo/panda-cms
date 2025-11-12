@@ -313,7 +313,7 @@ RSpec.describe "Page form SEO functionality", type: :system do
         seo_title_field.fill_in with: "A" * 75
 
         # Try to submit
-        page.evaluate_script("
+        page.evaluate_script("(() => {
           document.querySelector('#page-form').addEventListener('submit', function(e) {
             e.preventDefault();
             var controller = this.closest('[data-controller~=\"page-form\"]')._stimulusController;
@@ -323,7 +323,7 @@ RSpec.describe "Page form SEO functionality", type: :system do
             }
           });
           document.querySelector('#page-form').dispatchEvent(new Event('submit', { bubbles: true }));
-        ")
+        })()")
 
         sleep 0.5
 
@@ -358,10 +358,10 @@ RSpec.describe "Page form SEO functionality", type: :system do
       open_page_details
 
       # Check that controller is connected
-      controller_connected = page.evaluate_script("
+      controller_connected = page.evaluate_script("(() => {
         var form = document.querySelector('#page-form');
-        form && form.hasAttribute('data-controller') && form.getAttribute('data-controller').includes('page-form')
-      ")
+        return form && form.hasAttribute('data-controller') && form.getAttribute('data-controller').includes('page-form');
+      })()")
 
       expect(controller_connected).to be true
     end
@@ -369,7 +369,7 @@ RSpec.describe "Page form SEO functionality", type: :system do
     it "has all required targets available" do
       open_page_details
 
-      targets_available = page.evaluate_script("
+      targets_available = page.evaluate_script("(() => {
         var form = document.querySelector('#page-form');
         if (!form) return false;
 
@@ -383,7 +383,7 @@ RSpec.describe "Page form SEO functionality", type: :system do
           hasOgTitle: controller.hasOgTitleTarget,
           hasOgDescription: controller.hasOgDescriptionTarget
         };
-      ")
+      })()")
 
       expect(targets_available).to include(
         "hasPageTitle" => true,
