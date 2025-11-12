@@ -1,39 +1,54 @@
 # frozen_string_literal: true
 
 # CI-specific Capybara/Puma configuration overrides
-# This runs after panda-core's capybara_setup.rb
+# This file is only relevant for system tests.
+#
+# It MUST NOT run for model/request/unit specs, because those don't need
+# a Capybara server and shouldn't try to configure Puma.
 
-if ENV["GITHUB_ACTIONS"] == "true"
-  # Re-register Puma server for CI with single-mode (not cluster)
-  # Use 2 threads to avoid blocking when serving page + assets
-  #
-  # IMPORTANT: Capybara runs the server block in a thread, so we can use
-  # the blocking Rack::Handler::Puma.run call safely
-  Capybara.register_server :puma do |app, port, host|
-    require "rack/handler/puma"
-    puts "[CI Config] Starting Puma in single-mode with 2 threads"
-    puts "[CI Config] Puma will listen on #{host}:#{port}"
+return unless defined?(Capybara)
 
-    Rack::Handler::Puma.run(
-      app,
-      Port: port,
-      PreloadApp: false, # Avoids subtle memory-sharing bugs or Rails/Autoload issues in Ruby 3.4/Prism
-      Host: host,
-      Silent: false, # Enable logging to see what's happening
-      Threads: "2:2", # Min:2, Max:2 threads (single-mode, not cluster)
-      Verbose: true, # Enable verbose logging,
-      Workers: 0 # Explicitly set to single-threaded mode
-    )
+# Only bother with this in CI or when explicitly enabled
+ci_mode = ENV["GITHUB_ACTIONS"] == "true" || ENV["CI_SYSTEM_SPECS"] == "true"
+return unless ci_mode
+
+require "rack/handler/puma"
+
+RSpec.configure do |config|
+  # Only apply this to system specs
+  config.before(:suite, type: :system) do
+    Capybara.server = :puma_ci
+
+    # Make Capybara a little more patient for server boot/JS
+    Capybara.default_max_wait_time = Integer(ENV.fetch("CAPYBARA_MAX_WAIT_TIME", 5))
+
+    # Keep things predictable in CI
+    Capybara.server_host = "127.0.0.1"
+    Capybara.always_include_port = true
+
+    puts "[CI Config] Capybara.server      = #{Capybara.server.inspect}"
+    puts "[CI Config] Capybara.server_host = #{Capybara.server_host.inspect}"
+    puts "[CI Config] Capybara.max_wait    = #{Capybara.default_max_wait_time}s"
   end
+end
 
-  # Avoid infinite waits in CI
-  Puma::Const::DEFAULTS[:first_data_timeout] = begin
-    10
-  rescue
-    nil
-  end
+# Single-mode Puma server for Capybara (no workers, no fork)
+Capybara.register_server :puma_ci do |app, port, host|
+  puts "[CI Config] Starting Puma (single mode) on #{host}:#{port}"
 
-  puts "[CI Config] Puma configured for CI in single-mode with 2 threads"
-  puts "[CI Config] Capybara server: #{Capybara.server}"
-  puts "[CI Config] Capybara server_host: #{Capybara.server_host}"
+  # Read threads from ENV if you want to tweak; defaults to 2:2
+  min_threads = Integer(ENV.fetch("PUMA_MIN_THREADS", "2"))
+  max_threads = Integer(ENV.fetch("PUMA_MAX_THREADS", "2"))
+
+  options = {
+    Host: host,
+    Port: port,
+    Threads: "#{min_threads}:#{max_threads}",
+    Workers: 0,          # <-- NO CLUSTER / NO FORK
+    Silent: false,       # show logs in CI
+    Verbose: true,
+    PreloadApp: false    # safer with Ruby 3.4 / Prism
+  }
+
+  Rack::Handler::Puma.run(app, options)
 end

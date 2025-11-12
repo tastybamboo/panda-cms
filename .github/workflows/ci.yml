@@ -105,9 +105,9 @@ jobs:
           RAILS_ENV: test
         run: |
           echo "🚧 Preparing dummy assets (compile + importmap + verify)..."
-          bundle exec rake panda:core:assets:compile_dummy
-          bundle exec rake panda:core:assets:generate_dummy_importmap
-          bundle exec rake panda:core:assets:verify_dummy
+          bundle exec rake app:panda:core:assets:compile_dummy
+          bundle exec rake app:panda:core:assets:generate_dummy_importmap
+          bundle exec rake app:panda:core:assets:verify_dummy
 
       - name: Chrome boot smoke test
         env:
