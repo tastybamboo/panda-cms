@@ -63,7 +63,7 @@
       min_width: 1200,
       min_height: 630
     } %>
-    <% if f.object&.og_image&.attached? %>
+    <% if f.object.present? && f.object.persisted? && f.object.og_image.attached? %>
       <div class="mt-2">
         <%= image_tag f.object.og_image.variant(:og_share), class: "max-w-xs rounded border border-gray-300" %>
       </div>
