@@ -92,12 +92,12 @@ jobs:
           path: vendor/bundle
           key: ${{ runner.os }}-gems-test-${{ hashFiles('**/Gemfile.lock') }}
           restore-keys: |
-            ${{ runner.os }}-gems-test-
-            ${{ runner.os }}-gems-
+            ${{ runner.os }}-gems-test-${{ hashFiles('**/Gemfile.lock') }}
 
       - name: 'Bundle install'
         run: |
           bundle config path vendor/bundle
+          bundle config without development
           bundle install --jobs 4 --retry 3
 
       - name: 'Setup test database'
