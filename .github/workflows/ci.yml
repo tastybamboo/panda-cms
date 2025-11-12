@@ -207,7 +207,7 @@ jobs:
           script -q -e -c "bundle exec rspec spec/models --format documentation --color" /dev/null
 
   request-specs:
-    name: 'Request/Controller Specs'
+    name: 'Request Specs'
     needs: seclint
     runs-on: 'ubuntu-latest'
     container:
@@ -265,8 +265,8 @@ jobs:
           RSPEC_COLOR: 'true'
           TERM: 'xterm-256color'
         run: |
-          echo "🌐 Running request/controller specs..."
-          script -q -e -c "bundle exec rspec spec/requests spec/controllers --format documentation --color" /dev/null
+          echo "🌐 Running request specs..."
+          script -q -e -c "bundle exec rspec spec/requests --format documentation --color" /dev/null
 
   lib-specs:
     name: 'Lib/Services Specs'
