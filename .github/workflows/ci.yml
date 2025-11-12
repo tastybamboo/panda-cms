@@ -47,7 +47,7 @@ jobs:
         run: 'yamllint -c .yamllint .'
 
   js-verification:
-    name: 'Readiness (Fail-Fast)'
+    name: 'JS / Asset Readiness (Fail-Fast)'
     needs: seclint
     runs-on: 'ubuntu-latest'
     container:
@@ -71,228 +71,56 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+
     steps:
-      - uses: 'actions/checkout@v5'
-      - name: 'Update VERSION'
-        env:
-          VERSION: ${{ github.event.pull_request.head.sha }}
-        run: |
-          echo "${VERSION}" >> VERSION
+      - uses: actions/checkout@v5
 
-      - name: 'Start Xvfb'
-        run: |
-          Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
+      - name: Start Xvfb
+        run: Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
 
-      - name: 'Cache gems'
+      - name: Cache gems
         uses: actions/cache@v4
         with:
           path: vendor/bundle
           key: ${{ runner.os }}-gems-test-${{ hashFiles('**/Gemfile.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-gems-test-
-            ${{ runner.os }}-gems-
 
-      - name: 'Bundle install'
+      - name: Bundle install
         run: |
           bundle config path vendor/bundle
           bundle config without development
           bundle install --jobs 4 --retry 3
 
-      - name: 'Setup test database'
+      - name: Setup test database
         working-directory: spec/dummy
         env:
           DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
-          RAILS_ENV: test
         run: |
           rm -rf db/migrate
           mkdir -p db/migrate
           bundle exec rails db:create
           bundle exec rails db:schema:load
 
-      - name: 'Compile CSS assets'
-        working-directory: spec/dummy
-        run: |
-          echo "📦 Compiling CSS assets in spec/dummy..."
-          echo "This ensures assets are compiled to the dummy app's public directory."
-          bundle exec rake panda:core:assets:compile
-
-      - name: 'Verify Chrome'
-        run: |
-          echo "Checking Chrome installation..."
-          which google-chrome || which chromium || which chromium-browser || echo "Chrome not found"
-          google-chrome --version || chromium --version || chromium-browser --version || echo "Cannot get Chrome version"
-
-      - name: 'Check shared memory size'
-        run: |
-          echo "💾 Checking /dev/shm size in container..."
-          df -h /dev/shm
-          echo ""
-          echo "If /dev/shm shows 64M, Chrome will crash instantly."
-          echo "We need at least 2GB for Chrome to work properly."
-
-      - name: 'Test Chrome startup directly'
-        run: |
-          echo "🔧 Testing Chrome startup with minimal flags..."
-          echo "This will show Chrome's actual startup error if it crashes."
-          echo ""
-          echo "Actual /dev/shm size:"
-          df -h /dev/shm
-          echo ""
-          CHROME_BIN=$(which google-chrome || which chromium || which chromium-browser)
-          echo "Chrome binary: $CHROME_BIN"
-          echo ""
-          echo "Attempting to start Chrome..."
-          timeout 5 $CHROME_BIN \
-            --headless \
-            --no-sandbox \
-            --disable-gpu \
-            --disable-dev-shm-usage \
-            --disable-software-rasterizer \
-            --remote-debugging-port=9222 \
-            about:blank \
-            2>&1 | tee chrome_startup.log || echo "Chrome exited with code $?"
-          echo ""
-          echo "Chrome startup log:"
-          cat chrome_startup.log || echo "No log file generated"
-
-      - name: 'Check importmap configuration'
-        working-directory: spec/dummy
+      - name: Prepare dummy assets
         env:
-          DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
           RAILS_ENV: test
         run: |
-          echo "📦 Checking importmap configuration..."
-          echo ""
-          echo "=== Checking spec/dummy/public/ directory ==="
-          echo "Location: spec/dummy/public/"
-          ls -R public/ 2>/dev/null || echo "❌ dummy public folder missing or empty"
-          echo ""
-          echo "=== Checking spec/dummy/config/importmap.rb ==="
-          cat config/importmap.rb || echo "importmap.rb not found"
-          echo ""
-          echo "=== Testing importmap JSON generation ==="
-          echo "Running: rails importmap:json"
-          bundle exec rails importmap:json || echo "Failed to generate importmap JSON"
-          echo ""
-          echo "=== Checking static importmap.json file ==="
-          cat public/assets/importmap.json || echo "public/assets/importmap.json not found"
-          echo ""
-          echo "=== Listing public/assets directory structure ==="
-          ls -R public/assets || echo "public/assets directory not found"
-          echo ""
-          echo "❗ If spec/dummy/public/ is empty → Rails cannot start because assets are missing"
-          echo "❗ Asset compilation should run: cd spec/dummy && bundle exec rake panda:core:assets:compile"
-          echo "❗ NOT in root directory where it compiles to wrong location"
+          echo "🚧 Preparing dummy assets (compile + importmap + verify)..."
+          bundle exec rake panda:core:assets:compile_dummy
+          bundle exec rake panda:core:assets:generate_dummy_importmap
+          bundle exec rake panda:core:assets:verify_dummy
 
-      - name: 'Check asset readiness'
-        run: |
-          echo "📋 Checking compiled CSS assets..."
-          echo "Looking for CSS files in spec/dummy/public/panda-core-assets/:"
-          ls -la spec/dummy/public/panda-core-assets/ || echo "Directory not found"
-          echo ""
-          echo "First 20 lines of CSS file (if exists):"
-          find spec/dummy/public/panda-core-assets/ -name "*.css" -type f | head -1 | xargs head -20 || echo "No CSS file found"
-
-      - name: 'Run Chrome boot test'
+      - name: Chrome boot smoke test
         env:
           DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: password
-          POSTGRES_HOST: postgres
-          POSTGRES_PORT: 5432
-          RAILS_ENV: 'test'
-          RSPEC_COLOR: 'true'
-          TERM: 'xterm-256color'
-          RSPEC_DEBUG: 'true'
         run: |
-          echo "🔍 Running Chrome boot test (no page visit)..."
-          echo "This tests if Chrome can start WITHOUT loading any page."
-          echo "Isolates Chrome startup issues from server/importmap issues."
+          echo "🌐 Running Chrome startup check..."
           script -q -e -c "bundle exec rspec spec/system/aaa_chrome_boot_spec.rb --format documentation --color --fail-fast" /dev/null
 
-      - name: 'Check asset manifest'
-        working-directory: spec/dummy
-        run: |
-          echo "📦 Checking asset manifest..."
-          echo "Listing public/assets structure:"
-          ls -R public/assets 2>/dev/null || echo "public/assets directory not found"
-          echo ""
-          echo "Checking .manifest.json:"
-          cat public/assets/.manifest.json 2>/dev/null || echo ".manifest.json not found"
-          echo ""
-          echo "If manifest is empty, missing, or has incorrect fingerprints, Rails will crash on boot"
-
-      - name: 'Test importmap JSON generation'
-        working-directory: spec/dummy
-        env:
-          DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
-          RAILS_ENV: test
-        run: |
-          echo "🗺️ Testing importmap JSON generation..."
-          bundle exec rails runner "puts JSON.pretty_generate(Rails.application.importmap.to_json)" || echo "Failed to generate importmap JSON"
-
-      - name: 'Test Rails server boot'
-        working-directory: spec/dummy
-        env:
-          DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
-          RAILS_ENV: test
-        run: |
-          echo "🚂 Testing if Rails can boot..."
-          bundle exec rails runner "puts '✅ Rails server booted successfully'" || echo "❌ Rails failed to boot"
-
-      - name: 'Test Rails server start (verbose)'
-        working-directory: spec/dummy
-        env:
-          DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
-          RAILS_ENV: test
-          RAILS_LOG_TO_STDOUT: '1'
-        run: |
-          echo "🚂 Testing Rails server startup in verbose mode..."
-          echo "Starting Rails server on port 3001 for 5 seconds..."
-          timeout 5 bundle exec rails server -e test -p 3001 2>&1 | head -50 || echo "Server start test completed (timeout expected)"
-
-      - name: 'Run server verification'
-        env:
-          DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: password
-          POSTGRES_HOST: postgres
-          POSTGRES_PORT: 5432
-          RAILS_ENV: 'test'
-          RSPEC_COLOR: 'true'
-          TERM: 'xterm-256color'
-          RSPEC_DEBUG: 'true'
-        run: |
-          echo "🔍 Running server verification test..."
-          script -q -e -c "bundle exec rspec spec/system/aaa_server_verification_spec.rb --format documentation --color" /dev/null
-
-      - name: 'Run JavaScript verification'
-        env:
-          DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: password
-          POSTGRES_HOST: postgres
-          POSTGRES_PORT: 5432
-          RAILS_ENV: 'test'
-          RSPEC_COLOR: 'true'
-          TERM: 'xterm-256color'
-          RSPEC_DEBUG: 'true'
-          CUPRITE_PROCESS_TIMEOUT: '20'
-        run: |
-          echo "🔍 Running JavaScript verification test (fail-fast with debug)..."
-          echo "Chrome version:"
-          google-chrome --version || chromium --version || echo "Cannot determine Chrome version"
-          echo "Xvfb display: $DISPLAY"
-          echo "Starting tests..."
-          script -q -e -c "bundle exec rspec spec/system/javascript_verification_spec.rb --format documentation --color --fail-fast" /dev/null
-
-      - name: 'Upload compiled CSS'
+      - name: Upload compiled assets
         uses: actions/upload-artifact@v5
-        if: success()
         with:
           name: compiled-assets
-          path: spec/dummy/public/panda-core-assets/
-          retention-days: 1
+          path: spec/dummy/public/assets
 
   model-specs:
     name: 'Model Specs'
@@ -487,9 +315,6 @@ jobs:
     container:
       image: ghcr.io/tastybamboo/panda-ci:latest
       options: --shm-size=2gb
-    permissions:
-      contents: read
-      pull-requests: write
     env:
       BUNDLE_PATH: 'vendor/bundle'
       RAILS_ENV: test
@@ -498,8 +323,6 @@ jobs:
       postgres:
         image: postgres:latest
         env:
-          POSTGRES_HOST: localhost
-          POSTGRES_PORT: 5432
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: password
           POSTGRES_DB: test
@@ -508,68 +331,47 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+
     steps:
-      - uses: 'actions/checkout@v5'
-      - name: 'Update VERSION'
-        env:
-          VERSION: ${{ github.event.pull_request.head.sha }}
-        run: |
-          echo "${VERSION}" >> VERSION
+      - uses: actions/checkout@v5
 
-      - name: 'Start Xvfb'
-        run: |
-          Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
+      - name: Start Xvfb
+        run: Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
 
-      - name: 'Cache gems'
+      - name: Cache gems
         uses: actions/cache@v4
         with:
           path: vendor/bundle
           key: ${{ runner.os }}-gems-test-${{ hashFiles('**/Gemfile.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-gems-test-
-            ${{ runner.os }}-gems-
 
-      - name: 'Bundle install'
+      - name: Bundle install
         run: |
           bundle config path vendor/bundle
           bundle config without development
           bundle install --jobs 4 --retry 3
 
-      - name: 'Setup test database'
+      - name: Setup test database
         working-directory: spec/dummy
         env:
           DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
-          RAILS_ENV: test
         run: |
           rm -rf db/migrate
           mkdir -p db/migrate
           bundle exec rails db:create
           bundle exec rails db:schema:load
 
-      - name: 'Download compiled assets'
+      - name: Download compiled assets
         uses: actions/download-artifact@v5
         with:
           name: compiled-assets
+          path: spec/dummy/public/assets
 
-      - name: 'Verify Chrome'
-        run: |
-          echo "Checking Chrome installation..."
-          which google-chrome || which chromium || which chromium-browser || echo "Chrome not found"
-          google-chrome --version || chromium --version || chromium-browser --version || echo "Cannot get Chrome version"
-
-      - name: 'Run system specs'
+      - name: Run system specs
         env:
           DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: password
-          POSTGRES_HOST: postgres
-          POSTGRES_PORT: 5432
-          RAILS_ENV: 'test'
-          RSPEC_COLOR: 'true'
-          TERM: 'xterm-256color'
         run: |
-          echo "🖥️  Running system specs (excluding JS verification)..."
-          script -q -e -c "bundle exec rspec spec/system --tag ~skip --exclude-pattern 'spec/system/javascript_verification_spec.rb' --format documentation --color" /dev/null
+          echo "🖥️ Running system specs..."
+          script -q -e -c "bundle exec rspec spec/system --format documentation --color" /dev/null
 
       - name: 'Upload coverage'
         uses: actions/upload-artifact@v5
