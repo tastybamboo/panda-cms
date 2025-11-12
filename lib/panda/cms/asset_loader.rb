@@ -203,6 +203,13 @@ module Panda
           File.exist?(engine_js_path)
         end
 
+        def compiled_assets_available?
+          # Check if compiled JavaScript bundle exists
+          version = asset_version
+          js_file = Rails.public_path.join("panda-cms-assets", "panda-cms-#{version}.js")
+          js_file.exist?
+        end
+
         def cached_assets_exist?(version)
           cache_dir = local_cache_directory.join(version)
           cache_dir.exist? && cache_dir.join("panda-cms-#{version}.js").exist?

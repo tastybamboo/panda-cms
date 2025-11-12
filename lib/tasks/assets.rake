@@ -39,18 +39,10 @@ namespace :panda do
         # Determine the engine root directory (lib/tasks -> lib -> engine_root)
         engine_root = File.expand_path("../..", __dir__)
 
-        # 1. Copy compiled CMS assets from public/panda-cms-assets to dummy app
-        cms_assets_src = File.join(engine_root, "public/panda-cms-assets")
-        cms_assets_dest = File.join(engine_root, "spec/dummy/public/panda-cms-assets")
+        # NOTE: CMS JavaScript is served via importmaps directly from the engine
+        # We do NOT need to copy/compile CMS assets - only Propshaft assets for the dummy app
 
-        puts "📦 Copying CMS assets..."
-        puts "  Source: #{cms_assets_src}"
-        puts "  Destination: #{cms_assets_dest}"
-        FileUtils.mkdir_p(cms_assets_dest)
-        FileUtils.cp_r(Dir.glob("#{cms_assets_src}/*"), cms_assets_dest)
-        puts "  ✅ Copied CMS assets"
-
-        # 2. Compile Propshaft assets for dummy app
+        # 1. Compile Propshaft assets for dummy app
         puts "🔨 Compiling Propshaft assets for test environment..."
         dummy_dir = File.join(engine_root, "spec/dummy")
         Dir.chdir(dummy_dir) do
@@ -58,7 +50,7 @@ namespace :panda do
         end
         puts "  ✅ Propshaft assets compiled"
 
-        # 3. Generate importmap.json
+        # 2. Generate importmap.json
         puts "🗺️  Generating importmap.json..."
         # Ensure the public/assets directory exists
         assets_dir = File.join(dummy_dir, "public/assets")
@@ -72,7 +64,7 @@ namespace :panda do
         puts "  ✅ Generated #{importmap_path}"
 
         puts ""
-        puts "✅ Test environment assets ready!"
+        puts "✅ Test environment assets ready! (CMS JavaScript served via importmaps)"
       end
     end
   end

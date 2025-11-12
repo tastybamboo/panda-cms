@@ -106,10 +106,10 @@ jobs:
           DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
         run: |
           echo "🚧 Preparing dummy assets (core + CMS + propshaft + importmap)..."
-          bundle exec rake app:panda:core:assets:compile_dummy
-          bundle exec rake app:panda:cms:assets:compile_dummy
-          bundle exec rake app:panda:core:assets:generate_dummy_importmap
-          bundle exec rake app:panda:core:assets:verify_dummy
+          bundle exec rake panda:core:assets:compile_dummy
+          bundle exec rake panda:cms:assets:compile_dummy
+          bundle exec rake panda:core:assets:generate_dummy_importmap
+          bundle exec rake panda:core:assets:verify_dummy
 
       - name: Chrome boot smoke test
         env:
