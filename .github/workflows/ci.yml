@@ -92,7 +92,8 @@ jobs:
           path: vendor/bundle
           key: ${{ runner.os }}-gems-test-${{ hashFiles('**/Gemfile.lock') }}
           restore-keys: |
-            ${{ runner.os }}-gems-test-${{ hashFiles('**/Gemfile.lock') }}
+            ${{ runner.os }}-gems-test-
+            ${{ runner.os }}-gems-
 
       - name: 'Bundle install'
         run: |
