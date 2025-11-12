@@ -127,6 +127,19 @@ jobs:
           echo "If /dev/shm shows 64M, Chrome will crash instantly."
           echo "We need at least 2GB for Chrome to work properly."
 
+      - name: 'Check importmap configuration'
+        working-directory: spec/dummy
+        env:
+          DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
+          RAILS_ENV: test
+        run: |
+          echo "📦 Checking importmap configuration..."
+          echo "Running: rails importmap:json"
+          bundle exec rails importmap:json || echo "Failed to generate importmap JSON"
+          echo ""
+          echo "Checking if all importmap paths exist..."
+          bundle exec rails runner 'Rails.application.importmap.each_entry { |name, path| puts "#{name}: #{path}" }' || echo "Cannot enumerate importmap entries"
+
       - name: 'Check asset readiness'
         run: |
           echo "📋 Checking compiled CSS assets..."
@@ -135,9 +148,23 @@ jobs:
           echo ""
           echo "First 20 lines of CSS file (if exists):"
           find spec/dummy/public/panda-core-assets/ -name "*.css" -type f | head -1 | xargs head -20 || echo "No CSS file found"
-          echo ""
-          echo "Root route (/):"
-          bundle exec rails runner "puts Rails.application.routes.url_helpers.root_path rescue 'No root route defined'" || echo "Cannot check routes"
+
+      - name: 'Run Chrome boot test'
+        env:
+          DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_HOST: postgres
+          POSTGRES_PORT: 5432
+          RAILS_ENV: 'test'
+          RSPEC_COLOR: 'true'
+          TERM: 'xterm-256color'
+          RSPEC_DEBUG: 'true'
+        run: |
+          echo "🔍 Running Chrome boot test (no page visit)..."
+          echo "This tests if Chrome can start WITHOUT loading any page."
+          echo "Isolates Chrome startup issues from server/importmap issues."
+          script -q -e -c "bundle exec rspec spec/system/aaa_chrome_boot_spec.rb --format documentation --color --fail-fast" /dev/null
 
       - name: 'Run server verification'
         env:
