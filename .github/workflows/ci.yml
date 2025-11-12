@@ -197,6 +197,27 @@ jobs:
           echo "Isolates Chrome startup issues from server/importmap issues."
           script -q -e -c "bundle exec rspec spec/system/aaa_chrome_boot_spec.rb --format documentation --color --fail-fast" /dev/null
 
+      - name: 'Check asset manifest'
+        working-directory: spec/dummy
+        run: |
+          echo "📦 Checking asset manifest..."
+          echo "Listing public/assets structure:"
+          ls -R public/assets 2>/dev/null || echo "public/assets directory not found"
+          echo ""
+          echo "Checking .manifest.json:"
+          cat public/assets/.manifest.json 2>/dev/null || echo ".manifest.json not found"
+          echo ""
+          echo "If manifest is empty, missing, or has incorrect fingerprints, Rails will crash on boot"
+
+      - name: 'Test importmap JSON generation'
+        working-directory: spec/dummy
+        env:
+          DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
+          RAILS_ENV: test
+        run: |
+          echo "🗺️ Testing importmap JSON generation..."
+          bundle exec rails runner "puts JSON.pretty_generate(Rails.application.importmap.to_json)" || echo "Failed to generate importmap JSON"
+
       - name: 'Test Rails server boot'
         working-directory: spec/dummy
         env:
@@ -205,6 +226,17 @@ jobs:
         run: |
           echo "🚂 Testing if Rails can boot..."
           bundle exec rails runner "puts '✅ Rails server booted successfully'" || echo "❌ Rails failed to boot"
+
+      - name: 'Test Rails server start (verbose)'
+        working-directory: spec/dummy
+        env:
+          DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
+          RAILS_ENV: test
+          RAILS_LOG_TO_STDOUT: '1'
+        run: |
+          echo "🚂 Testing Rails server startup in verbose mode..."
+          echo "Starting Rails server on port 3001 for 5 seconds..."
+          timeout 5 bundle exec rails server -e test -p 3001 2>&1 | head -50 || echo "Server start test completed (timeout expected)"
 
       - name: 'Run server verification'
         env:
