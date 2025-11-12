@@ -63,14 +63,14 @@
       min_width: 1200,
       min_height: 630
     } %>
-    <% if post.og_image.attached? %>
+    <% if f.object&.og_image&.attached? %>
       <div class="mt-2">
-        <%= image_tag post.og_image.variant(:og_share), class: "max-w-xs rounded border border-gray-300" %>
+        <%= image_tag f.object.og_image.variant(:og_share), class: "max-w-xs rounded border border-gray-300" %>
       </div>
     <% end %>
   </div>
 
-  <%= f.submit post.persisted? ? "Update Post" : "Create Post",
+  <%= f.submit f.object.persisted? ? "Update Post" : "Create Post",
       class: "btn btn-primary",
       data: {
         disable_with: "Saving...",
