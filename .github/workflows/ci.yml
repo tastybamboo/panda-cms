@@ -132,6 +132,9 @@ jobs:
           echo "🔧 Testing Chrome startup with minimal flags..."
           echo "This will show Chrome's actual startup error if it crashes."
           echo ""
+          echo "Actual /dev/shm size:"
+          df -h /dev/shm
+          echo ""
           CHROME_BIN=$(which google-chrome || which chromium || which chromium-browser)
           echo "Chrome binary: $CHROME_BIN"
           echo ""
@@ -158,6 +161,12 @@ jobs:
           echo "📦 Checking importmap configuration..."
           echo "Running: rails importmap:json"
           bundle exec rails importmap:json || echo "Failed to generate importmap JSON"
+          echo ""
+          echo "Checking static importmap.json file..."
+          cat public/assets/importmap.json || echo "public/assets/importmap.json not found"
+          echo ""
+          echo "Listing public/assets directory structure..."
+          ls -R public/assets || echo "public/assets directory not found"
           echo ""
           echo "Checking if all importmap paths exist..."
           bundle exec rails runner 'Rails.application.importmap.each_entry { |name, path| puts "#{name}: #{path}" }' || echo "Cannot enumerate importmap entries"
