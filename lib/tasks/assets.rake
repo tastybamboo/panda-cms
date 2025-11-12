@@ -16,15 +16,14 @@ namespace :panda do
       # Helper — resolve dummy directory even when tasks are run from engine root
       #
       def dummy_dir
-        # Works whether running from root, engine, or spec/dummy
-        @dummy_dir ||= begin
-          candidates = [
-            Rails.root.join("spec/dummy"),
-            File.expand_path("../../spec/dummy", __dir__)
-          ]
-          candidates.find { |path| File.exist?(path) } ||
-            raise("❌ Could not locate spec/dummy for Panda CMS")
-        end
+        root = Rails.root
+
+        return root if root.basename.to_s == "dummy"
+
+        candidate = root.join("spec/dummy")
+        return candidate if candidate.exist?
+
+        raise("❌ Cannot find dummy root — expected #{candidate}")
       end
 
       #
