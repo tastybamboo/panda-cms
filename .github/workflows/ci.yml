@@ -127,6 +127,28 @@ jobs:
           echo "If /dev/shm shows 64M, Chrome will crash instantly."
           echo "We need at least 2GB for Chrome to work properly."
 
+      - name: 'Test Chrome startup directly'
+        run: |
+          echo "🔧 Testing Chrome startup with minimal flags..."
+          echo "This will show Chrome's actual startup error if it crashes."
+          echo ""
+          CHROME_BIN=$(which google-chrome || which chromium || which chromium-browser)
+          echo "Chrome binary: $CHROME_BIN"
+          echo ""
+          echo "Attempting to start Chrome..."
+          timeout 5 $CHROME_BIN \
+            --headless \
+            --no-sandbox \
+            --disable-gpu \
+            --disable-dev-shm-usage \
+            --disable-software-rasterizer \
+            --remote-debugging-port=9222 \
+            about:blank \
+            2>&1 | tee chrome_startup.log || echo "Chrome exited with code $?"
+          echo ""
+          echo "Chrome startup log:"
+          cat chrome_startup.log || echo "No log file generated"
+
       - name: 'Check importmap configuration'
         working-directory: spec/dummy
         env:
