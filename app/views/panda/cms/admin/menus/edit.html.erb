@@ -1,16 +1,15 @@
 <%= render Panda::Core::Admin::ContainerComponent.new do |component| %>
   <% component.heading(text: "Edit Menu: #{@menu.name}", level: 1) %>
 
-  <%= panda_cms_form_with model: @menu, url: admin_cms_menu_path(@menu), method: :put do |f| %>
+  <%= panda_cms_form_with model: @menu, url: admin_cms_menu_path(@menu), method: :put, data: { controller: "menu-form" } do |f| %>
     <%= render Panda::Core::Admin::FormErrorComponent.new(model: @menu) %>
 
     <%= f.text_field :name %>
     <%= f.select :kind, options_for_select([["Static", "static"], ["Auto", "auto"]], selected: @menu.kind), {}, { data: { action: "change->menu-form#kindChanged" } } %>
 
-    <div data-controller="menu-form">
-      <div data-menu-form-target="startPageField" class="<%= 'hidden' unless @menu.kind == 'auto' %>">
-        <%= f.collection_select :start_page_id, Panda::CMS::Page.order(:title), :id, :title, { include_blank: "Select a page..." }, { class: "mt-1" } %>
-      </div>
+    <div data-menu-form-target="startPageField" class="<%= 'hidden' unless @menu.kind == 'auto' %>">
+      <%= f.collection_select :start_page_id, Panda::CMS::Page.order(:title), :id, :title, { include_blank: "Select a page...", label: "Start Page" }, { class: "mt-1" } %>
+    </div>
 
       <% if @menu.kind == "static" %>
         <%= render Panda::Core::Admin::PanelComponent.new do |panel| %>
@@ -57,7 +56,6 @@
           <% end %>
         <% end %>
       <% end %>
-    </div>
 
     <%= f.button "Save Menu" %>
   <% end %>
