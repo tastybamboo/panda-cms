@@ -322,7 +322,7 @@ jobs:
 
   system-specs:
     name: 'System Specs (Browser Tests)'
-    needs: seclint
+    needs: [seclint, js-verification]
     runs-on: 'ubuntu-latest'
     container:
       image: ghcr.io/tastybamboo/panda-ci:latest
