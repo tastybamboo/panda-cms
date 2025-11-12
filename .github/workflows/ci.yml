@@ -124,8 +124,9 @@ jobs:
           POSTGRES_PORT: 5432
           RAILS_ENV: 'test'
           RSPEC_COLOR: 'true'
+          TERM: 'xterm-256color'
         run: |
-          bundle exec rspec --tag ~skip --format documentation --color
+          script -q -e -c "bundle exec rspec --tag ~skip --format documentation --color" /dev/null
 
       - name: 'Upload coverage'
         uses: actions/upload-artifact@v5
