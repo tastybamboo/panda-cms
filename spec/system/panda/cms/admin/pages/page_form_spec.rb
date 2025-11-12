@@ -140,6 +140,11 @@ RSpec.describe "Page form SEO functionality", type: :system do
   end
 
   describe "auto-fill functionality" do
+    before do
+      # Ensure inherit is disabled so fields are editable
+      about_page.update!(inherit_seo: false)
+    end
+
     it "auto-fills SEO title from page title on blur" do
       open_page_details
 

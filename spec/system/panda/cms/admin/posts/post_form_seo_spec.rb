@@ -2,8 +2,7 @@
 
 require "system_helper"
 
-# TODO: SEO form fields not rendering - needs investigation
-RSpec.describe "Post form SEO functionality", type: :system, skip: "SEO form fields not rendering - implementation incomplete" do
+RSpec.describe "Post form SEO functionality", type: :system do
   fixtures :all
 
   let(:admin) { create_admin_user }
@@ -213,10 +212,10 @@ RSpec.describe "Post form SEO functionality", type: :system, skip: "SEO form fie
   describe "creating a new post with SEO data" do
     it "saves SEO data when creating a new post" do
       visit "/admin/cms/posts/new"
-      expect(page).to have_content("New Post", wait: 10)
+      expect(page).to have_content("Add Post", wait: 10)
 
       fill_in "Title", with: "New Post with SEO"
-      fill_in "Slug", with: "new-post-seo"
+      fill_in "URL", with: "new-post-seo"
       fill_in "SEO Title", with: "New Post SEO Title"
       fill_in "SEO Description", with: "New post SEO description"
       fill_in "SEO Keywords", with: "new, post, test"
@@ -225,7 +224,7 @@ RSpec.describe "Post form SEO functionality", type: :system, skip: "SEO form fie
 
       expect(page).to have_content(/successfully created/i, wait: 10)
 
-      new_post = Panda::CMS::Post.find_by(slug: "new-post-seo")
+      new_post = Panda::CMS::Post.where("slug LIKE ?", "%new-post-seo").first
       expect(new_post).not_to be_nil
       expect(new_post.seo_title).to eq("New Post SEO Title")
       expect(new_post.seo_description).to eq("New post SEO description")
@@ -234,16 +233,16 @@ RSpec.describe "Post form SEO functionality", type: :system, skip: "SEO form fie
 
     it "creates post without SEO data if fields are left empty" do
       visit "/admin/cms/posts/new"
-      expect(page).to have_content("New Post", wait: 10)
+      expect(page).to have_content("Add Post", wait: 10)
 
       fill_in "Title", with: "Post Without SEO"
-      fill_in "Slug", with: "post-no-seo"
+      fill_in "URL", with: "post-no-seo"
 
       click_button "Create Post"
 
       expect(page).to have_content(/successfully created/i, wait: 10)
 
-      new_post = Panda::CMS::Post.find_by(slug: "post-no-seo")
+      new_post = Panda::CMS::Post.where("slug LIKE ?", "%post-no-seo").first
       expect(new_post).not_to be_nil
       expect(new_post.seo_title).to be_nil
       expect(new_post.seo_description).to be_nil
@@ -253,17 +252,17 @@ RSpec.describe "Post form SEO functionality", type: :system, skip: "SEO form fie
   describe "SEO index mode" do
     it "sets index mode to visible by default" do
       visit "/admin/cms/posts/new"
-      expect(page).to have_content("New Post", wait: 10)
+      expect(page).to have_content("Add Post", wait: 10)
 
       # Default should be visible
       expect(find_field("Visible to search engines")).to be_checked
 
       fill_in "Title", with: "Default Index Mode Post"
-      fill_in "Slug", with: "default-index"
+      fill_in "URL", with: "default-index"
 
       click_button "Create Post"
 
-      new_post = Panda::CMS::Post.find_by(slug: "default-index")
+      new_post = Panda::CMS::Post.where("slug LIKE ?", "%default-index").first
       expect(new_post.seo_index_mode).to eq("visible")
     end
 
