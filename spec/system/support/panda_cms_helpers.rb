@@ -400,34 +400,6 @@ module PandaCmsHelpers
       @javascript_failures_count += 1
       test_name = RSpec.current_example&.full_description || "unknown test"
       puts "[Test Debug] JavaScript failure ##{@javascript_failures_count} in: #{test_name}"
-
-      # Additional debugging for about:blank navigation
-      if result["url"] == "about:blank"
-        puts "[Test Debug] Page navigated to about:blank - possible causes:"
-        puts "   - JavaScript error caused navigation"
-        puts "   - Form submission redirect failed"
-        puts "   - Browser security restriction"
-        puts "   - Network/server error during navigation"
-
-        # Check for browser console errors
-        begin
-          console_logs = begin
-            page.driver.browser.logs.get(:browser)
-          rescue
-            []
-          end
-          if console_logs.any?
-            puts "[Test Debug] Browser console messages:"
-            console_logs.each do |log|
-              puts "   #{log}"
-            end
-          else
-            puts "[Test Debug] No browser console messages found"
-          end
-        rescue => e
-          puts "[Test Debug] Could not check console messages: #{e.message}"
-        end
-      end
     end
 
     if ENV["GITHUB_ACTIONS"] == "true" && result["pandaCmsLoaded"].nil? && @javascript_failures_count >= 5
