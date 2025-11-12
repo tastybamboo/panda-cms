@@ -17,11 +17,20 @@ if ENV["GITHUB_ACTIONS"] == "true"
     Rack::Handler::Puma.run(
       app,
       Port: port,
+      PreloadApp: false, # Avoids subtle memory-sharing bugs or Rails/Autoload issues in Ruby 3.4/Prism
       Host: host,
       Silent: false, # Enable logging to see what's happening
       Threads: "2:2", # Min:2, Max:2 threads (single-mode, not cluster)
-      Verbose: true # Enable verbose logging
+      Verbose: true, # Enable verbose logging,
+      Workers: 0 # Explicitly set to single-threaded mode
     )
+  end
+
+  # Avoid infinite waits in CI
+  Puma::Const::DEFAULTS[:first_data_timeout] = begin
+    10
+  rescue
+    nil
   end
 
   puts "[CI Config] Puma configured for CI in single-mode with 2 threads"

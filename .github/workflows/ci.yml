@@ -181,7 +181,7 @@ jobs:
           ls -R public/assets || echo "public/assets directory not found"
           echo ""
           echo "❗ If spec/dummy/public/ is empty → Rails cannot start because assets are missing"
-          echo "❗ Asset compilation should run: cd spec/dummy && bundle exec rake app:panda:core:assets:compile"
+          echo "❗ Asset compilation should run: cd spec/dummy && bundle exec rake panda:core:assets:compile"
           echo "❗ NOT in root directory where it compiles to wrong location"
 
       - name: 'Check asset readiness'
