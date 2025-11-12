@@ -122,6 +122,7 @@ jobs:
           POSTGRES_HOST: postgres
           POSTGRES_PORT: 5432
           RAILS_ENV: 'test'
+          RSPEC_COLOR: 'true'
         run: |
           bundle exec rspec --tag ~skip --format documentation --color
 
