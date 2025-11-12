@@ -46,15 +46,13 @@ jobs:
       - name: 'YAML Lint'
         run: 'yamllint -c .yamllint .'
 
-  specs:
-    name: 'App Specs'
+  js-verification:
+    name: 'JS Verification (Fail-Fast)'
+    needs: seclint
     runs-on: 'ubuntu-latest'
     container:
       image: ghcr.io/tastybamboo/panda-ci:latest
       options: --shm-size=2gb
-    permissions:
-      contents: read
-      pull-requests: write
     env:
       BUNDLE_PATH: 'vendor/bundle'
       RAILS_ENV: test
@@ -68,13 +66,11 @@ jobs:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: password
           POSTGRES_DB: test
-        # Set health checks to wait until postgres has started
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-
     steps:
       - uses: 'actions/checkout@v5'
       - name: 'Update VERSION'
@@ -108,16 +104,15 @@ jobs:
           DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
           RAILS_ENV: test
         run: |
-          # Clean up ALL migrations in dummy app to start fresh
           rm -rf db/migrate
           mkdir -p db/migrate
           bundle exec rails db:create
-          # Load schema from schema.rb (much faster than running migrations)
           bundle exec rails db:schema:load
 
-      - name: 'Compile CSS assets'
+      - name: 'Compile assets'
         run: |
           bundle exec rake app:panda:core:assets:compile
+          bundle exec rake app:panda_cms:assets:compile
 
       - name: 'Verify Chrome'
         run: |
@@ -125,7 +120,7 @@ jobs:
           which google-chrome || which chromium || which chromium-browser || echo "Chrome not found"
           google-chrome --version || chromium --version || chromium-browser --version || echo "Cannot get Chrome version"
 
-      - name: 'Run JavaScript verification (fail-fast)'
+      - name: 'Run JavaScript verification'
         env:
           DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
           POSTGRES_USER: postgres
@@ -136,8 +131,60 @@ jobs:
           RSPEC_COLOR: 'true'
           TERM: 'xterm-256color'
         run: |
-          echo "🔍 Running JavaScript verification test (fail-fast if JS doesn't work)..."
+          echo "🔍 Running JavaScript verification test (fail-fast)..."
           script -q -e -c "bundle exec rspec spec/system/javascript_verification_spec.rb --format documentation --color --fail-fast" /dev/null
+
+  model-specs:
+    name: 'Model Specs'
+    needs: seclint
+    runs-on: 'ubuntu-latest'
+    container:
+      image: ghcr.io/tastybamboo/panda-ci:latest
+    env:
+      BUNDLE_PATH: 'vendor/bundle'
+      RAILS_ENV: test
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: 'actions/checkout@v5'
+
+      - name: 'Cache gems'
+        uses: actions/cache@v4
+        with:
+          path: vendor/bundle
+          key: ${{ runner.os }}-gems-test-${{ hashFiles('**/Gemfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-gems-test-
+            ${{ runner.os }}-gems-
+
+      - name: 'Bundle install'
+        run: |
+          bundle config path vendor/bundle
+          bundle config without development
+          bundle install --jobs 4 --retry 3
+
+      - name: 'Setup test database'
+        working-directory: spec/dummy
+        env:
+          DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
+          RAILS_ENV: test
+        run: |
+          rm -rf db/migrate
+          mkdir -p db/migrate
+          bundle exec rails db:create
+          bundle exec rails db:schema:load
 
       - name: 'Run model specs'
         env:
@@ -149,6 +196,58 @@ jobs:
           echo "📦 Running model specs..."
           script -q -e -c "bundle exec rspec spec/models --format documentation --color" /dev/null
 
+  request-specs:
+    name: 'Request/Controller Specs'
+    needs: seclint
+    runs-on: 'ubuntu-latest'
+    container:
+      image: ghcr.io/tastybamboo/panda-ci:latest
+    env:
+      BUNDLE_PATH: 'vendor/bundle'
+      RAILS_ENV: test
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: 'actions/checkout@v5'
+
+      - name: 'Cache gems'
+        uses: actions/cache@v4
+        with:
+          path: vendor/bundle
+          key: ${{ runner.os }}-gems-test-${{ hashFiles('**/Gemfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-gems-test-
+            ${{ runner.os }}-gems-
+
+      - name: 'Bundle install'
+        run: |
+          bundle config path vendor/bundle
+          bundle config without development
+          bundle install --jobs 4 --retry 3
+
+      - name: 'Setup test database'
+        working-directory: spec/dummy
+        env:
+          DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
+          RAILS_ENV: test
+        run: |
+          rm -rf db/migrate
+          mkdir -p db/migrate
+          bundle exec rails db:create
+          bundle exec rails db:schema:load
+
       - name: 'Run request specs'
         env:
           DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
@@ -156,8 +255,60 @@ jobs:
           RSPEC_COLOR: 'true'
           TERM: 'xterm-256color'
         run: |
-          echo "🌐 Running request specs..."
+          echo "🌐 Running request/controller specs..."
           script -q -e -c "bundle exec rspec spec/requests spec/controllers --format documentation --color" /dev/null
+
+  lib-specs:
+    name: 'Lib/Services Specs'
+    needs: seclint
+    runs-on: 'ubuntu-latest'
+    container:
+      image: ghcr.io/tastybamboo/panda-ci:latest
+    env:
+      BUNDLE_PATH: 'vendor/bundle'
+      RAILS_ENV: test
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: 'actions/checkout@v5'
+
+      - name: 'Cache gems'
+        uses: actions/cache@v4
+        with:
+          path: vendor/bundle
+          key: ${{ runner.os }}-gems-test-${{ hashFiles('**/Gemfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-gems-test-
+            ${{ runner.os }}-gems-
+
+      - name: 'Bundle install'
+        run: |
+          bundle config path vendor/bundle
+          bundle config without development
+          bundle install --jobs 4 --retry 3
+
+      - name: 'Setup test database'
+        working-directory: spec/dummy
+        env:
+          DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
+          RAILS_ENV: test
+        run: |
+          rm -rf db/migrate
+          mkdir -p db/migrate
+          bundle exec rails db:create
+          bundle exec rails db:schema:load
 
       - name: 'Run lib/services specs'
         env:
@@ -169,7 +320,84 @@ jobs:
           echo "⚙️  Running lib/services specs..."
           script -q -e -c "bundle exec rspec spec/lib spec/services --format documentation --color" /dev/null || true
 
-      - name: 'Run system specs (browser tests)'
+  system-specs:
+    name: 'System Specs (Browser Tests)'
+    needs: seclint
+    runs-on: 'ubuntu-latest'
+    container:
+      image: ghcr.io/tastybamboo/panda-ci:latest
+      options: --shm-size=2gb
+    permissions:
+      contents: read
+      pull-requests: write
+    env:
+      BUNDLE_PATH: 'vendor/bundle'
+      RAILS_ENV: test
+      DISPLAY: ':99'
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: 'actions/checkout@v5'
+      - name: 'Update VERSION'
+        env:
+          VERSION: ${{ github.event.pull_request.head.sha }}
+        run: |
+          echo "${VERSION}" >> VERSION
+
+      - name: 'Start Xvfb'
+        run: |
+          Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
+
+      - name: 'Cache gems'
+        uses: actions/cache@v4
+        with:
+          path: vendor/bundle
+          key: ${{ runner.os }}-gems-test-${{ hashFiles('**/Gemfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-gems-test-
+            ${{ runner.os }}-gems-
+
+      - name: 'Bundle install'
+        run: |
+          bundle config path vendor/bundle
+          bundle config without development
+          bundle install --jobs 4 --retry 3
+
+      - name: 'Setup test database'
+        working-directory: spec/dummy
+        env:
+          DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
+          RAILS_ENV: test
+        run: |
+          rm -rf db/migrate
+          mkdir -p db/migrate
+          bundle exec rails db:create
+          bundle exec rails db:schema:load
+
+      - name: 'Compile assets'
+        run: |
+          bundle exec rake app:panda:core:assets:compile
+          bundle exec rake app:panda_cms:assets:compile
+
+      - name: 'Verify Chrome'
+        run: |
+          echo "Checking Chrome installation..."
+          which google-chrome || which chromium || which chromium-browser || echo "Chrome not found"
+          google-chrome --version || chromium --version || chromium-browser --version || echo "Cannot get Chrome version"
+
+      - name: 'Run system specs'
         env:
           DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
           POSTGRES_USER: postgres
@@ -180,14 +408,14 @@ jobs:
           RSPEC_COLOR: 'true'
           TERM: 'xterm-256color'
         run: |
-          echo "🖥️  Running system specs (excluding JS verification already run)..."
+          echo "🖥️  Running system specs (excluding JS verification)..."
           script -q -e -c "bundle exec rspec spec/system --tag ~skip --exclude-pattern 'spec/system/javascript_verification_spec.rb' --format documentation --color" /dev/null
 
       - name: 'Upload coverage'
         uses: actions/upload-artifact@v5
         if: always()
         with:
-          name: coverage
+          name: coverage-system
           path: coverage/
 
       - name: 'Upload screenshots on failure'
