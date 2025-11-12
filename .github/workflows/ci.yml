@@ -47,7 +47,7 @@ jobs:
         run: 'yamllint -c .yamllint .'
 
   js-verification:
-    name: 'JS Verification (Fail-Fast)'
+    name: 'Readiness (Fail-Fast)'
     needs: seclint
     runs-on: 'ubuntu-latest'
     container:
@@ -118,6 +118,18 @@ jobs:
           echo "Checking Chrome installation..."
           which google-chrome || which chromium || which chromium-browser || echo "Chrome not found"
           google-chrome --version || chromium --version || chromium-browser --version || echo "Cannot get Chrome version"
+
+      - name: 'Check asset readiness'
+        run: |
+          echo "📋 Checking compiled CSS assets..."
+          echo "Looking for CSS files in spec/dummy/public/panda-core-assets/:"
+          ls -la spec/dummy/public/panda-core-assets/ || echo "Directory not found"
+          echo ""
+          echo "First 20 lines of CSS file (if exists):"
+          find spec/dummy/public/panda-core-assets/ -name "*.css" -type f | head -1 | xargs head -20 || echo "No CSS file found"
+          echo ""
+          echo "Root route (/):"
+          bundle exec rails runner "puts Rails.application.routes.url_helpers.root_path rescue 'No root route defined'" || echo "Cannot check routes"
 
       - name: 'Run server verification'
         env:
