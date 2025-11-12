@@ -340,7 +340,7 @@ RSpec.describe "Menus Management", type: :system do
     it "deletes a menu when confirmed" do
       menu_to_delete = Panda::CMS::Menu.create!(
         name: "Delete Me",
-        kind: "footer"
+        kind: "static"
       )
 
       visit "/admin/cms/menus"
