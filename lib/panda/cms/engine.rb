@@ -44,9 +44,13 @@ module Panda
 
       # Authentication is now handled by Panda::Core::Engine
 
-      # Panda CMS uses importmaps for JavaScript (no compilation needed)
-      # All JavaScript controllers are served via Rack::Static middleware
-      # from the engine's app/javascript directory
+      # Load the engine's importmap
+      # This keeps the engine's JavaScript separate from the app's importmap
+      initializer "panda_cms.importmap", before: "importmap" do |app|
+        Panda::CMS.importmap = Importmap::Map.new.tap do |map|
+          map.draw(Panda::CMS::Engine.root.join("config/importmap.rb"))
+        end
+      end
     end
 
     class MissingBlockError < StandardError; end

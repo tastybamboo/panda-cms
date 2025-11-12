@@ -25,14 +25,9 @@ module Panda
 
       # Include only Panda CMS JavaScript
       def panda_cms_javascript
-        # Panda CMS uses importmaps for JavaScript (no compiled bundles)
-        # Load CMS controllers after Core is loaded
-        # Files are served by Rack::Static middleware from engine's app/javascript
-        importmap_html = <<~HTML
-          <script type="module" src="/panda/cms/application_panda_cms.js"></script>
-          <script type="module" src="/panda/cms/controllers/index.js"></script>
-        HTML
-        importmap_html.html_safe
+        # Use the engine's importmap (loaded in initializer)
+        # This keeps the engine's JavaScript separate from the app's importmap
+        javascript_importmap_tags("application_panda_cms", importmap: Panda::CMS.importmap)
       end
 
       # Include only Panda CMS CSS
@@ -82,7 +77,7 @@ module Panda
         version = Panda::CMS::VERSION
         js_url = Panda::CMS::AssetLoader.javascript_url
         css_url = Panda::CMS::AssetLoader.css_url
-        using_github = Panda::CMS::AssetLoader.use_github_assets?
+        Panda::CMS::AssetLoader.use_github_assets?
 
         debug_info = [
           "<!-- Panda CMS Asset Debug Info -->",
