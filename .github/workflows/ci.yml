@@ -109,10 +109,9 @@ jobs:
           bundle exec rails db:create
           bundle exec rails db:schema:load
 
-      - name: 'Compile assets'
+      - name: 'Compile CSS assets'
         run: |
           bundle exec rake app:panda:core:assets:compile
-          bundle exec rake app:panda_cms:assets:compile
 
       - name: 'Verify Chrome'
         run: |
@@ -134,14 +133,12 @@ jobs:
           echo "🔍 Running JavaScript verification test (fail-fast)..."
           script -q -e -c "bundle exec rspec spec/system/javascript_verification_spec.rb --format documentation --color --fail-fast" /dev/null
 
-      - name: 'Upload compiled assets'
+      - name: 'Upload compiled CSS'
         uses: actions/upload-artifact@v5
         if: success()
         with:
           name: compiled-assets
-          path: |
-            public/panda-core-assets/
-            spec/dummy/public/panda-cms-assets/
+          path: spec/dummy/public/panda-core-assets/
           retention-days: 1
 
   model-specs:
