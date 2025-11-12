@@ -114,7 +114,7 @@ jobs:
         run: |
           echo "📦 Compiling CSS assets in spec/dummy..."
           echo "This ensures assets are compiled to the dummy app's public directory."
-          bundle exec rake app:panda:core:assets:compile
+          bundle exec rake panda:core:assets:compile
 
       - name: 'Verify Chrome'
         run: |
