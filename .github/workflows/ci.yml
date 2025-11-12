@@ -100,16 +100,24 @@ jobs:
           bundle exec rails db:create
           bundle exec rails db:schema:load
 
-      - name: Prepare dummy assets
+      - name: Prepare core dummy assets
+        working-directory: spec/dummy
         env:
           RAILS_ENV: test
           DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
         run: |
-          echo "🚧 Preparing dummy assets (core + CMS + propshaft + importmap)..."
-          bundle exec rake panda:core:assets:compile_dummy
+          echo "🚧 Preparing dummy assets (core)
+          bundle exec rake app:panda:core:assets:compile_dummy
+          bundle exec rake app:panda:core:assets:generate_dummy_importmap
+          bundle exec rake app:panda:core:assets:verify_dummy
+
+      - name: Prepare CMS dummy assets
+        env:
+          RAILS_ENV: test
+          DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
+        run: |
+          echo "🚧 Preparing dummy assets (CMS)..."
           bundle exec rake panda:cms:assets:compile_dummy
-          bundle exec rake panda:core:assets:generate_dummy_importmap
-          bundle exec rake panda:core:assets:verify_dummy
 
       - name: Chrome boot smoke test
         env:
