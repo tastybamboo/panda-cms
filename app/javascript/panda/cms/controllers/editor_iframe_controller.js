@@ -545,11 +545,10 @@ export default class extends Controller {
   }
 
   setupSlideoverHandling() {
-    // Watch for slideover toggle
-    const slideoverToggle = document.getElementById('slideover-toggle')
+    // Watch for slideover visibility changes
     const slideover = document.getElementById('slideover')
 
-    if (slideoverToggle && slideover) {
+    if (slideover) {
       const observer = new MutationObserver((mutations) => {
         mutations.forEach((mutation) => {
           if (mutation.attributeName === 'class') {

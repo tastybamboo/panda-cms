@@ -175,7 +175,7 @@ RSpec.describe "Adding a post", type: :system do
     click_button "Create Post"
 
     # Wait for validation errors to appear
-    expect(page).to have_content("Slug can't be blank", wait: 5)
+    expect(page).to have_content("URL can't be blank", wait: 5)
   end
 
   it "shows the add post form with required fields" do

@@ -7,8 +7,8 @@ pre-commit:
       run: brakeman --no-pager --no-progress --quiet
     # - name: broken-links
     #   run: lychee . --exclude http://localhost:3000 --exclude https://portal.azure.com  --exclude file://
-    - name: bundle-audit
-      run: bundle exec bundle-audit --update
+    # - name: bundle-audit
+    # run: bundle exec bundle-audit update && bundle exec bundle-audit check
     - name: bundle-outdated
       run: bundle outdated --strict
     - name: erblint

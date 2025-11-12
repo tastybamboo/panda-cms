@@ -42,8 +42,19 @@ Rails.application.eager_load!
 # Load CMS-specific support files
 Dir[Rails.root.join("../support/**/*.rb")].sort.each { |f| require f }
 
+# Ensure Rails.logger is available for request specs
+# In some contexts, Rails.logger may be nil, especially in request specs
+Rails.logger ||= Logger.new($stdout)
+Rails.logger.level = Logger::ERROR
+
 # CMS-specific RSpec configuration
 RSpec.configure do |config|
+  # Restore ActionController::Base.logger after panda-core sets it to nil
+  # invisible_captcha needs a logger to function properly
+  config.before(:suite) do
+    ActionController::Base.logger = Rails.logger if defined?(ActionController::Base)
+  end
+
   # Include CMS engine route helpers
   config.include Panda::CMS::Engine.routes.url_helpers
 

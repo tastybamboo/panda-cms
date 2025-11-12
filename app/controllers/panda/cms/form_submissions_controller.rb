@@ -44,13 +44,13 @@ module Panda
         begin
           Panda::CMS::FormMailer.notification_email(form: form, form_submission: form_submission).deliver_now
         rescue => e
-          Rails.logger.error "Failed to send form notification email: #{e.message}"
+          Rails.logger&.error "Failed to send form notification email: #{e.message}"
           # Don't fail the submission if email fails
         end
 
         redirect_to_fallback(form, success: true)
       rescue ActiveRecord::RecordInvalid => e
-        Rails.logger.error "Form submission validation failed: #{e.message}"
+        Rails.logger&.error "Form submission validation failed: #{e.message}"
         redirect_to_fallback(form, error: true)
       end
 
@@ -74,19 +74,19 @@ module Panda
 
           # Too fast - likely a bot (< 3 seconds)
           if time_elapsed < 3.seconds
-            Rails.logger.warn "Form submitted too quickly: #{time_elapsed.round(2)}s from IP: #{request.remote_ip}"
+            Rails.logger&.warn "Form submitted too quickly: #{time_elapsed.round(2)}s from IP: #{request.remote_ip}"
             return true
           end
 
           # Too stale - form held too long without interaction (> 24 hours)
           if time_elapsed > 24.hours
-            Rails.logger.warn "Form submission too old: #{(time_elapsed / 1.hour).round(1)}h from IP: #{request.remote_ip}"
+            Rails.logger&.warn "Form submission too old: #{(time_elapsed / 1.hour).round(1)}h from IP: #{request.remote_ip}"
             return true
           end
 
           false
         rescue ArgumentError, TypeError => e
-          Rails.logger.warn "Invalid form timestamp from IP #{request.remote_ip}: #{e.message}"
+          Rails.logger&.warn "Invalid form timestamp from IP #{request.remote_ip}: #{e.message}"
           # Don't reject on invalid timestamp - might be legitimate user with modified form
           false
         end
@@ -98,7 +98,7 @@ module Panda
         count = Rails.cache.read(cache_key) || 0
 
         if count >= 3
-          Rails.logger.warn "Rate limit exceeded for IP: #{request.remote_ip}"
+          Rails.logger&.warn "Rate limit exceeded for IP: #{request.remote_ip}"
           render plain: "Too many requests. Please try again later.", status: :too_many_requests
           return
         end
@@ -108,39 +108,41 @@ module Panda
 
       # Log spam attempt with reason
       def log_spam_attempt(form, reason)
-        Rails.logger.warn "Spam detected (#{reason}) for form #{form.id} from IP: #{request.remote_ip}"
+        Rails.logger&.warn "Spam detected (#{reason}) for form #{form.id} from IP: #{request.remote_ip}"
       end
 
       # Callback for invisible_captcha spam detection
       def log_spam
-        Rails.logger.warn "Invisible captcha triggered from IP: #{request.remote_ip}"
+        Rails.logger&.warn "Invisible captcha triggered from IP: #{request.remote_ip}"
       end
 
       # Safe redirect that works in engine context
       def redirect_to_fallback(form, success: false, spam: false, error: false)
+        fallback = "/"
+
         if spam
           # Redirect to same page to appear successful (don't tell spammers)
-          redirect_back(fallback_location: main_app.root_path, allow_other_host: false)
+          redirect_back(fallback_location: fallback, allow_other_host: false)
         elsif success && form.completion_path.present?
           # Redirect to custom completion path
           redirect_to form.completion_path, notice: "Thank you for your submission!"
         elsif success
           # Redirect back to referring page with success message
           redirect_back(
-            fallback_location: main_app.root_path,
+            fallback_location: fallback,
             notice: "Thank you for your submission!",
             allow_other_host: false
           )
         elsif error
           # Redirect back with error message
           redirect_back(
-            fallback_location: main_app.root_path,
+            fallback_location: fallback,
             alert: "There was an error submitting your form. Please try again.",
             allow_other_host: false
           )
         else
           # Default fallback
-          redirect_back(fallback_location: main_app.root_path, allow_other_host: false)
+          redirect_back(fallback_location: fallback, allow_other_host: false)
         end
       end
     end
