@@ -115,6 +115,16 @@ jobs:
           # Load schema from schema.rb (much faster than running migrations)
           bundle exec rails db:schema:load
 
+      - name: 'Compile CSS assets'
+        run: |
+          bundle exec rake app:panda:core:assets:compile
+
+      - name: 'Verify Chrome'
+        run: |
+          echo "Checking Chrome installation..."
+          which google-chrome || which chromium || which chromium-browser || echo "Chrome not found"
+          google-chrome --version || chromium --version || chromium-browser --version || echo "Cannot get Chrome version"
+
       - name: 'Run specs'
         env:
           DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
