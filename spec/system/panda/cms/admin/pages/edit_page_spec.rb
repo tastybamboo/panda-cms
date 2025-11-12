@@ -11,8 +11,8 @@ RSpec.describe "When editing a page", type: :system do
   let(:about_page) { panda_cms_pages(:about_page) }
 
   def wait_for_javascript
-    # Wait for the slideover toggle to be present, which indicates JavaScript has loaded
-    expect(page).to have_css("#slideover-toggle", wait: 10)
+    # Wait for the Page Details button to be present, which indicates JavaScript has loaded
+    expect(page).to have_button("Page Details", wait: 10)
   end
 
   context "when not logged in" do
@@ -68,19 +68,14 @@ RSpec.describe "When editing a page", type: :system do
       # Check that the page loaded correctly
       expect(page).to have_content("About")
 
-      # Check that the slideover toggle exists
-      expect(page).to have_css("#slideover-toggle", wait: 10)
+      # Check that the Page Details button exists
+      expect(page).to have_button("Page Details", wait: 10)
 
-      # Since JavaScript might not be fully loaded, we'll manually show the slideover
-      # by removing the hidden class using JavaScript
-      # Don't set inline display style as it overrides Tailwind's lg:flex
-      page.execute_script("
-        var slideover = document.querySelector('#slideover');
-        if (slideover) {
-          slideover.classList.remove('hidden');
-          console.log('Slideover shown manually');
-        }
-      ")
+      # Click the button to open the slideover
+      click_button "Page Details"
+
+      # Give JavaScript time to execute
+      sleep 0.5
 
       # Check that slideover is now visible
       expect(page).to have_css("#slideover", visible: true, wait: 5)
@@ -92,17 +87,14 @@ RSpec.describe "When editing a page", type: :system do
     end
 
     it "updates the page details" do
-      # Check that the slideover toggle exists
-      expect(page).to have_css("#slideover-toggle", wait: 10)
+      # Check that the Page Details button exists
+      expect(page).to have_button("Page Details", wait: 10)
 
-      # Manually show the slideover since JavaScript might not be loaded
-      # Don't set inline display style as it overrides Tailwind's lg:flex
-      page.execute_script("
-        var slideover = document.querySelector('#slideover');
-        if (slideover) {
-          slideover.classList.remove('hidden');
-        }
-      ")
+      # Click the button to open the slideover
+      click_button "Page Details"
+
+      # Give JavaScript time to execute
+      sleep 0.5
 
       # Wait for slideover to become visible
       expect(page).to have_css("#slideover", visible: true, wait: 5)
