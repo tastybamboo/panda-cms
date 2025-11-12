@@ -16,7 +16,11 @@ RSpec.describe "Server Verification", type: :system do
     visit "/"
 
     # Get the server URL
-    server_url = Capybara.current_session.server_url rescue "unknown"
+    server_url = begin
+      Capybara.current_session.server_url
+    rescue
+      "unknown"
+    end
     puts "[Server Debug] Server URL: #{server_url}"
 
     # Check if we can actually access it
