@@ -70,5 +70,4 @@ RSpec.configure do |config|
   fixture_files.delete(:panda_core_users)
   fixture_files.delete(:panda_cms_posts)
   config.global_fixtures = fixture_files unless ENV["SKIP_GLOBAL_FIXTURES"]
-
 end
