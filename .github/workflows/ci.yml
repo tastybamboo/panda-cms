@@ -110,7 +110,10 @@ jobs:
           bundle exec rails db:schema:load
 
       - name: 'Compile CSS assets'
+        working-directory: spec/dummy
         run: |
+          echo "📦 Compiling CSS assets in spec/dummy..."
+          echo "This ensures assets are compiled to the dummy app's public directory."
           bundle exec rake app:panda:core:assets:compile
 
       - name: 'Verify Chrome'
@@ -159,17 +162,27 @@ jobs:
           RAILS_ENV: test
         run: |
           echo "📦 Checking importmap configuration..."
+          echo ""
+          echo "=== Checking spec/dummy/public/ directory ==="
+          echo "Location: spec/dummy/public/"
+          ls -R public/ 2>/dev/null || echo "❌ dummy public folder missing or empty"
+          echo ""
+          echo "=== Checking spec/dummy/config/importmap.rb ==="
+          cat config/importmap.rb || echo "importmap.rb not found"
+          echo ""
+          echo "=== Testing importmap JSON generation ==="
           echo "Running: rails importmap:json"
           bundle exec rails importmap:json || echo "Failed to generate importmap JSON"
           echo ""
-          echo "Checking static importmap.json file..."
+          echo "=== Checking static importmap.json file ==="
           cat public/assets/importmap.json || echo "public/assets/importmap.json not found"
           echo ""
-          echo "Listing public/assets directory structure..."
+          echo "=== Listing public/assets directory structure ==="
           ls -R public/assets || echo "public/assets directory not found"
           echo ""
-          echo "Checking if all importmap paths exist..."
-          bundle exec rails runner 'Rails.application.importmap.each_entry { |name, path| puts "#{name}: #{path}" }' || echo "Cannot enumerate importmap entries"
+          echo "❗ If spec/dummy/public/ is empty → Rails cannot start because assets are missing"
+          echo "❗ Asset compilation should run: cd spec/dummy && bundle exec rake app:panda:core:assets:compile"
+          echo "❗ NOT in root directory where it compiles to wrong location"
 
       - name: 'Check asset readiness'
         run: |
