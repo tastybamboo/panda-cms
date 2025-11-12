@@ -15,8 +15,9 @@ module Panda
 
           # Make JavaScript files available for importmap
           # Serve from app/javascript with proper MIME types
+          # Use both /panda and /panda/cms for compatibility with file structure
           config.middleware.use Rack::Static,
-            urls: ["/panda/cms"],
+            urls: ["/panda", "/panda/cms"],
             root: Panda::CMS::Engine.root.join("app/javascript"),
             header_rules: [
               [:all, {"Cache-Control" => Rails.env.development? ? "no-cache, no-store, must-revalidate" : "public, max-age=31536000",

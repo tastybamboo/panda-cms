@@ -100,16 +100,6 @@ jobs:
           bundle config path vendor/bundle
           bundle install --jobs 4 --retry 3
 
-      - name: 'Cache assets'
-        uses: actions/cache@v4
-        with:
-          path: |
-            spec/dummy/public/panda-cms-assets
-            spec/dummy/tmp/cache/assets
-          key: ${{ runner.os }}-assets-${{ hashFiles('app/assets/**/*', 'app/javascript/**/*') }}
-          restore-keys: |
-            ${{ runner.os }}-assets-
-
       - name: 'Setup test database'
         working-directory: spec/dummy
         env:
@@ -122,17 +112,6 @@ jobs:
           bundle exec rails db:create
           # Load schema from schema.rb (much faster than running migrations)
           bundle exec rails db:schema:load
-
-      - name: 'Compile assets'
-        working-directory: spec/dummy
-        env:
-          DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
-          RAILS_ENV: test
-        run: |
-          bundle exec rake panda:cms:assets:compile
-          echo "✅ Asset compilation complete"
-          echo "Assets in public directory:"
-          ls -la public/panda-cms-assets/ || echo "No assets directory"
 
       - name: 'Run specs'
         env:
