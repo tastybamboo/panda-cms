@@ -54,19 +54,18 @@ The project depends on the panda-core gem for user authentication:
 Before running the test suite, you must prepare the test environment assets:
 
 ```bash
-# 1. Copy compiled CMS assets to dummy app (required for system tests)
-cp -r public/panda-cms-assets/* spec/dummy/public/panda-cms-assets/
-
-# 2. Compile Propshaft assets for the dummy app (required for asset integrity tests)
-cd spec/dummy && bundle exec rails assets:precompile RAILS_ENV=test && cd ../..
-
-# 3. Generate importmap.json for the dummy app (required for asset integrity tests)
-bundle exec rails runner 'File.write("spec/dummy/public/assets/importmap.json", Rails.application.importmap.to_json(resolver: ActionController::Base.helpers))'
+# Run this single command to prepare all test assets
+bundle exec rake app:panda:cms:assets:compile_dummy
 ```
 
-**For CI**: These steps should be run in the CI pipeline before executing tests.
+This rake task:
+- Copies compiled CMS assets to dummy app (required for system tests)
+- Compiles Propshaft assets for the dummy app (required for asset integrity tests)
+- Generates importmap.json for the dummy app (required for asset integrity tests)
 
-**Note**: If system tests fail with JavaScript errors or "Could not find node with given id", it usually means the CMS assets weren't copied correctly.
+**For CI**: This task is already integrated in the CI workflow at `.github/workflows/ci.yml`
+
+**Note**: If system tests fail with JavaScript errors or "Could not find node with given id", it usually means the CMS assets weren't copied correctly. Re-run the rake task above.
 
 #### Running Tests
 ```bash
