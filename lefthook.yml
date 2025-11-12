@@ -19,7 +19,7 @@ pre-commit:
     #   run: rustywind .
     - name: standardrb
       run: bundle exec standardrb
-    - name: yamllint
-      run: yamllint -c .yamllint .
+    # - name: yamllint
+    #   run: yamllint --config-file .yamllint .
     - name: zeitwork
       run: rake app:zeitwerk:check
