@@ -3,7 +3,7 @@
 require "rails_helper"
 
 # Constants defined outside RSpec block to avoid lint warnings
-DUMMY_ROOT = Rails.root.join("spec/dummy")
+DUMMY_ROOT = Rails.root
 ASSETS_DIR = DUMMY_ROOT.join("public/assets")
 IMPORTMAP_FILE = DUMMY_ROOT.join("config/importmap.rb")
 
@@ -13,7 +13,7 @@ RSpec.describe "Asset & Importmap Integrity Check", order: :defined, system: tru
   # ------------------------------
   it "has a valid importmap.rb file" do
     expect(File.exist?(IMPORTMAP_FILE)).to be(true), <<~MSG
-      ❌ spec/dummy/config/importmap.rb is missing.
+      ❌ config/importmap.rb is missing.
 
       This prevents Rails from booting and will cause:
         - Capybara server startup failure
@@ -25,7 +25,7 @@ RSpec.describe "Asset & Importmap Integrity Check", order: :defined, system: tru
 
     # Try loading the file to ensure it is syntactically valid
     expect { Importmap::Map.new.tap { |map| map.instance_eval(File.read(IMPORTMAP_FILE), IMPORTMAP_FILE.to_s) } }.not_to raise_error, <<~MSG
-      ❌ spec/dummy/config/importmap.rb contains a syntax error or invalid Ruby.
+      ❌ config/importmap.rb contains a syntax error or invalid Ruby.
 
       Fix the importmap before system tests run.
     MSG
@@ -40,13 +40,16 @@ RSpec.describe "Asset & Importmap Integrity Check", order: :defined, system: tru
 
     missing = []
 
-    map.to_h.each do |logical_name, asset_path|
+    map.packages.each do |logical_name, mapped_file|
+      asset_path = mapped_file.path
       next if asset_path.start_with?("https://", "http://") # external modules ok
 
-      full_path = DUMMY_ROOT.join("vendor/javascript", asset_path)
+      # Check both vendor/javascript and app/javascript paths
+      vendor_path = DUMMY_ROOT.join("vendor/javascript", asset_path)
+      app_path = DUMMY_ROOT.join("app/javascript", asset_path)
 
-      unless File.exist?(full_path)
-        missing << "#{logical_name} (#{asset_path}) → #{full_path}"
+      unless File.exist?(vendor_path) || File.exist?(app_path)
+        missing << "#{logical_name} (#{asset_path}) → #{vendor_path} or #{app_path}"
       end
     end
 
@@ -68,19 +71,19 @@ RSpec.describe "Asset & Importmap Integrity Check", order: :defined, system: tru
   # ------------------------------
   it "has a Propshaft assets directory and manifest" do
     expect(Dir.exist?(ASSETS_DIR)).to be(true), <<~MSG
-      ❌ spec/dummy/public/assets/ directory does not exist.
+      ❌ public/assets/ directory does not exist.
 
       System tests require compiled assets in the dummy app.
 
-      Fix by copying compiled assets:
-        cp -r public/assets spec/dummy/public/assets
+      Fix by running:
+        cd spec/dummy && bundle exec rails assets:precompile RAILS_ENV=test
 
       Or ensure your CI asset build step targets the dummy app.
     MSG
 
     manifest = Dir[ASSETS_DIR.join(".manifest.json").to_s].first
     expect(manifest).not_to be_nil, <<~MSG
-      ❌ Propshaft manifest (.manifest.json) is missing in spec/dummy/public/assets.
+      ❌ Propshaft manifest (.manifest.json) is missing in public/assets.
 
       Without the manifest:
         - Propshaft cannot generate asset URLs
@@ -108,7 +111,7 @@ RSpec.describe "Asset & Importmap Integrity Check", order: :defined, system: tru
       []
     end
     expect(assets).not_to be_empty, <<~MSG
-      ❌ spec/dummy/public/assets is empty.
+      ❌ public/assets is empty.
 
       This will make Rails server crash on boot because asset lookups fail.
 

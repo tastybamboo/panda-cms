@@ -49,6 +49,26 @@ The project depends on the panda-core gem for user authentication:
 ## Development Commands
 
 ### Testing
+
+#### Test Asset Preparation (Required Before Running Tests)
+Before running the test suite, you must prepare the test environment assets:
+
+```bash
+# 1. Copy compiled CMS assets to dummy app (required for system tests)
+cp -r public/panda-cms-assets/* spec/dummy/public/panda-cms-assets/
+
+# 2. Compile Propshaft assets for the dummy app (required for asset integrity tests)
+cd spec/dummy && bundle exec rails assets:precompile RAILS_ENV=test && cd ../..
+
+# 3. Generate importmap.json for the dummy app (required for asset integrity tests)
+bundle exec rails runner 'File.write("spec/dummy/public/assets/importmap.json", Rails.application.importmap.to_json(resolver: ActionController::Base.helpers))'
+```
+
+**For CI**: These steps should be run in the CI pipeline before executing tests.
+
+**Note**: If system tests fail with JavaScript errors or "Could not find node with given id", it usually means the CMS assets weren't copied correctly.
+
+#### Running Tests
 ```bash
 # IMPORTANT: Always run tests from the project root directory (/Users/james/Projects/panda-cms)
 # NOT from spec/dummy/ directory
