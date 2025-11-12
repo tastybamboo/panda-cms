@@ -129,8 +129,14 @@ jobs:
           RAILS_ENV: 'test'
           RSPEC_COLOR: 'true'
           TERM: 'xterm-256color'
+          RSPEC_DEBUG: 'true'
+          CUPRITE_PROCESS_TIMEOUT: '20'
         run: |
-          echo "🔍 Running JavaScript verification test (fail-fast)..."
+          echo "🔍 Running JavaScript verification test (fail-fast with debug)..."
+          echo "Chrome version:"
+          google-chrome --version || chromium --version || echo "Cannot determine Chrome version"
+          echo "Xvfb display: $DISPLAY"
+          echo "Starting tests..."
           script -q -e -c "bundle exec rspec spec/system/javascript_verification_spec.rb --format documentation --color --fail-fast" /dev/null
 
       - name: 'Upload compiled CSS'
