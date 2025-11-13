@@ -257,7 +257,7 @@ jobs:
           bundle exec rspec spec/requests --format documentation --color
 
   lib-specs:
-    name: 'Lib/Services Specs'
+    name: 'Lib Specs'
     needs: seclint
     runs-on: 'ubuntu-latest'
     container:
@@ -314,8 +314,8 @@ jobs:
           RSPEC_COLOR: 'true'
           TERM: 'xterm-256color'
         run: |
-          echo "⚙️  Running lib/services specs..."
-          bundle exec rspec spec/lib spec/services --format documentation --color
+          echo "⚙️  Running lib specs..."
+          bundle exec rspec spec/lib --format documentation --color
 
   system-specs:
     name: 'System Specs (Browser Tests)'
