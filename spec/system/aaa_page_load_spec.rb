@@ -14,6 +14,28 @@ RSpec.describe "Page Load Test", type: :system do
     puts "[Page Load]   - CSS assets"
     puts "[Page Load]   - Importmap configuration"
 
+    # Debug asset accessibility before Chrome tries to load them
+    if ENV["CI"]
+      require "net/http"
+      puts "\n[DEBUG] Checking asset accessibility..."
+
+      assets_to_check = [
+        "/assets/application.js",
+        "/assets/@hotwired--stimulus.js",
+        "/assets/panda/cms/controllers/index.js",
+        "/panda-core-assets/panda-core.css"
+      ]
+
+      assets_to_check.each do |asset_path|
+        uri = URI("#{Capybara.app_host}#{asset_path}")
+        response = Net::HTTP.get_response(uri)
+        puts "[DEBUG] #{asset_path}: #{response.code} #{response.message} (#{response.body.bytesize} bytes)"
+      rescue => e
+        puts "[DEBUG] #{asset_path}: ERROR - #{e.class}: #{e.message}"
+      end
+      puts "[DEBUG] Asset check complete\n"
+    end
+
     begin
       visit "/panda/cms/admin/login"
       puts "\n✅ Page load PASSED - Chrome loaded the login page"
