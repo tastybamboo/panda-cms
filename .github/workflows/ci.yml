@@ -126,7 +126,7 @@ jobs:
           DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
         run: |
           echo "🌐 Running Chrome startup check..."
-          script -q -e -c "bundle exec rspec spec/system/aaa_chrome_boot_spec.rb --format documentation --color --fail-fast" /dev/null
+          bundle exec rspec spec/system/aaa_chrome_boot_spec.rb --format documentation --color --fail-fast
 
       - name: Upload compiled assets
         uses: actions/upload-artifact@v5
@@ -193,7 +193,7 @@ jobs:
           TERM: 'xterm-256color'
         run: |
           echo "📦 Running model specs..."
-          script -q -e -c "bundle exec rspec spec/models --format documentation --color" /dev/null
+          bundle exec rspec spec/models --format documentation --color
 
   request-specs:
     name: 'Request Specs'
@@ -254,7 +254,7 @@ jobs:
           TERM: 'xterm-256color'
         run: |
           echo "🌐 Running request specs..."
-          script -q -e -c "bundle exec rspec spec/requests --format documentation --color" /dev/null
+          bundle exec rspec spec/requests --format documentation --color
 
   lib-specs:
     name: 'Lib/Services Specs'
@@ -315,7 +315,7 @@ jobs:
           TERM: 'xterm-256color'
         run: |
           echo "⚙️  Running lib/services specs..."
-          script -q -e -c "bundle exec rspec spec/lib spec/services --format documentation --color" /dev/null || true
+          bundle exec rspec spec/lib spec/services --format documentation --color
 
   system-specs:
     name: 'System Specs (Browser Tests)'
@@ -382,7 +382,7 @@ jobs:
           DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
         run: |
           echo "🖥️ Running system specs..."
-          script -q -e -c "bundle exec rspec spec/system --format documentation --color" /dev/null
+          bundle exec rspec spec/system --format documentation --color
 
       - name: 'Upload coverage'
         uses: actions/upload-artifact@v5
