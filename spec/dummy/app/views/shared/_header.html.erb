@@ -11,11 +11,11 @@
       <!-- Using compiled Panda CMS assets -->
       <%= panda_cms_complete_assets %>
       <!-- Also load dummy app's own JavaScript -->
-      <script async src="https://ga.jspm.io/npm:es-module-shims@1.10.0/dist/es-module-shims.js" crossorigin="anonymous"></script>
+      <script src="https://ga.jspm.io/npm:[email protected]/dist/es-module-shims.js" crossorigin="anonymous"></script>
       <%= javascript_importmap_tags %>
     <% else %>
       <!-- Using development importmap assets -->
-      <script async src="https://ga.jspm.io/npm:es-module-shims@1.10.0/dist/es-module-shims.js" crossorigin="anonymous"></script>
+      <script src="https://ga.jspm.io/npm:[email protected]/dist/es-module-shims.js" crossorigin="anonymous"></script>
       <%= javascript_importmap_tags %>
     <% end %>
     <%= yield :head_includes %>
