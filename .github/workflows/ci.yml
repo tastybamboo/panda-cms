@@ -381,13 +381,10 @@ jobs:
         env:
           DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
         run: |
-          echo "🖥️ Running focused system specs for debugging..."
+          echo "🖥️ Running diagnostic tests (Chrome boot + page load)..."
           bundle exec rspec \
-            spec/system/panda/cms/admin/pages/add_page_spec.rb:45 \
-            spec/system/panda/cms/admin/pages/add_page_spec.rb:123 \
-            spec/system/panda/cms/admin/forms/forms_management_spec.rb:177 \
-            spec/system/panda/cms/admin/forms/forms_management_spec.rb:187 \
             spec/system/aaa_chrome_boot_spec.rb \
+            spec/system/aaa_page_load_spec.rb \
             --format documentation --color --fail-fast
 
       - name: 'Upload coverage'
