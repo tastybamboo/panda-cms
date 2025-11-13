@@ -129,6 +129,13 @@ module Panda
         ].join("\n").html_safe
       end
 
+      # Returns asset HTML for injection into iframe
+      # Used by editor_iframe_controller to inject assets dynamically
+      # Returns the raw HTML string (not JSON-encoded)
+      def panda_cms_injectable_assets
+        panda_cms_complete_assets.to_s
+      end
+
       private
 
       def asset_integrity(version, filename)

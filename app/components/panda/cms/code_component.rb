@@ -125,8 +125,11 @@ module Panda
       end
 
       def is_embedded?
-        # TODO: Check security on this - embed_id should match something?
-        view_context.request.params[:embed_id].present?
+        # Security: Verify embed_id matches the current page being edited
+        # This prevents unauthorized editing by ensuring the embed_id in the URL
+        # matches the actual page ID from Current.page
+        view_context.params[:embed_id].present? &&
+          Current.page&.id.to_s == view_context.params[:embed_id].to_s
       end
 
       def handle_error(error)
