@@ -24,10 +24,10 @@ module BrowserConsoleLogger
               else "📝"
               end
 
-              puts "#{index + 1}. [#{msg['type'].upcase}] #{type_icon}"
-              puts "   Message: #{msg['message']}"
-              puts "   Source: #{msg['source']}" if msg["source"]
-              puts "   Line: #{msg['line']}" if msg["line"]
+              puts "#{index + 1}. [#{msg["type"].upcase}] #{type_icon}"
+              puts "   Message: #{msg["message"]}"
+              puts "   Source: #{msg["source"]}" if msg["source"]
+              puts "   Line: #{msg["line"]}" if msg["line"]
               puts ""
             end
 
