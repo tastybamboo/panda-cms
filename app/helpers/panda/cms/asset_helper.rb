@@ -24,33 +24,9 @@ module Panda
       end
 
       # Include only Panda CMS JavaScript
-      def panda_cms_javascript
-        # IMPORTANT: Merge both Core and CMS importmaps into a single <script type="importmap"> tag
-        # Browsers only support ONE importmap per page, so we must combine them
-        imports = {}
-
-        # Add Panda Core imports first (if available)
-        if defined?(Panda::Core.importmap)
-          Panda::Core.importmap.instance_variable_get(:@packages).each do |name, package|
-            imports[name] = package.path  # MappedFile is a struct, use dot notation not hash notation
-          end
-        end
-
-        # Then add Panda CMS imports (may override Core if there are conflicts)
-        Panda::CMS.importmap.instance_variable_get(:@packages).each do |name, package|
-          imports[name] = package.path  # MappedFile is a struct, use dot notation not hash notation
-        end
-
-        importmap_json = JSON.generate({"imports" => imports})
-
-        <<~HTML.html_safe
-          <script type="importmap">#{importmap_json}</script>
-          <script type="module">import "panda/core/application"</script>
-          <script type="module">import "panda/core/controllers/index"</script>
-          <script type="module">import "panda/cms/application"</script>
-          <script type="module">import "panda/cms/controllers/index"</script>
-        HTML
-      end
+      #
+      # Delegates to Core's helper which automatically includes all registered modules.
+      alias_method :panda_cms_javascript, :panda_core_javascript
 
       # Include only Panda CMS CSS
       def panda_cms_stylesheet

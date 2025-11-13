@@ -7,17 +7,9 @@
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
-    <% if Panda::CMS::AssetLoader.use_github_assets? || Rails.env.test? %>
-      <!-- Using compiled Panda CMS assets -->
-      <%= panda_cms_complete_assets %>
-      <!-- Also load dummy app's own JavaScript -->
-      <script src="https://ga.jspm.io/npm:[email protected]/dist/es-module-shims.js" crossorigin="anonymous"></script>
-      <%= javascript_importmap_tags %>
-    <% else %>
-      <!-- Using development importmap assets -->
-      <script src="https://ga.jspm.io/npm:[email protected]/dist/es-module-shims.js" crossorigin="anonymous"></script>
-      <%= javascript_importmap_tags %>
-    <% end %>
+    <!-- Using development importmap assets -->
+    <script src="https://ga.jspm.io/npm:[email protected]/dist/es-module-shims.js" crossorigin="anonymous"></script>
+    <%= javascript_importmap_tags %>
     <%= yield :head_includes %>
   </head>
   <body class="h-full bg-zinc-50">
