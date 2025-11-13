@@ -11,7 +11,6 @@ require "invisible_captcha"
 
 # Load engine configuration modules
 require_relative "engine/autoload_config"
-require_relative "engine/middleware_config"
 require_relative "engine/asset_config"
 require_relative "engine/route_config"
 require_relative "engine/core_config"
@@ -29,7 +28,6 @@ module Panda
 
       # Include CMS-specific configuration modules
       include AutoloadConfig
-      include MiddlewareConfig
       include AssetConfig
       include RouteConfig
       include CoreConfig
@@ -50,6 +48,16 @@ module Panda
         Panda::CMS.importmap = Importmap::Map.new.tap do |map|
           map.draw(Panda::CMS::Engine.root.join("config/importmap.rb"))
         end
+      end
+
+      # Static asset middleware for serving public files
+      # JavaScript serving is handled by Panda::Core::ModuleRegistry::JavaScriptMiddleware
+      initializer "panda.cms.static_assets" do |app|
+        # Serve public assets (CSS, images, etc.)
+        # JavaScript is served by ModuleRegistry's JavaScriptMiddleware in panda-core
+        app.config.middleware.use Rack::Static,
+          urls: ["/panda-cms-assets"],
+          root: Panda::CMS::Engine.root.join("public")
       end
     end
 

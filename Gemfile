@@ -2,7 +2,7 @@
 
 source "https://rubygems.org"
 
-gem "panda-core", path: "/Users/james/Projects/panda/core"
+gem "panda-core"
 gem "panda-editor"
 
 # Specify your gem's dependencies in panda-cms.gemspec
