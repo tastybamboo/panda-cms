@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/tastybamboo/panda-core.git
-  revision: f27d0d19a6cc513bd4acc2b744a5aba565418672
+  revision: b30ab843f5fbb914221897609b0958a88e8f05f3
   branch: fix/ci-chrome-timeouts
   specs:
     panda-core (0.9.3)

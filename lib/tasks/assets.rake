@@ -44,6 +44,13 @@ namespace :panda do
           raise("❌ Failed to compile Propshaft assets") unless success
 
           puts "  ✅ Propshaft assets built"
+
+          puts "📦 Copying Panda CMS JavaScript modules..."
+          engine_js = Panda::CMS::Engine.root.join("app/javascript/panda/cms")
+          dummy_js = dummy_root.join("app/javascript/panda/cms")
+
+          FileUtils.mkdir_p(dummy_js)
+          FileUtils.cp_r(engine_js.children, dummy_js)
         end
       end
 
