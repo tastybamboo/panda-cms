@@ -22,7 +22,7 @@ RSpec.describe "Forms Management", type: :system do
     it "displays existing forms in a table" do
       visit "/admin/cms/forms"
 
-      expect(page).to have_css("table", wait: 10)
+      expect(page).to have_css(".table", wait: 10)
       expect(page).to have_content(contact_form.name)
     end
 
@@ -33,7 +33,7 @@ RSpec.describe "Forms Management", type: :system do
         expect(page).to have_content(contact_form.description, wait: 10)
       else
         # Just check the table exists
-        expect(page).to have_css("table", wait: 10)
+        expect(page).to have_css(".table", wait: 10)
       end
     end
 
@@ -394,7 +394,7 @@ RSpec.describe "Forms Management", type: :system do
 
       visit "/admin/cms/forms/#{contact_form.id}"
 
-      expect(page).to have_css("table", wait: 10)
+      expect(page).to have_css(".table", wait: 10)
       expect(page).to have_css("thead")
       expect(page).to have_css("tbody")
     end
