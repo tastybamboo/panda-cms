@@ -15,9 +15,10 @@ module Panda
 
           # Make JavaScript files available for importmap
           # Serve from app/javascript with proper MIME types
-          # Use both /panda and /panda/cms for compatibility with file structure
+          # Important: Rack::Static strips the matched URL prefix, so we serve from
+          # app/javascript and the URL /panda/cms/foo.js will look for app/javascript/panda/cms/foo.js
           config.middleware.use Rack::Static,
-            urls: ["/panda", "/panda/cms"],
+            urls: ["/panda/cms"],
             root: Panda::CMS::Engine.root.join("app/javascript"),
             header_rules: [
               # Only set Cache-Control, let Rack::Static handle Content-Type to avoid duplicates
