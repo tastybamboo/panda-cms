@@ -45,82 +45,6 @@ jobs:
       - name: 'YAML Lint'
         run: 'yamllint -c .yamllint .'
 
-  js-verification:
-    name: 'JS / Asset Readiness (Fail-Fast)'
-    needs: seclint
-    runs-on: 'ubuntu-latest'
-    container:
-      image: ghcr.io/tastybamboo/panda-ci:latest
-      options: --shm-size=2gb
-    env:
-      BUNDLE_PATH: 'vendor/bundle'
-      RAILS_ENV: test
-      DISPLAY: ':99'
-    services:
-      postgres:
-        image: postgres:latest
-        env:
-          POSTGRES_HOST: localhost
-          POSTGRES_PORT: 5432
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: password
-          POSTGRES_DB: test
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
-    steps:
-      - uses: actions/checkout@v5
-
-      - name: Start Xvfb
-        run: Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
-
-      - name: Cache gems
-        uses: actions/cache@v4
-        with:
-          path: vendor/bundle
-          key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
-
-      - name: Bundle install
-        run: |
-          bundle config path vendor/bundle
-          bundle config without development
-          bundle install --jobs 4 --retry 3
-
-      - name: Setup test database
-        working-directory: spec/dummy
-        env:
-          DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
-        run: |
-          rm -rf db/migrate
-          mkdir -p db/migrate
-          bundle exec rails db:create
-          bundle exec rails db:schema:load
-
-      - name: Prepare dummy assets (Core + CMS)
-        env:
-          RAILS_ENV: test
-          DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
-        run: |
-          echo "🚧 Preparing dummy assets (Core + CMS)..."
-          bundle exec rake panda:core:assets:dummy
-          bundle exec rake panda:cms:assets:dummy
-
-      - name: Chrome boot smoke test
-        env:
-          DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
-        run: |
-          echo "🌐 Running Chrome startup check..."
-          bundle exec rspec spec/system/aaa_chrome_boot_spec.rb --format documentation --color --fail-fast
-
-      - name: Upload compiled assets
-        uses: actions/upload-artifact@v5
-        with:
-          name: compiled-assets
-          path: spec/dummy/public/assets
-
   model-specs:
     name: 'Model Specs'
     needs: seclint
@@ -358,21 +282,16 @@ jobs:
           bundle exec rails db:create
           bundle exec rails db:schema:load
 
-      - name: Download compiled assets
-        uses: actions/download-artifact@v5
-        with:
-          name: compiled-assets
-          path: spec/dummy/public/assets
+      - name: Prepare + verify dummy assets (CMS + Core)
+        run: |
+          echo "🚧 Preparing dummy assets (CMS + Core)…"
+          bundle exec rake panda:assets:prepare_and_verify_all
 
       - name: Run system specs
         env:
           DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
         run: |
-          echo "🖥️ Running diagnostic tests (Chrome boot + page load)..."
-          bundle exec rspec \
-            spec/system/aaa_chrome_boot_spec.rb \
-            spec/system/aaa_page_load_spec.rb \
-            --format documentation --color --fail-fast
+          bundle exec rspec --format documentation --color
 
       - name: 'Upload coverage'
         uses: actions/upload-artifact@v5
@@ -388,3 +307,10 @@ jobs:
           name: screenshots
           path: ${{ github.workspace }}/spec/tmp/capybara
           if-no-files-found: ignore
+
+      - name: Upload asset report
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: panda-assets-report
+          path: spec/dummy/tmp/panda_assets_report.html

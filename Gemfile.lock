@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/tastybamboo/panda-core.git
-  revision: 96cab3d6143747ccba16e8a995ce69403a2b7df0
+  revision: 786b4ac09e6569f4ead303f921596df94e28c015
   branch: fix/ci-chrome-timeouts
   specs:
     panda-core (0.9.3)
@@ -16,6 +16,7 @@ GIT
       stimulus-rails
       tailwind_merge (~> 1.3)
       turbo-rails
+      webrick
 
 PATH
   remote: .
