@@ -307,10 +307,3 @@ jobs:
           name: screenshots
           path: ${{ github.workspace }}/spec/tmp/capybara
           if-no-files-found: ignore
-
-      - name: Upload asset report
-        if: always()
-        uses: actions/upload-artifact@v5
-        with:
-          name: panda-assets-report
-          path: spec/dummy/tmp/panda_assets_report.html
