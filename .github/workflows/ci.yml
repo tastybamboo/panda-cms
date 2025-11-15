@@ -230,15 +230,11 @@ jobs:
 
   system-specs:
     name: 'System Specs (Browser Tests)'
-    needs: seclint
+    needs: [seclint, js-verification]
     runs-on: 'ubuntu-latest'
     container:
       image: ghcr.io/tastybamboo/panda-ci:latest
       options: --shm-size=2gb
-    permissions:
-      contents: read
-      pull-requests: write
-      checks: write
     env:
       BUNDLE_PATH: 'vendor/bundle'
       RAILS_ENV: test
@@ -286,16 +282,6 @@ jobs:
           bundle exec rails db:create
           bundle exec rails db:schema:load
 
-      #
-      # 🐼 Run Panda Asset Verification
-      # This will:
-      # - compile propshaft
-      # - build importmap.json
-      # - copy engine JS
-      # - start an HTTP server and verify asset reachability
-      # - write HTML report
-      # - upload HTML report as an artifact
-      #
       - name: Panda asset generation and verification
         uses: tastybamboo/panda-assets-verify-action@v1
         with:
