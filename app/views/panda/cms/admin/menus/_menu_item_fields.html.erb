@@ -1,7 +1,7 @@
 <div class="mb-6 pb-6 border-b border-gray-200 dark:border-gray-700 nested-form-wrapper" data-new-record="<%= form.object.new_record? %>">
-  <%= form.text_field :text, placeholder: "Menu item text" %>
-  <%= form.collection_select :panda_cms_page_id, Panda::CMS::Page.order(:title), :id, :title, { include_blank: "Select a page (optional)" }, { class: "mt-1" } %>
-  <%= form.text_field :external_url, placeholder: "External URL (optional)" %>
+  <%= form.text_field :text, label: "Menu Item Text" %>
+  <%= form.collection_select :panda_cms_page_id, Panda::CMS::Page.order(:title), :id, :title, { include_blank: "Select a page (optional)", label: "Page" }, { class: "mt-1" } %>
+  <%= form.text_field :external_url, label: "External URL (optional)" %>
 
   <div class="mt-3">
     <%= render Panda::Core::Admin::ButtonComponent.new(text: "Remove", action: :delete, link: "#", size: :small, data: { action: "click->nested-form#remove" }) %>

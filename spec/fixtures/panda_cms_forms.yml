@@ -1,0 +1,8 @@
+# Panda CMS Forms Fixtures
+contact_form:
+  id: "a1b2c3d4-e5f6-4a5b-8c9d-0e1f2a3b4c5d"
+  name: "Contact Form"
+  submission_count: 0
+  completion_path: "/thank-you"
+  created_at: <%= 1.month.ago %>
+  updated_at: <%= 1.week.ago %>

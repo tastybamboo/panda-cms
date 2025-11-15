@@ -152,7 +152,7 @@ RSpec.describe "Adding a post", type: :system do
     expect(page).to have_content("Title can't be blank", wait: 5)
   end
 
-  it "shows validation errors when URL is missing", skip: "Post model auto-generates slug from date when blank" do
+  it "shows validation errors when URL is missing" do
     # REQUIRED: Clean state for validation test (see docs/developers/testing/validation-testing.md)
     visit "/admin/cms/posts/new"
     sleep 1  # Allow page to stabilize
@@ -175,7 +175,7 @@ RSpec.describe "Adding a post", type: :system do
     click_button "Create Post"
 
     # Wait for validation errors to appear
-    expect(page).to have_content("Slug can't be blank", wait: 5)
+    expect(page).to have_content("URL can't be blank", wait: 5)
   end
 
   it "shows the add post form with required fields" do

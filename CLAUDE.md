@@ -49,6 +49,25 @@ The project depends on the panda-core gem for user authentication:
 ## Development Commands
 
 ### Testing
+
+#### Test Asset Preparation (Required Before Running Tests)
+Before running the test suite, you must prepare the test environment assets:
+
+```bash
+# Run this single command to prepare all test assets
+bundle exec rake app:panda:cms:assets:compile_dummy
+```
+
+This rake task:
+- Copies compiled CMS assets to dummy app (required for system tests)
+- Compiles Propshaft assets for the dummy app (required for asset integrity tests)
+- Generates importmap.json for the dummy app (required for asset integrity tests)
+
+**For CI**: This task is already integrated in the CI workflow at `.github/workflows/ci.yml`
+
+**Note**: If system tests fail with JavaScript errors or "Could not find node with given id", it usually means the CMS assets weren't copied correctly. Re-run the rake task above.
+
+#### Running Tests
 ```bash
 # IMPORTANT: Always run tests from the project root directory (/Users/james/Projects/panda-cms)
 # NOT from spec/dummy/ directory

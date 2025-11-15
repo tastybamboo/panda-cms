@@ -1,541 +1,78 @@
 # frozen_string_literal: true
 
+require "pathname"
+require "panda/assets/runner"
+
 namespace :panda do
   namespace :cms do
     namespace :assets do
-      desc "Compile Panda CMS assets for GitHub release distribution"
-      task :compile do
-        puts "🐼 Compiling Panda CMS assets..."
-        puts "Rails.root: #{Rails.root}"
-        puts "Working directory: #{Dir.pwd}"
+      def dummy_root
+        root = Rails.root
+        return root if root.basename.to_s == "dummy"
 
-        # Create output directory
-        output_dir = Rails.root.join("tmp", "panda_cms_assets")
-        FileUtils.mkdir_p(output_dir)
+        candidate = root.join("spec/dummy")
+        return candidate if candidate.exist?
 
-        # Use VERSION_OVERRIDE for timestamp-based builds in dev/test
-        version = ENV["VERSION_OVERRIDE"] || Panda::CMS::VERSION
-        puts "Version: #{version}"
-        puts "Output directory: #{output_dir}"
-
-        # Compile JavaScript bundle
-        js_bundle = compile_javascript_bundle(version)
-        js_file = output_dir.join("panda-cms-#{version}.js")
-        File.write(js_file, js_bundle)
-        puts "✅ JavaScript compiled: #{js_file} (#{File.size(js_file)} bytes)"
-
-        # CSS is now provided by Panda Core
-        puts "ℹ️  CSS is provided by Panda Core at /panda-core-assets/panda-core.css"
-
-        # Create manifest file
-        manifest = create_asset_manifest(version)
-        manifest_file = output_dir.join("manifest.json")
-        File.write(manifest_file, JSON.pretty_generate(manifest))
-        puts "✅ Manifest created: #{manifest_file}"
-
-        # Copy assets to test environment location for consistent testing
-        # Rails.root is the dummy app, so we need to go to its public directory
-        test_asset_dir = Rails.root.join("public", "panda-cms-assets")
-        FileUtils.mkdir_p(test_asset_dir)
-
-        js_file_name = "panda-cms-#{version}.js"
-
-        # Copy JavaScript file
-        if File.exist?(output_dir.join(js_file_name))
-          FileUtils.cp(output_dir.join(js_file_name), test_asset_dir.join(js_file_name))
-          puts "✅ Copied JavaScript to test location: #{test_asset_dir.join(js_file_name)}"
-        end
-
-        # Copy manifest
-        if File.exist?(output_dir.join("manifest.json"))
-          FileUtils.cp(output_dir.join("manifest.json"), test_asset_dir.join("manifest.json"))
-          puts "✅ Copied manifest to test location: #{test_asset_dir.join("manifest.json")}"
-        end
-
-        puts "🎉 Asset compilation complete!"
-        puts "📁 Output directory: #{output_dir}"
-        puts "📁 Test assets directory: #{test_asset_dir}"
+        raise "❌ Cannot find dummy root – expected #{candidate}"
       end
 
-      desc "Upload compiled assets to GitHub release"
-      task upload: :compile do
-        version = Panda::CMS::VERSION
-        output_dir = Rails.root.join("tmp", "panda_cms_assets")
-
-        puts "📤 Uploading assets to GitHub release v#{version}..."
-
-        # Check if gh CLI is available
-        unless system("gh --version > /dev/null 2>&1")
-          puts "❌ GitHub CLI (gh) not found. Please install: https://cli.github.com/"
-          exit 1
-        end
-
-        # Check if release exists
-        unless system("gh release view v#{version} > /dev/null 2>&1")
-          puts "❌ Release v#{version} not found. Create it first with: gh release create v#{version}"
-          exit 1
-        end
-
-        # Upload each asset file
-        Dir.glob(output_dir.join("*")).each do |file|
-          filename = File.basename(file)
-          puts "Uploading #{filename}..."
-
-          if system("gh release upload v#{version} #{file} --clobber")
-            puts "✅ Uploaded: #{filename}"
-          else
-            puts "❌ Failed to upload: #{filename}"
-            exit 1
-          end
-        end
-
-        puts "🎉 All assets uploaded successfully!"
+      def engine_root
+        Panda::CMS::Engine.root
       end
 
-      desc "Download assets from GitHub release for local development"
-      task :download do
-        version = Panda::CMS::VERSION
-        output_dir = Rails.root.join("public", "panda-cms-assets", version)
-        FileUtils.mkdir_p(output_dir)
+      def engine_js_roots
+        roots = []
+        app_js = engine_root.join("app/javascript/panda/cms")
+        vendor_js = engine_root.join("vendor/javascript/panda/cms")
 
-        puts "📥 Downloading assets from GitHub release v#{version}..."
+        roots << app_js if app_js.directory?
+        roots << vendor_js if vendor_js.directory?
 
-        # Download manifest first to know what files to get
-        manifest_url = "https://github.com/pandacms/panda-cms/releases/download/v#{version}/manifest.json"
+        roots
+      end
 
-        begin
-          require "net/http"
-          require "uri"
+      desc "Prepare Panda CMS dummy assets (compile + importmap + copy JS)"
+      task prepare_dummy: :environment do
+        config = {
+          dummy_root: dummy_root,
+          engine_js_roots: engine_js_roots,
+          engine_js_prefix: "panda/cms"
+        }
 
-          uri = URI(manifest_url)
-          response = Net::HTTP.get_response(uri)
+        result = Panda::Assets::Runner.prepare(:cms, config)
+        abort("❌ Panda CMS dummy prepare failed") unless result.ok
+      end
 
-          if response.code == "200"
-            manifest = JSON.parse(response.body)
-            puts "✅ Downloaded manifest"
+      desc "Verify Panda CMS dummy assets (manifest + importmap + HTTP checks)"
+      task verify_dummy: :environment do
+        config = {
+          dummy_root: dummy_root,
+          engine_js_roots: engine_js_roots,
+          engine_js_prefix: "panda/cms"
+        }
 
-            # Download each file listed in manifest
-            manifest["files"].each do |file_info|
-              filename = file_info["filename"]
-              file_url = "https://github.com/pandacms/panda-cms/releases/download/v#{version}/#{filename}"
+        result = Panda::Assets::Runner.verify(:cms, config)
+        abort("❌ Panda CMS dummy verify failed") unless result.ok
+      end
 
-              puts "Downloading #{filename}..."
-              file_uri = URI(file_url)
-              file_response = Net::HTTP.get_response(file_uri)
+      desc "Full Panda CMS dummy asset pipeline (prepare + verify)"
+      task dummy: :environment do
+        config = {
+          dummy_root: dummy_root,
+          engine_js_roots: engine_js_roots,
+          engine_js_prefix: "panda/cms"
+        }
 
-              if file_response.code == "200"
-                File.write(output_dir.join(filename), file_response.body)
-                puts "✅ Downloaded: #{filename}"
-              else
-                puts "❌ Failed to download: #{filename}"
-              end
-            end
+        result = Panda::Assets::Runner.run(:cms, config)
+        abort("❌ Panda CMS dummy pipeline failed") unless result.ok
+      end
 
-            puts "🎉 Assets downloaded to: #{output_dir}"
-          else
-            puts "❌ Failed to download manifest from: #{manifest_url}"
-            puts "Response: #{response.code} #{response.message}"
-          end
-        rescue => e
-          puts "❌ Error downloading assets: #{e.message}"
-          puts "Falling back to local development mode..."
-        end
+      # Meta-task to drive both core + cms pipelines from panda-cms CI
+      desc "Prepare + verify Panda Core and CMS dummy assets"
+      task prepare_and_verify_all: :environment do
+        Rake::Task["panda:core:assets:dummy"].invoke
+        Rake::Task["panda:cms:assets:dummy"].invoke
       end
     end
   end
-end
-
-private
-
-def compile_javascript_bundle(version)
-  puts "Creating full JavaScript bundle from importmap modules..."
-
-  bundle = []
-  bundle << "// Panda CMS JavaScript Bundle v#{version}"
-  bundle << "// Compiled: #{Time.now.utc.iso8601}"
-  bundle << "// Full bundle with all Stimulus controllers and functionality"
-  bundle << ""
-
-  # Add Stimulus polyfill/setup
-  bundle << create_stimulus_setup
-
-  # Add TailwindCSS Stimulus components
-  bundle << create_tailwind_components
-
-  # Add all Panda CMS controllers
-  bundle << compile_all_controllers
-
-  # Add editor components
-  bundle << compile_editor_components
-
-  # Add main application initialization
-  bundle << create_application_init(version)
-
-  puts "✅ Created full JavaScript bundle (#{bundle.join("\n").length} chars)"
-  bundle.join("\n")
-end
-
-# CSS compilation removed - all CSS is now provided by Panda Core
-# The panda-core.css file includes all admin interface styling including
-# EditorJS styles, theme variables, and component styles
-
-def create_asset_manifest(version)
-  output_dir = Rails.root.join("tmp", "panda_cms_assets")
-
-  files = Dir.glob(output_dir.join("*")).reject { |f| File.basename(f) == "manifest.json" }.map do |file|
-    {
-      filename: File.basename(file),
-      size: File.size(file),
-      sha256: Digest::SHA256.file(file).hexdigest
-    }
-  end
-
-  {
-    version: version,
-    compiled_at: Time.now.utc.iso8601,
-    files: files,
-    cdn_base_url: "https://github.com/tastybamboo/panda-cms/releases/download/v#{version}/",
-    integrity: {
-      algorithm: "sha256"
-    }
-  }
-end
-
-def create_stimulus_setup
-  [
-    "// Stimulus setup and polyfill",
-    "window.Stimulus = window.Stimulus || {",
-    "  controllers: new Map(),",
-    "  register: function(name, controller) {",
-    "    this.controllers.set(name, controller);",
-    "    console.log('[Panda CMS] Registered controller:', name);",
-    "    // Simple controller connection simulation",
-    "    document.addEventListener('DOMContentLoaded', () => {",
-    "      const elements = document.querySelectorAll(`[data-controller*='${name}']`);",
-    "      elements.forEach(element => {",
-    "        if (controller.connect) {",
-    "          const instance = Object.create(controller);",
-    "          instance.element = element;",
-    "          instance.connect();",
-    "        }",
-    "      });",
-    "    });",
-    "  }",
-    "};",
-    ""
-  ].join("\n")
-end
-
-def create_tailwind_components
-  [
-    "// TailwindCSS Stimulus Components (simplified)",
-    "const Alert = {",
-    "  static: {",
-    "    values: { dismissAfter: Number }",
-    "  },",
-    "  connect() {",
-    "    console.log('[Panda CMS] Alert controller connected');",
-    "    // Get dismiss time from data attribute or default to 5 seconds for tests",
-    "    const dismissAfter = this.dismissAfterValue || 5000;",
-    "    setTimeout(() => {",
-    "      if (this.element && this.element.remove) {",
-    "        this.element.remove();",
-    "      }",
-    "    }, dismissAfter);",
-    "  },",
-    "  close() {",
-    "    console.log('[Panda CMS] Alert closed manually');",
-    "    if (this.element && this.element.remove) {",
-    "      this.element.remove();",
-    "    }",
-    "  }",
-    "};",
-    "",
-    "const Dropdown = {",
-    "  connect() {",
-    "    console.log('[Panda CMS] Dropdown controller connected');",
-    "  }",
-    "};",
-    "",
-    "const Modal = {",
-    "  connect() {",
-    "    console.log('[Panda CMS] Modal controller connected');",
-    "  }",
-    "};",
-    "",
-    "const Toggle = {",
-    "  static: {",
-    "    values: { open: { type: Boolean, default: false } },",
-    "    targets: ['toggleable']",
-    "  },",
-    "  connect() {",
-    "    console.log('[Panda CMS] Toggle controller connected');",
-    "    this.openValue = false;",
-    "    // Find toggleable elements",
-    "    this.toggleableTargets = Array.from(this.element.querySelectorAll('[data-toggle-target=\"toggleable\"]'));",
-    "    if (this.toggleableTargets.length === 0) {",
-    "      // For slideover, the toggleable element might be a sibling",
-    "      const slideover = document.querySelector('#slideover');",
-    "      if (slideover) {",
-    "        this.toggleableTargets = [slideover];",
-    "      }",
-    "    }",
-    "  },",
-    "  toggle(event) {",
-    "    event.preventDefault();",
-    "    console.log('[Panda CMS] Toggle action triggered');",
-    "    this.openValue = !this.openValue;",
-    "    this.animate();",
-    "  },",
-    "  animate() {",
-    "    this.toggleableTargets.forEach(element => {",
-    "      if (this.openValue) {",
-    "        element.classList.remove('hidden');",
-    "        element.style.display = 'block';",
-    "      } else {",
-    "        element.classList.add('hidden');",
-    "        element.style.display = 'none';",
-    "      }",
-    "    });",
-    "  }",
-    "};",
-    "",
-    "// Register TailwindCSS components",
-    "Stimulus.register('alert', Alert);",
-    "Stimulus.register('dropdown', Dropdown);",
-    "Stimulus.register('modal', Modal);",
-    "Stimulus.register('toggle', Toggle);",
-    ""
-  ].join("\n")
-end
-
-def compile_all_controllers
-  engine_root = Panda::CMS::Engine.root
-  puts "Engine root: #{engine_root}"
-  controller_files = Dir.glob(engine_root.join("app/javascript/panda/cms/controllers/*.js"))
-  puts "Found controller files: #{controller_files}"
-  controllers = []
-
-  controller_files.each do |file|
-    next if File.basename(file) == "index.js"
-
-    controller_name = File.basename(file, ".js")
-    puts "Compiling controller: #{controller_name}"
-
-    # Read and process the controller file
-    content = File.read(file)
-
-    # Convert ES6 controller to simple object
-    controllers << convert_es6_controller_to_simple(controller_name, content)
-  end
-
-  controllers.join("\n\n")
-end
-
-def convert_es6_controller_to_simple(name, content)
-  # For now, create a simpler working controller that focuses on form validation
-  controller_name = name.tr("_", "-")
-
-  case name
-  when "theme_form_controller"
-    [
-      "// Theme Form Controller",
-      "const ThemeFormController = {",
-      "  connect() {",
-      "    console.log('[Panda CMS] Theme form controller connected');",
-      "    // Ensure submit button is enabled",
-      "    const submitButton = this.element.querySelector('input[type=\"submit\"], button[type=\"submit\"]');",
-      "    if (submitButton) submitButton.disabled = false;",
-      "  },",
-      "  updateTheme(event) {",
-      "    const newTheme = event.target.value;",
-      "    document.documentElement.dataset.theme = newTheme;",
-      "  }",
-      "};",
-      "",
-      "Stimulus.register('theme-form', ThemeFormController);"
-    ].join("\n")
-  when "slug_controller"
-    [
-      "// Slug Controller",
-      "const SlugController = {",
-      "  static: {",
-      "    targets: ['titleField', 'pathField'],",
-      "    values: { basePath: String }",
-      "  },",
-      "  connect() {",
-      "    console.log('[Panda CMS] Slug controller connected');",
-      "    this.titleFieldTarget = this.element.querySelector('[data-slug-target=\"titleField\"]') ||",
-      "                           this.element.querySelector('#page_title, #post_title, input[name*=\"title\"]');",
-      "    this.pathFieldTarget = this.element.querySelector('[data-slug-target=\"pathField\"]') ||",
-      "                          this.element.querySelector('#page_path, #post_path, input[name*=\"path\"], input[name*=\"slug\"]');",
-      "    ",
-      "    if (this.titleFieldTarget) {",
-      "      this.titleFieldTarget.addEventListener('input', this.generatePath.bind(this));",
-      "      this.titleFieldTarget.addEventListener('blur', this.generatePath.bind(this));",
-      "    }",
-      "  },",
-      "  generatePath(event) {",
-      "    console.log('[Panda CMS] Generating path...');",
-      "    if (!this.titleFieldTarget || !this.pathFieldTarget) return;",
-      "    ",
-      "    const title = this.titleFieldTarget.value;",
-      "    if (!title) return;",
-      "    ",
-      "    // Simple slug generation",
-      "    let slug = title.toLowerCase()",
-      "                   .replace(/[^a-z0-9\\s-]/g, '')",
-      "                   .replace(/\\s+/g, '-')",
-      "                   .replace(/-+/g, '-')",
-      "                   .replace(/^-|-$/g, '');",
-      "    ",
-      "    // Add base path if needed",
-      "    const basePath = this.basePathValue || '';",
-      "    if (basePath && !basePath.endsWith('/')) {",
-      "      slug = basePath + '/' + slug;",
-      "    } else if (basePath) {",
-      "      slug = basePath + slug;",
-      "    }",
-      "    ",
-      "    this.pathFieldTarget.value = slug;",
-      "    ",
-      "    // Trigger change event",
-      "    this.pathFieldTarget.dispatchEvent(new Event('change', { bubbles: true }));",
-      "  }",
-      "};",
-      "",
-      "Stimulus.register('slug', SlugController);"
-    ].join("\n")
-  when "editor_form_controller"
-    [
-      "// Editor Form Controller",
-      "const EditorFormController = {",
-      "  static: {",
-      "    targets: ['editorContainer', 'hiddenField'],",
-      "    values: { editorId: String }",
-      "  },",
-      "  connect() {",
-      "    console.log('[Panda CMS] Editor form controller connected');",
-      "    this.editorContainerTarget = this.element.querySelector('[data-editor-form-target=\"editorContainer\"]');",
-      "    this.hiddenFieldTarget = this.element.querySelector('[data-editor-form-target=\"hiddenField\"]') ||",
-      "                             this.element.querySelector('input[type=\"hidden\"]');",
-      "    ",
-      "    // Mark editor as ready for tests",
-      "    window.pandaCmsEditorReady = true;",
-      "  },",
-      "  submit(event) {",
-      "    console.log('[Panda CMS] Form submission triggered');",
-      "    // Allow form submission to proceed",
-      "    return true;",
-      "  }",
-      "};",
-      "",
-      "Stimulus.register('editor-form', EditorFormController);"
-    ].join("\n")
-  else
-    [
-      "// #{name.tr("_", " ").titleize} Controller",
-      "const #{name.camelize}Controller = {",
-      "  connect() {",
-      "    console.log('[Panda CMS] #{name.tr("_", " ").titleize} controller connected');",
-      "  }",
-      "};",
-      "",
-      "Stimulus.register('#{controller_name}', #{name.camelize}Controller);"
-    ].join("\n")
-  end
-end
-
-def process_controller_methods(class_body)
-  # Simple method extraction - just copy methods as-is but clean up syntax
-  methods = []
-
-  # Split by methods (looking for function patterns)
-  class_body.scan(/(static\s+\w+\s*=.*?;|connect\(\)\s*\{.*?\}|\w+\([^)]*\)\s*\{.*?\})/m) do |match|
-    method = match[0].strip
-
-    # Skip static properties for now, focus on methods
-    next if method.start_with?("static")
-
-    # Clean up the method syntax for object format
-    if method.match?(/(\w+)\(\s*\)\s*\{/)
-      # No-argument methods
-      method = method.gsub(/(\w+)\(\s*\)\s*\{/, '\1() {')
-    elsif method.match?(/(\w+)\([^)]+\)\s*\{/)
-      # Methods with arguments
-      method = method.gsub(/(\w+)\(([^)]+)\)\s*\{/, '\1(\2) {')
-    end
-
-    methods << "  #{method}"
-  end
-
-  methods.join(",\n\n")
-end
-
-def compile_editor_components
-  [
-    "// Editor components placeholder",
-    "// EditorJS resources will be loaded dynamically as needed",
-    "window.pandaCmsEditorReady = true;",
-    ""
-  ].join("\n")
-end
-
-def create_application_init(version)
-  [
-    "// Application initialization",
-    "// Immediate execution marker for CI debugging",
-    "window.pandaCmsScriptExecuted = true;",
-    "console.log('[Panda CMS] Script execution started');",
-    "",
-    "(function() {",
-    "  'use strict';",
-    "  ",
-    "  try {",
-    "    console.log('[Panda CMS] Full JavaScript bundle v#{version} loaded');",
-    "    ",
-    "    // Mark as loaded immediately to help with CI timing issues",
-    "    window.pandaCmsVersion = '#{version}';",
-    "    window.pandaCmsLoaded = true;",
-    "    window.pandaCmsFullBundle = true;",
-    "    window.pandaCmsStimulus = window.Stimulus;",
-    "    ",
-    "    // Also set on document for iframe context issues",
-    "    if (window.document) {",
-    "      window.document.pandaCmsLoaded = true;",
-    "    }",
-    "    ",
-    "    // Initialize on DOM ready",
-    "    if (document.readyState === 'loading') {",
-    "      document.addEventListener('DOMContentLoaded', initializePandaCMS);",
-    "    } else {",
-    "      initializePandaCMS();",
-    "    }",
-    "    ",
-    "    function initializePandaCMS() {",
-    "      console.log('[Panda CMS] Initializing controllers...');",
-    "      ",
-    "      // Trigger controller connections for existing elements",
-    "      Stimulus.controllers.forEach((controller, name) => {",
-    "        const elements = document.querySelectorAll(`[data-controller*='${name}']`);",
-    "        elements.forEach(element => {",
-    "          if (controller.connect) {",
-    "            const instance = Object.create(controller);",
-    "            instance.element = element;",
-    "            // Add target helpers",
-    "            instance.targets = instance.targets || {};",
-    "            controller.connect.call(instance);",
-    "          }",
-    "        });",
-    "      });",
-    "    }",
-    "  } catch (error) {",
-    "    console.error('[Panda CMS] Error during initialization:', error);",
-    "    // Still mark as loaded to prevent test failures",
-    "    window.pandaCmsLoaded = true;",
-    "    window.pandaCmsError = error.message;",
-    "  }",
-    "})();",
-    ""
-  ].join("\n")
 end

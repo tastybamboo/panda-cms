@@ -3,7 +3,8 @@
 
 // Import the shared Stimulus application from Panda Core
 // This ensures all controllers (Core and CMS) are registered in the same application
-import { application } from "/panda/core/application.js"
+// Use the importmap module name, not an absolute path
+import { application } from "panda/core/application"
 
 // The application is already started and configured in Core
 // No need to start it again or configure debug mode

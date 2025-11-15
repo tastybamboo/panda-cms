@@ -42,8 +42,19 @@ Rails.application.eager_load!
 # Load CMS-specific support files
 Dir[Rails.root.join("../support/**/*.rb")].sort.each { |f| require f }
 
+# Ensure Rails.logger is available for request specs
+# In some contexts, Rails.logger may be nil, especially in request specs
+Rails.logger ||= Logger.new($stdout)
+Rails.logger.level = Logger::ERROR
+
 # CMS-specific RSpec configuration
 RSpec.configure do |config|
+  # Restore ActionController::Base.logger after panda-core sets it to nil
+  # invisible_captcha needs a logger to function properly
+  config.before(:suite) do
+    ActionController::Base.logger = Rails.logger if defined?(ActionController::Base)
+  end
+
   # Include CMS engine route helpers
   config.include Panda::CMS::Engine.routes.url_helpers
 
@@ -59,64 +70,4 @@ RSpec.configure do |config|
   fixture_files.delete(:panda_core_users)
   fixture_files.delete(:panda_cms_posts)
   config.global_fixtures = fixture_files unless ENV["SKIP_GLOBAL_FIXTURES"]
-
-  # CMS-specific asset checking in CI
-  config.before(:suite) do
-    if ENV["GITHUB_ACTIONS"] == "true"
-      puts "\n🔍 CI Environment Detected - Checking CMS JavaScript Infrastructure..."
-
-      # Verify compiled assets exist (find any panda-cms assets)
-      asset_dir = Rails.root.join("public/panda-cms-assets")
-      js_assets = Dir.glob(asset_dir.join("panda-cms-*.js"))
-      css_assets = Dir.glob(asset_dir.join("panda-cms-*.css"))
-
-      unless js_assets.any? && css_assets.any?
-        puts "❌ CRITICAL: Compiled CMS assets missing!"
-        puts "   JavaScript files found: #{js_assets.count}"
-        puts "   CSS files found: #{css_assets.count}"
-        puts "   Looking in: #{asset_dir}"
-        fail "Compiled assets not found - check asset compilation step"
-      end
-
-      puts "✅ Compiled CMS assets found:"
-      puts "   JavaScript: #{File.basename(js_assets.first)} (#{File.size(js_assets.first)} bytes)"
-      puts "   CSS: #{File.basename(css_assets.first)} (#{File.size(css_assets.first)} bytes)"
-
-      # Test basic Rails application responsiveness
-      puts "\n🔍 Testing Rails application responsiveness..."
-      begin
-        require "net/http"
-        require "capybara"
-
-        # Try to make a basic HTTP request to test if Rails is responding
-        if defined?(Capybara) && Capybara.current_session
-          puts "   Capybara server: #{begin
-            Capybara.current_session.server.base_url
-          rescue
-            "not available"
-          end}"
-        end
-
-        # Check if database is accessible
-        if defined?(ActiveRecord::Base)
-          begin
-            ActiveRecord::Base.connection.execute("SELECT 1")
-            puts "   Database connection: ✅ OK"
-          rescue => e
-            puts "   Database connection: ❌ FAILED - #{e.message}"
-          end
-        end
-
-        # Check if basic models can be loaded
-        begin
-          user_count = Panda::Core::User.count
-          puts "   User model access: ✅ OK (#{user_count} users)"
-        rescue => e
-          puts "   User model access: ❌ FAILED - #{e.message}"
-        end
-      rescue => e
-        puts "   Rails app check failed: #{e.message}"
-      end
-    end
-  end
 end

@@ -1,16 +1,18 @@
 # GitHub Asset Distribution System
 
+> **Note**: For comprehensive information about asset serving architecture, middleware, and ModuleRegistry, see [`asset-serving-architecture.md`](asset-serving-architecture.md). This document focuses specifically on GitHub release-based asset distribution for production environments.
+
 ## Overview
 
-Panda CMS uses a GitHub Release-based asset distribution system to solve CI environment issues with JavaScript and CSS compilation. This system pre-compiles assets and distributes them via GitHub releases, ensuring consistent asset availability across all environments.
+Panda CMS uses a GitHub Release-based asset distribution system for production deployments. This system pre-compiles assets and distributes them via GitHub releases, ensuring consistent asset availability and optimal performance in production environments.
 
 ## Problem Solved
 
-Previously, CI environments had issues with:
-- Complex asset pipeline compilation in headless environments
-- JavaScript module bundling failures
-- Inconsistent asset loading between local and CI environments
-- Rails 8 / Propshaft compatibility issues
+This system addresses production deployment needs:
+- Pre-compiled, optimized assets for production use
+- CDN distribution via GitHub's infrastructure
+- Versioned asset releases with integrity verification
+- Separation of development and production asset workflows
 
 ## How It Works
 
@@ -38,83 +40,33 @@ end
 
 ### 3. Asset Structure
 
-Compiled assets include:
+Compiled assets for production releases include:
 
-- **JavaScript Bundle**: `panda-cms-{version}.js` - Simplified Stimulus controllers
-- **CSS Bundle**: `panda-cms-{version}.css` - Basic styles for admin interface
+- **JavaScript Bundle**: `panda-cms-{version}.js` - Compiled Stimulus controllers and modules
 - **Manifest**: `manifest.json` - File metadata, sizes, and SHA256 hashes
 
-## Automatic Compilation in Test Environments
-
-**New in v0.10+**: Panda CMS automatically compiles JavaScript when tests run, using **timestamp-based filenames** for automatic cache busting:
-
-```bash
-# First test run - auto-compiles JavaScript
-RAILS_ENV=test bundle exec rspec
-
-# Output:
-# 🐼 [Panda CMS] Auto-compiling JavaScript for test environment...
-# 🐼 [Panda CMS] JavaScript compilation successful (XXXX bytes)
-```
-
-**What gets created:**
-
-- `public/panda-cms-assets/panda-cms-1762886534.js` (timestamp-based)
-- No symlink created (asset loader finds latest timestamp file automatically)
-
-**How it works:**
-
-1. Engine initializer checks for existing compiled JavaScript on Rails boot
-2. If none found, runs `bundle exec rake app:panda:cms:assets:compile` with `VERSION_OVERRIDE`
-3. Creates timestamp-based file using Unix timestamp (e.g., `1762886534`)
-4. Asset loader finds the latest timestamp file automatically
-
-**Benefits:**
-
-- Zero manual compilation needed for testing
-- Automatic cache busting without version bumps
-- Works in both local and CI environments
-- Consistent with panda-core CSS compilation pattern
-
-**Environment variable override:**
-
-```bash
-# Force recompilation
-PANDA_CMS_AUTO_COMPILE=true bundle exec rails server
-```
-
-**Development vs Production:**
-
-- **Development/Test**: Uses timestamp-based files (e.g., `panda-cms-1762886534.js`)
-- **Production/Release**: Uses semantic versioned files (e.g., `panda-cms-0.10.1.js`)
-
-The `VERSION_OVERRIDE` environment variable allows the rake task to create timestamp-based files instead of semantic versioned files:
-
-```bash
-# Development/test compilation (timestamp)
-VERSION_OVERRIDE=1762886534 bundle exec rake app:panda:cms:assets:compile
-
-# Production/release compilation (semantic version)
-bundle exec rake app:panda:cms:assets:compile  # Uses Panda::CMS::VERSION
-```
+> **Note**: CSS is compiled and served by panda-core via the ModuleRegistry system. See [`asset-serving-architecture.md`](asset-serving-architecture.md) for details on CSS compilation.
 
 ## Usage
 
-### For CI/Testing
+> **Note**: For development and test environments, assets are typically served via importmaps and auto-compilation. See [`asset-serving-architecture.md`](asset-serving-architecture.md) for environment-specific asset loading strategies.
 
-Enable GitHub assets in your test environment:
+### For Production
 
-```bash
-# Single test run
-PANDA_CMS_USE_GITHUB_ASSETS=true bundle exec rspec
+Assets are automatically loaded from GitHub releases in production:
 
-# In CI environment variables
-PANDA_CMS_USE_GITHUB_ASSETS: "true"
+```ruby
+# Automatic in production
+Rails.env.production?  # => Uses GitHub assets
+
+# Check asset URLs in production
+Panda::CMS::AssetLoader.javascript_url
+# => "https://github.com/tastybamboo/panda-cms/releases/download/v0.10.1/panda-cms-0.10.1.js"
 ```
 
-### For Development
+### For Testing GitHub Asset Distribution
 
-By default, development uses local assets. To test with GitHub assets:
+To test the GitHub asset distribution system explicitly:
 
 ```bash
 # Test GitHub asset loading
@@ -176,20 +128,14 @@ test_github_assets.rb          # Asset testing script
 
 ### JavaScript Bundle
 
-The JavaScript bundle (`panda-cms-{version}.js`) contains:
+The JavaScript bundle (`panda-cms-{version}.js`) contains compiled Stimulus controllers and modules for production use:
 
-- **Simplified Stimulus Controllers**: Dashboard, theme form, and slug controllers
+- **Compiled Stimulus Controllers**: All CMS admin controllers bundled and minified
 - **Stimulus Registration**: Automatic controller registration
 - **Compatibility Layer**: Works with or without Stimulus framework
 - **Version Tracking**: Includes version and loading confirmation
 
-### CSS Bundle
-
-The CSS bundle (`panda-cms-{version}.css`) provides:
-
-- **Basic Admin Styles**: Essential styling for admin interface
-- **Editor Styles**: Styling for content editors
-- **Responsive Design**: Mobile-friendly admin interface
+> **Note**: In development/test, JavaScript modules are served individually via importmaps and the ModuleRegistry middleware. See [`asset-serving-architecture.md`](asset-serving-architecture.md) for details.
 
 ### Manifest Format
 
@@ -219,16 +165,18 @@ The CSS bundle (`panda-cms-{version}.css`) provides:
 # Check if GitHub assets should be used
 Panda::CMS::AssetLoader.use_github_assets?
 
-# Get asset URLs
+# Get JavaScript asset URL
 Panda::CMS::AssetLoader.javascript_url
-Panda::CMS::AssetLoader.css_url
+# => "https://github.com/tastybamboo/panda-cms/releases/download/v0.10.1/panda-cms-0.10.1.js"
 
-# Generate HTML tags
+# Generate HTML script tag
 Panda::CMS::AssetLoader.asset_tags
 
 # Ensure assets are available
 Panda::CMS::AssetLoader.ensure_assets_available!
 ```
+
+> **Note**: CSS is managed by panda-core via ModuleRegistry and Tailwind compilation. See [`asset-serving-architecture.md`](asset-serving-architecture.md) for CSS serving details.
 
 ### Environment Detection
 
@@ -285,9 +233,8 @@ Expected output:
 🐼 Testing Panda CMS GitHub Asset Loading...
 Use GitHub assets: true
 📦 GitHub Asset URLs:
-JavaScript: https://github.com/tastybamboo/panda-cms/releases/download/v0.7.4/panda-cms-0.7.4.js
-✅ JavaScript asset accessible (1621 bytes)
-✅ CSS asset accessible (548 bytes)
+JavaScript: https://github.com/tastybamboo/panda-cms/releases/download/v0.10.1/panda-cms-0.10.1.js
+✅ JavaScript asset accessible (9876 bytes)
 🎉 All tests passed!
 ```
 

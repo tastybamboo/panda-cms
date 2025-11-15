@@ -21,7 +21,7 @@ module Panda
               app.config.assets.precompile += %w[
                 panda_cms_manifest.js
                 panda/cms/controllers/**/*.js
-                panda/cms/application_panda_cms.js
+                panda/cms/application.js
               ]
             end
           end

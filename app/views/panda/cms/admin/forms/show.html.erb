@@ -5,10 +5,10 @@
   <%= render Panda::Core::Admin::TableComponent.new(term: "submission", rows: submissions) do |table| %>
     <% fields.each do |field, title| %>
       <% table.column(title) do |submission| %>
-        <% if field[0] == "email" || field[0] == "email_address" %>
-          <a href="mailto:<%= submission.data[field[0]] %>" class="border-b border-gray-500 hover:text-gray-900"><%= submission.data[field[0]] %></a>
+        <% if field == "email" || field == "email_address" %>
+          <a href="mailto:<%= submission.data[field] %>" class="border-b border-gray-500 hover:text-gray-900"><%= submission.data[field] %></a>
         <% else %>
-          <%= simple_format(submission.data[field[0]]) %>
+          <%= simple_format(submission.data[field]) %>
         <% end %>
       <% end %>
     <% end %>

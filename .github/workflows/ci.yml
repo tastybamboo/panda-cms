@@ -20,14 +20,13 @@ jobs:
     steps:
       - uses: 'actions/checkout@v5'
 
-      - name: 'Cache gems'
+      - name: Load gems from cache
         uses: actions/cache@v4
         with:
           path: vendor/bundle
-          key: ${{ runner.os }}-gems-lint-${{ hashFiles('**/Gemfile.lock') }}
+          key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
           restore-keys: |
-            ${{ runner.os }}-gems-lint-
-            ${{ runner.os }}-gems-
+            ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
 
       - name: 'Bundle install'
         run: |
@@ -36,7 +35,7 @@ jobs:
           bundle install --jobs 4 --retry 3
 
       - name: 'Bundler Audit'
-        run: 'bundle exec bundle-audit --update'
+        run: 'bundle exec bundle-audit --update && bundle exec bundle-audit check'
       - name: 'Brakeman'
         run: 'bundle exec brakeman --quiet'
       - name: 'StandardRB Check'
@@ -46,18 +45,15 @@ jobs:
       - name: 'YAML Lint'
         run: 'yamllint -c .yamllint .'
 
-  specs:
-    name: 'App Specs'
+  model-specs:
+    name: 'Model Specs'
+    needs: seclint
     runs-on: 'ubuntu-latest'
     container:
       image: ghcr.io/tastybamboo/panda-ci:latest
-    permissions:
-      contents: read
-      pull-requests: write
     env:
       BUNDLE_PATH: 'vendor/bundle'
       RAILS_ENV: test
-      DISPLAY: ':99'
     services:
       postgres:
         image: postgres:latest
@@ -67,48 +63,27 @@ jobs:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: password
           POSTGRES_DB: test
-        # Set health checks to wait until postgres has started
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-
     steps:
       - uses: 'actions/checkout@v5'
-      - name: 'Update VERSION'
-        env:
-          VERSION: ${{ github.event.pull_request.head.sha }}
-        run: |
-          echo "${VERSION}" >> VERSION
 
-      - name: 'Start Xvfb'
-        run: |
-          Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
-
-      - name: 'Cache gems'
+      - name: Load gems from cache
         uses: actions/cache@v4
         with:
           path: vendor/bundle
-          key: ${{ runner.os }}-gems-test-${{ hashFiles('**/Gemfile.lock') }}
+          key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
           restore-keys: |
-            ${{ runner.os }}-gems-test-
-            ${{ runner.os }}-gems-
+            ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
 
       - name: 'Bundle install'
         run: |
           bundle config path vendor/bundle
+          bundle config without development
           bundle install --jobs 4 --retry 3
-
-      - name: 'Cache assets'
-        uses: actions/cache@v4
-        with:
-          path: |
-            spec/dummy/public/panda-cms-assets
-            spec/dummy/tmp/cache/assets
-          key: ${{ runner.os }}-assets-${{ hashFiles('app/assets/**/*', 'app/javascript/**/*') }}
-          restore-keys: |
-            ${{ runner.os }}-assets-
 
       - name: 'Setup test database'
         working-directory: spec/dummy
@@ -116,36 +91,213 @@ jobs:
           DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
           RAILS_ENV: test
         run: |
-          # Clean up ALL migrations in dummy app to start fresh
           rm -rf db/migrate
           mkdir -p db/migrate
           bundle exec rails db:create
-          # Load schema from schema.rb (much faster than running migrations)
           bundle exec rails db:schema:load
 
-      - name: 'Compile assets'
+      - name: 'Run model specs'
+        env:
+          DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
+          RAILS_ENV: 'test'
+          RSPEC_COLOR: 'true'
+          TERM: 'xterm-256color'
+        run: |
+          echo "📦 Running model specs..."
+          bundle exec rspec spec/models --format documentation --color
+
+  request-specs:
+    name: 'Request Specs'
+    needs: seclint
+    runs-on: 'ubuntu-latest'
+    container:
+      image: ghcr.io/tastybamboo/panda-ci:latest
+    env:
+      BUNDLE_PATH: 'vendor/bundle'
+      RAILS_ENV: test
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: 'actions/checkout@v5'
+
+      - name: Load gems from cache
+        uses: actions/cache@v4
+        with:
+          path: vendor/bundle
+          key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
+
+      - name: 'Bundle install'
+        run: |
+          bundle config path vendor/bundle
+          bundle config without development
+          bundle install --jobs 4 --retry 3
+
+      - name: 'Setup test database'
         working-directory: spec/dummy
         env:
           DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
           RAILS_ENV: test
         run: |
-          bundle exec rake panda:cms:assets:compile
-          echo "✅ Asset compilation complete"
-          echo "Assets in public directory:"
-          ls -la public/panda-cms-assets/ || echo "No assets directory"
+          rm -rf db/migrate
+          mkdir -p db/migrate
+          bundle exec rails db:create
+          bundle exec rails db:schema:load
 
-      - name: 'Run specs'
+      - name: 'Run request specs'
         env:
           DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
           RAILS_ENV: 'test'
+          RSPEC_COLOR: 'true'
+          TERM: 'xterm-256color'
         run: |
-          bundle exec rspec --tag ~skip
+          echo "🌐 Running request specs..."
+          bundle exec rspec spec/requests --format documentation --color
+
+  lib-specs:
+    name: 'Lib Specs'
+    needs: seclint
+    runs-on: 'ubuntu-latest'
+    container:
+      image: ghcr.io/tastybamboo/panda-ci:latest
+    env:
+      BUNDLE_PATH: 'vendor/bundle'
+      RAILS_ENV: test
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: 'actions/checkout@v5'
+
+      - name: Load gems from cache
+        uses: actions/cache@v4
+        with:
+          path: vendor/bundle
+          key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
+
+      - name: 'Bundle install'
+        run: |
+          bundle config path vendor/bundle
+          bundle config without development
+          bundle install --jobs 4 --retry 3
+
+      - name: 'Setup test database'
+        working-directory: spec/dummy
+        env:
+          DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
+          RAILS_ENV: test
+        run: |
+          rm -rf db/migrate
+          mkdir -p db/migrate
+          bundle exec rails db:create
+          bundle exec rails db:schema:load
+
+      - name: 'Run lib/services specs'
+        env:
+          DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
+          RAILS_ENV: 'test'
+          RSPEC_COLOR: 'true'
+          TERM: 'xterm-256color'
+        run: |
+          echo "⚙️  Running lib specs..."
+          bundle exec rspec spec/lib --format documentation --color
+
+  system-specs:
+    name: 'System Specs (Browser Tests)'
+    needs: [seclint, js-verification]
+    runs-on: 'ubuntu-latest'
+    container:
+      image: ghcr.io/tastybamboo/panda-ci:latest
+      options: --shm-size=2gb
+    env:
+      BUNDLE_PATH: 'vendor/bundle'
+      RAILS_ENV: test
+      DISPLAY: ':99'
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Start Xvfb
+        run: Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
+
+      - name: Load gems from cache
+        uses: actions/cache@v4
+        with:
+          path: vendor/bundle
+          key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
+
+      - name: Bundle install
+        run: |
+          bundle config path vendor/bundle
+          bundle config without development
+          bundle install --jobs 4 --retry 3
+
+      - name: Setup test database
+        working-directory: spec/dummy
+        env:
+          DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
+        run: |
+          rm -rf db/migrate
+          mkdir -p db/migrate
+          bundle exec rails db:create
+          bundle exec rails db:schema:load
+
+      - name: Prepare + verify dummy assets (CMS + Core)
+        run: |
+          echo "🚧 Preparing dummy assets (CMS + Core)…"
+          bundle exec rake panda:assets:prepare_and_verify_all
+
+      - name: Run system specs
+        env:
+          DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
+        run: |
+          bundle exec rspec --format documentation --color
 
       - name: 'Upload coverage'
         uses: actions/upload-artifact@v5
         if: always()
         with:
-          name: coverage
+          name: coverage-system
           path: coverage/
 
       - name: 'Upload screenshots on failure'
@@ -155,3 +307,10 @@ jobs:
           name: screenshots
           path: ${{ github.workspace }}/spec/tmp/capybara
           if-no-files-found: ignore
+
+      - name: Upload asset report
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: panda-assets-report
+          path: spec/dummy/tmp/panda_assets_report.html

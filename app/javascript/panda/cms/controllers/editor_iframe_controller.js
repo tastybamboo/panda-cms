@@ -8,7 +8,8 @@ export default class extends Controller {
   static values = {
     pageId: Number,
     adminPath: String,
-    autosave: Boolean
+    autosave: Boolean,
+    assets: String
   }
 
   connect() {
@@ -64,6 +65,33 @@ export default class extends Controller {
       this.frameDocument = this.frame.contentDocument || this.frame.contentWindow.document
       this.body = this.frameDocument.body
       this.head = this.frameDocument.head
+
+      // Inject CMS assets into the iframe head
+      if (this.hasAssetsValue && this.assetsValue) {
+        console.debug("[Panda CMS] Injecting assets into iframe", {
+          assetsLength: this.assetsValue.length,
+          assetsPreview: this.assetsValue.substring(0, 200)
+        })
+        const assetsHTML = this.assetsValue
+        const tempDiv = document.createElement('div')
+        tempDiv.innerHTML = assetsHTML
+
+        // Append each node to the iframe's head
+        Array.from(tempDiv.childNodes).forEach(node => {
+          if (node.nodeType === Node.ELEMENT_NODE || node.nodeType === Node.TEXT_NODE) {
+            const importedNode = this.frameDocument.importNode(node, true)
+            this.head.appendChild(importedNode)
+            console.debug("[Panda CMS] Injected node:", node.nodeName)
+          }
+        })
+
+        console.debug("[Panda CMS] Assets injected successfully - head element count:", this.head.children.length)
+      } else {
+        console.warn("[Panda CMS] No assets to inject", {
+          hasAssetsValue: this.hasAssetsValue,
+          assetsValue: this.assetsValue
+        })
+      }
 
       // Ensure iframe content is properly positioned but doesn't block UI
       this.body.style.position = "relative"
@@ -545,11 +573,10 @@ export default class extends Controller {
   }
 
   setupSlideoverHandling() {
-    // Watch for slideover toggle
-    const slideoverToggle = document.getElementById('slideover-toggle')
+    // Watch for slideover visibility changes
     const slideover = document.getElementById('slideover')
 
-    if (slideoverToggle && slideover) {
+    if (slideover) {
       const observer = new MutationObserver((mutations) => {
         mutations.forEach((mutation) => {
           if (mutation.attributeName === 'class') {

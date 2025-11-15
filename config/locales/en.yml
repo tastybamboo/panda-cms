@@ -29,6 +29,7 @@ en:
         title: Title
         path: URL
         panda_cms_template_id: Template
+        page_type: Page Type
         seo_title: SEO Title
         seo_description: SEO Description
         seo_keywords: SEO Keywords

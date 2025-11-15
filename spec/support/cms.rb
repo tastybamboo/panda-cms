@@ -24,6 +24,7 @@ module PandaCmsFixtures
     when "panda_cms_block_contents" then "Panda::CMS::BlockContent"
     when "panda_cms_menus" then "Panda::CMS::Menu"
     when "panda_cms_menu_items" then "Panda::CMS::MenuItem"
+    when "panda_cms_forms" then "Panda::CMS::Form"
     end
   end
 end

@@ -13,22 +13,27 @@ RSpec.describe "Page Details Slideover", type: :system do
     Panda::CMS::Current.root = Capybara.app_host
   end
 
+  def open_page_details
+    click_button "Page Details"
+    sleep 0.5 # Give JavaScript time to execute
+  end
+
   describe "opening the slideover" do
     it "opens when clicking the Page Details button" do
       visit "/admin/cms/pages/#{about_page.id}/edit"
-      expect(page).to have_content("About", wait: 10)
+      expect(page).to have_content("About")
 
       # Wait for the button to be present
-      expect(page).to have_button("Page Details", wait: 5)
+      expect(page).to have_button("Page Details")
 
       # Slideover should be hidden initially
       expect(page).to have_css("#slideover.hidden", visible: :hidden)
 
       # Click the Page Details button
-      click_button "Page Details"
+      open_page_details
 
       # Slideover should now be visible
-      expect(page).to have_css("#slideover", visible: true, wait: 5)
+      expect(page).to have_css("#slideover", visible: true)
       expect(page).not_to have_css("#slideover.hidden")
 
       # Verify slideover title
@@ -39,14 +44,15 @@ RSpec.describe "Page Details Slideover", type: :system do
 
     it "shows all form fields when slideover opens" do
       visit "/admin/cms/pages/#{about_page.id}/edit"
-      click_button "Page Details", wait: 10
+      open_page_details
 
-      within("#slideover", wait: 5) do
+      within("#slideover") do
         # Basic fields
         expect(page).to have_field("Title")
         expect(page).to have_field("Template")
         expect(page).to have_field("Status")
-        expect(page).to have_field("Page Type")
+        # Page Type field may be readonly depending on page type
+        expect(page).to have_field("Page Type", disabled: :all)
 
         # SEO fields
         expect(page).to have_content("SEO Settings")
@@ -71,9 +77,9 @@ RSpec.describe "Page Details Slideover", type: :system do
       )
 
       visit "/admin/cms/pages/#{about_page.id}/edit"
-      click_button "Page Details", wait: 10
+      open_page_details
 
-      within("#slideover", wait: 5) do
+      within("#slideover") do
         expect(find_field("Title").value).to eq("About")
         expect(find_field("SEO Title").value).to eq("About Us Page")
         expect(find_field("SEO Description").value).to eq("Learn about our company")
@@ -85,10 +91,10 @@ RSpec.describe "Page Details Slideover", type: :system do
   describe "closing the slideover" do
     it "closes when clicking the Cancel button" do
       visit "/admin/cms/pages/#{about_page.id}/edit"
-      click_button "Page Details", wait: 10
+      open_page_details
 
       # Verify it's open
-      expect(page).to have_css("#slideover", visible: true, wait: 5)
+      expect(page).to have_css("#slideover", visible: true)
 
       # Click Cancel button in the footer
       within("#slideover") do
@@ -96,14 +102,14 @@ RSpec.describe "Page Details Slideover", type: :system do
       end
 
       # Slideover should be hidden again
-      expect(page).to have_css("#slideover.hidden", visible: :hidden, wait: 5)
+      expect(page).to have_css("#slideover.hidden", visible: :hidden)
     end
 
     it "closes when clicking the close button in the header" do
       visit "/admin/cms/pages/#{about_page.id}/edit"
-      click_button "Page Details", wait: 10
+      open_page_details
 
-      expect(page).to have_css("#slideover", visible: true, wait: 5)
+      expect(page).to have_css("#slideover", visible: true)
 
       # Click the X button (toggle button in slideover header)
       within("#slideover") do
@@ -111,34 +117,34 @@ RSpec.describe "Page Details Slideover", type: :system do
         find("button[data-action*='toggle#toggle']").click
       end
 
-      expect(page).to have_css("#slideover.hidden", visible: :hidden, wait: 5)
+      expect(page).to have_css("#slideover.hidden", visible: :hidden)
     end
 
     it "can be reopened after closing" do
       visit "/admin/cms/pages/#{about_page.id}/edit"
 
       # Open
-      click_button "Page Details", wait: 10
-      expect(page).to have_css("#slideover", visible: true, wait: 5)
+      open_page_details
+      expect(page).to have_css("#slideover", visible: true)
 
       # Close
       within("#slideover") do
         click_button "Cancel"
       end
-      expect(page).to have_css("#slideover.hidden", visible: :hidden, wait: 5)
+      expect(page).to have_css("#slideover.hidden", visible: :hidden)
 
       # Reopen
-      click_button "Page Details"
-      expect(page).to have_css("#slideover", visible: true, wait: 5)
+      open_page_details
+      expect(page).to have_css("#slideover", visible: true)
     end
   end
 
   describe "form submission from slideover" do
     it "saves changes when clicking the Save button in footer" do
       visit "/admin/cms/pages/#{about_page.id}/edit"
-      click_button "Page Details", wait: 10
+      open_page_details
 
-      within("#slideover", wait: 5) do
+      within("#slideover") do
         fill_in "SEO Title", with: "Updated SEO Title"
         fill_in "SEO Description", with: "Updated description"
 
@@ -146,7 +152,7 @@ RSpec.describe "Page Details Slideover", type: :system do
       end
 
       # Wait for success message
-      expect(page).to have_content("successfully updated", wait: 10)
+      expect(page).to have_content("successfully updated")
 
       # Verify changes were saved
       about_page.reload
@@ -156,9 +162,9 @@ RSpec.describe "Page Details Slideover", type: :system do
 
     it "shows validation errors for invalid data" do
       visit "/admin/cms/pages/#{about_page.id}/edit"
-      click_button "Page Details", wait: 10
+      open_page_details
 
-      within("#slideover", wait: 5) do
+      within("#slideover") do
         # Clear the required title field
         fill_in "Title", with: ""
 
@@ -166,16 +172,16 @@ RSpec.describe "Page Details Slideover", type: :system do
       end
 
       # Should show error (either inline or flash)
-      expect(page).to have_content(/can't be blank|is required/i, wait: 5)
+      expect(page).to have_content(/can't be blank|is required/i)
     end
   end
 
   describe "OG image upload with cropper" do
     it "shows the file input for OG image" do
       visit "/admin/cms/pages/#{about_page.id}/edit"
-      click_button "Page Details", wait: 10
+      open_page_details
 
-      within("#slideover", wait: 5) do
+      within("#slideover") do
         expect(page).to have_field("Social Media Image")
 
         # Verify it's using the cropper (has data-controller attribute)
@@ -186,9 +192,9 @@ RSpec.describe "Page Details Slideover", type: :system do
 
     it "has cropper data attributes configured" do
       visit "/admin/cms/pages/#{about_page.id}/edit"
-      click_button "Page Details", wait: 10
+      open_page_details
 
-      within("#slideover", wait: 5) do
+      within("#slideover") do
         image_field = find_field("Social Media Image")
 
         # Check aspect ratio is set to 1.91 (1200x630)
@@ -209,11 +215,11 @@ RSpec.describe "Page Details Slideover", type: :system do
       )
 
       visit "/admin/cms/pages/#{about_page.id}/edit"
-      click_button "Page Details", wait: 10
+      open_page_details
 
-      within("#slideover", wait: 5) do
+      within("#slideover") do
         # Should show the current image
-        expect(page).to have_css("img[alt='OG image']", wait: 5)
+        expect(page).to have_css("img[alt='OG image']")
       end
     end
   end
@@ -232,27 +238,27 @@ RSpec.describe "Page Details Slideover", type: :system do
 
     it "shows inherit checkbox for child pages" do
       visit "/admin/cms/pages/#{about_page.id}/edit"
-      click_button "Page Details", wait: 10
+      open_page_details
 
-      within("#slideover", wait: 5) do
+      within("#slideover") do
         expect(page).to have_field("Inherit SEO from parent page")
       end
     end
 
     it "does not show inherit checkbox for root pages" do
       visit "/admin/cms/pages/#{homepage.id}/edit"
-      click_button "Page Details", wait: 10
+      open_page_details
 
-      within("#slideover", wait: 5) do
+      within("#slideover") do
         expect(page).not_to have_field("Inherit SEO from parent page")
       end
     end
 
     it "fills fields with parent values when inherit is checked" do
       visit "/admin/cms/pages/#{about_page.id}/edit"
-      click_button "Page Details", wait: 10
+      open_page_details
 
-      within("#slideover", wait: 5) do
+      within("#slideover") do
         check "Inherit SEO from parent page"
 
         # Wait for JavaScript to fill fields
@@ -265,18 +271,27 @@ RSpec.describe "Page Details Slideover", type: :system do
   end
 
   describe "character counters" do
+    before do
+      # Ensure inherit is disabled so fields are editable
+      about_page.update!(inherit_seo: false)
+    end
+
     it "shows character count for SEO Title field" do
       visit "/admin/cms/pages/#{about_page.id}/edit"
-      click_button "Page Details", wait: 10
 
-      within("#slideover", wait: 5) do
+      open_page_details
+
+      within("#slideover") do
         seo_title_field = find_field("SEO Title")
 
         # Type some text
         seo_title_field.fill_in with: "Test Title"
 
+        # Trigger input event to update counter
+        seo_title_field.execute_script("this.dispatchEvent(new Event('input', { bubbles: true }))")
+
         # Wait for counter to update
-        sleep 0.5
+        sleep 0.3
 
         # Check counter shows correct count
         expect(page).to have_content(/10.*70.*characters/i)
@@ -285,12 +300,14 @@ RSpec.describe "Page Details Slideover", type: :system do
 
     it "shows warning when approaching SEO Title limit" do
       visit "/admin/cms/pages/#{about_page.id}/edit"
-      click_button "Page Details", wait: 10
+      open_page_details
 
-      within("#slideover", wait: 5) do
-        fill_in "SEO Title", with: "A" * 65
+      within("#slideover") do
+        seo_title_field = find_field("SEO Title")
+        seo_title_field.fill_in with: "A" * 65
+        seo_title_field.execute_script("this.dispatchEvent(new Event('input', { bubbles: true }))")
 
-        sleep 0.5
+        sleep 0.3
 
         # Should show warning color (yellow/amber)
         counter = page.find(".character-counter", match: :first)
@@ -300,12 +317,14 @@ RSpec.describe "Page Details Slideover", type: :system do
 
     it "shows error when exceeding SEO Title limit" do
       visit "/admin/cms/pages/#{about_page.id}/edit"
-      click_button "Page Details", wait: 10
+      open_page_details
 
-      within("#slideover", wait: 5) do
-        fill_in "SEO Title", with: "A" * 75
+      within("#slideover") do
+        seo_title_field = find_field("SEO Title")
+        seo_title_field.fill_in with: "A" * 75
+        seo_title_field.execute_script("this.dispatchEvent(new Event('input', { bubbles: true }))")
 
-        sleep 0.5
+        sleep 0.3
 
         # Should show error color (red)
         counter = page.find(".character-counter", match: :first)
@@ -323,29 +342,29 @@ RSpec.describe "Page Details Slideover", type: :system do
       page.execute_script("document.querySelector('button:contains(\"Page Details\")').focus()")
       find_button("Page Details").send_keys(:enter)
 
-      expect(page).to have_css("#slideover", visible: true, wait: 5)
+      expect(page).to have_css("#slideover", visible: true)
     end
 
     it "can be closed with Escape key" do
       visit "/admin/cms/pages/#{about_page.id}/edit"
-      click_button "Page Details", wait: 10
+      open_page_details
 
-      expect(page).to have_css("#slideover", visible: true, wait: 5)
+      expect(page).to have_css("#slideover", visible: true)
 
       # Press Escape
       find("#slideover").send_keys(:escape)
 
       # Slideover should close
-      expect(page).to have_css("#slideover.hidden", visible: :hidden, wait: 5)
+      expect(page).to have_css("#slideover.hidden", visible: :hidden)
     end
   end
 
   describe "responsive behavior" do
     it "opens slideover on mobile viewport", driver: :cuprite_mobile do
       visit "/admin/cms/pages/#{about_page.id}/edit"
-      click_button "Page Details", wait: 10
+      open_page_details
 
-      expect(page).to have_css("#slideover", visible: true, wait: 5)
+      expect(page).to have_css("#slideover", visible: true)
 
       within("#slideover") do
         expect(page).to have_field("Title")

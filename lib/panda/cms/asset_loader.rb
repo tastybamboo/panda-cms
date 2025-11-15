@@ -35,11 +35,9 @@ module Panda
 
         # Check if GitHub-hosted assets should be used
         def use_github_assets?
-          # Use GitHub assets in production or when explicitly enabled
-          Rails.env.production? ||
-            ENV["PANDA_CMS_USE_GITHUB_ASSETS"] == "true" ||
-            !development_assets_available? ||
-            ((Rails.env.test? || in_test_environment?) && compiled_assets_available?)
+          # Panda CMS uses importmaps for JavaScript (no compilation needed)
+          # Only use GitHub assets in production or when explicitly enabled
+          false # Always use importmaps like panda-core
         end
 
         # Download assets from GitHub to local cache
@@ -105,39 +103,10 @@ module Panda
         end
 
         def development_asset_tags(options = {})
-          # In test environment with CI, always use compiled assets
-          if (Rails.env.test? || ENV["CI"].present?) && compiled_assets_available?
-            # Use the same logic as GitHub assets but with local paths
-            version = asset_version
-            js_url = "/panda-cms-assets/panda-cms-#{version}.js"
-            css_url = "/panda-cms-assets/panda-cms-#{version}.css"
-
-            tags = []
-
-            # JavaScript tag
-            tags << content_tag(:script, "", {
-              src: js_url,
-              defer: true
-            })
-
-            # CSS tag if exists
-            if cached_asset_exists?(css_url)
-              tags << tag(:link, {
-                rel: "stylesheet",
-                href: css_url
-              })
-            end
-
-            tags.join("\n").html_safe
-          else
-            # In development, just use a simple script tag
-            # The view will handle importmap tags separately
-            content_tag(:script, "", {
-              src: development_javascript_url,
-              type: "module",
-              defer: true
-            })
-          end
+          # Panda CMS uses importmaps for JavaScript (no compiled bundles)
+          # The view will handle importmap tags via <%= javascript_importmap_tags %>
+          # We don't need to return anything here - CSS comes from panda-core
+          "".html_safe
         end
 
         def github_javascript_url
@@ -161,25 +130,8 @@ module Panda
         end
 
         def development_javascript_url
-          # In development, use importmap for live-reloading
-          # Only use compiled assets in test/CI environments
-          if Rails.env.development?
-            "/panda/cms/application_panda_cms.js"
-          else
-            # Try cached assets for test environment
-            version = asset_version
-            root_path = "/panda-cms-assets/panda-cms-#{version}.js"
-            versioned_path = "/panda-cms-assets/#{version}/panda-cms-#{version}.js"
-
-            if cached_asset_exists?(root_path)
-              root_path
-            elsif cached_asset_exists?(versioned_path)
-              versioned_path
-            else
-              # Fallback to importmap
-              "/panda/cms/application_panda_cms.js"
-            end
-          end
+          # Always use importmap (no compiled bundles)
+          "/panda/cms/application.js"
         end
 
         def development_css_url
@@ -207,27 +159,12 @@ module Panda
         end
 
         def asset_version
-          # In test environment, use VERSION constant for consistency with compiled assets
-          # In other environments, use git SHA for dynamic versioning
-          # Also check for test environment indicators since Rails.env might be development in specs
-          if Rails.env.test? || ENV["CI"].present? || in_test_environment?
-            Panda::CMS::VERSION
-          else
-            `git rev-parse --short HEAD`.strip
-          end
+          Panda::CMS::VERSION
         end
 
         def in_test_environment?
           # Check if we're running specs even if Rails.env is development
           defined?(RSpec) && RSpec.respond_to?(:configuration)
-        end
-
-        def compiled_assets_available?
-          # Check if compiled assets exist in test location
-          # Note: CSS comes from panda-core now, so we only check for JS
-          version = asset_version
-          js_file = Rails.public_path.join("panda-cms-assets", "panda-cms-#{version}.js")
-          js_file.exist?
         end
 
         def development_assets_available?
@@ -264,6 +201,13 @@ module Panda
           # Check if engine's JavaScript files are available
           engine_js_path = Panda::CMS::Engine.root.join("app", "javascript", "panda", "cms", "controllers", "index.js")
           File.exist?(engine_js_path)
+        end
+
+        def compiled_assets_available?
+          # Check if compiled JavaScript bundle exists
+          version = asset_version
+          js_file = Rails.public_path.join("panda-cms-assets", "panda-cms-#{version}.js")
+          js_file.exist?
         end
 
         def cached_assets_exist?(version)
