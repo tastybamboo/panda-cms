@@ -282,10 +282,10 @@ jobs:
           bundle exec rails db:create
           bundle exec rails db:schema:load
 
-      - name: Prepare + verify dummy assets (CMS + Core)
-        run: |
-          echo "🚧 Preparing dummy assets (CMS + Core)…"
-          bundle exec rake panda:assets:prepare_and_verify_all
+      - name: Panda asset generation and verification
+        uses: tastybamboo/panda-assets-verify-action@v1
+        with:
+          dummy_root: spec/dummy
 
       - name: Run system specs
         env:
