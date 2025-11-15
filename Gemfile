@@ -5,6 +5,9 @@ source "https://rubygems.org"
 gem "panda-core"
 gem "panda-editor"
 
+# Fix for CI: explicitly specify benchmark version to avoid conflicts with default gem
+gem "benchmark", "~> 0.5"
+
 # Specify your gem's dependencies in panda-cms.gemspec
 gemspec
 
