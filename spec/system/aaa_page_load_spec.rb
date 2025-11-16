@@ -7,6 +7,14 @@ RSpec.describe "Page Load Test", :debug, :aggregate_failures, type: :system do
   # If this passes, Chrome is fine and the issue is specific to certain pages/features
   # If this fails, the issue is with page loading or JavaScript/assets in general
 
+  it "runs Chrome directly" do
+    Open3.popen2e("/usr/bin/chromium", "--no-sandbox", "--disable-gpu", "--headless", "--repl") do |stdin, stdout_stderr, status|
+      stdout_stderr.each_line do |line|
+        puts line
+      end
+    end
+  end
+
   it "can visit the root page without crashing" do
     visit "/"
     expect(page.status_code).to eq(200)
