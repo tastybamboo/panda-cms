@@ -292,7 +292,7 @@ jobs:
 
       - name: Chromium test
         run: |
-          /usr/bin/chromium --no-sandbox --disable-gpu --headless --repl 2>&1 || true
+          chromium --headless --no-sandbox --disable-gpu --print-to-pdf=/tmp/test.pdf about:blank 2>&1 || true
 
       - name: Run system specs
         env:
