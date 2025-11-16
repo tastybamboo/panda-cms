@@ -294,6 +294,9 @@ jobs:
         env:
           DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
           SPEC_FILES: ${{ vars.SYSTEM_SPEC_FILES || 'spec/system/panda/cms/admin/javascript_errors_spec.rb spec/system/panda/cms/admin/dashboard_spec.rb spec/system/panda/cms/admin/pages/list_pages_spec.rb spec/system/panda/cms/admin/forms/forms_management_spec.rb spec/system/panda/cms/admin/posts/add_post_spec.rb' }}
+          CUPRITE_PROCESS_TIMEOUT: 30
+          CUPRITE_TIMEOUT: 15
+          FERRUM_BROWSER_LOG: 'true'
         run: |
           set -euo pipefail
           files="${SPEC_FILES:-spec/system}"
