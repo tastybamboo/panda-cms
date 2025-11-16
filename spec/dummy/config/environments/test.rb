@@ -41,6 +41,16 @@ Rails.application.configure do
     'Cache-Control' => "public, max-age=#{1.hour.to_i}"
   }
 
+  # In CI, use precompiled assets (panda-assets-verify-action compiles them)
+  # Locally, allow on-the-fly compilation for faster test iteration
+  if ENV['CI'].present?
+    config.assets.compile = false
+    config.assets.debug = false
+  else
+    config.assets.compile = true
+    config.assets.debug = true
+  end
+
   # Show full error reports and disable caching.
   config.consider_all_requests_local = true
   config.action_controller.perform_caching = false
