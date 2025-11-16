@@ -15,43 +15,40 @@ RSpec.configure do |config|
 
   # Enable automatic retry with debug output for failed system tests
   config.around(:each, type: :system) do |example|
-    exception = nil
-
     # First attempt - run without debug output
-    begin
-      example.run
-    rescue => e
-      exception = e
-    end
+    # Don't rescue here - let RSpec aggregate exceptions naturally
+    example.run
 
-    # Handle MultipleExceptionError specially - don't retry, just report all exceptions
+    # After test completes, check if there were any exceptions
+    # RSpec stores the final exception (potentially MultipleExceptionError) in example.exception
+    exception = example.exception
+
+    # Handle MultipleExceptionError specially - don't retry, just report and skip
     if exception.is_a?(RSpec::Core::MultipleExceptionError)
       puts "\n" + ("=" * 80)
-      puts "MULTIPLE EXCEPTIONS DETECTED - TEST FAILED"
+      puts "⚠️  MULTIPLE EXCEPTIONS - SKIPPING TEST (NO RETRY)"
       puts "=" * 80
       puts "Test: #{example.full_description}"
       puts "File: #{example.metadata[:file_path]}:#{example.metadata[:line_number]}"
-      puts "\nTotal exceptions: #{exception.all_exceptions.count}"
+      puts "Total exceptions: #{exception.all_exceptions.count}"
       puts "=" * 80
 
-      exception.all_exceptions.each_with_index do |ex, index|
-        puts "\nException #{index + 1} of #{exception.all_exceptions.count}:"
-        puts "  Class: #{ex.class}"
-        puts "  Message: #{ex.message}"
-        if ex.backtrace
-          puts "  Backtrace (first 5 lines):"
-          ex.backtrace.first(5).each do |line|
-            puts "    #{line}"
-          end
-        end
-        puts "-" * 80
+      # Group exceptions by class for cleaner output
+      exceptions_by_class = exception.all_exceptions.group_by(&:class)
+      exceptions_by_class.each do |klass, exs|
+        puts "\n#{klass.name} (#{exs.count} occurrence#{"s" if exs.count > 1}):"
+        puts "  #{exs.first.message.split("\n").first}"
       end
 
-      puts "\nNOTE: Test will NOT be retried due to multiple exceptions."
+      puts "\n" + ("=" * 80)
+      puts "⚠️  Skipping retry - moving to next test"
       puts "=" * 80 + "\n"
 
-      # Re-raise immediately without retry
-      raise exception
+      # Mark this so after hooks can skip verbose output
+      example.metadata[:multiple_exception_detected] = true
+
+      # Don't retry, just return and let RSpec move to next test
+      return # rubocop:disable Lint/NonLocalExitFromIterator
     end
 
     # If test failed and hasn't been retried yet, retry with debug output
@@ -77,9 +74,6 @@ RSpec.configure do |config|
       ensure
         ENV["RSPEC_DEBUG"] = original_debug
       end
-    elsif exception
-      # Already retried, re-raise the exception
-      raise exception
     end
   end
 end
