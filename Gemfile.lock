@@ -328,7 +328,7 @@ GEM
     omniauth-rails_csrf_protection (1.0.2)
       actionpack (>= 4.2)
       omniauth (~> 2.0)
-    panda-core (0.10.1)
+    panda-core (0.10.2)
       image_processing (~> 1.2)
       importmap-rails
       literal (~> 1.8)
@@ -615,7 +615,7 @@ DEPENDENCIES
   omniauth-google-oauth2
   omniauth-microsoft_graph
   panda-cms!
-  panda-core
+  panda-core (~> 0.10.2)
   panda-editor
   parallel_tests
   propshaft

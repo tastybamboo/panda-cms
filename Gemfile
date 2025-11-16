@@ -2,7 +2,7 @@
 
 source "https://rubygems.org"
 
-gem "panda-core"
+gem "panda-core", "~> 0.10.2"
 gem "panda-editor"
 
 # Fix for CI: explicitly specify benchmark version to avoid conflicts with default gem
