@@ -232,6 +232,9 @@ jobs:
     name: 'System Specs (Browser Tests)'
     needs: [seclint]
     runs-on: 'ubuntu-latest'
+    permissions:
+      contents: read
+      checks: write
     container:
       image: ghcr.io/tastybamboo/panda-ci:latest
       options: --shm-size=2gb
