@@ -41,24 +41,6 @@ Rails.application.configure do
     'Cache-Control' => "public, max-age=#{1.hour.to_i}"
   }
 
-  # In CI, use precompiled assets with fingerprints (panda-assets-verify-action compiles them)
-  # This requires importmap to read from the propshaft manifest instead of generating paths on-the-fly
-  if ENV['CI'].present?
-    # Disable importmap cache sweepers to force reading from precompiled manifest
-    # This ensures importmap uses fingerprinted asset paths (e.g., application-abc123.js)
-    # instead of non-fingerprinted paths (e.g., application.js) which don't exist
-    config.importmap.cache_sweepers = []
-
-    # Tell Rails to use precompiled assets
-    config.assets.compile = false
-    config.assets.debug = false
-    config.assets.digest = true
-  else
-    # Locally, allow on-the-fly asset resolution for faster test iteration
-    config.assets.compile = true
-    config.assets.debug = true
-  end
-
   # Show full error reports and disable caching.
   config.consider_all_requests_local = true
   config.action_controller.perform_caching = false
