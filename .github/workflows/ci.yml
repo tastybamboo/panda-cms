@@ -290,6 +290,12 @@ jobs:
         with:
           dummy_root: spec/dummy
 
+      - name: Smoke check Chrome boot
+        env:
+          DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
+        run: |
+          bundle exec rspec spec/system/aaa_chrome_boot_spec.rb --format documentation --color
+
       - name: Run system specs
         env:
           DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
@@ -301,7 +307,7 @@ jobs:
           set -euo pipefail
           files="${SPEC_FILES:-spec/system}"
           echo "Running system specs for: ${files}"
-          bundle exec rspec ${files} --format documentation --color --tag ~skip
+          bundle exec rspec ${files} --format documentation --color --tag ~skip --tag debug
 
       - name: 'Upload coverage'
         uses: actions/upload-artifact@v5
