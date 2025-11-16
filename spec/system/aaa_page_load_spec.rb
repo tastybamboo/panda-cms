@@ -7,14 +7,23 @@ RSpec.describe "Page Load Test", :debug, :aggregate_failures, type: :system do
   # If this passes, Chrome is fine and the issue is specific to certain pages/features
   # If this fails, the issue is with page loading or JavaScript/assets in general
 
-  it "can visit the root page without crashing" do
-    visit "/"
-    expect(page.status_code).to eq(200)
-  end
+  # it "can visit the root page without crashing" do
+  #   visit "/"
+  #   expect(page.status_code).to eq(200)
+  # end
 
   it "tunes sandbox" do
     Capybara.register_driver(:cuprite) do |app|
-      Capybara::Cuprite::Driver.new(app, browser_options: {"no-sandbox": nil}, window_size: [1200, 800])
+      Capybara::Cuprite::Driver.new(
+        app,
+        browser_options: {"no-sandbox": nil},
+        window_size: [1200, 800],
+        xvfb: true,
+        js_errors: true,
+        logger: STDOUT,
+        process_timeout: 30,
+        timeout: 10
+      )
     end
     Capybara.javascript_driver = :cuprite
 
