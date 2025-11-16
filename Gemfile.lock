@@ -615,7 +615,7 @@ DEPENDENCIES
   omniauth-google-oauth2
   omniauth-microsoft_graph
   panda-cms!
-  panda-core (~> 0.10.2)
+  panda-core
   panda-editor
   parallel_tests
   propshaft

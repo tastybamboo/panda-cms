@@ -41,6 +41,23 @@ Rails.application.configure do
     'Cache-Control' => "public, max-age=#{1.hour.to_i}"
   }
 
+  # In CI we rely on precompiled, fingerprinted assets produced by
+  # panda-assets-verify-action. Disable on-the-fly compilation so Propshaft and
+  # importmap use the manifest that action generates; keep dynamic compilation
+  # enabled locally for fast iteration.
+  if ENV["CI"].present?
+    if config.respond_to?(:importmap)
+      config.importmap.cache_sweepers = []
+    end
+
+    config.assets.compile = false
+    config.assets.debug = false
+    config.assets.digest = true
+  else
+    config.assets.compile = true
+    config.assets.debug = true
+  end
+
   # Show full error reports and disable caching.
   config.consider_all_requests_local = true
   config.action_controller.perform_caching = false

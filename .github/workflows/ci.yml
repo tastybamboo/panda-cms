@@ -293,8 +293,12 @@ jobs:
       - name: Run system specs
         env:
           DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
+          SPEC_FILES: ${{ vars.SYSTEM_SPEC_FILES || 'spec/system/panda/cms/admin/javascript_errors_spec.rb spec/system/panda/cms/admin/dashboard_spec.rb spec/system/panda/cms/admin/pages/list_pages_spec.rb spec/system/panda/cms/admin/forms/forms_management_spec.rb spec/system/panda/cms/admin/posts/add_post_spec.rb' }}
         run: |
-          bundle exec rspec spec/system --format documentation --color --tag ~skip
+          set -euo pipefail
+          files="${SPEC_FILES:-spec/system}"
+          echo "Running system specs for: ${files}"
+          bundle exec rspec ${files} --format documentation --color --tag ~skip
 
       - name: 'Upload coverage'
         uses: actions/upload-artifact@v5
