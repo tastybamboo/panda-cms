@@ -24,6 +24,36 @@ RSpec.configure do |config|
       exception = e
     end
 
+    # Handle MultipleExceptionError specially - don't retry, just report all exceptions
+    if exception.is_a?(RSpec::Core::MultipleExceptionError)
+      puts "\n" + ("=" * 80)
+      puts "MULTIPLE EXCEPTIONS DETECTED - TEST FAILED"
+      puts "=" * 80
+      puts "Test: #{example.full_description}"
+      puts "File: #{example.metadata[:file_path]}:#{example.metadata[:line_number]}"
+      puts "\nTotal exceptions: #{exception.all_exceptions.count}"
+      puts "=" * 80
+
+      exception.all_exceptions.each_with_index do |ex, index|
+        puts "\nException #{index + 1} of #{exception.all_exceptions.count}:"
+        puts "  Class: #{ex.class}"
+        puts "  Message: #{ex.message}"
+        if ex.backtrace
+          puts "  Backtrace (first 5 lines):"
+          ex.backtrace.first(5).each do |line|
+            puts "    #{line}"
+          end
+        end
+        puts "-" * 80
+      end
+
+      puts "\nNOTE: Test will NOT be retried due to multiple exceptions."
+      puts "=" * 80 + "\n"
+
+      # Re-raise immediately without retry
+      raise exception
+    end
+
     # If test failed and hasn't been retried yet, retry with debug output
     if exception && !example.metadata[:retry_attempted]
       example.metadata[:retry_attempted] = true

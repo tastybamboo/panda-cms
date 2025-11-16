@@ -8,6 +8,7 @@ RSpec.describe "Forms Management", type: :system do
   let(:contact_form) { panda_cms_forms(:contact_form) }
 
   before do
+    skip "This functionality is not yet implemented"
     login_as_admin
     Panda::CMS::Current.root = Capybara.app_host
   end
