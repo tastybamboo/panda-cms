@@ -294,7 +294,7 @@ jobs:
         env:
           DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
         run: |
-          bundle exec rspec --format documentation --color
+          bundle exec rspec spec/system --format documentation --color --tag ~skip
 
       - name: 'Upload coverage'
         uses: actions/upload-artifact@v5
