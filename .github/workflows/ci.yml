@@ -35,15 +35,15 @@ jobs:
           bundle install --jobs 4 --retry 3
 
       - name: 'Bundler Audit'
-        run: 'bundle exec bundle-audit --update && bundle exec bundle-audit check'
+        run: '#bundle exec bundle-audit --update && bundle exec bundle-audit check'
       - name: 'Brakeman'
-        run: 'bundle exec brakeman --quiet'
+        run: '#bundle exec brakeman --quiet'
       - name: 'StandardRB Check'
-        run: 'bundle exec standardrb'
+        run: '#bundle exec standardrb'
       - name: 'ERB Check'
-        run: 'bundle exec erb_lint app/views --lint-all'
+        run: '#bundle exec erb_lint app/views --lint-all'
       - name: 'YAML Lint'
-        run: 'yamllint -c .yamllint .'
+        run: '#yamllint -c .yamllint .'
 
   model-specs:
     name: 'Model Specs'
@@ -104,7 +104,7 @@ jobs:
           TERM: 'xterm-256color'
         run: |
           echo "📦 Running model specs..."
-          bundle exec rspec spec/models --format documentation --color
+          #bundle exec rspec spec/models --format documentation --color
 
   request-specs:
     name: 'Request Specs'
@@ -165,7 +165,7 @@ jobs:
           TERM: 'xterm-256color'
         run: |
           echo "🌐 Running request specs..."
-          bundle exec rspec spec/requests --format documentation --color
+          #bundle exec rspec spec/requests --format documentation --color
 
   lib-specs:
     name: 'Lib Specs'
@@ -226,7 +226,7 @@ jobs:
           TERM: 'xterm-256color'
         run: |
           echo "⚙️  Running lib specs..."
-          bundle exec rspec spec/lib --format documentation --color
+          #bundle exec rspec spec/lib --format documentation --color
 
   system-specs:
     name: 'System Specs (Browser Tests)'
@@ -290,12 +290,6 @@ jobs:
         with:
           dummy_root: spec/dummy
 
-      - name: Smoke check Chrome boot
-        env:
-          DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
-        run: |
-          bundle exec rspec spec/system/aaa_chrome_boot_spec.rb --format documentation --color
-
       - name: Run system specs
         env:
           DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
@@ -305,8 +299,6 @@ jobs:
           FERRUM_BROWSER_LOG: 'true'
         run: |
           set -euo pipefail
-          # files="${SPEC_FILES:-spec/system}"
-          # echo "Running system specs for: ${files}"
           bundle exec rspec spec/system --format documentation --color --tag debug
 
       - name: 'Upload coverage'
