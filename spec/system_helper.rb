@@ -15,13 +15,17 @@ RSpec.configure do |config|
 
   # Enable automatic retry with debug output for failed system tests
   config.around(:each, type: :system) do |example|
-    # First attempt - run without debug output
-    # Don't rescue here - let RSpec aggregate exceptions naturally
-    example.run
+    exception = nil
 
-    # After test completes, check if there were any exceptions
-    # RSpec stores the final exception (potentially MultipleExceptionError) in example.exception
-    exception = example.exception
+    # First attempt - run without debug output
+    begin
+      example.run
+    rescue => e
+      exception = e
+    end
+
+    # Also check example.exception in case RSpec aggregated exceptions there
+    exception ||= example.exception
 
     # Handle MultipleExceptionError specially - don't retry, just report and skip
     if exception.is_a?(RSpec::Core::MultipleExceptionError)
@@ -47,8 +51,8 @@ RSpec.configure do |config|
       # Mark this so after hooks can skip verbose output
       example.metadata[:multiple_exception_detected] = true
 
-      # Don't retry, just return and let RSpec move to next test
-      return # rubocop:disable Lint/NonLocalExitFromIterator
+      # Re-raise to mark test as failed, but don't retry
+      raise exception
     end
 
     # If test failed and hasn't been retried yet, retry with debug output
@@ -74,6 +78,9 @@ RSpec.configure do |config|
       ensure
         ENV["RSPEC_DEBUG"] = original_debug
       end
+    elsif exception
+      # Test failed and was already retried (or no retry needed), re-raise the exception
+      raise exception
     end
   end
 end
