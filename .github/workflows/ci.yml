@@ -91,10 +91,19 @@ jobs:
           DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
           RAILS_ENV: test
         run: |
-          rm -rf db/migrate
-          mkdir -p db/migrate
-          bundle exec rails db:create
+          echo "🗄️ Dropping and creating database..."
+          bundle exec rails db:drop db:create
+
+          echo "📋 Loading schema (baseline with all tables)..."
           bundle exec rails db:schema:load
+
+          echo "📦 Installing migrations from engines..."
+          bundle exec rails railties:install:migrations
+
+          echo "🔄 Running any new migrations not in schema.rb..."
+          bundle exec rails db:migrate
+
+          echo "✅ Database ready"
 
       - name: 'Run model specs'
         env:
@@ -152,10 +161,19 @@ jobs:
           DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
           RAILS_ENV: test
         run: |
-          rm -rf db/migrate
-          mkdir -p db/migrate
-          bundle exec rails db:create
+          echo "🗄️ Dropping and creating database..."
+          bundle exec rails db:drop db:create
+
+          echo "📋 Loading schema (baseline with all tables)..."
           bundle exec rails db:schema:load
+
+          echo "📦 Installing migrations from engines..."
+          bundle exec rails railties:install:migrations
+
+          echo "🔄 Running any new migrations not in schema.rb..."
+          bundle exec rails db:migrate
+
+          echo "✅ Database ready"
 
       - name: 'Run request specs'
         env:
@@ -213,10 +231,19 @@ jobs:
           DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
           RAILS_ENV: test
         run: |
-          rm -rf db/migrate
-          mkdir -p db/migrate
-          bundle exec rails db:create
+          echo "🗄️ Dropping and creating database..."
+          bundle exec rails db:drop db:create
+
+          echo "📋 Loading schema (baseline with all tables)..."
           bundle exec rails db:schema:load
+
+          echo "📦 Installing migrations from engines..."
+          bundle exec rails railties:install:migrations
+
+          echo "🔄 Running any new migrations not in schema.rb..."
+          bundle exec rails db:migrate
+
+          echo "✅ Database ready"
 
       - name: 'Run lib/services specs'
         env:
