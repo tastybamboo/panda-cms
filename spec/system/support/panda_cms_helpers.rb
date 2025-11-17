@@ -522,7 +522,7 @@ module PandaCmsHelpers
 end
 
 RSpec.configure do |config|
-  # config.include PandaCmsHelpers, type: :system
+  config.include PandaCmsHelpers, type: :system
 
   # Add debugging to system tests
   # config.before(:each, type: :system) do

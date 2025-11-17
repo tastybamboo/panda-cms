@@ -302,7 +302,7 @@ jobs:
         env:
           DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
           CUPRITE_PROCESS_TIMEOUT: 30
-          CUPRITE_TIMEOUT: 15
+          CUPRITE_TIMEOUT: 2
           FERRUM_BROWSER_LOG: 'true'
         run: |
           set -euo pipefail
