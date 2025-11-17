@@ -86,15 +86,13 @@ jobs:
           bundle install --jobs 4 --retry 3
 
       - name: 'Setup test database'
-        working-directory: spec/dummy
         env:
           DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
           RAILS_ENV: test
         run: |
-          rm -rf db/migrate
-          mkdir -p db/migrate
-          bundle exec rails db:create
+          echo "📋 Loading schema (baseline with all tables)..."
           bundle exec rails db:schema:load
+          echo "✅ Database ready"
 
       - name: 'Run model specs'
         env:
@@ -147,15 +145,13 @@ jobs:
           bundle install --jobs 4 --retry 3
 
       - name: 'Setup test database'
-        working-directory: spec/dummy
         env:
           DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
           RAILS_ENV: test
         run: |
-          rm -rf db/migrate
-          mkdir -p db/migrate
-          bundle exec rails db:create
+          echo "📋 Loading schema (baseline with all tables)..."
           bundle exec rails db:schema:load
+          echo "✅ Database ready"
 
       - name: 'Run request specs'
         env:
@@ -208,15 +204,13 @@ jobs:
           bundle install --jobs 4 --retry 3
 
       - name: 'Setup test database'
-        working-directory: spec/dummy
         env:
           DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
           RAILS_ENV: test
         run: |
-          rm -rf db/migrate
-          mkdir -p db/migrate
-          bundle exec rails db:create
+          echo "📋 Loading schema (baseline with all tables)..."
           bundle exec rails db:schema:load
+          echo "✅ Database ready"
 
       - name: 'Run lib/services specs'
         env:
@@ -275,15 +269,14 @@ jobs:
           bundle config without development
           bundle install --jobs 4 --retry 3
 
-      - name: Setup test database
-        working-directory: spec/dummy
+      - name: 'Setup test database'
         env:
           DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
+          RAILS_ENV: test
         run: |
-          rm -rf db/migrate
-          mkdir -p db/migrate
-          bundle exec rails db:create
+          echo "📋 Loading schema (baseline with all tables)..."
           bundle exec rails db:schema:load
+          echo "✅ Database ready"
 
       - name: Panda asset generation and verification
         uses: tastybamboo/panda-assets-verify-action@v1

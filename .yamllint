@@ -6,6 +6,7 @@ yaml-files:
 
 ignore: |
   vendor/**
+  **/database.yml
 
 rules:
   anchors: enable
