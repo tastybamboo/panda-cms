@@ -68,8 +68,7 @@ en:
         external_url: External URL
         panda/cms_page_id: Page
       panda/cms/user:
-        firstname: First Name
-        lastname: Last Name
+        name: Name
         email: Email Address
         current_theme: Theme
     enums:

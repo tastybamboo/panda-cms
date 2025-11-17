@@ -7,9 +7,8 @@ RSpec.describe Panda::Core::User, type: :model do
     subject {
       Panda::Core::User.new(
         email: "test@example.com",
-        firstname: "Test",
-        lastname: "User",
-        admin: false
+        name: "Test User",
+        is_admin: false
       )
     }
 
@@ -20,10 +19,9 @@ RSpec.describe Panda::Core::User, type: :model do
   describe "email" do
     it "downcases email before saving" do
       user = Panda::Core::User.create!(
-        firstname: "Test",
-        lastname: "User",
+        name: "Test User",
         email: "TEST@EXAMPLE.COM",
-        admin: false
+        is_admin: false
       )
       expect(user.email).to eq("test@example.com")
     end
@@ -31,6 +29,7 @@ RSpec.describe Panda::Core::User, type: :model do
 
   describe "#admin?" do
     it "returns the admin status" do
+      # binding.irb
       admin = create_admin_user
       regular = create_regular_user
 
