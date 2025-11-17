@@ -5,6 +5,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.10.2] - 2025-11-17
+
+### Changed
+
+- Updated to panda-core v0.10.1 for improved asset handling and authentication
+
+### Added
+
+- SQLite support in CI pipeline with database verification
+- Shared system test infrastructure for consistent cross-module testing
+
+### Fixed
+
+- CI asset compilation to match panda-core requirements
+- Page form spec test pollution by moving skip to top-level
+- JavaScript asset detection to only check for JS files
+- JavaScript syntax error by wrapping evaluate_script in IIFE
+- about:blank navigation failures in system tests
+
+### Technical Improvements
+
+- Removed legacy asset handling code
+- Enhanced test infrastructure reliability
+- Improved CI database support and verification
+
 ## [0.10.1] - 2025-11-11
 
 ### Changed
