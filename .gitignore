@@ -4,7 +4,6 @@
 /pkg/
 /tmp/
 /spec/dummy/db/*.sqlite3*
-/spec/dummy/db/migrate/
 /spec/dummy/log/*.log
 /spec/dummy/log/**/*
 /spec/dummy/storage/
