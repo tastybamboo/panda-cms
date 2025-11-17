@@ -8,7 +8,7 @@ class CreatePandaCMSVisits < ActiveRecord::Migration[7.1]
 
       t.references :panda_cms_page, null: true, foreign_key: true, type: :uuid
       t.references :panda_cms_redirect, null: true, foreign_key: true, type: :uuid
-      t.references :panda_cms_user, null: true, foreign_key: true, type: :uuid
+      t.references :panda_core_user, null: true, foreign_key: true, type: :uuid
       t.timestamps
     end
   end
