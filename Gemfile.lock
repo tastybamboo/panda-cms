@@ -328,7 +328,7 @@ GEM
     omniauth-rails_csrf_protection (1.0.2)
       actionpack (>= 4.2)
       omniauth (~> 2.0)
-    panda-core (0.10.2)
+    panda-core (0.10.4)
       image_processing (~> 1.2)
       importmap-rails
       literal (~> 1.8)
@@ -597,6 +597,7 @@ PLATFORMS
 DEPENDENCIES
   annotaterb
   awesome_print
+  benchmark (~> 0.5)
   better_errors
   binding_of_caller
   brakeman

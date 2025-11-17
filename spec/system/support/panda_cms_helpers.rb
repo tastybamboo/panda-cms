@@ -525,29 +525,29 @@ RSpec.configure do |config|
   config.include PandaCmsHelpers, type: :system
 
   # Add debugging to system tests
-  config.before(:each, type: :system) do
-    debug_log("\nStarting test (debug enabled): #{RSpec.current_example.full_description}\n")
-  end
+  # config.before(:each, type: :system) do
+  #   debug_log("\nStarting test (debug enabled): #{RSpec.current_example.full_description}\n")
+  # end
 
-  config.after(:each, type: :system) do |example|
-    if example.exception
-      debug_log("\n====TEST FAILED====\n#{example.exception.message}\n\n")
+  # config.after(:each, type: :system) do |example|
+  #   if example.exception
+  #     debug_log("\n====TEST FAILED====\n#{example.exception.message}\n\n")
 
-      # Add immediate page state debugging before other debug info
-      current_url = begin
-        page.current_url
-      rescue
-        "unknown"
-      end
-      page_title = begin
-        page.title
-      rescue
-        "unknown"
-      end
-      debug_log("[Test] Immediate post-test failure state - URL: #{current_url}, Title: #{page_title}")
+  #     # Add immediate page state debugging before other debug info
+  #     current_url = begin
+  #       page.current_url
+  #     rescue
+  #       "unknown"
+  #     end
+  #     page_title = begin
+  #       page.title
+  #     rescue
+  #       "unknown"
+  #     end
+  #     debug_log("[Test] Immediate post-test failure state - URL: #{current_url}, Title: #{page_title}")
 
-      debug_asset_state
-      debug_log("\n\n")
-    end
-  end
+  #     debug_asset_state
+  #     debug_log("\n\n")
+  #   end
+  # end
 end
