@@ -283,30 +283,15 @@ jobs:
         with:
           dummy_root: spec/dummy
 
-      - name: Chromium test
-        run: |
-          chromium --headless --no-sandbox --disable-gpu --print-to-pdf=/tmp/test.pdf about:blank 2>&1 || true
-
       - name: Run system specs
         env:
           DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
-          # SPEC_FILES: ${{ vars.SYSTEM_SPEC_FILES || 'spec/system/panda/cms/admin/javascript_errors_spec.rb spec/system/panda/cms/admin/dashboard_spec.rb spec/system/panda/cms/admin/pages/list_pages_spec.rb spec/system/panda/cms/admin/forms/forms_management_spec.rb spec/system/panda/cms/admin/posts/add_post_spec.rb' }}
           CUPRITE_PROCESS_TIMEOUT: 30
           CUPRITE_TIMEOUT: 15
           FERRUM_BROWSER_LOG: 'true'
         run: |
           set -euo pipefail
-          bundle exec rspec spec/system/aaa_page_load_spec.rb:10 --format documentation --color
-
-      - name: Run system specs
-        env:
-          DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
-          CUPRITE_PROCESS_TIMEOUT: 30
-          CUPRITE_TIMEOUT: 2
-          FERRUM_BROWSER_LOG: 'true'
-        run: |
-          set -euo pipefail
-          bundle exec rspec spec/system/aaa_page_load_spec.rb:15 --format documentation --color
+          bundle exec rspec spec/system --format documentation --color
 
       - name: 'Upload coverage'
         uses: actions/upload-artifact@v5
