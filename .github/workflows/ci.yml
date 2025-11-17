@@ -282,6 +282,33 @@ jobs:
           bundle exec rails db:create
           bundle exec rails db:schema:load
 
+      - name: 'Verify database schema'
+        working-directory: spec/dummy
+        env:
+          DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
+          RAILS_ENV: test
+        run: |
+          echo "🔍 Verifying critical tables exist..."
+
+          # Check panda_cms_pages table
+          if ! bundle exec rails runner "exit(ActiveRecord::Base.connection.table_exists?('panda_cms_pages') ? 0 : 1)"; then
+            echo "❌ CRITICAL: panda_cms_pages table not found!"
+            echo "Available tables:"
+            bundle exec rails runner "puts ActiveRecord::Base.connection.tables.join(', ')"
+            exit 1
+          fi
+
+          # Check active_storage_blobs table
+          if ! bundle exec rails runner "exit(ActiveRecord::Base.connection.table_exists?('active_storage_blobs') ? 0 : 1)"; then
+            echo "❌ CRITICAL: active_storage_blobs table not found!"
+            echo "Available tables:"
+            bundle exec rails runner "puts ActiveRecord::Base.connection.tables.join(', ')"
+            exit 1
+          fi
+
+          echo "✅ Database schema verified successfully"
+          bundle exec rails runner "puts 'Tables: ' + ActiveRecord::Base.connection.tables.join(', ')"
+
       - name: Panda asset generation and verification
         uses: tastybamboo/panda-assets-verify-action@v1
         with:
