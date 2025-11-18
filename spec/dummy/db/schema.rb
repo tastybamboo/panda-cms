@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_11_10_175631) do
+ActiveRecord::Schema[8.0].define(version: 2025_11_18_015100) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -411,6 +411,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_10_175631) do
     t.index ["page_id"], name: "index_panda_cms_visits_on_page_id"
     t.index ["redirect_id"], name: "index_panda_cms_visits_on_redirect_id"
     t.index ["user_id"], name: "index_panda_cms_visits_on_user_id"
+    t.index ["visited_at"], name: "index_panda_cms_visits_on_visited_at"
   end
 
   create_table "panda_core_users", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
