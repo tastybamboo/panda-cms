@@ -306,7 +306,7 @@ user = panda_cms_users(:admin_user)
 ### EditorJS Integration
 - Block types in `lib/panda/cms/editor_js/blocks/`
 - Renderer in `lib/panda/cms/editor_js/renderer.rb`
-- Custom JavaScript in `app/javascript/panda/cms/editor/`
+- Custom JavaScript in panda-editor gem (`app/javascript/panda/editor/`)
 
 ## Troubleshooting
 
