@@ -35,9 +35,22 @@ module Panda
 
         # Check if GitHub-hosted assets should be used
         def use_github_assets?
-          # Panda CMS uses importmaps for JavaScript (no compilation needed)
-          # Only use GitHub assets in production or when explicitly enabled
-          false # Always use importmaps like panda-core
+          # In test, never use GitHub assets
+          return false if Rails.env.test? || in_test_environment?
+
+          # In production, prefer local assets over GitHub
+          # CMS uses importmap for JS and gets CSS from panda-core
+          # Only use GitHub as fallback if explicitly enabled
+          if Rails.env.production?
+            # Check if compiled assets exist locally (though CMS doesn't bundle)
+            return false if compiled_assets_available?
+
+            # Only use GitHub as fallback if explicitly enabled
+            return ENV["PANDA_CMS_USE_GITHUB_ASSETS"] == "true"
+          end
+
+          # In development, use GitHub assets only when explicitly enabled or development assets unavailable
+          ENV["PANDA_CMS_USE_GITHUB_ASSETS"] == "true" || !development_assets_available?
         end
 
         # Download assets from GitHub to local cache
@@ -154,7 +167,8 @@ module Panda
           if (Rails.env.test? || in_test_environment?) && compiled_assets_available?
             "/panda-cms-assets/"
           else
-            "https://github.com/tastybamboo/panda-cms/releases/download/#{version}/"
+            # Use raw.githubusercontent.com instead of releases
+            "https://raw.githubusercontent.com/tastybamboo/panda-cms/main/public/panda-cms-assets/"
           end
         end
 
