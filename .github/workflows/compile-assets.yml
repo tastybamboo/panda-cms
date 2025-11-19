@@ -1,0 +1,33 @@
+---
+name: "Compile and Commit Assets"
+
+"on": # yamllint disable-line rule:truthy
+  push:
+    branches: [main]
+    paths:
+      - "app/assets/**/*"
+      - "app/javascript/**/*"
+      - "app/views/**/*"
+      - "app/components/**/*"
+      - "lib/panda/cms/version.rb"
+  workflow_dispatch:
+
+jobs:
+  compile-assets:
+    name: "Note: No Asset Compilation Needed"
+    runs-on: "ubuntu-latest"
+    steps:
+      - uses: "actions/checkout@v5"
+
+      - name: "Panda CMS Asset Strategy"
+        run: |
+          echo "## Panda CMS Asset Strategy" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**CSS:** Provided by panda-core gem" >> $GITHUB_STEP_SUMMARY
+          echo "**JavaScript:** Uses importmap (Rails 8 approach, no bundling)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "ℹ️ No asset compilation needed for panda-cms" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "JavaScript files are served as ES modules via importmap:" >> $GITHUB_STEP_SUMMARY
+          echo "- Source files in \`app/javascript/\`" >> $GITHUB_STEP_SUMMARY
+          echo "- Served directly from gem or raw.githubusercontent.com" >> $GITHUB_STEP_SUMMARY
