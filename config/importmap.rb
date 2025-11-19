@@ -12,4 +12,3 @@ pin "@editorjs/editorjs", to: "/panda/cms/editor/editorjs.js" # @2.30.6
 # Pin the controllers directory
 pin "panda/cms/controllers/index", to: "/panda/cms/controllers/index.js"
 pin_all_from Panda::CMS::Engine.root.join("app/javascript/panda/cms/controllers"), under: "controllers", to: "/panda/cms/controllers"
-pin_all_from Panda::CMS::Engine.root.join("app/javascript/panda/cms/editor"), under: "editor", to: "/panda/cms/editor"

@@ -6,7 +6,7 @@ module Panda
     # @param name [String] The name of the menu to render
     # @param current_path [String] The current request path for highlighting active items
     # @param styles [Hash] CSS classes for menu items (default, active, inactive)
-    # @param overrides [Hash] Menu item overrides (currently unused)
+    # @param overrides [Hash] Menu item overrides - supports :hidden_items array to hide specific menu items by text
     # @param render_page_menu [Boolean] Whether to render sub-page menus
     # @param page_menu_styles [Hash] Styles for the page menu component
     class MenuComponent < Panda::Core::Base
@@ -54,7 +54,14 @@ module Panda
           items.order(:lft).to_a  # Convert to array for caching
         end
 
-        @processed_menu_items = menu_items.map do |menu_item|
+        # Filter menu items based on overrides
+        filtered_menu_items = if @overrides[:hidden_items].present?
+          menu_items.reject { |item| @overrides[:hidden_items].include?(item.text) }
+        else
+          menu_items
+        end
+
+        @processed_menu_items = filtered_menu_items.map do |menu_item|
           add_css_classes_to_item(menu_item)
           menu_item
         end

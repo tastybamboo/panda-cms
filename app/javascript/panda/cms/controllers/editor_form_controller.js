@@ -1,6 +1,6 @@
 import { Controller } from "@hotwired/stimulus";
-import { EDITOR_JS_RESOURCES, EDITOR_JS_CSS } from "panda/cms/editor/editor_js_config";
-import { ResourceLoader } from "panda/cms/editor/resource_loader";
+import { EDITOR_JS_RESOURCES, EDITOR_JS_CSS } from "panda/editor/editor_js_config";
+import { ResourceLoader } from "panda/editor/resource_loader";
 
 export default class extends Controller {
   static targets = ["editorContainer", "hiddenField"];
@@ -50,7 +50,7 @@ export default class extends Controller {
       this.editorContainerTarget.appendChild(holderDiv);
 
       const { getEditorConfig } = await import(
-        "panda/cms/editor/editor_js_config"
+        "panda/editor/editor_js_config"
       );
 
       // Get initial content before creating config
