@@ -283,6 +283,35 @@ jobs:
         with:
           dummy_root: spec/dummy
 
+      - name: Verify Chromium can start
+        run: |
+          echo "🔍 Testing if Chromium can start..."
+          chromium --version || echo "⚠️  Chromium version check failed"
+          chromium --headless --no-sandbox --disable-gpu --print-to-pdf=/tmp/test.pdf about:blank 2>&1 || echo "⚠️  Chromium test failed"
+          if [ -f /tmp/test.pdf ]; then
+            echo "✅ Chromium successfully created PDF"
+            ls -lh /tmp/test.pdf
+          else
+            echo "❌ Chromium failed to create PDF"
+          fi
+
+      - name: Check Xvfb status
+        run: |
+          echo "🔍 Checking Xvfb status..."
+          ps aux | grep -i xvfb || echo "⚠️  Xvfb process not found"
+          echo "DISPLAY environment variable: $DISPLAY"
+
+      - name: Run smoke test
+        env:
+          DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
+          CUPRITE_PROCESS_TIMEOUT: 30
+          CUPRITE_TIMEOUT: 15
+          FERRUM_BROWSER_LOG: 'true'
+        run: |
+          echo "🧪 Running smoke test to verify browser startup..."
+          bundle exec rspec spec/system/smoke_test_spec.rb --format documentation --color
+        timeout-minutes: 5
+
       - name: Run system specs
         env:
           DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
@@ -291,7 +320,9 @@ jobs:
           FERRUM_BROWSER_LOG: 'true'
         run: |
           set -euo pipefail
+          echo "🧪 Running full system test suite..."
           bundle exec rspec spec/system --format documentation --color
+        timeout-minutes: 30
 
       - name: 'Upload coverage'
         uses: actions/upload-artifact@v5
