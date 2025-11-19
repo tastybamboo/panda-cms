@@ -11,6 +11,31 @@ pre-commit:
     # run: bundle exec bundle-audit update && bundle exec bundle-audit check
     - name: bundle-outdated
       run: bundle outdated --strict
+    - name: compile-css
+      run: |
+        # Only compile if CSS-affecting files have changed
+        if git diff --cached --name-only | grep -qE '(app/assets/|app/views/|app/components/|lib/panda/cms/version.rb)'; then
+          echo "📦 Compiling CSS..."
+
+          # Install tailwindcss CLI if not present
+          if [ ! -f "./tailwindcss" ]; then
+            echo "Installing tailwindcss CLI..."
+            curl -sLO https://github.com/tailwindlabs/tailwindcss/releases/latest/download/tailwindcss-macos-arm64
+            chmod +x tailwindcss-macos-arm64
+            mv tailwindcss-macos-arm64 tailwindcss
+          fi
+
+          # Compile CSS for CMS (editor styles, etc.)
+          ./tailwindcss \
+            -i app/assets/tailwind/application.css \
+            -o app/assets/builds/panda.cms.css \
+            --minify
+
+          # Stage the compiled file
+          git add app/assets/builds/panda.cms.css
+
+          echo "✅ CSS compiled and staged"
+        fi
     - name: erblint
       run: bundle exec erb_lint app/views --lint-all
     - name: fasterer
