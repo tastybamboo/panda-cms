@@ -101,7 +101,7 @@ Panda::CMS.loader.inflector.inflect(
 )
 
 # Manually require files from panda-cms directory
-require_relative "panda-cms/version"
+require_relative "panda/cms/version"
 require_relative "panda/cms/debug"
 require_relative "panda/cms/exceptions_app"
 require_relative "panda/cms/engine"

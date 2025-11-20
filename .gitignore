@@ -11,6 +11,7 @@
 /spec/dummy/public/assets/
 /spec/dummy/public/panda/
 /spec/dummy/public/panda-cms-assets/
+/spec/dummy/public/panda-core-assets/
 # Ignore timestamp-based dev/test JavaScript files (10-digit unix timestamps)
 /public/panda-cms-assets/panda-cms-[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]*.js
 /public/panda-cms-assets/panda-cms-[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]*.css

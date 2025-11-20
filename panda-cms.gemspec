@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require_relative "lib/panda-cms/version"
+require_relative "lib/panda/cms/version"
 
 Gem::Specification.new do |spec|
   spec.name = "panda-cms"

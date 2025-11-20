@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require "panda/cms/version"
 require "panda/cms/engine"
 
 module Panda

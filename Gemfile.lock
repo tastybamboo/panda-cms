@@ -1,7 +1,5 @@
-GIT
-  remote: https://github.com/tastybamboo/panda-core.git
-  revision: 09409624bb4f50e1e09f0bcd61038206fb213db1
-  branch: main
+PATH
+  remote: ../core
   specs:
     panda-core (0.10.6)
       image_processing (~> 1.2)
@@ -493,7 +491,7 @@ GEM
       rack (>= 1.1)
       rubocop (>= 1.75.0, < 2.0)
       rubocop-ast (>= 1.44.0, < 2.0)
-    ruby-lsp (0.26.3)
+    ruby-lsp (0.26.4)
       language_server-protocol (~> 3.17.0)
       prism (>= 1.2, < 2.0)
       rbs (>= 3, < 5)

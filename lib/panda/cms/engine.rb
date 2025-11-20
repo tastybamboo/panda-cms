@@ -73,7 +73,8 @@ Panda::Core::ModuleRegistry.register(
   engine: "Panda::CMS::Engine",
   paths: {
     views: "app/views/panda/cms/**/*.erb",
-    components: "app/components/panda/cms/**/*.rb"
+    components: "app/components/panda/cms/**/*.rb",
+    stylesheets: "app/assets/tailwind/panda/cms/**/*.css"
     # JavaScript paths are auto-discovered from config/importmap.rb
   }
 )
