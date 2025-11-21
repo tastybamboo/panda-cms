@@ -83,7 +83,7 @@ Create a new user with admin privileges:
 rails panda:core:users:create_admin EMAIL=admin@example.com
 
 # With custom name
-rails panda:core:users:create_admin EMAIL=admin@example.com FIRSTNAME=John LASTNAME=Doe
+rails panda:core:users:create_admin EMAIL=admin@example.com NAME='John Doe'
 ```
 
 **Example Output:**
@@ -142,7 +142,7 @@ When deploying to a new environment:
 
 ```bash
 # Create the first admin user
-rails panda:core:users:create_admin EMAIL=admin@example.com FIRSTNAME=Admin LASTNAME=User
+rails panda:core:users:create_admin EMAIL=admin@example.com NAME='Admin User'
 
 # Verify the user was created
 rails panda:core:users:list
