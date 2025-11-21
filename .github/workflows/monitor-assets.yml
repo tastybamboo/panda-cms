@@ -33,7 +33,7 @@ jobs:
       CONTINUOUS_MINUTES: ${{ github.event.inputs.continuous_minutes || '0' }}
 
     steps:
-      - uses: "actions/checkout@v5"
+      - uses: "actions/checkout@v6"
 
       - name: "Setup Ruby"
         uses: "ruby/setup-ruby@v1"
@@ -209,7 +209,7 @@ jobs:
     if: github.event_name == 'schedule'
 
     steps:
-      - uses: "actions/checkout@v5"
+      - uses: "actions/checkout@v6"
 
       - name: "Check for performance degradation"
         run: |
