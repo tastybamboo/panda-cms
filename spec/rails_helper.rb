@@ -52,6 +52,13 @@ RSpec.configure do |config|
   # Restore ActionController::Base.logger after panda-core sets it to nil
   # invisible_captcha needs a logger to function properly
   config.before(:suite) do
+    # Compile CSS before running tests
+    puts "Compiling CSS for tests..."
+    Rake::Task.clear
+    Rails.application.load_tasks
+    Rake::Task["panda:compile_css"].invoke
+    puts "CSS compilation complete."
+
     ActionController::Base.logger = Rails.logger if defined?(ActionController::Base)
   end
 

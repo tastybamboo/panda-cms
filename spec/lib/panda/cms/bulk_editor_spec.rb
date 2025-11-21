@@ -11,8 +11,7 @@ RSpec.describe Panda::CMS::BulkEditor, type: :model do
   let(:test_user) do
     Panda::Core::User.create!(
       email: "test@example.com",
-      firstname: "Test",
-      lastname: "User",
+      name: "Test User",
       admin: true
     )
   end
