@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/tastybamboo/panda-core.git
-  revision: ef3b3757f6b7ba9abb593a92febff1d39982ca55
+  revision: f3472bb9d92316ede8aeb63b6e3a3e579614db63
   branch: main
   specs:
     panda-core (0.11.0)
