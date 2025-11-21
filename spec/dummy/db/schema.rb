@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_11_18_015100) do
+ActiveRecord::Schema[8.0].define(version: 2025_11_21_012455) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -415,8 +415,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_18_015100) do
   end
 
   create_table "panda_core_users", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.string "firstname", null: false
-    t.string "lastname", null: false
     t.string "email", null: false
     t.string "image_url"
     t.boolean "admin", default: false, null: false
@@ -424,6 +422,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_18_015100) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "oauth_avatar_url"
+    t.string "name"
     t.index ["email"], name: "index_panda_core_users_on_email", unique: true
   end
 

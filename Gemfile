@@ -2,7 +2,7 @@
 
 source "https://rubygems.org"
 
-gem "panda-core", path: "../core" # , github: "tastybamboo/panda-core", branch: "main"
+gem "panda-core"
 gem "panda-editor"
 
 # Fix for CI: explicitly specify benchmark version to avoid conflicts with default gem
