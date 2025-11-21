@@ -74,6 +74,16 @@ No special asset preparation is required before running tests. Assets are:
 
 The panda-assets-verify-action automatically prepares Propshaft assets before tests run.
 
+#### CSS Compilation Behavior
+
+**Important**: Always compile CSS from the highest-level Panda project (e.g., panda-cms, not panda-core):
+
+- **Why**: Tailwind CSS v4 performs aggressive tree-shaking based on ALL scanned files
+- **Effect**: Compiling from panda-cms (which scans core + cms files) produces a smaller, more optimized CSS file (~50 KB minified) compared to compiling from panda-core alone (~72 KB minified)
+- **Reason**: When scanning only panda-core files, Tailwind includes utilities that MIGHT be used by unknown consumers. When scanning all modules together, it knows exactly what's used and removes unused utilities (e.g., unused color variables, container sizes, font weights, and margin utilities like `m-23`, `m-171`, etc.)
+
+This is correct behavior - the smaller file from panda-cms is properly optimized for your actual usage.
+
 #### Running Tests
 ```bash
 # IMPORTANT: Always run tests from the project root directory (/Users/james/Projects/panda-cms)

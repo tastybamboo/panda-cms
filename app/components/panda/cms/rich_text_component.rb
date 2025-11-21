@@ -277,7 +277,7 @@ module Panda
 
       def render_content_to_string
         # Render the component HTML to a string for caching
-        helpers.content_tag(:div, @rendered_content.html_safe, class: "panda-cms-content", **element_attrs)
+        view_context.content_tag(:div, @rendered_content.html_safe, class: "panda-cms-content", **element_attrs)
       end
     end
   end
