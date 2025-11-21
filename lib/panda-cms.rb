@@ -95,6 +95,10 @@ Panda::CMS.loader.push_dir(File.expand_path("panda/cms", __dir__), namespace: Pa
 Panda::CMS.loader.ignore(__dir__.to_s)
 Panda::CMS.loader.ignore(File.expand_path("panda", __dir__))
 
+# Ignore version.rb since it's manually required and defines VERSION constant
+# rather than a Version class that zeitwerk would expect
+Panda::CMS.loader.ignore(File.expand_path("panda/cms/version.rb", __dir__))
+
 # Configure Zeitwerk inflections
 Panda::CMS.loader.inflector.inflect(
   "cms" => "CMS"

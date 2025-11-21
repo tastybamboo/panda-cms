@@ -54,7 +54,7 @@ jobs:
           --health-retries 5
 
     steps:
-      - uses: "actions/checkout@v5"
+      - uses: "actions/checkout@v6"
         with:
           fetch-depth: 0 # Need full history for version bumping
 
@@ -75,22 +75,17 @@ jobs:
           bundle exec rails db:create
           bundle exec rails db:schema:load
 
-      - name: "Compile assets for tests"
+      - name: "Prepare test assets"
         working-directory: spec/dummy
         env:
           DATABASE_URL: "postgres://postgres:password@localhost:5432/test"
           RAILS_ENV: test
         run: |
-          echo "🔧 Compiling assets for test environment..."
-          # Compile Core assets first
-          bundle exec rake panda:core:assets:compile || echo "Core assets compilation not available"
-          # Then compile CMS assets
-          bundle exec rake panda:cms:assets:compile
-          echo "✅ Asset compilation complete"
-
-          # Verify assets exist
-          echo "Verifying compiled assets:"
-          ls -la public/panda-cms-assets/
+          echo "🔧 Preparing test environment assets..."
+          # Note: panda-cms uses importmaps - no JavaScript compilation needed
+          # CSS is compiled by panda-core for all modules
+          bundle exec rake app:panda:compile_css
+          echo "✅ Asset preparation complete (importmap-based)"
 
       - name: "Run tests"
         if: ${{ !inputs.skip_tests }}
