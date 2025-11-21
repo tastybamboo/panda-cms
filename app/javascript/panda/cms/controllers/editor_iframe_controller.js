@@ -1,8 +1,8 @@
 import { Controller } from "@hotwired/stimulus"
-import { PlainTextEditor } from "panda/cms/editor/plain_text_editor"
-import { EditorJSInitializer } from "panda/cms/editor/editor_js_initializer"
-import { EDITOR_JS_RESOURCES, EDITOR_JS_CSS } from "panda/cms/editor/editor_js_config"
-import { ResourceLoader } from "panda/cms/editor/resource_loader"
+import { PlainTextEditor } from "panda/editor/plain_text_editor"
+import { EditorJSInitializer } from "panda/editor/editor_js_initializer"
+import { EDITOR_JS_RESOURCES, EDITOR_JS_CSS } from "panda/editor/editor_js_config"
+import { ResourceLoader } from "panda/editor/resource_loader"
 
 export default class extends Controller {
   static values = {

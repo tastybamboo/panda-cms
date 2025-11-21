@@ -23,7 +23,8 @@ module Panda
           user_agent: user_agent,
           ip_address: ip_address,
           referrer: referer, # TODO: Fix the naming of this column
-          params: params
+          params: params,
+          visited_at: Time.current
         )
       end
     end

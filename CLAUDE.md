@@ -126,13 +126,44 @@ yamllint -c .yamllint .
 
 ### Asset Management
 
+#### CSS Compilation
+
+**Important:** CSS for panda-cms is compiled via **panda-core**, not within panda-cms itself.
+
+panda-cms registers its view paths with panda-core's ModuleRegistry during engine initialization. When `rake app:panda:compile_css` runs (from any Panda gem), it:
+
+1. Discovers all registered Panda modules (core, cms, cms-pro, etc.)
+2. Scans their registered paths for Tailwind classes
+3. Compiles everything into `panda-core/public/panda-core-assets/panda-core.css`
+
+**To compile CSS including panda-cms classes:**
+```bash
+# From panda-cms directory
+bundle exec rake app:panda:compile_css
+
+# This outputs CSS to panda-core, not panda-cms
+# Result: panda-core/public/panda-core-assets/panda-core.css
+```
+
+**Why panda-cms/public/panda-core-assets/ is empty:**
+This is expected! panda-cms doesn't generate its own CSS file. All Panda ecosystem CSS is consolidated in panda-core for:
+- Reduced HTTP requests
+- Consistent styling across modules
+- Single source of truth for design system
+
+**CSS Changes During Development:**
+- Modify Tailwind classes in panda-cms components/views
+- Run `bundle exec rake app:panda:compile_css`
+- CSS is updated in panda-core automatically
+- Host apps load the updated panda-core CSS
+
 #### Development
 ```bash
 # Start development server (uses importmaps)
 bin/dev
 ```
 
-#### Production Asset Compilation
+#### JavaScript Asset Compilation
 ```bash
 # Compile Panda CMS assets for production/testing
 bundle exec rake app:panda_cms:assets:compile
@@ -306,7 +337,7 @@ user = panda_cms_users(:admin_user)
 ### EditorJS Integration
 - Block types in `lib/panda/cms/editor_js/blocks/`
 - Renderer in `lib/panda/cms/editor_js/renderer.rb`
-- Custom JavaScript in `app/javascript/panda/cms/editor/`
+- Custom JavaScript in panda-editor gem (`app/javascript/panda/editor/`)
 
 ## Troubleshooting
 
