@@ -42,9 +42,13 @@ Panda CMS is a Rails engine that provides content management functionality for R
 
 ### Panda-Core Gem Dependency
 The project depends on the panda-core gem for user authentication:
-- **For local development**: Change Gemfile to use `gem "panda-core", path: "../core"`
-- **For CI/production**: Use `gem "panda-core", github: "tastybamboo/panda-core", branch: "feature/auth-migration-from-cms"`
-- **Important**: CI cannot access local paths, so always commit with GitHub reference
+- **Gemfile reference**: Use `gem "panda-core", github: "tastybamboo/panda-core", branch: "main"` (works for both local and CI)
+- **Local development override**: Use `bundle config local.panda-core /absolute/path/to/panda-core` to use your local checkout
+  - This allows testing local changes without modifying the Gemfile
+  - Requires absolute path, not relative (e.g., `/Users/james/Projects/panda/core`)
+  - To remove: `bundle config --delete local.panda-core`
+  - Current setting: Already configured to use `/Users/james/Projects/panda/core`
+- **Important**: The GitHub reference in Gemfile ensures CI can build without local paths
 
 ## Development Commands
 
