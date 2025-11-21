@@ -1,3 +1,23 @@
+GIT
+  remote: https://github.com/tastybamboo/panda-core.git
+  revision: ead2fb6d433e6cd8f5c926aeee5d364a25988602
+  branch: main
+  specs:
+    panda-core (0.11.0)
+      image_processing (~> 1.2)
+      importmap-rails
+      literal (~> 1.8)
+      omniauth
+      omniauth-rails_csrf_protection
+      phlex (~> 2.3)
+      phlex-rails (~> 2.3)
+      propshaft
+      rails (>= 7.0)
+      stimulus-rails
+      tailwind_merge (~> 1.3)
+      turbo-rails
+      webrick
+
 PATH
   remote: .
   specs:
@@ -328,20 +348,6 @@ GEM
     omniauth-rails_csrf_protection (1.0.2)
       actionpack (>= 4.2)
       omniauth (~> 2.0)
-    panda-core (0.11.0)
-      image_processing (~> 1.2)
-      importmap-rails
-      literal (~> 1.8)
-      omniauth
-      omniauth-rails_csrf_protection
-      phlex (~> 2.3)
-      phlex-rails (~> 2.3)
-      propshaft
-      rails (>= 7.0)
-      stimulus-rails
-      tailwind_merge (~> 1.3)
-      turbo-rails
-      webrick
     panda-editor (0.6.0)
       dry-configurable (~> 1.0)
       nokogiri (~> 1.15)
@@ -597,7 +603,6 @@ PLATFORMS
 DEPENDENCIES
   annotaterb
   awesome_print
-  benchmark (~> 0.5)
   better_errors
   binding_of_caller
   brakeman
@@ -615,7 +620,7 @@ DEPENDENCIES
   omniauth-google-oauth2
   omniauth-microsoft_graph
   panda-cms!
-  panda-core
+  panda-core!
   panda-editor
   parallel_tests
   propshaft
