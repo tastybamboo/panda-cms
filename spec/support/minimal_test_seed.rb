@@ -7,8 +7,7 @@ module Panda
         # Create a single admin user if it doesn't exist
         unless Panda::Core::User.exists?(email: "admin@example.com")
           Panda::Core::User.create!(
-            firstname: "Admin",
-            lastname: "User",
+            name: "Admin User",
             email: "admin@example.com",
             is_admin: true,
             image_url: "/panda-cms-assets/panda-nav.png"
@@ -18,8 +17,7 @@ module Panda
         # Create a regular user if it doesn't exist
         unless Panda::Core::User.exists?(email: "regular@example.com")
           Panda::Core::User.create!(
-            firstname: "Regular",
-            lastname: "User",
+            name: "Regular User",
             email: "regular@example.com",
             is_admin: false,
             image_url: "/panda-cms-assets/panda-nav.png"

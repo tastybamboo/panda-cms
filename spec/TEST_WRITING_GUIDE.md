@@ -20,14 +20,13 @@ We provide two helper methods in `spec/support/user_helpers.rb`:
 # Creates an admin user with a fixed ID
 admin = create_admin_user
 
-# Creates a regular user with a fixed ID  
+# Creates a regular user with a fixed ID
 user = create_regular_user
 
 # You can override attributes
 custom_admin = create_admin_user(
   email: "custom@example.com",
-  firstname: "Custom",
-  lastname: "Admin"
+  name: "Custom Admin",
 )
 ```
 
@@ -65,11 +64,11 @@ RSpec.describe "Your Feature", type: :system do
     # Create users first
     @admin = create_admin_user
     @regular = create_regular_user
-    
+
     # Then login
     login_as_admin
   end
-  
+
   it "does something" do
     visit "/admin/something"
     # ... test implementation
@@ -86,17 +85,17 @@ Posts from fixtures will NOT have users by default. You have two options:
 ```ruby
 RSpec.describe "Post Management", type: :system do
   fixtures :panda_cms_posts
-  
+
   before do
     # Create users first
     @admin = create_admin_user
-    
+
     # Update fixture posts to have users
     panda_cms_posts(:first_post).update!(user: @admin, author: @admin)
-    
+
     login_as_admin
   end
-  
+
   it "edits the post" do
     post = panda_cms_posts(:first_post)
     visit "/admin/posts/#{post.id}/edit"
@@ -112,7 +111,7 @@ RSpec.describe "Post Management", type: :system do
   before do
     # Create users first
     @admin = create_admin_user
-    
+
     # Create posts programmatically with users
     @post = Panda::CMS::Post.create!(
       title: "Test Post",
@@ -123,10 +122,10 @@ RSpec.describe "Post Management", type: :system do
       content: { "blocks" => [] },
       cached_content: "<p>Test</p>"
     )
-    
+
     login_as_admin
   end
-  
+
   it "edits the post" do
     visit "/admin/posts/#{@post.id}/edit"
     # ... test implementation
@@ -151,13 +150,13 @@ Then ensure users exist before the fixtures are used:
 ```ruby
 RSpec.describe "Your Test", type: :system do
   fixtures :your_model
-  
+
   before do
     # Create users that fixtures expect
     create_admin_user
     create_regular_user
   end
-  
+
   # ... tests
 end
 ```
@@ -165,13 +164,10 @@ end
 ## Important Database Columns
 
 The Panda::Core::User model uses these database columns:
-- `firstname` (not `name`)
-- `lastname` (not `name`)  
-- `admin` (not `is_admin`)
+- `name` (not `firstname`, `lastname`)
+- `is_admin` (not `admin`)
 - `email`
 - `image_url`
-
-The model provides a `name` method that returns `"#{firstname} #{lastname}"`.
 
 ## Fixture Configuration
 
@@ -221,37 +217,12 @@ end
 
 ## Troubleshooting
 
-### "undefined method 'name=' for Panda::Core::User"
-
-You're trying to set `name` but the columns are `firstname` and `lastname`:
-
-```ruby
-# Wrong
-user = Panda::Core::User.create!(name: "John Doe", ...)
-
-# Correct  
-user = Panda::Core::User.create!(firstname: "John", lastname: "Doe", ...)
-```
-
 ### "Foreign key violation" errors
 
 This happens when fixtures try to reference users that don't exist. Either:
 1. Remove the fixture from global loading
 2. Create users before the fixture loads
 3. Convert the fixture to programmatic creation
-
-### "undefined method 'is_admin' for User"
-
-The column is `admin`, not `is_admin`:
-
-```ruby
-# Wrong
-if user.is_admin
-
-# Correct
-if user.admin?  # Use the method
-if user.admin   # Or access the column directly
-```
 
 ## Best Practices
 

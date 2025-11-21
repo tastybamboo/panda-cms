@@ -17,7 +17,7 @@ class CreatePandaCMSPosts < ActiveRecord::Migration[7.1]
       t.text :content
       t.datetime :published_at
       t.references :post_tag, type: :uuid, null: false, foreign_key: {to_table: :panda_cms_post_tags}
-      t.references :user, type: :uuid, null: false, foreign_key: {to_table: :panda_cms_users}
+      t.references :user, type: :uuid, null: false, foreign_key: {to_table: :panda_core_users}
       t.timestamps
       t.index :slug, unique: true
     end
