@@ -54,6 +54,7 @@ jobs:
     env:
       BUNDLE_PATH: 'vendor/bundle'
       RAILS_ENV: test
+      BOOTSNAP_CACHE_DIR: 'tmp/bootsnap-ci'
     services:
       postgres:
         image: postgres:latest
@@ -89,6 +90,7 @@ jobs:
         env:
           DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
           RAILS_ENV: test
+          BOOTSNAP_CACHE_DIR: 'tmp/bootsnap-ci'
         run: |
           echo "📋 Loading schema (baseline with all tables)..."
           bundle exec rails db:schema:load
@@ -113,6 +115,7 @@ jobs:
     env:
       BUNDLE_PATH: 'vendor/bundle'
       RAILS_ENV: test
+      BOOTSNAP_CACHE_DIR: 'tmp/bootsnap-ci'
     services:
       postgres:
         image: postgres:latest
@@ -148,6 +151,7 @@ jobs:
         env:
           DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
           RAILS_ENV: test
+          BOOTSNAP_CACHE_DIR: 'tmp/bootsnap-ci'
         run: |
           echo "📋 Loading schema (baseline with all tables)..."
           bundle exec rails db:schema:load
@@ -157,6 +161,7 @@ jobs:
         env:
           DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
           RAILS_ENV: 'test'
+          BOOTSNAP_CACHE_DIR: 'tmp/bootsnap-ci'
           RSPEC_COLOR: 'true'
           TERM: 'xterm-256color'
         run: |
@@ -172,6 +177,7 @@ jobs:
     env:
       BUNDLE_PATH: 'vendor/bundle'
       RAILS_ENV: test
+      BOOTSNAP_CACHE_DIR: 'tmp/bootsnap-ci'
     services:
       postgres:
         image: postgres:latest
@@ -207,6 +213,7 @@ jobs:
         env:
           DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
           RAILS_ENV: test
+          BOOTSNAP_CACHE_DIR: 'tmp/bootsnap-ci'
         run: |
           echo "📋 Loading schema (baseline with all tables)..."
           bundle exec rails db:schema:load
@@ -216,6 +223,7 @@ jobs:
         env:
           DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
           RAILS_ENV: 'test'
+          BOOTSNAP_CACHE_DIR: 'tmp/bootsnap-ci'
           RSPEC_COLOR: 'true'
           TERM: 'xterm-256color'
         run: |
@@ -235,6 +243,7 @@ jobs:
     env:
       BUNDLE_PATH: 'vendor/bundle'
       RAILS_ENV: test
+      BOOTSNAP_CACHE_DIR: 'tmp/bootsnap-ci'
       DISPLAY: ':99'
     services:
       postgres:
@@ -268,6 +277,7 @@ jobs:
           bundle config path vendor/bundle
           bundle config without development
           bundle install --jobs 4 --retry 3
+          bundle clean --force
 
       - name: Save bundle cache
         if: success()
@@ -280,6 +290,7 @@ jobs:
         env:
           DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
           RAILS_ENV: test
+          BOOTSNAP_CACHE_DIR: tmp/bootsnap-ci
         run: |
           echo "📋 Loading schema (baseline with all tables)..."
           bundle exec rails db:schema:load
