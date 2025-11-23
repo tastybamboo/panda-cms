@@ -314,15 +314,13 @@ jobs:
           CUPRITE_PROCESS_TIMEOUT: 30
           CUPRITE_TIMEOUT: 15
           FERRUM_BROWSER_LOG: 'true'
-          DEBUG: 'true'
-          CUPRITE_DEBUG: 'true'
-          FERRUM_BROWSER_LOG_PATH: '${{ github.workspace }}/spec/tmp/capybara/cuprite-smoke.log'
         run: |
+          set -euo pipefail
           mkdir -p spec/tmp/capybara
           echo "🔧 Preflight Chrome launch..."
-          chromium --headless --remote-debugging-port=0 about:blank > spec/tmp/capybara/chromium-pre-smoke.log 2>&1 || echo "⚠️  Preflight Chrome launch failed (continuing)"
+          chromium --headless --no-sandbox --disable-gpu --remote-debugging-port=0 about:blank > spec/tmp/capybara/chromium-pre-smoke.log 2>&1 || echo "⚠️  Preflight Chrome launch failed (continuing)"
           echo "🧪 Running smoke test to verify browser startup..."
-          bundle exec rspec spec/system/smoke_test_spec.rb --format documentation --color
+          DEBUG=true CUPRITE_DEBUG=true bundle exec rspec spec/system/smoke_test_spec.rb --format documentation --color
         timeout-minutes: 5
 
       - name: Run system specs
@@ -331,16 +329,13 @@ jobs:
           CUPRITE_PROCESS_TIMEOUT: 30
           CUPRITE_TIMEOUT: 15
           FERRUM_BROWSER_LOG: 'true'
-          DEBUG: 'true'
-          CUPRITE_DEBUG: 'true'
-          FERRUM_BROWSER_LOG_PATH: '${{ github.workspace }}/spec/tmp/capybara/cuprite-system.log'
         run: |
           set -euo pipefail
-           mkdir -p spec/tmp/capybara
-           echo "🔧 Preflight Chrome launch..."
-           chromium --headless --remote-debugging-port=0 about:blank > spec/tmp/capybara/chromium-pre-system.log 2>&1 || echo "⚠️  Preflight Chrome launch failed (continuing)"
+          mkdir -p spec/tmp/capybara
+          echo "🔧 Preflight Chrome launch..."
+          chromium --headless --no-sandbox --disable-gpu --remote-debugging-port=0 about:blank > spec/tmp/capybara/chromium-pre-system.log 2>&1 || echo "⚠️  Preflight Chrome launch failed (continuing)"
           echo "🧪 Running full system test suite..."
-          bundle exec rspec spec/system --format documentation --color
+          DEBUG=true CUPRITE_DEBUG=true bundle exec rspec spec/system --format documentation --color
         timeout-minutes: 30
 
       - name: 'Upload coverage'
