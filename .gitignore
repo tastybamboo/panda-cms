@@ -25,7 +25,8 @@
 .claude/settings.local.json
 vendor/bundle/
 node_modules/
-
-# Tailwind CSS standalone binary
 /tailwindcss
 /tailwindcss-*
+panda-assets-report/
+panda-assets-summary/
+screenshots/
