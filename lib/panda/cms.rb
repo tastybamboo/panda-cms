@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require "panda/cms/version"
-require "panda/cms/engine"
 
 module Panda
   module CMS
@@ -9,3 +8,5 @@ module Panda
     mattr_accessor :importmap
   end
 end
+
+require "panda/cms/engine"
