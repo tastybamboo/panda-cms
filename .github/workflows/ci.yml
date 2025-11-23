@@ -314,6 +314,7 @@ jobs:
 
       - name: Panda asset generation and verification
         uses: tastybamboo/panda-assets-verify-action@v1
+        continue-on-error: ${{ env.ACT == 'true' }}
         with:
           dummy_root: spec/dummy
 
@@ -375,14 +376,14 @@ jobs:
 
       - name: 'Upload coverage'
         uses: actions/upload-artifact@v5
-        if: always()
+        if: ${{ always() && env.ACT != 'true' }}
         with:
           name: coverage-system
           path: coverage/
 
       - name: 'Upload screenshots on failure'
         uses: actions/upload-artifact@v5
-        if: failure()
+        if: ${{ failure() && env.ACT != 'true' }}
         with:
           name: screenshots
           path: ${{ github.workspace }}/spec/tmp/capybara
