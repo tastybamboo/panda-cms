@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/tastybamboo/panda-core.git
-  revision: 4aad8d955d806b668e48f12cafaf26f543a8f2aa
+  revision: 380aa61ae8ca207c1cc36aef29567e9116c33fce
   branch: main
   specs:
     panda-core (0.11.0)
@@ -345,7 +345,7 @@ GEM
     omniauth-oauth2 (1.8.0)
       oauth2 (>= 1.4, < 3)
       omniauth (~> 2.0)
-    omniauth-rails_csrf_protection (1.0.2)
+    omniauth-rails_csrf_protection (2.0.0)
       actionpack (>= 4.2)
       omniauth (~> 2.0)
     panda-editor (0.6.0)
