@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/jfi/ferrum.git
-  revision: 957c7661f3c5abc90d71f9855d36c92a9e738bf9
+  revision: 24dd44da73931b7f3ced0c7b0a1082842322c257
   branch: fix/ruby-3.4-forwardable
   specs:
     ferrum (0.17.1)
