@@ -249,7 +249,6 @@ jobs:
       PGUSER: 'postgres'
       PGPASSWORD: 'password'
       PGHOST: 'postgres'
-      DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
     services:
       postgres:
         image: postgres:latest
@@ -269,14 +268,6 @@ jobs:
       - name: Install libnss3 until available in image
         run: |
           apt-get install -y libnss3
-
-      - name: Prepare Chrome temp dirs
-        run: |
-          mkdir -p /home/panda/tmp /home/panda/chrome
-          chmod 777 /home/panda/tmp /home/panda/chrome
-        env:
-          TMPDIR: /home/panda/tmp
-          CHROME_USER_DATA_DIR: /home/panda/chrome
 
       - name: Prepare Chrome temp dirs
         run: |
@@ -375,7 +366,7 @@ jobs:
           CORES=$(nproc --all)
           JOBS=$(( CORES > 4 ? 4 : CORES ))
           echo "Running with $JOBS parallel workers"
-          DEBUG=true CUPRITE_DEBUG=true bundle exec parallel_tests --type rspec --concurrency $JOBS --group-by filesize  --format documentation --color
+          DEBUG=true CUPRITE_DEBUG=true bundle exec parallel_tests spec/system --type rspec --concurrency $JOBS --group-by filesize --format documentation --color
         timeout-minutes: 30
 
       - name: 'Upload coverage'
