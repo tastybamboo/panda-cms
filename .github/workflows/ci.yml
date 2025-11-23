@@ -265,10 +265,6 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Install libnss3 until available in image
-        run: |
-          apt-get install -y libnss3
-
       - name: Prepare Chrome temp dirs
         run: |
           mkdir -p /home/panda/tmp /home/panda/chrome
