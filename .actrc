@@ -1,0 +1,6 @@
+--container-architecture linux/amd64
+--secret-file .secrets
+--reuse
+--pull=false
+--verbose
+--platform ubuntu-latest=ghcr.io/catthehacker/ubuntu:full-24.04

@@ -25,7 +25,6 @@
 .claude/settings.local.json
 vendor/bundle/
 node_modules/
-
-# Tailwind CSS standalone binary
 /tailwindcss
 /tailwindcss-*
+.secrets
