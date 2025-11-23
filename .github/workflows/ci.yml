@@ -14,7 +14,7 @@ jobs:
     name: 'Security Checks & Linters'
     runs-on: 'ubuntu-latest'
     container:
-      image: ghcr.io/tastybamboo/panda-ci:latest
+      image: ghcr.io/tastybamboo/panda-ci:ruby-3.3.10
     env:
       BUNDLE_PATH: 'vendor/bundle'
     steps:
@@ -50,7 +50,7 @@ jobs:
     needs: seclint
     runs-on: 'ubuntu-latest'
     container:
-      image: ghcr.io/tastybamboo/panda-ci:latest
+      image: ghcr.io/tastybamboo/panda-ci:ruby-3.3.10
     env:
       BUNDLE_PATH: 'vendor/bundle'
       RAILS_ENV: test
@@ -111,7 +111,7 @@ jobs:
     needs: seclint
     runs-on: 'ubuntu-latest'
     container:
-      image: ghcr.io/tastybamboo/panda-ci:latest
+      image: ghcr.io/tastybamboo/panda-ci:ruby-3.3.10
     env:
       BUNDLE_PATH: 'vendor/bundle'
       RAILS_ENV: test
@@ -173,7 +173,7 @@ jobs:
     needs: seclint
     runs-on: 'ubuntu-latest'
     container:
-      image: ghcr.io/tastybamboo/panda-ci:latest
+      image: ghcr.io/tastybamboo/panda-ci:ruby-3.3.10
     env:
       BUNDLE_PATH: 'vendor/bundle'
       RAILS_ENV: test
@@ -238,7 +238,7 @@ jobs:
       contents: read
       checks: write
     container:
-      image: ghcr.io/tastybamboo/panda-ci:latest
+      image: ghcr.io/tastybamboo/panda-ci:ruby-3.3.10
       options: --shm-size=2gb --tmpfs /dev/shm:rw,nosuid,nodev,mode=1777
     env:
       BUNDLE_PATH: 'vendor/bundle'
