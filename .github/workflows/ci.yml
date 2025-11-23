@@ -245,6 +245,7 @@ jobs:
       RAILS_ENV: test
       BOOTSNAP_CACHE_DIR: 'tmp/bootsnap-ci'
       DISPLAY: ':99'
+      DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
     services:
       postgres:
         image: postgres:latest
