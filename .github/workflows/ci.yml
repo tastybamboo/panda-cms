@@ -343,8 +343,6 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p spec/tmp/capybara
-          echo "🔧 Preflight Chrome launch..."
-          chromium --headless --no-sandbox --disable-gpu --remote-debugging-port=0 about:blank > spec/tmp/capybara/chromium-pre-smoke.log 2>&1 || echo "⚠️  Preflight Chrome launch failed (continuing)"
           echo "🧪 Running smoke test to verify browser startup..."
           DEBUG=true CUPRITE_DEBUG=true bundle exec rspec spec/system/smoke_test_spec.rb --format documentation --color
         timeout-minutes: 5
@@ -360,8 +358,6 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p spec/tmp/capybara
-          echo "🔧 Preflight Chrome launch..."
-          chromium --headless --no-sandbox --disable-gpu --remote-debugging-port=0 about:blank > spec/tmp/capybara/chromium-pre-system.log 2>&1 || echo "⚠️  Preflight Chrome launch failed (continuing)"
           echo "🧪 Running full system test suite..."
           TESTFILES=$(find spec/system -name '*_spec.rb' | wc -l)
           CORES=$(nproc --all)
