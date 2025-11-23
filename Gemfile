@@ -17,6 +17,7 @@ group :development, :test do
   gem "bundler-audit"
   gem "capybara"
   gem "cuprite"
+  gem "ferrum", github: "jfi/ferrum", branch: "fix/ruby-3.4-forwardable"
   gem "debug"
   gem "erb_lint"
   gem "fasterer"

@@ -1,4 +1,16 @@
 GIT
+  remote: https://github.com/jfi/ferrum.git
+  revision: 957c7661f3c5abc90d71f9855d36c92a9e738bf9
+  branch: fix/ruby-3.4-forwardable
+  specs:
+    ferrum (0.17.1)
+      addressable (~> 2.5)
+      base64 (~> 0.2)
+      concurrent-ruby (~> 1.1)
+      webrick (~> 1.7)
+      websocket-driver (~> 0.7)
+
+GIT
   remote: https://github.com/tastybamboo/panda-core.git
   revision: bf8137deebde4f60c0875e7271478541b11322aa
   branch: main
@@ -206,12 +218,6 @@ GEM
       faraday (~> 2.0)
     fasterer (0.11.0)
       ruby_parser (>= 3.19.1)
-    ferrum (0.17.1)
-      addressable (~> 2.5)
-      base64 (~> 0.2)
-      concurrent-ruby (~> 1.1)
-      webrick (~> 1.7)
-      websocket-driver (~> 0.7)
     ffi (1.17.2)
     ffi (1.17.2-aarch64-linux-gnu)
     ffi (1.17.2-aarch64-linux-musl)
@@ -614,6 +620,7 @@ DEPENDENCIES
   debug
   erb_lint
   fasterer
+  ferrum!
   importmap-rails
   listen
   omniauth-github
