@@ -255,8 +255,8 @@ jobs:
       - name: Start Xvfb
         run: Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
 
-      - name: Load gems from cache
-        uses: actions/cache@v4
+      - name: Restore bundle cache
+        uses: actions/cache/restore@v4
         with:
           path: vendor/bundle
           key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
@@ -268,6 +268,13 @@ jobs:
           bundle config path vendor/bundle
           bundle config without development
           bundle install --jobs 4 --retry 3
+
+      - name: Save bundle cache
+        if: success()
+        uses: actions/cache/save@v4
+        with:
+          path: vendor/bundle
+          key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
 
       - name: 'Setup test database'
         env:
@@ -307,7 +314,13 @@ jobs:
           CUPRITE_PROCESS_TIMEOUT: 30
           CUPRITE_TIMEOUT: 15
           FERRUM_BROWSER_LOG: 'true'
+          DEBUG: 'true'
+          CUPRITE_DEBUG: 'true'
+          FERRUM_BROWSER_LOG_PATH: '${{ github.workspace }}/spec/tmp/capybara/cuprite-smoke.log'
         run: |
+          mkdir -p spec/tmp/capybara
+          echo "🔧 Preflight Chrome launch..."
+          chromium --headless --remote-debugging-port=0 about:blank > spec/tmp/capybara/chromium-pre-smoke.log 2>&1 || echo "⚠️  Preflight Chrome launch failed (continuing)"
           echo "🧪 Running smoke test to verify browser startup..."
           bundle exec rspec spec/system/smoke_test_spec.rb --format documentation --color
         timeout-minutes: 5
@@ -318,8 +331,14 @@ jobs:
           CUPRITE_PROCESS_TIMEOUT: 30
           CUPRITE_TIMEOUT: 15
           FERRUM_BROWSER_LOG: 'true'
+          DEBUG: 'true'
+          CUPRITE_DEBUG: 'true'
+          FERRUM_BROWSER_LOG_PATH: '${{ github.workspace }}/spec/tmp/capybara/cuprite-system.log'
         run: |
           set -euo pipefail
+           mkdir -p spec/tmp/capybara
+           echo "🔧 Preflight Chrome launch..."
+           chromium --headless --remote-debugging-port=0 about:blank > spec/tmp/capybara/chromium-pre-system.log 2>&1 || echo "⚠️  Preflight Chrome launch failed (continuing)"
           echo "🧪 Running full system test suite..."
           bundle exec rspec spec/system --format documentation --color
         timeout-minutes: 30
