@@ -524,6 +524,19 @@ end
 RSpec.configure do |config|
   config.include PandaCmsHelpers, type: :system
 
+  config.after(:each, type: :system) do |example|
+    next unless example.exception
+    puts "\n====TEST FAILED====\n#{example.exception.message}\n\n"
+    html = begin
+      page.html
+    rescue
+      nil
+    end
+    next unless html && html.length < 500
+    puts "[CI] Short page HTML (#{html.length} chars):"
+    puts html.inspect
+  end
+
   # Add debugging to system tests
   # config.before(:each, type: :system) do
   #   debug_log("\nStarting test (debug enabled): #{RSpec.current_example.full_description}\n")
