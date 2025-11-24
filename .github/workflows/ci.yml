@@ -14,7 +14,7 @@ jobs:
     name: 'Security Checks & Linters'
     runs-on: 'ubuntu-latest'
     container:
-      image: ghcr.io/tastybamboo/panda-ci:latest
+      image: ghcr.io/tastybamboo/panda-ci:ruby-3.3.10
     env:
       BUNDLE_PATH: 'vendor/bundle'
     steps:
@@ -50,10 +50,11 @@ jobs:
     needs: seclint
     runs-on: 'ubuntu-latest'
     container:
-      image: ghcr.io/tastybamboo/panda-ci:latest
+      image: ghcr.io/tastybamboo/panda-ci:ruby-3.3.10
     env:
       BUNDLE_PATH: 'vendor/bundle'
       RAILS_ENV: test
+      BOOTSNAP_CACHE_DIR: 'tmp/bootsnap-ci'
     services:
       postgres:
         image: postgres:latest
@@ -89,6 +90,7 @@ jobs:
         env:
           DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
           RAILS_ENV: test
+          BOOTSNAP_CACHE_DIR: 'tmp/bootsnap-ci'
         run: |
           echo "📋 Loading schema (baseline with all tables)..."
           bundle exec rails db:schema:load
@@ -109,10 +111,11 @@ jobs:
     needs: seclint
     runs-on: 'ubuntu-latest'
     container:
-      image: ghcr.io/tastybamboo/panda-ci:latest
+      image: ghcr.io/tastybamboo/panda-ci:ruby-3.3.10
     env:
       BUNDLE_PATH: 'vendor/bundle'
       RAILS_ENV: test
+      BOOTSNAP_CACHE_DIR: 'tmp/bootsnap-ci'
     services:
       postgres:
         image: postgres:latest
@@ -148,6 +151,7 @@ jobs:
         env:
           DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
           RAILS_ENV: test
+          BOOTSNAP_CACHE_DIR: 'tmp/bootsnap-ci'
         run: |
           echo "📋 Loading schema (baseline with all tables)..."
           bundle exec rails db:schema:load
@@ -157,6 +161,7 @@ jobs:
         env:
           DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
           RAILS_ENV: 'test'
+          BOOTSNAP_CACHE_DIR: 'tmp/bootsnap-ci'
           RSPEC_COLOR: 'true'
           TERM: 'xterm-256color'
         run: |
@@ -168,10 +173,11 @@ jobs:
     needs: seclint
     runs-on: 'ubuntu-latest'
     container:
-      image: ghcr.io/tastybamboo/panda-ci:latest
+      image: ghcr.io/tastybamboo/panda-ci:ruby-3.3.10
     env:
       BUNDLE_PATH: 'vendor/bundle'
       RAILS_ENV: test
+      BOOTSNAP_CACHE_DIR: 'tmp/bootsnap-ci'
     services:
       postgres:
         image: postgres:latest
@@ -207,6 +213,7 @@ jobs:
         env:
           DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
           RAILS_ENV: test
+          BOOTSNAP_CACHE_DIR: 'tmp/bootsnap-ci'
         run: |
           echo "📋 Loading schema (baseline with all tables)..."
           bundle exec rails db:schema:load
@@ -216,6 +223,7 @@ jobs:
         env:
           DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
           RAILS_ENV: 'test'
+          BOOTSNAP_CACHE_DIR: 'tmp/bootsnap-ci'
           RSPEC_COLOR: 'true'
           TERM: 'xterm-256color'
         run: |
@@ -230,12 +238,18 @@ jobs:
       contents: read
       checks: write
     container:
-      image: ghcr.io/tastybamboo/panda-ci:latest
-      options: --shm-size=2gb
+      image: ghcr.io/tastybamboo/panda-ci:ruby-3.3.10
+      options: --shm-size=2gb --tmpfs /dev/shm:rw,nosuid,nodev,mode=1777
     env:
       BUNDLE_PATH: 'vendor/bundle'
       RAILS_ENV: test
+      BOOTSNAP_CACHE_DIR: 'tmp/bootsnap-ci'
       DISPLAY: ':99'
+      DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
+      PGUSER: 'postgres'
+      PGPASSWORD: 'password'
+      PGHOST: 'postgres'
+      FERRUM_PROCESS_TIMEOUT: '60'  # Give browser 60s to start in CI
     services:
       postgres:
         image: postgres:latest
@@ -252,11 +266,19 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - name: Prepare Chrome temp dirs
+        run: |
+          mkdir -p /home/panda/tmp /home/panda/chrome
+          chmod 777 /home/panda/tmp /home/panda/chrome
+        env:
+          TMPDIR: /home/panda/tmp
+          CHROME_USER_DATA_DIR: /home/panda/chrome
+
       - name: Start Xvfb
         run: Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
 
-      - name: Load gems from cache
-        uses: actions/cache@v4
+      - name: Restore bundle cache
+        uses: actions/cache/restore@v4
         with:
           path: vendor/bundle
           key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
@@ -268,11 +290,20 @@ jobs:
           bundle config path vendor/bundle
           bundle config without development
           bundle install --jobs 4 --retry 3
+          bundle clean --force
+
+      - name: Save bundle cache
+        if: success()
+        uses: actions/cache/save@v4
+        with:
+          path: vendor/bundle
+          key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
 
       - name: 'Setup test database'
         env:
           DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
           RAILS_ENV: test
+          BOOTSNAP_CACHE_DIR: tmp/bootsnap-ci
         run: |
           echo "📋 Loading schema (baseline with all tables)..."
           bundle exec rails db:schema:load
@@ -305,24 +336,35 @@ jobs:
       - name: Run smoke test
         env:
           DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
-          CUPRITE_PROCESS_TIMEOUT: 30
-          CUPRITE_TIMEOUT: 15
+          CUPRITE_PROCESS_TIMEOUT: 18
+          CUPRITE_TIMEOUT: 18
           FERRUM_BROWSER_LOG: 'true'
+          TMPDIR: /home/panda/tmp
+          CHROME_USER_DATA_DIR: /home/panda/chrome
         run: |
+          set -euo pipefail
+          mkdir -p spec/tmp/capybara
           echo "🧪 Running smoke test to verify browser startup..."
-          bundle exec rspec spec/system/smoke_test_spec.rb --format documentation --color
+          DEBUG=true CUPRITE_DEBUG=true bundle exec rspec spec/system/smoke_test_spec.rb --format documentation --color
         timeout-minutes: 5
 
       - name: Run system specs
         env:
           DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
-          CUPRITE_PROCESS_TIMEOUT: 30
-          CUPRITE_TIMEOUT: 15
+          CUPRITE_PROCESS_TIMEOUT: 18
+          CUPRITE_TIMEOUT: 18
           FERRUM_BROWSER_LOG: 'true'
+          TMPDIR: /home/panda/tmp
+          CHROME_USER_DATA_DIR: /home/panda/chrome
         run: |
           set -euo pipefail
+          mkdir -p spec/tmp/capybara
           echo "🧪 Running full system test suite..."
-          bundle exec rspec spec/system --format documentation --color
+          TESTFILES=$(find spec/system -name '*_spec.rb' | wc -l)
+          CORES=$(nproc --all)
+          JOBS=$(( CORES > 4 ? 4 : CORES ))
+          echo "Running with $JOBS parallel workers"
+          DEBUG=true CUPRITE_DEBUG=true bundle exec parallel_tests spec/system --type rspec --concurrency $JOBS --group-by filesize --format documentation --color
         timeout-minutes: 30
 
       - name: 'Upload coverage'

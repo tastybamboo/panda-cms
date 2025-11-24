@@ -30,7 +30,7 @@ module Panda
                         tr(class: index.even? ? "bg-indigo-50" : "bg-white") do
                           td(class: "whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-0") do
                             a(
-                              href: helpers.admin_cms_page_path(page_data.id),
+                              href: view_context.admin_cms_page_path(page_data.id),
                               class: "text-indigo-600 hover:text-indigo-900"
                             ) { page_data.title }
                           end

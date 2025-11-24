@@ -129,7 +129,7 @@ module Panda
 
       def render_content_to_string
         # Phlex doesn't have a direct way to capture output, so we render directly
-        helpers.content_tag(:span, @content.html_safe, **element_attrs)
+        view_context.content_tag(:span, @content.html_safe, **element_attrs)
       end
     end
   end

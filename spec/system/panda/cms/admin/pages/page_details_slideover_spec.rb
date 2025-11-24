@@ -25,8 +25,8 @@ RSpec.describe "Page Details Slideover", type: :system do
       # Wait for the button to be present
       expect(page).to have_button("Page Details")
 
-      # Slideover should be hidden initially
-      expect(page).to have_css("#slideover.hidden", visible: :hidden)
+      # Slideover should be hidden initially (check for hidden class)
+      expect(page).to have_css("#slideover.hidden", visible: false)
 
       # Click the Page Details button
       open_page_details
@@ -95,13 +95,13 @@ RSpec.describe "Page Details Slideover", type: :system do
       # Verify it's open
       expect(page).to have_css("#slideover", visible: true)
 
-      # Click Cancel button in the footer
+      # Click Cancel button in the footer (first Cancel button is in image cropper modal)
       within("#slideover") do
-        click_button "Cancel"
+        all("button", text: "Cancel").last.click
       end
 
       # Slideover should be hidden again
-      expect(page).to have_css("#slideover.hidden", visible: :hidden)
+      expect(page).to have_css("#slideover.hidden", visible: false)
     end
 
     it "closes when clicking the close button in the header" do
@@ -129,9 +129,9 @@ RSpec.describe "Page Details Slideover", type: :system do
 
       # Close
       within("#slideover") do
-        click_button "Cancel"
+        all("button", text: "Cancel").last.click
       end
-      expect(page).to have_css("#slideover.hidden", visible: :hidden)
+      expect(page).to have_css("#slideover.hidden", visible: false)
 
       # Reopen
       open_page_details
