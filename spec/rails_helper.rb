@@ -8,6 +8,10 @@ SimpleCov.start
 
 ENV["RAILS_ENV"] ||= "test"
 
+# Act sets ACT=true; drop DATABASE_URL to avoid panda-core's before(:suite) truncation
+# hook deadlocking on constraint validation in the act Postgres service.
+ENV.delete("DATABASE_URL") if ENV["ACT"] == "true"
+
 require "rubygems"
 require "panda/core"
 require "panda/core/engine"
@@ -70,4 +74,24 @@ RSpec.configure do |config|
   fixture_files.delete(:panda_core_users)
   fixture_files.delete(:panda_cms_posts)
   config.global_fixtures = fixture_files unless ENV["SKIP_GLOBAL_FIXTURES"]
+
+  config.use_transactional_fixtures = false
+
+  # Clean DB between tests
+  config.before(:suite) do
+    DatabaseCleaner.clean_with(:truncation)
+  end
+
+  config.before(:each) do
+    DatabaseCleaner.strategy = :transaction
+    DatabaseCleaner.start
+  end
+
+  config.before(:each, type: :system) do
+    driven_by :cuprite
+  end
+
+  config.append_after(:each) do
+    DatabaseCleaner.clean
+  end
 end

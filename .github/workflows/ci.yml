@@ -249,7 +249,7 @@ jobs:
       PGUSER: 'postgres'
       PGPASSWORD: 'password'
       PGHOST: 'postgres'
-      FERRUM_PROCESS_TIMEOUT: '60'  # Give browser 60s to start in CI
+      FERRUM_PROCESS_TIMEOUT: '60' # Give browser 60s to start in CI
     services:
       postgres:
         image: postgres:latest

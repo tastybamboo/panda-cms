@@ -1,0 +1,50 @@
+FROM ruby:3.4-slim
+
+# 1. Core build tools (required for gems with native extensions)
+#    from build-essential to ca-certificates
+# 2. Chromium and ChromeDriver
+# 3. Chromium runtime dependencies (minimum required for Cuprite/Ferrum)
+# 4. Basic fonts (Chrome fails to start with no fonts installed)
+RUN apt-get update -qq && apt-get install -y --no-install-recommends \
+  build-essential \
+  patch \
+  libyaml-dev \
+  libpq-dev \
+  postgresql-client \
+  pkg-config \
+  git \
+  curl \
+  unzip \
+  ca-certificates \
+  chromium \
+  chromium-driver \
+  libnss3 \
+  libxss1 \
+  libasound2 \
+  libatk1.0-0 \
+  libatk-bridge2.0-0 \
+  libgtk-3-0 \
+  libgbm1 \
+  libdrm2 \
+  libx11-xcb1 \
+  libxcomposite1 \
+  libxdamage1 \
+  libxext6 \
+  libxfixes3 \
+  libxi6 \
+  libxrandr2 \
+  libxrender1 \
+  fonts-liberation \
+  && rm -rf /var/lib/apt/lists/*
+
+ENV APP_ROOT=/app
+WORKDIR $APP_ROOT
+
+# Stable Ruby/Bundler environment
+ENV GEM_HOME=/usr/local/bundle
+ENV BUNDLE_PATH=/usr/local/bundle
+ENV BUNDLE_BIN=/usr/local/bundle/bin
+ENV PATH="${BUNDLE_BIN}:${PATH}"
+
+# Prevent Ruby 3.4 from using its built-in Bundler
+ENV RUBYGEMS_DISABLE_DEFAULT_BUNDLER=1

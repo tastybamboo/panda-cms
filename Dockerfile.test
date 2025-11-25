@@ -1,0 +1,28 @@
+FROM ghcr.io/tastybamboo/panda-cms-base:latest
+
+ENV APP_ROOT=/app
+WORKDIR $APP_ROOT
+
+# Copy gem sources into the image
+COPY . .
+
+# Ensure Bundler uses Gemfile instead of implicit gemspec mode
+ENV BUNDLE_GEMFILE=${APP_ROOT}/Gemfile
+ENV GEM_HOME=${APP_ROOT}/vendor/bundle
+ENV BUNDLE_PATH=${APP_ROOT}/vendor/bundle
+ENV BUNDLE_BIN=${APP_ROOT}/vendor/bundle/ruby/3.4.0/bin
+ENV PATH="${BUNDLE_BIN}:${PATH}"
+ENV RUBYGEMS_DISABLE_DEFAULT_BUNDLER=1
+
+# Install correct Bundler + development/test dependencies
+RUN gem install bundler -v 2.7.2 && \
+  bundle config set --local path vendor/bundle && \
+  bundle config set --local with "development test" && \
+  bundle install --jobs 4 --retry 3
+
+# Default environment for CI test runs
+ENV RAILS_ENV=test
+ENV NODE_ENV=test
+ENV CI=true
+
+CMD ["bash"]

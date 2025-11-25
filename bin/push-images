@@ -1,0 +1,199 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# ----------------------------------------
+# Configuration
+# ----------------------------------------
+IMAGE_BASE="ghcr.io/tastybamboo/panda-cms-base"
+IMAGE_TEST="ghcr.io/tastybamboo/panda-cms-test"
+
+DOCKERFILE_BASE="Dockerfile.base"
+DOCKERFILE_TEST="Dockerfile.test"
+
+BUILDER_NAME="panda-builder"
+
+# ----------------------------------------
+# CLI parsing
+# ----------------------------------------
+usage() {
+  cat <<'EOF'
+Usage: bin/push-images [TAG] [--local] [--only base|test] [--reset-builder]
+
+TAG defaults to "latest". When --local is provided the images are built for
+your host architecture, loaded into the local Docker daemon (not pushed), and
+TAG defaults to "local".
+
+--reset-builder will delete and recreate the buildx builder (and clears cache).
+EOF
+}
+
+LOCAL_ONLY=false
+TAG=""
+ONLY_TARGET=""
+RESET_BUILDER=false
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --local)
+      LOCAL_ONLY=true
+      shift
+      ;;
+    --only=*)
+      ONLY_TARGET="${1#*=}"
+      shift
+      ;;
+    --only)
+      ONLY_TARGET="${2:-}"
+      shift 2
+      ;;
+    --reset-builder)
+      RESET_BUILDER=true
+      shift
+      ;;
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    *)
+      if [[ -z "$TAG" ]]; then
+        TAG="$1"
+        shift
+      else
+        echo "Unexpected argument: $1"
+        usage
+        exit 1
+      fi
+      ;;
+  esac
+done
+
+if [[ -z "$TAG" ]]; then
+  TAG=$([[ "$LOCAL_ONLY" == "true" ]] && echo "local" || echo "latest")
+fi
+
+if [[ -n "$ONLY_TARGET" && "$ONLY_TARGET" != "base" && "$ONLY_TARGET" != "test" ]]; then
+  echo "Unexpected value for --only: $ONLY_TARGET (expected base or test)"
+  exit 1
+fi
+
+# Detect GitHub username for GHCR login, fallback to $USER
+GHCR_USER="${GITHUB_ACTOR:-$USER}"
+
+detect_platform() {
+  case "$(uname -m)" in
+    arm64|aarch64) echo "linux/arm64" ;;
+    x86_64|amd64) echo "linux/amd64" ;;
+    *) echo "linux/amd64" ;;
+  esac
+}
+
+if [[ "$LOCAL_ONLY" == "true" ]]; then
+  PLATFORMS="${PLATFORMS:-$(detect_platform)}"
+  PUSH_FLAG="--load"
+  PUSH_MODE_DESC="load only"
+else
+  PLATFORMS="${PLATFORMS:-linux/amd64,linux/arm64}"
+  PUSH_FLAG="--push"
+  PUSH_MODE_DESC="push to GHCR"
+fi
+
+# ----------------------------------------
+# Check prerequisites
+# ----------------------------------------
+if ! command -v docker >/dev/null 2>&1; then
+  echo "❌ Docker is not installed or not in PATH"
+  exit 1
+fi
+
+if ! docker buildx version >/dev/null 2>&1; then
+  echo "❌ Docker Buildx is not installed. Install Docker Desktop >= 4.27"
+  exit 1
+fi
+
+# ----------------------------------------
+# Login to GHCR if needed
+# ----------------------------------------
+if [[ "$LOCAL_ONLY" == "true" ]]; then
+  echo "🔑 Local mode: skipping GHCR login"
+elif [[ -z "${GHCR_TOKEN:-}" ]]; then
+  echo "🔑 GHCR_TOKEN not set — using stored Docker credentials (if available)"
+else
+  echo "🔑 Logging into GHCR..."
+  echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin
+fi
+
+# ----------------------------------------
+# Ensure buildx builder exists
+# ----------------------------------------
+if [[ "$RESET_BUILDER" == "true" ]]; then
+  echo "🧹 Resetting buildx builder and cache: $BUILDER_NAME"
+  docker buildx rm "$BUILDER_NAME" >/dev/null 2>&1 || true
+  docker builder prune -af >/dev/null 2>&1 || true
+fi
+
+if ! docker buildx inspect "$BUILDER_NAME" >/dev/null 2>&1; then
+  echo "🔧 Creating buildx builder: $BUILDER_NAME"
+  docker buildx create --name "$BUILDER_NAME" --use --bootstrap
+else
+  echo "🔧 Using existing buildx builder: $BUILDER_NAME"
+  docker buildx use "$BUILDER_NAME"
+fi
+
+# ----------------------------------------
+# Helper function to build/push an image
+# ----------------------------------------
+build_and_push() {
+  local dockerfile="$1"
+  local image="$2"
+
+  local cache_from_opts
+  local cache_to_opts
+
+  if [[ "$LOCAL_ONLY" == "true" ]]; then
+    cache_from_opts=(--cache-from "type=local,src=.docker-cache")
+    cache_to_opts=(--cache-to "type=local,dest=.docker-cache,mode=max")
+  else
+    cache_from_opts=(
+      --cache-from "type=registry,ref=$image:cache"
+      --cache-from "type=local,src=.docker-cache"
+    )
+    cache_to_opts=(
+      --cache-to "type=registry,ref=$image:cache,mode=max"
+      --cache-to "type=local,dest=.docker-cache,mode=max"
+    )
+  fi
+
+  echo "📦 Building $image:$TAG ($PUSH_MODE_DESC)"
+
+  docker buildx build \
+    --platform "$PLATFORMS" \
+    --file "$dockerfile" \
+    --no-cache \
+    --pull \
+    --tag "$image:$TAG" \
+    --tag "$image:latest" \
+    "${cache_from_opts[@]}" \
+    "${cache_to_opts[@]}" \
+    "$PUSH_FLAG" \
+    --progress=plain .
+}
+
+# ----------------------------------------
+# Build/push base and test images
+# ----------------------------------------
+if [[ -z "$ONLY_TARGET" || "$ONLY_TARGET" == "base" ]]; then
+  build_and_push "$DOCKERFILE_BASE" "$IMAGE_BASE"
+fi
+
+if [[ -z "$ONLY_TARGET" || "$ONLY_TARGET" == "test" ]]; then
+  build_and_push "$DOCKERFILE_TEST" "$IMAGE_TEST"
+fi
+
+echo "🎉 Done! Images built ($PUSH_MODE_DESC):"
+if [[ -z "$ONLY_TARGET" || "$ONLY_TARGET" == "base" ]]; then
+  echo "   - $IMAGE_BASE:$TAG"
+fi
+if [[ -z "$ONLY_TARGET" || "$ONLY_TARGET" == "test" ]]; then
+  echo "   - $IMAGE_TEST:$TAG"
+fi
+echo "   (And tagged as :latest)"

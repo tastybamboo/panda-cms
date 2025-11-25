@@ -1,0 +1,70 @@
+name: Build & Push panda-cms Images
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - release/**
+  pull_request:
+    paths:
+      - Dockerfile.base
+      - Dockerfile.test
+      - bin/push-images
+      - .github/workflows/build-images.yml
+  schedule:
+    - cron: '3 3 * * *'
+
+jobs:
+  build-images:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU (multi-arch support)
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build & push `panda-cms-base`
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: Dockerfile.base
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ghcr.io/tastybamboo/panda-cms-base:latest
+            ghcr.io/tastybamboo/panda-cms-base:${{ github.sha }}
+          cache-from: |
+            type=registry,ref=ghcr.io/tastybamboo/panda-cms-base:cache
+          cache-to: |
+            type=registry,ref=ghcr.io/tastybamboo/panda-cms-base:cache,mode=max
+
+      - name: Build & push `panda-cms-test`
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: Dockerfile.test
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ghcr.io/tastybamboo/panda-cms-test:latest
+            ghcr.io/tastybamboo/panda-cms-test:${{ github.sha }}
+          cache-from: |
+            type=registry,ref=ghcr.io/tastybamboo/panda-cms-test:cache
+          cache-to: |
+            type=registry,ref=ghcr.io/tastybamboo/panda-cms-test:cache,mode=max

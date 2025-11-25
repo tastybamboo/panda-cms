@@ -1,0 +1,11 @@
+# Build context slimming
+.git
+.gitignore
+.docker-cache
+coverage
+tmp
+log
+node_modules
+vendor/bundle
+*.gem
+.DS_Store

@@ -73,11 +73,11 @@ test:
 <% else %>
 test:
   <<: *default
-  database: panda_cms_dummy_test
-  username: <%= ENV.fetch("POSTGRES_USER", "postgres") %>
-  password: <%= ENV.fetch("POSTGRES_PASSWORD", "password") %>
-  host: <%= ENV.fetch("POSTGRES_HOST", "localhost") %>
-  port: <%= ENV.fetch("POSTGRES_PORT", "5432") %>
+  host: <%= ENV["DATABASE_HOST"] || "postgres" %>
+  port: <%= ENV["DATABASE_PORT"] || 5432 %>
+  username: <%= ENV["DATABASE_USERNAME"] || "postgres" %>
+  password: <%= ENV["DATABASE_PASSWORD"] || "postgres" %>
+  database: <%= ENV["DATABASE_NAME"] || "test" %>
 <% end %>
 
 # As with config/credentials.yml, you never want to store sensitive information,
