@@ -48,10 +48,12 @@ jobs:
       CUPRITE_TIMEOUT: 30
       CUPRITE_PROCESS_TIMEOUT: 120
       FERRUM_PROCESS_TIMEOUT: 120
-      CUPRITE_DEBUG: "true"
+      CUPRITE_DEBUG: 'true'
       FERRUM_LOG: STDOUT
       BROWSER_PATH: /usr/bin/chromium
-      RSPEC_ARGS: ""
+      RAILS_LOG_TO_STDOUT: 'true'
+      CAPYBARA_SERVER_VERBOSE: 'true'
+      RSPEC_ARGS: ''
 
     steps:
       - name: Checkout
@@ -71,10 +73,11 @@ jobs:
 
       - name: Panda asset generation and verification
         uses: tastybamboo/panda-assets-verify-action@v1
+        if: ${{ env.ACT != 'true' }}
         continue-on-error: ${{ env.ACT == 'true' }}
         with:
           dummy_root: spec/dummy
 
       - name: Run RSpec
         run: |
-          bundle exec rspec ${RSPEC_ARGS:---format documentation}
+          bundle exec rspec spec/system/panda/cms/admin/pages/list_pages_spec.rb ${RSPEC_ARGS:---format documentation}

@@ -35,6 +35,8 @@ RUN apt-get update -qq && apt-get install -y --no-install-recommends \
   libxrandr2 \
   libxrender1 \
   fonts-liberation \
+  nodejs \
+  npm \
   && rm -rf /var/lib/apt/lists/*
 
 ENV APP_ROOT=/app
