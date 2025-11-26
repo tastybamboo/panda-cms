@@ -64,6 +64,13 @@ Rails.application.configure do
   # Use memory store for tests to support rate limiting tests
   config.cache_store = :memory_store
 
+  # Send logs to STDOUT in CI/containers and keep SQL noise out of the main log.
+  base_logger = ActiveSupport::Logger.new($stdout)
+  base_logger.level = Logger::INFO
+  base_logger.formatter = config.log_formatter
+  config.logger = ActiveSupport::TaggedLogging.new(base_logger)
+  config.active_record.logger = nil
+
   # Raise for all exceptions, to fail fast in tests
   config.action_dispatch.show_exceptions = true
 

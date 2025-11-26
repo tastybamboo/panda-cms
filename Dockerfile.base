@@ -11,6 +11,9 @@ RUN apt-get update -qq && apt-get install -y --no-install-recommends \
   libyaml-dev \
   libpq-dev \
   postgresql-client \
+  chromium-sandbox \
+  adduser \
+  sudo \
   pkg-config \
   git \
   curl \

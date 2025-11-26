@@ -20,6 +20,13 @@ RUN gem install bundler -v 2.7.2 && \
   bundle config set --local with "development test" && \
   bundle install --jobs 4 --retry 3
 
+# Create a non-root user for safer Chrome/Ferrum execution (using adduser from base image)
+USER root
+RUN useradd -m -s /bin/bash runner && chown -R runner:runner $APP_ROOT && \
+    mkdir -p /etc/sudoers.d && \
+    echo runner ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/runner && chmod 0440 /etc/sudoers.d/runner
+USER runner
+
 # Default environment for CI test runs
 ENV RAILS_ENV=test
 ENV NODE_ENV=test
