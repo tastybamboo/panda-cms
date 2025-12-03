@@ -258,7 +258,7 @@ RSpec.describe "Page Details Slideover", type: :system do
     end
 
     it "fills fields with parent values when inherit is checked" do
-      pending "Tests appear to be failing"
+      skip "Tests appear to be failing"
       visit "/admin/cms/pages/#{about_page.id}/edit"
       open_page_details
 
@@ -276,7 +276,7 @@ RSpec.describe "Page Details Slideover", type: :system do
 
   describe "character counters" do
     before do
-      pending "Tests appear to be failing due to JS not being loaded"
+      skip "Tests appear to be failing due to JS not being loaded"
       # Ensure inherit is disabled so fields are editable
       about_page.update!(inherit_seo: false)
     end

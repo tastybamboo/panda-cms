@@ -1,296 +1,211 @@
 ---
-name: 'App Tests'
+name: 'Engine Tests'
 
-'on': # yamllint disable-line rule:truthy
+on:
   pull_request:
   push:
-    branches:
-      - main
+    branches: [main]
   merge_group:
     types: [checks_requested]
 
 jobs:
-  seclint:
-    name: 'Security Checks & Linters'
-    runs-on: 'ubuntu-latest'
+  ###########################################################################
+  # 1. CHECKS — Linting, Security, Static Analysis
+  ###########################################################################
+  checks:
+    name: 'Linting, Security & Static Analysis'
+    runs-on: ubuntu-latest
     container:
-      image: ghcr.io/tastybamboo/panda-ci:ruby-3.3.10
+      image: ghcr.io/tastybamboo/panda-cms-test:latest
+
     env:
-      BUNDLE_PATH: 'vendor/bundle'
-    steps:
-      - uses: 'actions/checkout@v6'
-
-      - name: Load gems from cache
-        uses: actions/cache@v4
-        with:
-          path: vendor/bundle
-          key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
-
-      - name: 'Bundle install'
-        run: |
-          bundle config path vendor/bundle
-          bundle config without development
-          bundle install --jobs 4 --retry 3
-
-      - name: 'Bundler Audit'
-        run: '#bundle exec bundle-audit --update && bundle exec bundle-audit check'
-      - name: 'Brakeman'
-        run: '#bundle exec brakeman --quiet'
-      - name: 'StandardRB Check'
-        run: '#bundle exec standardrb'
-      - name: 'ERB Check'
-        run: '#bundle exec erb_lint app/views --lint-all'
-      - name: 'YAML Lint'
-        run: '#yamllint -c .yamllint .'
-
-  model-specs:
-    name: 'Model Specs'
-    needs: seclint
-    runs-on: 'ubuntu-latest'
-    container:
-      image: ghcr.io/tastybamboo/panda-ci:ruby-3.3.10
-    env:
-      BUNDLE_PATH: 'vendor/bundle'
       RAILS_ENV: test
-      BOOTSNAP_CACHE_DIR: 'tmp/bootsnap-ci'
-    services:
-      postgres:
-        image: postgres:latest
-        env:
-          POSTGRES_HOST: localhost
-          POSTGRES_PORT: 5432
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: password
-          POSTGRES_DB: test
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-    steps:
-      - uses: 'actions/checkout@v6'
-
-      - name: Load gems from cache
-        uses: actions/cache@v4
-        with:
-          path: vendor/bundle
-          key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
-
-      - name: 'Bundle install'
-        run: |
-          bundle config path vendor/bundle
-          bundle config without development
-          bundle install --jobs 4 --retry 3
-
-      - name: 'Setup test database'
-        env:
-          DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
-          RAILS_ENV: test
-          BOOTSNAP_CACHE_DIR: 'tmp/bootsnap-ci'
-        run: |
-          echo "📋 Loading schema (baseline with all tables)..."
-          bundle exec rails db:schema:load
-          echo "✅ Database ready"
-
-      - name: 'Run model specs'
-        env:
-          DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
-          RAILS_ENV: 'test'
-          RSPEC_COLOR: 'true'
-          TERM: 'xterm-256color'
-        run: |
-          echo "📦 Running model specs..."
-          #bundle exec rspec spec/models --format documentation --color
-
-  request-specs:
-    name: 'Request Specs'
-    needs: seclint
-    runs-on: 'ubuntu-latest'
-    container:
-      image: ghcr.io/tastybamboo/panda-ci:ruby-3.3.10
-    env:
-      BUNDLE_PATH: 'vendor/bundle'
-      RAILS_ENV: test
-      BOOTSNAP_CACHE_DIR: 'tmp/bootsnap-ci'
-    services:
-      postgres:
-        image: postgres:latest
-        env:
-          POSTGRES_HOST: localhost
-          POSTGRES_PORT: 5432
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: password
-          POSTGRES_DB: test
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-    steps:
-      - uses: 'actions/checkout@v6'
-
-      - name: Load gems from cache
-        uses: actions/cache@v4
-        with:
-          path: vendor/bundle
-          key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
-
-      - name: 'Bundle install'
-        run: |
-          bundle config path vendor/bundle
-          bundle config without development
-          bundle install --jobs 4 --retry 3
-
-      - name: 'Setup test database'
-        env:
-          DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
-          RAILS_ENV: test
-          BOOTSNAP_CACHE_DIR: 'tmp/bootsnap-ci'
-        run: |
-          echo "📋 Loading schema (baseline with all tables)..."
-          bundle exec rails db:schema:load
-          echo "✅ Database ready"
-
-      - name: 'Run request specs'
-        env:
-          DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
-          RAILS_ENV: 'test'
-          BOOTSNAP_CACHE_DIR: 'tmp/bootsnap-ci'
-          RSPEC_COLOR: 'true'
-          TERM: 'xterm-256color'
-        run: |
-          echo "🌐 Running request specs..."
-          #bundle exec rspec spec/requests --format documentation --color
-
-  lib-specs:
-    name: 'Lib Specs'
-    needs: seclint
-    runs-on: 'ubuntu-latest'
-    container:
-      image: ghcr.io/tastybamboo/panda-ci:ruby-3.3.10
-    env:
-      BUNDLE_PATH: 'vendor/bundle'
-      RAILS_ENV: test
-      BOOTSNAP_CACHE_DIR: 'tmp/bootsnap-ci'
-    services:
-      postgres:
-        image: postgres:latest
-        env:
-          POSTGRES_HOST: localhost
-          POSTGRES_PORT: 5432
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: password
-          POSTGRES_DB: test
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-    steps:
-      - uses: 'actions/checkout@v6'
-
-      - name: Load gems from cache
-        uses: actions/cache@v4
-        with:
-          path: vendor/bundle
-          key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
-
-      - name: 'Bundle install'
-        run: |
-          bundle config path vendor/bundle
-          bundle config without development
-          bundle install --jobs 4 --retry 3
-
-      - name: 'Setup test database'
-        env:
-          DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
-          RAILS_ENV: test
-          BOOTSNAP_CACHE_DIR: 'tmp/bootsnap-ci'
-        run: |
-          echo "📋 Loading schema (baseline with all tables)..."
-          bundle exec rails db:schema:load
-          echo "✅ Database ready"
-
-      - name: 'Run lib/services specs'
-        env:
-          DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
-          RAILS_ENV: 'test'
-          BOOTSNAP_CACHE_DIR: 'tmp/bootsnap-ci'
-          RSPEC_COLOR: 'true'
-          TERM: 'xterm-256color'
-        run: |
-          echo "⚙️  Running lib specs..."
-          #bundle exec rspec spec/lib --format documentation --color
-
-  system-specs:
-    name: 'System Specs (Browser Tests)'
-    needs: [seclint]
-    runs-on: 'ubuntu-latest'
-    permissions:
-      contents: read
-      checks: write
-    container:
-      image: ghcr.io/tastybamboo/panda-ci:ruby-3.3.10
-      options: --shm-size=2gb --tmpfs /dev/shm:rw,nosuid,nodev,mode=1777
-    env:
-      BUNDLE_PATH: 'vendor/bundle'
-      RAILS_ENV: test
-      BOOTSNAP_CACHE_DIR: 'tmp/bootsnap-ci'
-      DISPLAY: ':99'
-      DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
-      PGUSER: 'postgres'
-      PGPASSWORD: 'password'
-      PGHOST: 'postgres'
-      FERRUM_PROCESS_TIMEOUT: '60' # Give browser 60s to start in CI
-    services:
-      postgres:
-        image: postgres:latest
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: password
-          POSTGRES_DB: test
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+      BUNDLE_PATH: vendor/bundle
+      CI: 'true'
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
 
-      - name: Prepare Chrome temp dirs
-        run: |
-          mkdir -p /home/panda/tmp /home/panda/chrome
-          chmod 777 /home/panda/tmp /home/panda/chrome
-        env:
-          TMPDIR: /home/panda/tmp
-          CHROME_USER_DATA_DIR: /home/panda/chrome
-
-      - name: Start Xvfb
-        run: Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
-
+      # -------------------------
+      # Restore Bundle Cache
+      # -------------------------
       - name: Restore bundle cache
         uses: actions/cache/restore@v4
         with:
           path: vendor/bundle
           key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
+          restore-keys: ${{ runner.os }}-gems-
 
       - name: Bundle install
         run: |
-          bundle config path vendor/bundle
-          bundle config without development
-          bundle install --jobs 4 --retry 3
-          bundle clean --force
+          bundle config set path vendor/bundle
+          bundle config set without 'development'
+          bundle install --jobs=4 --retry=3
+
+      # -------------------------
+      # Save bundle cache
+      # -------------------------
+      - name: Save bundle cache
+        if: success()
+        uses: actions/cache/save@v4
+        with:
+          path: vendor/bundle
+          key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
+
+      # -------------------------
+      # Linters
+      # -------------------------
+      - name: StandardRB
+        run: bundle exec standardrb
+
+      - name: ERB Lint
+        run: bundle exec erb_lint app/views --lint-all
+
+      - name: YAML Lint
+        run: yamllint -c .yamllint .
+
+      # -------------------------
+      # Security Tools
+      # -------------------------
+      - name: Bundler Audit
+        run: |
+          bundle exec bundle-audit update
+          bundle exec bundle-audit check --verbose
+
+      - name: Brakeman
+        run: |
+          bundle exec brakeman --no-progress --quiet
+
+      # -------------------------
+      # Coverage upload if generated
+      # -------------------------
+      - name: Upload coverage (checks)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-checks
+          path: coverage/
+          if-no-files-found: ignore
+
+  ###########################################################################
+  # 2. ASSETS — build engine assets once
+  ###########################################################################
+  assets:
+    name: 'Verify Assets'
+    needs: checks
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/tastybamboo/panda-cms-test:latest
+
+    env:
+      RAILS_ENV: test
+      NODE_ENV: test
+      CI: 'true'
+      BUNDLE_PATH: vendor/bundle
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # -------------------------
+      # Restore bundle cache
+      # -------------------------
+      - name: Restore bundle cache
+        uses: actions/cache/restore@v4
+        with:
+          path: vendor/bundle
+          key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
+          restore-keys: ${{ runner.os }}-gems-
+
+      - name: Bundle install
+        run: |
+          bundle config set path vendor/bundle
+          bundle config set without 'development'
+          bundle install --jobs=4 --retry=3
+
+      # -------------------------
+      # Save updated cache
+      # -------------------------
+      - name: Save bundle cache
+        if: success()
+        uses: actions/cache/save@v4
+        with:
+          path: vendor/bundle
+          key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
+
+      # -------------------------
+      # Asset verification
+      # -------------------------
+      - name: Panda asset generation & verification
+        uses: tastybamboo/panda-assets-verify-action@v1
+        with:
+          dummy_root: spec/dummy
+
+      # -------------------------
+      # Coverage upload
+      # -------------------------
+      - name: Upload coverage (assets)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-assets
+          path: coverage/
+          if-no-files-found: ignore
+
+  ###########################################################################
+  # 3. TESTS — RSpec matrix (models, requests, libs, system)
+  ###########################################################################
+  tests:
+    name: 'RSpec Suite'
+    needs: assets
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/tastybamboo/panda-cms-test:latest
+      options: --shm-size=2gb
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: panda_cms_dummy_test
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+
+    env:
+      RAILS_ENV: test
+      DATABASE_URL: postgres://postgres:password@postgres:5432/panda_cms_dummy_test
+      BUNDLE_PATH: vendor/bundle
+      CI: 'true'
+      CUPRITE_TIMEOUT: 20
+      CUPRITE_PROCESS_TIMEOUT: 40
+
+    strategy:
+      fail-fast: false
+      matrix:
+        suite: [models, requests, libs, system]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # -------------------------
+      # Restore bundle cache
+      # -------------------------
+      - name: Restore bundle cache
+        uses: actions/cache/restore@v4
+        with:
+          path: vendor/bundle
+          key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
+          restore-keys: ${{ runner.os }}-gems-
+
+      - name: Bundle install
+        run: |
+          bundle config set path vendor/bundle
+          bundle config set without 'development'
+          bundle install --jobs=4 --retry=3
 
       - name: Save bundle cache
         if: success()
@@ -299,85 +214,82 @@ jobs:
           path: vendor/bundle
           key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
 
-      - name: 'Setup test database'
-        env:
-          DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
-          RAILS_ENV: test
-          BOOTSNAP_CACHE_DIR: tmp/bootsnap-ci
-        run: |
-          echo "📋 Loading schema (baseline with all tables)..."
-          bundle exec rails db:schema:load
-          echo "✅ Database ready"
+      # -------------------------
+      # DB setup
+      # -------------------------
+      - name: Setup database
+        run: bundle exec rails db:create db:schema:load
 
-      - name: Panda asset generation and verification
-        uses: tastybamboo/panda-assets-verify-action@v1
-        continue-on-error: ${{ env.ACT == 'true' }}
+      # -------------------------
+      # Chrome Smoke Test (system only)
+      # -------------------------
+      - name: Chrome Smoke Test
+        if: matrix.suite == 'system'
+        run: bundle exec rake ci:chrome_check
+
+      # -------------------------
+      # Run suites
+      # -------------------------
+      - name: Run model specs
+        if: matrix.suite == 'models'
+        run: bundle exec rspec spec/models
+
+      - name: Run request specs
+        if: matrix.suite == 'requests'
+        run: bundle exec rspec spec/requests
+
+      - name: Run lib specs
+        if: matrix.suite == 'libs'
+        run: bundle exec rspec spec/lib
+
+      - name: Run system specs (parallel)
+        if: matrix.suite == 'system'
+        env:
+          PARALLEL_TEST_PROCESSORS: 4
+        run: |
+          bundle exec parallel_tests spec/system \
+            --type rspec \
+            --group-by filesize \
+            --concurrency $PARALLEL_TEST_PROCESSORS \
+            --format documentation
+
+      # -------------------------
+      # Coverage per job
+      # -------------------------
+      - name: Upload coverage (tests)
+        if: always()
+        uses: actions/upload-artifact@v4
         with:
-          dummy_root: spec/dummy
-
-      - name: Verify Chromium can start
-        run: |
-          echo "🔍 Testing if Chromium can start..."
-          chromium --version || echo "⚠️  Chromium version check failed"
-          chromium --headless --no-sandbox --disable-gpu --print-to-pdf=/tmp/test.pdf about:blank 2>&1 || echo "⚠️  Chromium test failed"
-          if [ -f /tmp/test.pdf ]; then
-            echo "✅ Chromium successfully created PDF"
-            ls -lh /tmp/test.pdf
-          else
-            echo "❌ Chromium failed to create PDF"
-          fi
-
-      - name: Check Xvfb status
-        run: |
-          echo "🔍 Checking Xvfb status..."
-          ps aux | grep -i xvfb || echo "⚠️  Xvfb process not found"
-          echo "DISPLAY environment variable: $DISPLAY"
-
-      - name: Run smoke test
-        env:
-          DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
-          CUPRITE_PROCESS_TIMEOUT: 18
-          CUPRITE_TIMEOUT: 18
-          FERRUM_BROWSER_LOG: 'true'
-          TMPDIR: /home/panda/tmp
-          CHROME_USER_DATA_DIR: /home/panda/chrome
-        run: |
-          set -euo pipefail
-          mkdir -p spec/tmp/capybara
-          echo "🧪 Running smoke test to verify browser startup..."
-          DEBUG=true CUPRITE_DEBUG=true bundle exec rspec spec/system/smoke_test_spec.rb --format documentation --color
-        timeout-minutes: 5
-
-      - name: Run system specs
-        env:
-          DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
-          CUPRITE_PROCESS_TIMEOUT: 18
-          CUPRITE_TIMEOUT: 18
-          FERRUM_BROWSER_LOG: 'true'
-          TMPDIR: /home/panda/tmp
-          CHROME_USER_DATA_DIR: /home/panda/chrome
-        run: |
-          set -euo pipefail
-          mkdir -p spec/tmp/capybara
-          echo "🧪 Running full system test suite..."
-          TESTFILES=$(find spec/system -name '*_spec.rb' | wc -l)
-          CORES=$(nproc --all)
-          JOBS=$(( CORES > 4 ? 4 : CORES ))
-          echo "Running with $JOBS parallel workers"
-          DEBUG=true CUPRITE_DEBUG=true bundle exec parallel_tests spec/system --type rspec --concurrency $JOBS --group-by filesize --format documentation --color
-        timeout-minutes: 30
-
-      - name: 'Upload coverage'
-        uses: actions/upload-artifact@v5
-        if: ${{ always() && env.ACT != 'true' }}
-        with:
-          name: coverage-system
+          name: coverage-${{ matrix.suite }}
           path: coverage/
-
-      - name: 'Upload screenshots on failure'
-        uses: actions/upload-artifact@v5
-        if: ${{ failure() && env.ACT != 'true' }}
-        with:
-          name: screenshots
-          path: ${{ github.workspace }}/spec/tmp/capybara
           if-no-files-found: ignore
+
+  ###########################################################################
+  # 4. COVERAGE MERGE — Collate all coverage.json files
+  ###########################################################################
+  coverage:
+    name: 'Merge Coverage'
+    needs: [tests]
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/tastybamboo/panda-cms-test:latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download coverage artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: coverage_artifacts
+
+      - name: Merge coverage with SimpleCov
+        run: |
+          echo "require 'simplecov'; \
+                SimpleCov.collate Dir['coverage_artifacts/**/coverage.json'], 'rails'" > merge_coverage.rb
+          ruby merge_coverage.rb
+
+      - name: Upload merged coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: merged-coverage
+          path: coverage/

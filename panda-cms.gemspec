@@ -29,7 +29,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "faraday-multipart"
   spec.add_dependency "faraday-retry"
   spec.add_dependency "groupdate"
-  spec.add_dependency "http"
+  spec.add_dependency "http", "~> 5.1.1" # TODO: Remove the need; for now avoids llhttp-ext dependency
   spec.add_dependency "importmap-rails", ">= 2"
   spec.add_dependency "invisible_captcha"
   spec.add_dependency "panda-core"

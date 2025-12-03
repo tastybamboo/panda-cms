@@ -1,0 +1,27 @@
+version: '3.9'
+
+services:
+  rails-test:
+    image: ghcr.io/tastybamboo/panda-cms-test:local
+    volumes:
+      - ./:/app
+    environment:
+      RAILS_ENV: test
+      DATABASE_URL: postgres://postgres:password@postgres:5432/panda_cms_dummy_test
+      CI: 'true'
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: bash
+
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: test
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 5s
+      timeout: 3s
+      retries: 8

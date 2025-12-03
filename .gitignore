@@ -33,3 +33,4 @@ screenshots/
 .secrets
 .docker-cache/
 act.log
+vendor/bundle

@@ -31,6 +31,7 @@ require "rspec/rails"
 
 # Load shared test infrastructure from panda-core (after dummy app and rspec/rails are loaded)
 require "panda/core/testing/rails_helper"
+Panda::Core::Testing::CupriteSetup.setup!
 
 # Ensure Panda::Core models are loaded before CMS support files
 Rails.application.eager_load!
@@ -82,16 +83,14 @@ RSpec.configure do |config|
     DatabaseCleaner.clean_with(:truncation)
   end
 
-  config.before(:each) do
-    DatabaseCleaner.strategy = :transaction
-    DatabaseCleaner.start
+  config.around(:each) do |example|
+    DatabaseCleaner.strategy = (example.metadata[:type] == :system) ? :truncation : :transaction
+    DatabaseCleaner.cleaning do
+      example.run
+    end
   end
 
   config.before(:each, type: :system) do
     driven_by :cuprite
-  end
-
-  config.append_after(:each) do
-    DatabaseCleaner.clean
   end
 end

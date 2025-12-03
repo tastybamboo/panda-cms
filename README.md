@@ -171,6 +171,83 @@ expect(page.title).to eq("Home")
 
 When testing models with file validations or complex callbacks, use the helper methods in `spec/models/panda/cms/page_spec.rb` as a reference.
 
+## 🚀 Running CI Locally
+
+This project uses a **deterministic CI environment**, based on a single Docker
+image (`panda-cms-test`). This ensures:
+
+- identical Ruby/Node/Chrome versions everywhere
+- no drift between local / Docker / GitHub Actions / act
+- fast, stable, reproducible tests
+
+There are **three** supported ways to run the full CI suite locally.
+
+---
+
+### 1. Run full CI via Docker Compose
+
+```sh
+bin/ci build      # build the local test image
+bin/ci local      # run full CI stack locally
+```
+
+This uses `docker-compose.ci.yml` and reproduces the entire GitHub Actions environment.
+
+---
+
+### 2. Run single RSpec execution in the CI container
+
+```sh
+bin/ci test
+```
+
+This mounts your project into the container and executes RSpec exactly as CI does.
+
+---
+
+### 3. Run GitHub Actions locally using act
+
+Install act:
+
+```sh
+brew install act
+```
+
+Use the project’s `.actrc`:
+
+```
+-P ubuntu-latest=ghcr.io/tastybamboo/panda-cms-test:local
+--container-options "--shm-size=2gb"
+```
+
+Then run:
+
+```sh
+bin/ci act
+```
+
+This executes **the real GitHub Actions workflow** on your machine.
+
+---
+
+### 4. Continuous Integration on GitHub
+
+GitHub Actions uses the same deterministic container image.
+See:
+
+```
+.github/workflows/ci.yml
+```
+
+---
+
+### 5. Code Coverage
+
+Coverage is produced per-suite (models, requests, libs, system) and merged
+into a unified `coverage/` directory via SimpleCov.
+
+Artifacts are uploaded automatically on CI.
+
 ## License
 
 The gem is available as open source under the terms of the [BSD-3-Clause License](https://opensource.org/licenses/bsd-3-clause).

@@ -8,6 +8,11 @@ require 'bullet' if defined?(Bullet)
 # test suite. You never need to work with it otherwise. Remember that
 # your test database is "scratch space" for the test suite and is wiped
 # and recreated between test runs. Don't rely on the data there!
+#
+Rails.application.config.after_initialize do
+  # Disable Bullet in CI/system specs
+  Bullet.enabled = false if defined?(Bullet)
+end
 
 Rails.application.configure do
   # Always disable Better Errors in test environment
@@ -22,6 +27,8 @@ Rails.application.configure do
       Bullet.raise = false # raise an error if n+1 query occurs
     end
 
+    config.middleware.delete ActionDispatch::ShowExceptions rescue nil
+    config.middleware.delete ActionDispatch::DebugExceptions rescue nil
   end
 
   # Settings specified here will take precedence over those in config/application.rb.

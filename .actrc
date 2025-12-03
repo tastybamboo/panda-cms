@@ -1,12 +1,4 @@
 # Secrets
 --secret-file .secrets
-# Use Ubuntu 24.04 for all GitHub ubuntu-latest jobs
--P ubuntu-22.04=ghcr.io/catthehacker/ubuntu:full-22.04
-# Required on macOS (act runs containers as amd64 inside qemu)
---container-architecture linux/amd64
-# Reuse containers between runs for speed
---reuse
-# Optional: allow headful Cuprite debugging
-# (act builds Chrome’s devtools into a VNC-compatible Xvfb display)
-# Uncomment if you want to run a visible browser:
-#--env HEADFUL=true
+-P ubuntu-latest=ghcr.io/tastybamboo/panda-cms-test:local
+--container-options "--shm-size=2gb"
