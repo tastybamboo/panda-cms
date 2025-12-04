@@ -3,4 +3,4 @@
 --reuse
 --pull=false
 --verbose
---platform ubuntu-latest=ghcr.io/catthehacker/ubuntu:full-24.04
+--platform ubuntu-latest=ghcr.io/catthehacker/ubuntu:act-latest
