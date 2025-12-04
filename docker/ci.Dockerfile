@@ -105,30 +105,33 @@ RUN ln -sf /usr/bin/google-chrome /usr/bin/chromium && \
 # =====================================================================
 # STAGE 2 — PostgreSQL Install (separate APT cache)
 # =====================================================================
-FROM base AS postgres
-
-# PGDG repo
-RUN curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc \
+RUN --mount=type=cache,target=/var/cache/apt-pg \
+  apt-get update && \
+  apt-get install -y --no-install-recommends gnupg curl ca-certificates && \
+  curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc \
   | gpg --dearmor -o /usr/share/keyrings/pgdg.gpg && \
   echo "deb [signed-by=/usr/share/keyrings/pgdg.gpg] \
   http://apt.postgresql.org/pub/repos/apt noble-pgdg main" \
   > /etc/apt/sources.list.d/pgdg.list
 
-# Install PostgreSQL via separate cache (avoids lock conflict)
-RUN --mount=type=cache,target=/var/cache/apt-pg \
-  echo 'APT::Acquire::Retries "5";' > /etc/apt/apt.conf.d/80-retries && \
+# Create postgres user/group
+RUN groupadd -r postgres && useradd -r -g postgres postgres
+
+RUN --mount=type=cache,target=/var/cache/apt \
   apt-get update && \
   apt-get install -y postgresql-17 postgresql-client-17 && \
   rm -rf /var/lib/apt/lists/*
 
-# Prepare PostgreSQL runtime directories
+# Prepare PGDATA
 RUN rm -rf /var/lib/postgresql/17/main && \
   mkdir -p /var/lib/postgresql/17/main && \
   chown -R postgres:postgres /var/lib/postgresql/17 && \
-  mkdir -p /run/postgresql && chown postgres:postgres /run/postgresql && chmod 775 /run/postgresql && \
-  su postgres -c "/usr/lib/postgresql/17/bin/initdb -D /var/lib/postgresql/17/main"
+  mkdir -p /run/postgresql && \
+  chown -R postgres:postgres /run/postgresql && \
+  chmod 775 /run/postgresql
 
-ENV PATH="/usr/lib/postgresql/17/bin:${PATH}"
+# Init DB
+RUN su postgres -c "/usr/lib/postgresql/17/bin/initdb -D /var/lib/postgresql/17/main"
 
 # =====================================================================
 # STAGE 3 — Ruby Install via mise (with persistent compile cache)
