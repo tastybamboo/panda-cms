@@ -1,295 +1,63 @@
----
-name: 'Engine Tests'
+name: CI
 
 on:
-  pull_request:
   push:
-    branches: [main]
-  merge_group:
-    types: [checks_requested]
+    branches: ['main']
+  pull_request:
 
 jobs:
-  ###########################################################################
-  # 1. CHECKS — Linting, Security, Static Analysis
-  ###########################################################################
-  checks:
-    name: 'Linting, Security & Static Analysis'
+  build-and-test:
     runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/tastybamboo/panda-cms-test:latest
+    permissions:
+      contents: read
+      packages: write
 
     env:
+      CI_IMAGE: ghcr.io/tastybamboo/panda-cms-test
+      TAG: ${{ github.sha }}
+      DOCKER_BUILDKIT: 1
       RAILS_ENV: test
-      BUNDLE_PATH: vendor/bundle
-      CI: 'true'
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      # -------------------------
-      # Restore Bundle Cache
-      # -------------------------
-      - name: Restore bundle cache
-        uses: actions/cache/restore@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
         with:
-          path: vendor/bundle
-          key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
-          restore-keys: ${{ runner.os }}-gems-
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Bundle install
+      # ---------------------------------------------------------
+      # 1. Build & push the CI image for THIS commit
+      # ---------------------------------------------------------
+      - name: Build & push CI image
         run: |
-          bundle config set path vendor/bundle
-          bundle config set without 'development'
-          bundle install --jobs=4 --retry=3
+          TAG=${TAG} CI_IMAGE=${CI_IMAGE} bin/ci push
 
-      # -------------------------
-      # Save bundle cache
-      # -------------------------
-      - name: Save bundle cache
-        if: success()
-        uses: actions/cache/save@v4
-        with:
-          path: vendor/bundle
-          key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
-
-      # -------------------------
-      # Linters
-      # -------------------------
-      - name: StandardRB
-        run: bundle exec standardrb
-
-      - name: ERB Lint
-        run: bundle exec erb_lint app/views --lint-all
-
-      - name: YAML Lint
-        run: yamllint -c .yamllint .
-
-      # -------------------------
-      # Security Tools
-      # -------------------------
-      - name: Bundler Audit
+      # ---------------------------------------------------------
+      # 2. Run tests inside the freshly built image
+      #    We pull the SHA-tagged build to guarantee correctness.
+      # ---------------------------------------------------------
+      - name: Run test suite
         run: |
-          bundle exec bundle-audit update
-          bundle exec bundle-audit check --verbose
+          docker pull ${CI_IMAGE}:${TAG}
+          CI_IMAGE=${CI_IMAGE}:${TAG} bin/ci test
 
-      - name: Brakeman
-        run: |
-          bundle exec brakeman --no-progress --quiet
-
-      # -------------------------
-      # Coverage upload if generated
-      # -------------------------
-      - name: Upload coverage (checks)
+      # ---------------------------------------------------------
+      # 3. Upload test artifacts (screenshots, HTML, coverage)
+      # ---------------------------------------------------------
+      - name: Upload artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: coverage-checks
-          path: coverage/
+          name: test-artifacts
+          path: |
+            spec/dummy/tmp/cuprite_failures/**
+            spec/dummy/tmp/capybara/**
+            coverage/**
           if-no-files-found: ignore
-
-  ###########################################################################
-  # 2. ASSETS — build engine assets once
-  ###########################################################################
-  assets:
-    name: 'Verify Assets'
-    needs: checks
-    runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/tastybamboo/panda-cms-test:latest
-
-    env:
-      RAILS_ENV: test
-      NODE_ENV: test
-      CI: 'true'
-      BUNDLE_PATH: vendor/bundle
-
-    steps:
-      - uses: actions/checkout@v4
-
-      # -------------------------
-      # Restore bundle cache
-      # -------------------------
-      - name: Restore bundle cache
-        uses: actions/cache/restore@v4
-        with:
-          path: vendor/bundle
-          key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
-          restore-keys: ${{ runner.os }}-gems-
-
-      - name: Bundle install
-        run: |
-          bundle config set path vendor/bundle
-          bundle config set without 'development'
-          bundle install --jobs=4 --retry=3
-
-      # -------------------------
-      # Save updated cache
-      # -------------------------
-      - name: Save bundle cache
-        if: success()
-        uses: actions/cache/save@v4
-        with:
-          path: vendor/bundle
-          key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
-
-      # -------------------------
-      # Asset verification
-      # -------------------------
-      - name: Panda asset generation & verification
-        uses: tastybamboo/panda-assets-verify-action@v1
-        with:
-          dummy_root: spec/dummy
-
-      # -------------------------
-      # Coverage upload
-      # -------------------------
-      - name: Upload coverage (assets)
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-assets
-          path: coverage/
-          if-no-files-found: ignore
-
-  ###########################################################################
-  # 3. TESTS — RSpec matrix (models, requests, libs, system)
-  ###########################################################################
-  tests:
-    name: 'RSpec Suite'
-    needs: assets
-    runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/tastybamboo/panda-cms-test:latest
-      options: --shm-size=2gb
-
-    services:
-      postgres:
-        image: postgres:16
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: password
-          POSTGRES_DB: panda_cms_dummy_test
-        options: >-
-          --health-cmd "pg_isready -U postgres"
-          --health-interval 5s
-          --health-timeout 3s
-          --health-retries 10
-
-    env:
-      RAILS_ENV: test
-      DATABASE_URL: postgres://postgres:password@postgres:5432/panda_cms_dummy_test
-      BUNDLE_PATH: vendor/bundle
-      CI: 'true'
-      CUPRITE_TIMEOUT: 20
-      CUPRITE_PROCESS_TIMEOUT: 40
-
-    strategy:
-      fail-fast: false
-      matrix:
-        suite: [models, requests, libs, system]
-
-    steps:
-      - uses: actions/checkout@v4
-
-      # -------------------------
-      # Restore bundle cache
-      # -------------------------
-      - name: Restore bundle cache
-        uses: actions/cache/restore@v4
-        with:
-          path: vendor/bundle
-          key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
-          restore-keys: ${{ runner.os }}-gems-
-
-      - name: Bundle install
-        run: |
-          bundle config set path vendor/bundle
-          bundle config set without 'development'
-          bundle install --jobs=4 --retry=3
-
-      - name: Save bundle cache
-        if: success()
-        uses: actions/cache/save@v4
-        with:
-          path: vendor/bundle
-          key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
-
-      # -------------------------
-      # DB setup
-      # -------------------------
-      - name: Setup database
-        run: bundle exec rails db:create db:schema:load
-
-      # -------------------------
-      # Chrome Smoke Test (system only)
-      # -------------------------
-      - name: Chrome Smoke Test
-        if: matrix.suite == 'system'
-        run: bundle exec rake ci:chrome_check
-
-      # -------------------------
-      # Run suites
-      # -------------------------
-      - name: Run model specs
-        if: matrix.suite == 'models'
-        run: bundle exec rspec spec/models
-
-      - name: Run request specs
-        if: matrix.suite == 'requests'
-        run: bundle exec rspec spec/requests
-
-      - name: Run lib specs
-        if: matrix.suite == 'libs'
-        run: bundle exec rspec spec/lib
-
-      - name: Run system specs (parallel)
-        if: matrix.suite == 'system'
-        env:
-          PARALLEL_TEST_PROCESSORS: 4
-        run: |
-          bundle exec parallel_tests spec/system \
-            --type rspec \
-            --group-by filesize \
-            --concurrency $PARALLEL_TEST_PROCESSORS \
-            --format documentation
-
-      # -------------------------
-      # Coverage per job
-      # -------------------------
-      - name: Upload coverage (tests)
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-${{ matrix.suite }}
-          path: coverage/
-          if-no-files-found: ignore
-
-  ###########################################################################
-  # 4. COVERAGE MERGE — Collate all coverage.json files
-  ###########################################################################
-  coverage:
-    name: 'Merge Coverage'
-    needs: [tests]
-    runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/tastybamboo/panda-cms-test:latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Download coverage artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: coverage_artifacts
-
-      - name: Merge coverage with SimpleCov
-        run: |
-          echo "require 'simplecov'; \
-                SimpleCov.collate Dir['coverage_artifacts/**/coverage.json'], 'rails'" > merge_coverage.rb
-          ruby merge_coverage.rb
-
-      - name: Upload merged coverage
-        uses: actions/upload-artifact@v4
-        with:
-          name: merged-coverage
-          path: coverage/
