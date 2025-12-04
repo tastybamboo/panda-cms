@@ -91,6 +91,8 @@ RSpec.configure do |config|
   end
 
   config.before(:each, type: :system) do
-    driven_by :cuprite
+    # Use the panda_cuprite driver registered in spec/support/panda_cuprite.rb
+    # so that warmup/smoke tests and actual specs share the same browser setup.
+    driven_by :panda_cuprite
   end
 end
