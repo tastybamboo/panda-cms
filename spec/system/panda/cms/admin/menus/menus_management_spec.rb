@@ -86,7 +86,6 @@ RSpec.describe "Menus Management", type: :system do
     end
 
     it "allows setting a start page" do
-      skip "Tests appear to be failing"
       visit "/admin/cms/menus/new"
 
       fill_in "Name", with: "Main Navigation"
@@ -316,7 +315,6 @@ RSpec.describe "Menus Management", type: :system do
     end
 
     it "allows selecting auto kind" do
-      skip "Tests appear to be failing"
       visit "/admin/cms/menus/new"
 
       fill_in "Name", with: "Auto Test"
