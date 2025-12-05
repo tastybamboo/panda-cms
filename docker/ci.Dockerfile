@@ -105,6 +105,8 @@ RUN ln -sf /usr/bin/google-chrome /usr/bin/chromium && \
 # =====================================================================
 # STAGE 2 — PostgreSQL Install (separate APT cache)
 # =====================================================================
+FROM base AS postgres
+
 RUN --mount=type=cache,target=/var/cache/apt-pg \
   apt-get update && \
   apt-get install -y --no-install-recommends gnupg curl ca-certificates && \
@@ -161,7 +163,9 @@ FROM base
 # Import components from earlier stages
 COPY --from=chrome   /usr/bin/google-chrome*      /usr/bin/
 COPY --from=chrome   /usr/bin/chromium*           /usr/bin/
-COPY --from=chrome   /usr/lib                     /usr/lib
+COPY --from=chrome   /usr/bin/google-chrome       /usr/bin/google-chrome
+COPY --from=chrome   /usr/bin/chromium            /usr/bin/chromium
+COPY --from=chrome   /usr/bin/chromium-browser    /usr/bin/chromium-browser
 COPY --from=chrome   /opt/google                  /opt/google
 COPY --from=postgres /usr/lib/postgresql          /usr/lib/postgresql
 COPY --from=postgres /usr/share/postgresql        /usr/share/postgresql

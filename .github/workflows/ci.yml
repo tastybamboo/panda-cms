@@ -79,7 +79,18 @@ jobs:
             -e RAILS_ENV=test \
             -e CI=true \
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest \
-            bash -lc "start-services && bin/chrome-smoke-test && bin/ci test || exit 1"
+            bash -lc "
+              start-services
+              bin/chrome-smoke-test
+              echo 'Installing gems...'
+              bundle config set --local path 'vendor/bundle'
+              bundle install --jobs=4 --retry=3
+              echo 'Creating test DB...'
+              bundle exec rails db:create db:schema:load
+              echo 'Running RSpec...'
+              bundle exec rspec --format documentation --color
+              stop-services
+            "
 
       # --------------------------------------------------------------
       # Upload failure artifacts

@@ -105,7 +105,7 @@ RSpec.describe "Page Details Slideover", type: :system do
     end
 
     it "closes when clicking the close button in the header" do
-      skip "SKIPPED: Failure needs further investigation, or feature is WIP"
+      skip "Test hangs/times out - likely waiting for slideover functionality that doesn't complete"
       visit "/admin/cms/pages/#{about_page.id}/edit"
       open_page_details
 

@@ -131,7 +131,6 @@ RSpec.describe "When editing a page", type: :system do
     end
 
     it "shows the content of the page being edited" do
-      skip "Apparently broken test"
       expect(page.html).to include("About")
       wait_for_iframe_load("editablePageFrame")
       within_frame "editablePageFrame" do
@@ -140,7 +139,6 @@ RSpec.describe "When editing a page", type: :system do
     end
 
     it "allows editing plain text content of the page" do
-      skip "Apparently broken test"
       wait_for_iframe_load("editablePageFrame")
       within_frame "editablePageFrame" do
         # Wait for the page to load
@@ -160,7 +158,6 @@ RSpec.describe "When editing a page", type: :system do
     end
 
     it "allows editing rich text content of the page" do
-      skip "Apparently broken test"
       wait_for_iframe_load("editablePageFrame")
       within_frame "editablePageFrame" do
         # Wait for the page to load
@@ -178,7 +175,6 @@ RSpec.describe "When editing a page", type: :system do
     end
 
     it "allows editing code content of the page" do
-      skip "Apparently broken test"
       wait_for_iframe_load("editablePageFrame")
       within_frame "editablePageFrame" do
         # Wait for the page to load
