@@ -14,12 +14,13 @@ env:
 
 permissions:
   contents: read
-  packages: write # allow pushing to GHCR
+  packages: write
   actions: read
 
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+    permissions: write-all
 
     steps:
       # --------------------------------------------------------------
@@ -101,6 +102,8 @@ jobs:
         with:
           name: cuprite-failures
           path: |
-            **/tmp/cuprite_failures/**
-            **/tmp/capybara/**
+            tmp/cuprite_failures/**
+            tmp/capybara/**
+            spec/dummy/tmp/cuprite_failures/**
+            spec/dummy/tmp/capybara/**
           if-no-files-found: ignore
