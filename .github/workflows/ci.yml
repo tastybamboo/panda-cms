@@ -18,8 +18,502 @@ permissions:
   actions: read
 
 jobs:
+<<<<<<< HEAD
   build-and-test:
     runs-on: ubuntu-latest
+||||||| 86b5a9d
+  seclint:
+    name: 'Security Checks & Linters'
+    runs-on: 'ubuntu-latest'
+    container:
+      image: ghcr.io/tastybamboo/panda-ci:latest
+    env:
+      BUNDLE_PATH: 'vendor/bundle'
+    steps:
+      - uses: 'actions/checkout@v6'
+
+      - name: Load gems from cache
+        uses: actions/cache@v4
+        with:
+          path: vendor/bundle
+          key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
+
+      - name: 'Bundle install'
+        run: |
+          bundle config path vendor/bundle
+          bundle config without development
+          bundle install --jobs 4 --retry 3
+
+      - name: 'Bundler Audit'
+        run: '#bundle exec bundle-audit --update && bundle exec bundle-audit check'
+      - name: 'Brakeman'
+        run: '#bundle exec brakeman --quiet'
+      - name: 'StandardRB Check'
+        run: '#bundle exec standardrb'
+      - name: 'ERB Check'
+        run: '#bundle exec erb_lint app/views --lint-all'
+      - name: 'YAML Lint'
+        run: '#yamllint -c .yamllint .'
+
+  model-specs:
+    name: 'Model Specs'
+    needs: seclint
+    runs-on: 'ubuntu-latest'
+    container:
+      image: ghcr.io/tastybamboo/panda-ci:latest
+    env:
+      BUNDLE_PATH: 'vendor/bundle'
+      RAILS_ENV: test
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: 'actions/checkout@v6'
+
+      - name: Load gems from cache
+        uses: actions/cache@v4
+        with:
+          path: vendor/bundle
+          key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
+
+      - name: 'Bundle install'
+        run: |
+          bundle config path vendor/bundle
+          bundle config without development
+          bundle install --jobs 4 --retry 3
+
+      - name: 'Setup test database'
+        env:
+          DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
+          RAILS_ENV: test
+        run: |
+          echo "📋 Loading schema (baseline with all tables)..."
+          bundle exec rails db:schema:load
+          echo "✅ Database ready"
+
+      - name: 'Run model specs'
+        env:
+          DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
+          RAILS_ENV: 'test'
+          RSPEC_COLOR: 'true'
+          TERM: 'xterm-256color'
+        run: |
+          echo "📦 Running model specs..."
+          #bundle exec rspec spec/models --format documentation --color
+
+  request-specs:
+    name: 'Request Specs'
+    needs: seclint
+    runs-on: 'ubuntu-latest'
+    container:
+      image: ghcr.io/tastybamboo/panda-ci:latest
+    env:
+      BUNDLE_PATH: 'vendor/bundle'
+      RAILS_ENV: test
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: 'actions/checkout@v6'
+
+      - name: Load gems from cache
+        uses: actions/cache@v4
+        with:
+          path: vendor/bundle
+          key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
+
+      - name: 'Bundle install'
+        run: |
+          bundle config path vendor/bundle
+          bundle config without development
+          bundle install --jobs 4 --retry 3
+
+      - name: 'Setup test database'
+        env:
+          DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
+          RAILS_ENV: test
+        run: |
+          echo "📋 Loading schema (baseline with all tables)..."
+          bundle exec rails db:schema:load
+          echo "✅ Database ready"
+
+      - name: 'Run request specs'
+        env:
+          DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
+          RAILS_ENV: 'test'
+          RSPEC_COLOR: 'true'
+          TERM: 'xterm-256color'
+        run: |
+          echo "🌐 Running request specs..."
+          #bundle exec rspec spec/requests --format documentation --color
+
+  lib-specs:
+    name: 'Lib Specs'
+    needs: seclint
+    runs-on: 'ubuntu-latest'
+    container:
+      image: ghcr.io/tastybamboo/panda-ci:latest
+    env:
+      BUNDLE_PATH: 'vendor/bundle'
+      RAILS_ENV: test
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: 'actions/checkout@v6'
+
+      - name: Load gems from cache
+        uses: actions/cache@v4
+        with:
+          path: vendor/bundle
+          key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
+
+      - name: 'Bundle install'
+        run: |
+          bundle config path vendor/bundle
+          bundle config without development
+          bundle install --jobs 4 --retry 3
+
+      - name: 'Setup test database'
+        env:
+          DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
+          RAILS_ENV: test
+        run: |
+          echo "📋 Loading schema (baseline with all tables)..."
+          bundle exec rails db:schema:load
+          echo "✅ Database ready"
+
+      - name: 'Run lib/services specs'
+        env:
+          DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
+          RAILS_ENV: 'test'
+          RSPEC_COLOR: 'true'
+          TERM: 'xterm-256color'
+        run: |
+          echo "⚙️  Running lib specs..."
+          #bundle exec rspec spec/lib --format documentation --color
+
+  system-specs:
+    name: 'System Specs (Browser Tests)'
+    needs: [seclint]
+    runs-on: 'ubuntu-latest'
+    permissions:
+      contents: read
+      checks: write
+    container:
+      image: ghcr.io/tastybamboo/panda-ci:latest
+      options: --shm-size=2gb
+    env:
+      BUNDLE_PATH: 'vendor/bundle'
+      RAILS_ENV: test
+      DISPLAY: ':99'
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+=======
+  seclint:
+    name: 'Security Checks & Linters'
+    runs-on: 'ubuntu-latest'
+    container:
+      image: ghcr.io/tastybamboo/panda-ci:ruby-3.3.10
+    env:
+      BUNDLE_PATH: 'vendor/bundle'
+    steps:
+      - uses: 'actions/checkout@v6'
+
+      - name: Load gems from cache
+        uses: actions/cache@v4
+        with:
+          path: vendor/bundle
+          key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
+
+      - name: 'Bundle install'
+        run: |
+          bundle config path vendor/bundle
+          bundle config without development
+          bundle install --jobs 4 --retry 3
+
+      - name: 'Bundler Audit'
+        run: '#bundle exec bundle-audit --update && bundle exec bundle-audit check'
+      - name: 'Brakeman'
+        run: '#bundle exec brakeman --quiet'
+      - name: 'StandardRB Check'
+        run: '#bundle exec standardrb'
+      - name: 'ERB Check'
+        run: '#bundle exec erb_lint app/views --lint-all'
+      - name: 'YAML Lint'
+        run: '#yamllint -c .yamllint .'
+
+  model-specs:
+    name: 'Model Specs'
+    needs: seclint
+    runs-on: 'ubuntu-latest'
+    container:
+      image: ghcr.io/tastybamboo/panda-ci:ruby-3.3.10
+    env:
+      BUNDLE_PATH: 'vendor/bundle'
+      RAILS_ENV: test
+      BOOTSNAP_CACHE_DIR: 'tmp/bootsnap-ci'
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: 'actions/checkout@v6'
+
+      - name: Load gems from cache
+        uses: actions/cache@v4
+        with:
+          path: vendor/bundle
+          key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
+
+      - name: 'Bundle install'
+        run: |
+          bundle config path vendor/bundle
+          bundle config without development
+          bundle install --jobs 4 --retry 3
+
+      - name: 'Setup test database'
+        env:
+          DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
+          RAILS_ENV: test
+          BOOTSNAP_CACHE_DIR: 'tmp/bootsnap-ci'
+        run: |
+          echo "📋 Loading schema (baseline with all tables)..."
+          bundle exec rails db:schema:load
+          echo "✅ Database ready"
+
+      - name: 'Run model specs'
+        env:
+          DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
+          RAILS_ENV: 'test'
+          RSPEC_COLOR: 'true'
+          TERM: 'xterm-256color'
+        run: |
+          echo "📦 Running model specs..."
+          #bundle exec rspec spec/models --format documentation --color
+
+  request-specs:
+    name: 'Request Specs'
+    needs: seclint
+    runs-on: 'ubuntu-latest'
+    container:
+      image: ghcr.io/tastybamboo/panda-ci:ruby-3.3.10
+    env:
+      BUNDLE_PATH: 'vendor/bundle'
+      RAILS_ENV: test
+      BOOTSNAP_CACHE_DIR: 'tmp/bootsnap-ci'
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: 'actions/checkout@v6'
+
+      - name: Load gems from cache
+        uses: actions/cache@v4
+        with:
+          path: vendor/bundle
+          key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
+
+      - name: 'Bundle install'
+        run: |
+          bundle config path vendor/bundle
+          bundle config without development
+          bundle install --jobs 4 --retry 3
+
+      - name: 'Setup test database'
+        env:
+          DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
+          RAILS_ENV: test
+          BOOTSNAP_CACHE_DIR: 'tmp/bootsnap-ci'
+        run: |
+          echo "📋 Loading schema (baseline with all tables)..."
+          bundle exec rails db:schema:load
+          echo "✅ Database ready"
+
+      - name: 'Run request specs'
+        env:
+          DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
+          RAILS_ENV: 'test'
+          BOOTSNAP_CACHE_DIR: 'tmp/bootsnap-ci'
+          RSPEC_COLOR: 'true'
+          TERM: 'xterm-256color'
+        run: |
+          echo "🌐 Running request specs..."
+          #bundle exec rspec spec/requests --format documentation --color
+
+  lib-specs:
+    name: 'Lib Specs'
+    needs: seclint
+    runs-on: 'ubuntu-latest'
+    container:
+      image: ghcr.io/tastybamboo/panda-ci:ruby-3.3.10
+    env:
+      BUNDLE_PATH: 'vendor/bundle'
+      RAILS_ENV: test
+      BOOTSNAP_CACHE_DIR: 'tmp/bootsnap-ci'
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: 'actions/checkout@v6'
+
+      - name: Load gems from cache
+        uses: actions/cache@v4
+        with:
+          path: vendor/bundle
+          key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
+
+      - name: 'Bundle install'
+        run: |
+          bundle config path vendor/bundle
+          bundle config without development
+          bundle install --jobs 4 --retry 3
+
+      - name: 'Setup test database'
+        env:
+          DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
+          RAILS_ENV: test
+          BOOTSNAP_CACHE_DIR: 'tmp/bootsnap-ci'
+        run: |
+          echo "📋 Loading schema (baseline with all tables)..."
+          bundle exec rails db:schema:load
+          echo "✅ Database ready"
+
+      - name: 'Run lib/services specs'
+        env:
+          DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
+          RAILS_ENV: 'test'
+          BOOTSNAP_CACHE_DIR: 'tmp/bootsnap-ci'
+          RSPEC_COLOR: 'true'
+          TERM: 'xterm-256color'
+        run: |
+          echo "⚙️  Running lib specs..."
+          #bundle exec rspec spec/lib --format documentation --color
+
+  system-specs:
+    name: 'System Specs (Browser Tests)'
+    needs: [seclint]
+    runs-on: 'ubuntu-latest'
+    permissions:
+      contents: read
+      checks: write
+    container:
+      image: ghcr.io/tastybamboo/panda-ci:ruby-3.3.10
+      options: --shm-size=2gb --tmpfs /dev/shm:rw,nosuid,nodev,mode=1777
+    env:
+      BUNDLE_PATH: 'vendor/bundle'
+      RAILS_ENV: test
+      BOOTSNAP_CACHE_DIR: 'tmp/bootsnap-ci'
+      DISPLAY: ':99'
+      DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
+      PGUSER: 'postgres'
+      PGPASSWORD: 'password'
+      PGHOST: 'postgres'
+      FERRUM_PROCESS_TIMEOUT: '60'  # Give browser 60s to start in CI
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+>>>>>>> origin/main
 
     steps:
       # --------------------------------------------------------------
@@ -28,22 +522,67 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+<<<<<<< HEAD
       # --------------------------------------------------------------
       # Log in to GHCR so we can pull/push layers
       # --------------------------------------------------------------
       - name: Log in to GHCR
         uses: docker/login-action@v3
+||||||| 86b5a9d
+      - name: Start Xvfb
+        run: Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
+
+      - name: Load gems from cache
+        uses: actions/cache@v4
+=======
+      - name: Prepare Chrome temp dirs
+        run: |
+          mkdir -p /home/panda/tmp /home/panda/chrome
+          chmod 777 /home/panda/tmp /home/panda/chrome
+        env:
+          TMPDIR: /home/panda/tmp
+          CHROME_USER_DATA_DIR: /home/panda/chrome
+
+      - name: Start Xvfb
+        run: Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
+
+      - name: Restore bundle cache
+        uses: actions/cache/restore@v4
+>>>>>>> origin/main
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+<<<<<<< HEAD
       # --------------------------------------------------------------
       # Set up Docker Buildx (enables multi-stage caching)
       # --------------------------------------------------------------
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+||||||| 86b5a9d
+      - name: Bundle install
+        run: |
+          bundle config path vendor/bundle
+          bundle config without development
+          bundle install --jobs 4 --retry 3
+=======
+      - name: Bundle install
+        run: |
+          bundle config path vendor/bundle
+          bundle config without development
+          bundle install --jobs 4 --retry 3
+          bundle clean --force
 
+      - name: Save bundle cache
+        if: success()
+        uses: actions/cache/save@v4
+        with:
+          path: vendor/bundle
+          key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
+>>>>>>> origin/main
+
+<<<<<<< HEAD
       # --------------------------------------------------------------
       # Build + Push CI image (cached) to GHCR
       #
@@ -52,6 +591,34 @@ jobs:
       # --------------------------------------------------------------
       - name: Build & push CI image
         uses: docker/build-push-action@v6
+||||||| 86b5a9d
+      - name: 'Setup test database'
+        env:
+          DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
+          RAILS_ENV: test
+        run: |
+          echo "📋 Loading schema (baseline with all tables)..."
+          bundle exec rails db:schema:load
+          echo "✅ Database ready"
+
+      - name: Panda asset generation and verification
+        uses: tastybamboo/panda-assets-verify-action@v1
+        continue-on-error: ${{ env.ACT == 'true' }}
+=======
+      - name: 'Setup test database'
+        env:
+          DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
+          RAILS_ENV: test
+          BOOTSNAP_CACHE_DIR: tmp/bootsnap-ci
+        run: |
+          echo "📋 Loading schema (baseline with all tables)..."
+          bundle exec rails db:schema:load
+          echo "✅ Database ready"
+
+      - name: Panda asset generation and verification
+        uses: tastybamboo/panda-assets-verify-action@v1
+        continue-on-error: ${{ env.ACT == 'true' }}
+>>>>>>> origin/main
         with:
           context: .
           file: docker/ci.Dockerfile
@@ -92,12 +659,91 @@ jobs:
               stop-services
             "
 
+<<<<<<< HEAD
       # --------------------------------------------------------------
       # Upload failure artifacts
       # --------------------------------------------------------------
       - name: Upload failure artifacts
         if: failure()
         uses: actions/upload-artifact@v4
+||||||| 86b5a9d
+      - name: Check Xvfb status
+        run: |
+          echo "🔍 Checking Xvfb status..."
+          ps aux | grep -i xvfb || echo "⚠️  Xvfb process not found"
+          echo "DISPLAY environment variable: $DISPLAY"
+
+      - name: Run smoke test
+        env:
+          DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
+          CUPRITE_PROCESS_TIMEOUT: 30
+          CUPRITE_TIMEOUT: 15
+          FERRUM_BROWSER_LOG: 'true'
+        run: |
+          echo "🧪 Running smoke test to verify browser startup..."
+          bundle exec rspec spec/system/smoke_test_spec.rb --format documentation --color
+        timeout-minutes: 5
+
+      - name: Run system specs
+        env:
+          DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
+          CUPRITE_PROCESS_TIMEOUT: 30
+          CUPRITE_TIMEOUT: 15
+          FERRUM_BROWSER_LOG: 'true'
+        run: |
+          set -euo pipefail
+          echo "🧪 Running full system test suite..."
+          bundle exec rspec spec/system --format documentation --color
+        timeout-minutes: 30
+
+      - name: 'Upload coverage'
+        uses: actions/upload-artifact@v5
+        if: ${{ always() && env.ACT != 'true' }}
+=======
+      - name: Check Xvfb status
+        run: |
+          echo "🔍 Checking Xvfb status..."
+          ps aux | grep -i xvfb || echo "⚠️  Xvfb process not found"
+          echo "DISPLAY environment variable: $DISPLAY"
+
+      - name: Run smoke test
+        env:
+          DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
+          CUPRITE_PROCESS_TIMEOUT: 18
+          CUPRITE_TIMEOUT: 18
+          FERRUM_BROWSER_LOG: 'true'
+          TMPDIR: /home/panda/tmp
+          CHROME_USER_DATA_DIR: /home/panda/chrome
+        run: |
+          set -euo pipefail
+          mkdir -p spec/tmp/capybara
+          echo "🧪 Running smoke test to verify browser startup..."
+          DEBUG=true CUPRITE_DEBUG=true bundle exec rspec spec/system/smoke_test_spec.rb --format documentation --color
+        timeout-minutes: 5
+
+      - name: Run system specs
+        env:
+          DATABASE_URL: 'postgres://postgres:password@postgres:5432/test'
+          CUPRITE_PROCESS_TIMEOUT: 18
+          CUPRITE_TIMEOUT: 18
+          FERRUM_BROWSER_LOG: 'true'
+          TMPDIR: /home/panda/tmp
+          CHROME_USER_DATA_DIR: /home/panda/chrome
+        run: |
+          set -euo pipefail
+          mkdir -p spec/tmp/capybara
+          echo "🧪 Running full system test suite..."
+          TESTFILES=$(find spec/system -name '*_spec.rb' | wc -l)
+          CORES=$(nproc --all)
+          JOBS=$(( CORES > 4 ? 4 : CORES ))
+          echo "Running with $JOBS parallel workers"
+          DEBUG=true CUPRITE_DEBUG=true bundle exec parallel_tests spec/system --type rspec --concurrency $JOBS --group-by filesize --format documentation --color
+        timeout-minutes: 30
+
+      - name: 'Upload coverage'
+        uses: actions/upload-artifact@v5
+        if: ${{ always() && env.ACT != 'true' }}
+>>>>>>> origin/main
         with:
           name: cuprite-failures
           path: |
