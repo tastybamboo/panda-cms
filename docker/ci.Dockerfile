@@ -180,10 +180,52 @@ COPY --from=ruby     /root/.local                 /root/.local
 
 ENV PATH="/mise/installs/ruby/3.4.7/bin:/root/.local/bin:/usr/lib/postgresql/17/bin:${PATH}"
 
-# Ensure libpq runtime is present for pg_isready/psql
-RUN apt-get update && \
-  apt-get install -y --no-install-recommends libpq5 && \
-  rm -rf /var/lib/apt/lists/*
+# Install runtime dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+  libpq5 \
+  libasound2t64 \
+  libatk1.0-0t64 \
+  libatk-bridge2.0-0t64 \
+  libcairo2 \
+  libcups2t64 \
+  libdbus-1-3 \
+  libexpat1 \
+  libfontconfig1 \
+  libfreetype6 \
+  libglib2.0-0 \
+  libgtk-3-0t64 \
+  libnspr4 \
+  libnss3 \
+  libpango-1.0-0 \
+  libpangocairo-1.0-0 \
+  libx11-6 \
+  libx11-xcb1 \
+  libxcb1 \
+  libxcomposite1 \
+  libxcursor1 \
+  libxdamage1 \
+  libxext6 \
+  libxfixes3 \
+  libxi6 \
+  libxrandr2 \
+  libxrender1 \
+  libxshmfence1 \
+  libxss1 \
+  libxtst6 \
+  libgbm1 \
+  libdrm2 \
+  fonts-liberation \
+  xdg-utils \
+  dbus-x11 \
+  && rm -rf /var/lib/apt/lists/*
+
+# Stub dbus so Chrome 142+ doesn't crash
+RUN mkdir -p /run/dbus && \
+  touch /run/dbus/system_bus_socket && \
+  echo -e '#!/bin/sh\nexit 0' > /usr/bin/dbus-daemon && chmod +x /usr/bin/dbus-daemon
+
+# Fix Chrome wrapper script - link /usr/bin/chrome to actual binary
+RUN ln -sf /opt/google/chrome/chrome /usr/bin/chrome
 
 # Install runtime service scripts
 COPY docker/ci/start-services.sh /usr/local/bin/start-services
