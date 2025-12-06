@@ -95,13 +95,13 @@ jobs:
             -e RAILS_ENV=test \
             -e CI=true \
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest \
-            bash -lc "
+            bash -lc '
               set -euxo pipefail
               export PGUSER=postgres
               export PGPASSWORD=password
               export PGHOST=127.0.0.1
               export PGPORT=5432
-              export DATABASE_URL=\"postgres://postgres:${PGPASSWORD}@${PGHOST}:${PGPORT}/panda_cms_dummy_test\"
+              export DATABASE_URL="postgres://postgres:${PGPASSWORD}@${PGHOST}:${PGPORT}/panda_cms_dummy_test"
               export BUNDLE_PATH=/usr/local/bundle
               echo '==> Starting services...'
               start-services
@@ -114,15 +114,15 @@ jobs:
               bundle install --jobs=4 --retry=3
               echo '==> Creating test DB...'
               bundle exec rails db:create db:schema:load
-              echo '==> Running RSpec (this may take several minutes)...'
-              echo 'Start time:' \$(date '+%Y-%m-%d %H:%M:%S')
+              echo '\''==> Running RSpec (this may take several minutes)...'\''
+              echo '\''Start time:'\'' $(date '\''+%Y-%m-%d %H:%M:%S'\'')
               bundle exec rspec --format progress --format documentation --out /tmp/rspec.log --color
-              echo 'End time:' \$(date '+%Y-%m-%d %H:%M:%S')
-              echo '==> Test output:'
+              echo '\''End time:'\'' $(date '\''+%Y-%m-%d %H:%M:%S'\'')
+              echo '\''==> Test output:'\''
               cat /tmp/rspec.log
-              echo '==> Stopping services...'
+              echo '\''==> Stopping services:'\''
               stop-services
-            "
+            '
 
       # --------------------------------------------------------------
       # Upload failure artifacts
