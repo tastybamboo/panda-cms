@@ -51,7 +51,22 @@ jobs:
       # This ensures CI always has the correct Chrome/Postgres/Ruby.
       # Only rebuilds layers that change (BIG speedup).
       # --------------------------------------------------------------
+      - name: Build CI image (PRs only)
+        if: github.event_name == 'pull_request'
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/ci.Dockerfile
+          platforms: ${{ env.PLATFORM }}
+          load: true # load locally so docker run can use it without pushing
+          provenance: false
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          cache-from: |
+            type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+
       - name: Build & push CI image
+        if: github.event_name != 'pull_request'
         uses: docker/build-push-action@v6
         with:
           context: .
