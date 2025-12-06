@@ -1,6 +1,4 @@
---container-architecture linux/amd64
+# Secrets
 --secret-file .secrets
---reuse
---pull=false
---verbose
---platform ubuntu-latest=ghcr.io/catthehacker/ubuntu:act-latest
+-P ubuntu-latest=ghcr.io/tastybamboo/panda-cms-test:local
+--container-options "--shm-size=2gb"

@@ -5,7 +5,7 @@
     <%= render Panda::Core::Admin::FormErrorComponent.new(model: menu) %>
 
     <%= f.text_field :name %>
-    <%= f.select :kind, options_for_select([["Static", "static"], ["Auto", "auto"]], selected: menu.kind || "static"), {}, { data: { action: "change->menu-form#kindChanged" } } %>
+    <%= f.select :kind, options_for_select([["Static", "static"], ["Auto", "auto"]], selected: menu.kind || "static"), {}, { "data-action": "change->menu-form#kindChanged" } %>
 
     <div data-menu-form-target="startPageField" class="hidden">
       <%= f.collection_select :start_page_id, Panda::CMS::Page.order(:title), :id, :title, { include_blank: "Select a page...", label: "Start Page" }, { class: "mt-1" } %>

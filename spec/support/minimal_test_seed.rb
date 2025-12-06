@@ -9,7 +9,7 @@ module Panda
           Panda::Core::User.create!(
             name: "Admin User",
             email: "admin@example.com",
-            is_admin: true,
+            admin: true,
             image_url: "/panda-cms-assets/panda-nav.png"
           )
         end
@@ -19,7 +19,7 @@ module Panda
           Panda::Core::User.create!(
             name: "Regular User",
             email: "regular@example.com",
-            is_admin: false,
+            admin: false,
             image_url: "/panda-cms-assets/panda-nav.png"
           )
         end

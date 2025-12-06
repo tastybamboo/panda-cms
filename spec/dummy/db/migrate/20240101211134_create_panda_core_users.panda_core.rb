@@ -8,7 +8,7 @@ class CreatePandaCoreUsers < ActiveRecord::Migration[7.1]
         t.string :name
         t.string :email, null: false
         t.string :image_url
-        t.boolean :is_admin, default: false, null: false
+        t.boolean :admin, default: false, null: false
         t.timestamps
       end
 

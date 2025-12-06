@@ -31,3 +31,6 @@ panda-assets-report/
 panda-assets-summary/
 screenshots/
 .secrets
+.docker-cache/
+act.log
+vendor/bundle

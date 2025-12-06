@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+echo "📦 Installing Ruby gems..."
+bundle install
+
+echo "📦 Installing JavaScript deps..."
+if [ -f package.json ]; then
+  yarn install --silent
+fi
+
+echo "🛠 Creating database (if applicable)..."
+if [ -f config/database.yml ]; then
+  bundle exec rails db:setup || true
+fi
+
+echo "🔧 Installing git hooks via Lefthook..."
+if command -v lefthook >/dev/null; then
+  lefthook install
+else
+  echo "➡️ Install Lefthook for git hooks: https://github.com/evilmartians/lefthook"
+fi
+
+echo "🎉 Setup complete!"

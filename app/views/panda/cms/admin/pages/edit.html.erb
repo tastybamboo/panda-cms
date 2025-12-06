@@ -58,9 +58,9 @@
         <%= f.check_box :inherit_seo, {
           label: "Inherit SEO from parent page",
           data: {
-            page_form_target: "inheritCheckbox",
-            action: "change->page-form#toggleInherit"
-          }
+            page_form_target: "inheritCheckbox"
+          },
+          "data-action": "change->page-form#toggleInherit"
         } %>
       <% end %>
 

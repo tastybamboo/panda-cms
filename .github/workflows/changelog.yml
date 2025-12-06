@@ -1,0 +1,23 @@
+name: 'Update CHANGELOG'
+
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  changelog:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Append PR title to CHANGELOG
+        run: |
+          echo "- ${GITHUB_EVENT_PULL_REQUEST_TITLE}" >> .github/pr-changelog.txt
+
+      - name: Upload changelog chunk
+        uses: actions/upload-artifact@v4
+        with:
+          name: changelog-chunks
+          path: .github/pr-changelog.txt

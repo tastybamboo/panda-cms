@@ -43,3 +43,75 @@ module ActiveRecord
     end
   end
 end
+
+def wait_for_iframe_load(iframe_id, timeout: 20)
+  puts "[Test] Waiting for iframe #{iframe_id} to load..."
+
+  Timeout.timeout(timeout) do
+    # Step 1 — Wait for iframe element to exist
+    iframe = nil
+    begin
+      iframe = page.find("iframe##{iframe_id}", wait: timeout)
+    rescue Capybara::ElementNotFound
+      puts "[Test] Iframe #{iframe_id} not found in DOM"
+      return false
+    end
+
+    puts "[Test] Iframe element found: id=#{iframe["id"]} src='#{iframe["src"]}'"
+
+    # Step 2 — Wait for iframe `src` to be populated
+    Capybara.using_wait_time(2) do
+      until iframe["src"] && iframe["src"] != "" && iframe["src"] != "about:blank"
+        puts "[Test] Iframe src not ready (#{iframe["src"].inspect})... waiting"
+        sleep 0.2
+        iframe = page.find("iframe##{iframe_id}") # refresh handle
+      end
+    end
+
+    puts "[Test] Iframe has non-blank src: #{iframe["src"]}"
+
+    # Step 3 — Switch into frame and wait for DOM load
+    page.document.synchronize(timeout) do
+      within_frame(iframe_id) do
+        ready = begin
+          page.evaluate_script("document.readyState")
+        rescue
+          nil
+        end
+        url = begin
+          page.evaluate_script("window.location.href")
+        rescue
+          nil
+        end
+
+        puts "[Test] Frame readyState=#{ready.inspect}, url=#{url.inspect}"
+
+        # Must have a real URL and full DOM load
+        raise "iframe not loaded" unless
+          ready == "complete" && url && url != "about:blank"
+      end
+    rescue => e
+      puts "[Test] Frame not ready yet: #{e.class}: #{e.message}"
+      sleep 0.2
+      raise Capybara::ElementNotFound
+    end
+
+    puts "[Test] Iframe #{iframe_id} fully loaded"
+    return true
+  end
+rescue Timeout::Error
+  puts "[Test] Timeout while waiting for iframe #{iframe_id}"
+
+  begin
+    iframe = page.first("iframe##{iframe_id}")
+    if iframe
+      puts "[Test] Final iframe debug: src=#{iframe["src"]}"
+    else
+      puts "[Test] Iframe not present. Existing iframes: #{page.all("iframe").map { |i| i["id"] }}"
+    end
+  rescue => e
+    puts "[Test] Failed to gather iframe debug info: #{e.message}"
+  end
+
+  false
+end

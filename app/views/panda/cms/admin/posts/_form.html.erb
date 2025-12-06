@@ -4,9 +4,9 @@
   <div data-controller="slug" data-slug-add-date-prefix-value="true">
     <%= f.text_field :title,
         data: {
-          "slug-target": "input_text",
-          action: "focusout->slug#generatePath"
-        } %>
+          "slug-target": "input_text"
+        },
+        "data-action": "focusout->slug#generatePath" %>
     <%= f.text_field :slug,
         data: {
           "slug-target": "output_text"
@@ -22,9 +22,9 @@
     <%= f.hidden_field :content,
         data: {
           editor_form_target: "hiddenField",
-          initial_content: editor_content_for(post, local_assigns[:preserved_content]),
-          action: "change->editor-form#handleContentChange"
-        } %>
+          initial_content: editor_content_for(post, local_assigns[:preserved_content])
+        },
+        "data-action": "change->editor-form#handleContentChange" %>
     <div id="<%= editor_id %>"
          data-editor-form-target="editorContainer"
          class="max-w-full block bg-white pt-1 mb-4 mt-2 border border-mid rounded-md min-h-[300px]">

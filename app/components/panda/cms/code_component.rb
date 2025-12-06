@@ -17,7 +17,7 @@ module Panda
         # Russian doll caching: Cache component output at block_content level
         # Only cache in non-editable mode (public-facing pages)
         if should_cache?
-          raw cache_component_output
+          raw cache_component_output.to_s.html_safe
         else
           render_content
         end

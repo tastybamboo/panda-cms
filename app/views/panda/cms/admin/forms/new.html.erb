@@ -5,7 +5,7 @@
     <div data-controller="slug">
       <input type="hidden" value="<%= Panda::CMS::Current.root %>" data-slug-target="existing_root">
       <%= f.select :parent_id, options, {}, { "data-slug-target": "input_select", "data-action": "change->slug#setPrePath" } %>
-      <%= f.text_field :title, { data: { "slug-target": "input_text", action: "focusout->slug#generatePath" } } %>
+      <%= f.text_field :title, { data: { "slug-target": "input_text" }, "data-action": "focusout->slug#generatePath" } %>
       <%= f.text_field :path, { data: { prefix: Panda::CMS::Current.root, "slug-target": "output_text" } } %>
       <%= f.collection_select :panda_cms_template_id, Panda::CMS::Template.available, :id, :name %>
       <%= f.button %>

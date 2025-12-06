@@ -1,0 +1,163 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# ===================================================================
+# Panda CMS — CI Runner (Option A: direct bind-mount)
+# CI Docker image: ubuntu 24.04 + Ruby 3.4.7 (mise) + PG17 + Chrome
+# ===================================================================
+
+CI_IMAGE="ghcr.io/tastybamboo/panda-cms-test:latest"
+CI_DOCKERFILE="docker/ci.Dockerfile"
+PLATFORM="linux/amd64"
+
+CONTAINER_NAME="panda-cms-ci"
+BUNDLE_VOL="ci_bundle_cache"
+
+# -------------------------------------------------------------------
+# Helpers
+# -------------------------------------------------------------------
+header() { printf "\n\033[1;36m▶ %s\033[0m\n" "$1"; }
+die()    { echo "ERROR: $1" >&2; exit 1; }
+
+docker info >/dev/null 2>&1 || die "Docker is not running."
+
+# -------------------------------------------------------------------
+# Usage
+# -------------------------------------------------------------------
+if [[ "${1:-}" == "" ]]; then
+  cat <<EOF
+Usage: bin/ci [COMMAND]
+
+Commands:
+  build         Build the CI Docker image (local)
+  push          Build and push to registry (for CI)
+  test          Run test suite inside container
+  shell         Open an interactive shell
+  clean         Remove containers and volume
+
+EOF
+  exit 0
+fi
+
+COMMAND="$1"
+shift || true
+
+# -------------------------------------------------------------------
+# Build Image — local (--load)
+# -------------------------------------------------------------------
+build_image() {
+  header "Building CI Docker image (with --load)"
+
+  docker buildx build \
+    --platform "$PLATFORM" \
+    --progress plain \
+    --load \
+    -t "$CI_IMAGE" \
+    -f "$CI_DOCKERFILE" \
+    .
+
+  header "✓ Build complete"
+}
+
+# -------------------------------------------------------------------
+# Build & Push — GitHub Actions / CI pipeline
+# -------------------------------------------------------------------
+push_image() {
+  header "Building & pushing CI Docker image"
+
+  docker buildx build \
+    --platform "$PLATFORM" \
+    --progress plain \
+    --push \
+    -t "$CI_IMAGE" \
+    -f "$CI_DOCKERFILE" \
+    .
+
+  header "✓ Pushed to $CI_IMAGE"
+}
+
+# -------------------------------------------------------------------
+# Env banner printed *inside* the container
+# -------------------------------------------------------------------
+env_banner() {
+  cat <<'EOF'
+echo "-------------------------------------------------------"
+echo " Panda CMS — CI Environment"
+echo "-------------------------------------------------------"
+
+echo -n " Ruby:           "; ruby -v
+echo -n " Rails:          "; ruby -e 'puts Gem.loaded_specs["rails"]&.version'
+echo -n " PostgreSQL:     "; psql --version 2>/dev/null | awk '{print $3}'
+echo -n " Chrome:         "; google-chrome --version
+echo -n " CPU Arch:       "; uname -m
+
+echo "-------------------------------------------------------"
+EOF
+}
+
+# -------------------------------------------------------------------
+# Run tests (direct bind-mount / no re-bundling)
+# -------------------------------------------------------------------
+run_tests() {
+  header "Running test suite inside CI container"
+
+  docker run --rm \
+    --platform "$PLATFORM" \
+    --name "$CONTAINER_NAME" \
+    -v "$(pwd)":/app \
+    -v "ci_bundle_cache:/usr/local/bundle" \
+    -e RAILS_ENV=test \
+    "$CI_IMAGE" \
+    bash -lc "
+      start-services
+      $(env_banner)
+      echo '▶ Installing gems...'
+      bundle config set --local path 'vendor/bundle'
+      bundle install --jobs=4 --retry=3
+      echo '▶ Creating database with default schema...'
+      bundle exec rails db:create db:schema:load
+      echo '▶ Running Chrome smoke test...'
+      bin/chrome-smoke-test || exit 1
+      echo '▶ Running tests...'
+      bundle exec rspec --format documentation --color
+      stop-services
+    "
+}
+
+# -------------------------------------------------------------------
+# Shell
+# -------------------------------------------------------------------
+run_shell() {
+  header "Opening interactive CI shell"
+
+  docker run --rm -it \
+    --platform "$PLATFORM" \
+    --name "$CONTAINER_NAME" \
+    -v "$(pwd)":/app:delegated \
+    -v "$BUNDLE_VOL:/usr/local/bundle" \
+    -e RAILS_ENV=test \
+    "$CI_IMAGE" \
+    bash
+}
+
+# -------------------------------------------------------------------
+# Clean
+# -------------------------------------------------------------------
+clean_ci() {
+  header "Cleaning CI environment"
+  docker rm -f "$CONTAINER_NAME" >/dev/null 2>&1 || true
+  docker volume rm "$BUNDLE_VOL" >/dev/null 2>&1 || true
+  echo "✓ Cleaned"
+}
+
+# -------------------------------------------------------------------
+# Dispatcher
+# -------------------------------------------------------------------
+case "$COMMAND" in
+  build) build_image ;;
+  push)  push_image ;;
+  test)  run_tests ;;
+  shell) run_shell ;;
+  clean) clean_ci ;;
+  *) die "Unknown command: $COMMAND" ;;
+esac

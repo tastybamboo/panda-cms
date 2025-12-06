@@ -2,11 +2,14 @@
 
 source "https://rubygems.org"
 
-gem "panda-core", github: "tastybamboo/panda-core", branch: "main"
+gem "panda-core", github: "tastybamboo/panda-core", ref: "263bf46bde1bf6b4abd962d48eb1088bfd129bfa"
 gem "panda-editor"
 
 # Specify your gem's dependencies in panda-cms.gemspec
 gemspec
+
+gem "rails"
+gem "tzinfo-data"
 
 # Development and testing dependencies
 group :development, :test do
@@ -27,6 +30,7 @@ group :development, :test do
   gem "puma"
   gem "rake"
   gem "ruby-lsp"
+  gem "sqlite3"
   gem "standard"
   gem "standard-rails"
   gem "stringio"

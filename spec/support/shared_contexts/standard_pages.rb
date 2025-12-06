@@ -40,14 +40,14 @@ RSpec.shared_context "with standard pages" do
   let!(:admin_user) do
     @admin_user ||= Panda::Core::User.find_or_create_by!(email: "admin@example.com") do |user|
       user.name = "Admin User"
-      user.is_admin = true
+      user.admin = true
     end
   end
 
   let!(:regular_user) do
     @regular_user ||= Panda::Core::User.find_or_create_by!(email: "user@example.com") do |user|
       user.name = "Regular User"
-      user.is_admin = false
+      user.admin = false
     end
   end
 
