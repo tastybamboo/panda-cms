@@ -133,7 +133,9 @@ RUN rm -rf /var/lib/postgresql/17/main && \
   chmod 775 /run/postgresql
 
 # Init DB
-RUN su postgres -c "/usr/lib/postgresql/17/bin/initdb -D /var/lib/postgresql/17/main"
+RUN echo "password" > /tmp/postgres_pw && \
+  su postgres -c "/usr/lib/postgresql/17/bin/initdb -D /var/lib/postgresql/17/main --pwfile=/tmp/postgres_pw" && \
+  rm -f /tmp/postgres_pw
 
 # =====================================================================
 # STAGE 3 — Ruby Install via mise (with persistent compile cache)

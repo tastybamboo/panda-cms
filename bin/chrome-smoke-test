@@ -44,7 +44,8 @@ ok("Chrome binary found")
 # 2. Start Chrome
 # --------------------------------------------------------------------
 
-pid = spawn(CHROME, *FLAGS, out: "/dev/null", err: "/dev/null")
+puts "[Chrome Smoke Test] Starting Chrome with flags: #{FLAGS.join(' ')}"
+pid = spawn(CHROME, *FLAGS, out: "/tmp/chrome-stdout.log", err: "/tmp/chrome-stderr.log")
 
 # --------------------------------------------------------------------
 # 3. Wait for DevToolsActivePort
@@ -56,6 +57,17 @@ begin
   end
 rescue Timeout::Error
   Process.kill("TERM", pid) rescue nil
+
+  # Dump Chrome logs for debugging
+  if File.exist?("/tmp/chrome-stdout.log")
+    puts "\n=== Chrome STDOUT ==="
+    puts File.read("/tmp/chrome-stdout.log")
+  end
+  if File.exist?("/tmp/chrome-stderr.log")
+    puts "\n=== Chrome STDERR ==="
+    puts File.read("/tmp/chrome-stderr.log")
+  end
+
   fail!("Chrome never created DevToolsActivePort — cannot run headless")
 end
 
