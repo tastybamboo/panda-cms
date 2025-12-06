@@ -178,6 +178,11 @@ COPY --from=ruby     /root/.local                 /root/.local
 
 ENV PATH="/mise/shims:/root/.local/bin:/usr/lib/postgresql/17/bin:${PATH}"
 
+# Ensure libpq runtime is present for pg_isready/psql
+RUN apt-get update && \
+  apt-get install -y --no-install-recommends libpq5 && \
+  rm -rf /var/lib/apt/lists/*
+
 # Install runtime service scripts
 COPY docker/ci/start-services.sh /usr/local/bin/start-services
 COPY docker/ci/stop-services.sh  /usr/local/bin/stop-services
