@@ -160,6 +160,9 @@ RUN gem install bundler -v "~> 2.7"
 # =====================================================================
 FROM base
 
+# Recreate postgres user/group in final image so permissions and chown work
+RUN groupadd -r postgres && useradd -r -g postgres postgres
+
 # Import components from earlier stages
 COPY --from=chrome   /usr/bin/google-chrome*      /usr/bin/
 COPY --from=chrome   /usr/bin/chromium*           /usr/bin/
