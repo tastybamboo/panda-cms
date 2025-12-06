@@ -180,8 +180,8 @@ COPY --from=ruby     /root/.local                 /root/.local
 
 ENV PATH="/mise/shims:/root/.local/bin:/usr/lib/postgresql/17/bin:${PATH}"
 
-# Activate mise in the final stage's shell (critical for shims to work)
-RUN echo 'eval "$(${HOME}/.local/bin/mise activate bash)"' >> /root/.bashrc
+# Activate mise for login shells (bash -lc loads .bash_profile, not .bashrc)
+RUN echo 'eval "$(${HOME}/.local/bin/mise activate bash)"' >> /root/.bash_profile
 
 # Ensure libpq runtime is present for pg_isready/psql
 RUN apt-get update && \
