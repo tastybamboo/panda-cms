@@ -178,10 +178,7 @@ COPY --from=postgres /var/lib/postgresql          /var/lib/postgresql
 COPY --from=ruby     /mise                        /mise
 COPY --from=ruby     /root/.local                 /root/.local
 
-ENV PATH="/mise/shims:/root/.local/bin:/usr/lib/postgresql/17/bin:${PATH}"
-
-# Activate mise for login shells (bash -lc loads .bash_profile, not .bashrc)
-RUN echo 'eval "$(${HOME}/.local/bin/mise activate bash)"' >> /root/.bash_profile
+ENV PATH="/mise/installs/ruby/3.4.7/bin:/root/.local/bin:/usr/lib/postgresql/17/bin:${PATH}"
 
 # Ensure libpq runtime is present for pg_isready/psql
 RUN apt-get update && \
