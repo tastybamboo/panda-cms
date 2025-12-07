@@ -293,12 +293,16 @@ Capybara.reuse_server = true
 Capybara.raise_server_errors = true
 
 Capybara.register_driver(:panda_cuprite) do |app|
+  # In CI environments, Chrome startup can be slower due to resource constraints
+  # and concurrent test processes. Increase timeouts to prevent flaky failures.
+  ci_timeout = ENV["CI"] ? 90 : 30
+
   Capybara::Cuprite::Driver.new(
     app,
     browser_path: Panda::Core::Testing.browser_path,
     headless: true,
-    timeout: 30,
-    process_timeout: 30,
+    timeout: ci_timeout,
+    process_timeout: ci_timeout,
     js_errors: true,
     window_size: [1200, 800],
     browser_options: Panda::Core::Testing.default_browser_options
