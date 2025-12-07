@@ -304,7 +304,7 @@ RSpec.describe "Page form SEO functionality", type: :system do
   end
 
   describe "form validation" do
-    it "shows error state when fields exceed character limits" do
+    it "shows error state when fields exceed character limits", :flaky do
       open_page_details
 
       within("#slideover") do

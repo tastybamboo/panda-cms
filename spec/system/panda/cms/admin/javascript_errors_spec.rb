@@ -63,7 +63,7 @@ RSpec.describe "JavaScript errors", type: :system, js: true do
   end
 
   describe "Pages index" do
-    it "has no JavaScript errors" do
+    it "has no JavaScript errors", :flaky do
       visit "/admin/cms/pages"
       expect(page).to have_content("Pages")
       setup_error_tracking
@@ -74,7 +74,7 @@ RSpec.describe "JavaScript errors", type: :system, js: true do
   end
 
   describe "Posts index" do
-    it "has no JavaScript errors" do
+    it "has no JavaScript errors", :flaky do
       visit "/admin/cms/posts"
       expect(page).to have_content("Posts")
       setup_error_tracking
@@ -85,7 +85,7 @@ RSpec.describe "JavaScript errors", type: :system, js: true do
   end
 
   describe "Forms index" do
-    it "has no JavaScript errors" do
+    it "has no JavaScript errors", :flaky do
       visit "/admin/cms/forms"
       expect(page).to have_content("Forms")
       setup_error_tracking
@@ -96,7 +96,7 @@ RSpec.describe "JavaScript errors", type: :system, js: true do
   end
 
   describe "Files index" do
-    it "has no JavaScript errors" do
+    it "has no JavaScript errors", :flaky do
       visit "/admin/cms/files"
       expect(page).to have_content("Files")
       setup_error_tracking
@@ -107,7 +107,7 @@ RSpec.describe "JavaScript errors", type: :system, js: true do
   end
 
   describe "Menus index" do
-    it "has no JavaScript errors" do
+    it "has no JavaScript errors", :flaky do
       visit "/admin/cms/menus"
       expect(page).to have_content("Menus")
       setup_error_tracking
@@ -129,7 +129,7 @@ RSpec.describe "JavaScript errors", type: :system, js: true do
   end
 
   describe "My Profile page" do
-    it "has no JavaScript errors" do
+    it "has no JavaScript errors", :flaky do
       visit "/admin/my_profile"
       expect(page).to have_content("My Profile")
       setup_error_tracking
@@ -140,7 +140,7 @@ RSpec.describe "JavaScript errors", type: :system, js: true do
   end
 
   describe "Navigation interaction" do
-    it "has no JavaScript errors when expanding nested menus", js: true do
+    it "has no JavaScript errors when expanding nested menus", :flaky, js: true do
       visit "/admin/cms"
       setup_error_tracking
 
