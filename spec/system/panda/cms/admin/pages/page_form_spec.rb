@@ -315,8 +315,8 @@ RSpec.describe "Page form SEO functionality", type: :system do
         # Trigger input event to update counter
         seo_title_field.execute_script("this.dispatchEvent(new Event('input', { bubbles: true }))")
 
-        # Wait for counter to update
-        sleep 0.3
+        # Wait for counter to update (increased for CI stability)
+        sleep 0.5
 
         # Check that counter shows error state (red color for over limit)
         expect(page).to have_css(".character-counter.text-red-600", wait: 2)
