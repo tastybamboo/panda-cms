@@ -158,4 +158,78 @@
         editor_iframe_autosave_value: false,
         editor_iframe_assets_value: panda_cms_injectable_assets
       } %>
+
+  <%# Vanilla JS character counters - works independently of Stimulus %>
+  <script type="text/javascript">
+    (function() {
+      function initCharacterCounters() {
+        var fieldConfigs = [
+          { selector: '[data-page-form-target="seoTitle"]', max: 70, label: 'SEO Title' },
+          { selector: '[data-page-form-target="seoDescription"]', max: 160, label: 'SEO Description' },
+          { selector: '[data-page-form-target="ogTitle"]', max: 60, label: 'Social Media Title' },
+          { selector: '[data-page-form-target="ogDescription"]', max: 200, label: 'Social Media Description' }
+        ];
+
+        fieldConfigs.forEach(function(config) {
+          var field = document.querySelector(config.selector);
+          if (!field) return;
+
+          createCharacterCounter(field, config.max);
+          field.addEventListener('input', function() {
+            updateCharacterCounter(field, config.max);
+          });
+        });
+      }
+
+      function createCharacterCounter(field, maxLength) {
+        var container = field.closest('.panda-core-field-container');
+        if (!container) return;
+
+        var counter = container.querySelector('.character-counter');
+        if (!counter) {
+          counter = document.createElement('div');
+          counter.className = 'character-counter text-xs mt-1 text-gray-500 dark:text-gray-400';
+
+          var errorMsg = container.querySelector('.text-red-600');
+          if (errorMsg) {
+            errorMsg.parentNode.insertBefore(counter, errorMsg);
+          } else {
+            container.appendChild(counter);
+          }
+        }
+
+        updateCharacterCounter(field, maxLength);
+      }
+
+      function updateCharacterCounter(field, maxLength) {
+        var container = field.closest('.panda-core-field-container');
+        if (!container) return;
+
+        var counter = container.querySelector('.character-counter');
+        if (!counter) return;
+
+        var currentLength = field.value.length;
+        var remaining = maxLength - currentLength;
+
+        counter.textContent = currentLength + ' / ' + maxLength + ' characters';
+
+        counter.className = 'character-counter text-xs mt-1';
+
+        if (remaining < 0) {
+          counter.className += ' text-red-600 dark:text-red-400 font-semibold';
+          counter.textContent += ' (' + Math.abs(remaining) + ' over limit)';
+        } else if (remaining < 10) {
+          counter.className += ' text-yellow-600 dark:text-yellow-400';
+        } else {
+          counter.className += ' text-gray-500 dark:text-gray-400';
+        }
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initCharacterCounters);
+      } else {
+        initCharacterCounters();
+      }
+    })();
+  </script>
 <% end %>

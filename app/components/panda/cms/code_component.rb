@@ -84,7 +84,7 @@ module Panda
               data: {inline_code_editor_target: "codeInput"},
               class: "w-full h-64 p-3 font-mono text-sm border border-gray-300 rounded focus:ring-primary focus:border-primary",
               placeholder: "Enter your HTML/embed code here..."
-            ) { raw(@code_content.to_s) }
+            ) { plain @code_content.to_s }
 
             div(class: "mt-3 flex justify-end space-x-2") do
               button(type: "button",

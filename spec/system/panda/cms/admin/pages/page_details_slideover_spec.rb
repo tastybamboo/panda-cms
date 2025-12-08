@@ -15,6 +15,12 @@ RSpec.describe "Page Details Slideover", type: :system do
 
   def open_page_details
     click_button "Page Details"
+
+    # Wait for slideover to be visible
+    expect(page).to have_css("#slideover", visible: true, wait: 5)
+
+    # Brief wait for vanilla JS character counters to initialize
+    sleep 0.2
   end
 
   describe "opening the slideover" do
