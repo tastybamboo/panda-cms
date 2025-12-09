@@ -7,6 +7,48 @@ module PandaCmsHelpers
     puts message if ENV["RSPEC_DEBUG"] == "true"
   end
 
+  # OPTIMIZED LOGIN - Reuses session across tests to avoid redundant logins
+  # This caches the admin session and only logs in once per test file
+  #
+  # Usage in RSpec:
+  #   before(:all) { ensure_admin_logged_in }
+  #   after(:all) { reset_admin_session }
+  #
+  # Note: For comprehensive OAuth flow testing,
+  # see spec/system/panda/core/admin/authentication_spec.rb in panda-core
+  def ensure_admin_logged_in
+    return @logged_in_admin if @logged_in_admin && session_still_valid?
+
+    @logged_in_admin = login_as_admin
+    debug_log("[OptimizedLogin] Logged in as admin (will reuse session)")
+    @logged_in_admin
+  end
+
+  def reset_admin_session
+    @logged_in_admin = nil
+    Capybara.reset_sessions!
+    debug_log("[OptimizedLogin] Reset admin session")
+  end
+
+  # Check if the current session is still valid (user is logged in)
+  def session_still_valid?
+    return false unless @logged_in_admin
+    return false unless respond_to?(:page)
+
+    begin
+      # Quick check: are we on an admin page?
+      current_url = page.current_url rescue nil
+      return false if current_url.nil? || current_url.include?("about:blank")
+
+      # If we can access an admin page, session is valid
+      return true if current_url.include?("/admin/cms")
+
+      false
+    rescue
+      false
+    end
+  end
+
   # Wait for iframe to load properly before interacting with it
   def wait_for_iframe_load(iframe_id, timeout: 20)
     debug_log("[Test] Waiting for iframe #{iframe_id} to load...")
