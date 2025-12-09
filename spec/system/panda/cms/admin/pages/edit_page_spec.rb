@@ -74,9 +74,6 @@ RSpec.describe "When editing a page", type: :system do
       # Click the button to open the slideover
       click_button "Page Details"
 
-      # Give JavaScript time to execute
-      sleep 0.5
-
       # Check that slideover is now visible
       expect(page).to have_css("#slideover", visible: true, wait: 5)
 
@@ -92,9 +89,6 @@ RSpec.describe "When editing a page", type: :system do
 
       # Click the button to open the slideover
       click_button "Page Details"
-
-      # Give JavaScript time to execute
-      sleep 0.5
 
       # Wait for slideover to become visible
       expect(page).to have_css("#slideover", visible: true, wait: 5)
@@ -432,9 +426,6 @@ RSpec.describe "When editing a page", type: :system do
           # Attach file to the input
           attach_file("panda_cms_page_og_image", test_file, make_visible: true)
 
-          # Wait for JavaScript to process the file
-          sleep 1
-
           # Check that file info is displayed
           expect(page).to have_css("[data-file-upload-target='fileInfo']", visible: true, wait: 5)
 
@@ -449,9 +440,6 @@ RSpec.describe "When editing a page", type: :system do
         within("#slideover") do
           test_file = Rails.root.join("spec", "fixtures", "files", "test_image.png")
           attach_file("panda_cms_page_og_image", test_file, make_visible: true)
-
-          # Wait for preview to load
-          sleep 1
 
           # Check that preview is displayed
           expect(page).to have_css("[data-file-upload-target='preview'] img", visible: true, wait: 5)
@@ -470,9 +458,6 @@ RSpec.describe "When editing a page", type: :system do
           within("[data-file-upload-target='fileInfo']") do
             find("button[data-action='click->file-upload#removeFile']").click
           end
-
-          # Wait for file info to be hidden
-          sleep 0.5
 
           # Check that file info is hidden
           expect(page).to have_css("[data-file-upload-target='fileInfo'].hidden", wait: 3)

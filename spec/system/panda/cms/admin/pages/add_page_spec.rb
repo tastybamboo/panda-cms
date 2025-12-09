@@ -28,8 +28,8 @@ RSpec.describe "When adding a page", type: :system do
       before(:each) do
         login_as_admin
         visit "/admin/cms/pages/new"
-        # Allow page to stabilize before assertions
-        sleep 1
+        # Wait for form to be ready
+        expect(page).to have_css("form", wait: 5)
         # Use page.html check instead of have_content to avoid Ferrum issues
         expect(page.html).to include("Add Page")
       end
@@ -51,8 +51,8 @@ RSpec.describe "When adding a page", type: :system do
 
       it "creates a new page with valid details and redirects to the page editor" do
         trigger_slug_generation("New Test Page")
-        # Allow slug generation to complete
-        sleep 0.5
+        # Wait for slug field to be populated
+        expect(page).to have_field("page_path", with: /\/new-test-page/, wait: 2)
         select "Page", from: "page_panda_cms_template_id"
         click_button "Create Page"
 
@@ -79,21 +79,20 @@ RSpec.describe "When adding a page", type: :system do
       end
 
       it "allows a page to have the same slug as another as long as the parent is different" do
-        # Wait for page to fully load before checking fields
-        sleep 0.5
+        # Form is already loaded from before block
         expect(page.html).to include("Add Page")
         if ENV["GITHUB_ACTIONS"]
           safe_select "- About", from: "page_parent_id"
           trigger_slug_generation("About")
-          # URL field should have the correct value
-          sleep 0.5
+          # Wait for slug field to be populated
+          expect(page).to have_field("page_path", with: /\/about\/about/, wait: 2)
           safe_select "Page", from: "page_panda_cms_template_id"
           safe_click_button "Create Page"
         else
           select "- About", from: "page_parent_id"
           trigger_slug_generation("About")
-          # URL field should have the correct value
-          sleep 0.5
+          # Wait for slug field to be populated
+          expect(page).to have_field("page_path", with: /\/about\/about/, wait: 2)
           select "Page", from: "page_panda_cms_template_id"
           click_button "Create Page"
         end
@@ -152,8 +151,8 @@ RSpec.describe "When adding a page", type: :system do
         it "correctly generates slugs for second-level pages without path duplication" do
           # Create a first-level page
           trigger_slug_generation("First Level Page")
-          # Path should be set correctly
-          sleep 0.5
+          # Wait for slug field to be populated
+          expect(page).to have_field("page_path", with: /\/first-level-page/, wait: 2)
           select "Page", from: "page_panda_cms_template_id"
           click_button "Create Page"
 
@@ -164,10 +163,11 @@ RSpec.describe "When adding a page", type: :system do
 
           # Now create a second-level page under the first-level page
           visit "/admin/cms/pages/new"
+          expect(page).to have_css("form", wait: 5)
           select "- First Level Page", from: "page_parent_id"
           trigger_slug_generation("Second Level Page")
-          # Path should be set correctly for second level
-          sleep 0.5
+          # Wait for slug field to be populated with correct nested path
+          expect(page).to have_field("page_path", with: /\/first-level-page\/second-level-page/, wait: 2)
           select "Page", from: "page_panda_cms_template_id"
           click_button "Create Page"
 
@@ -196,6 +196,7 @@ RSpec.describe "When adding a page", type: :system do
 
           # Create a second-level page
           visit "/admin/cms/pages/new"
+          expect(page).to have_css("form", wait: 5)
           select "- Level One", from: "page_parent_id"
           trigger_slug_generation("Level Two")
           select "Page", from: "page_panda_cms_template_id"
@@ -203,10 +204,11 @@ RSpec.describe "When adding a page", type: :system do
 
           # Create a third-level page
           visit "/admin/cms/pages/new"
+          expect(page).to have_css("form", wait: 5)
           select "-- Level Two", from: "page_parent_id"
           trigger_slug_generation("Level Three")
-          # Path should be set correctly for third level
-          sleep 0.5
+          # Wait for slug field to be populated with correct nested path
+          expect(page).to have_field("page_path", with: /\/level-one\/level-two\/level-three/, wait: 2)
           select "Page", from: "page_panda_cms_template_id"
           click_button "Create Page"
 
@@ -241,7 +243,7 @@ RSpec.describe "When adding a page", type: :system do
 
       it "shows validation errors when adding a page with invalid details" do
         visit "/admin/cms/pages/new"
-        sleep 1  # Allow page to stabilize
+        expect(page).to have_css("form", wait: 5)
         fill_in "page_title", with: "Test Page"
         fill_in "page_path", with: "invalid-url"
         click_on "Create Page"
@@ -252,7 +254,7 @@ RSpec.describe "When adding a page", type: :system do
 
       it "shows validation errors when adding a page with missing title input" do
         visit "/admin/cms/pages/new"
-        sleep 1  # Allow page to stabilize
+        expect(page).to have_css("form", wait: 5)
         fill_in "page_path", with: "/test-page"
         click_on "Create Page"
 
@@ -262,7 +264,7 @@ RSpec.describe "When adding a page", type: :system do
 
       it "shows validation errors when adding a page with missing URL input" do
         visit "/admin/cms/pages/new"
-        sleep 1  # Allow page to stabilize
+        expect(page).to have_css("form", wait: 5)
         fill_in "page_title", with: "Test Page"
         fill_in "page_path", with: ""
         click_on "Create Page"

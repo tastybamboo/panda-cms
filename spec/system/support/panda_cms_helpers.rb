@@ -37,7 +37,11 @@ module PandaCmsHelpers
 
     begin
       # Quick check: are we on an admin page?
-      current_url = page.current_url rescue nil
+      current_url = begin
+        page.current_url
+      rescue
+        nil
+      end
       return false if current_url.nil? || current_url.include?("about:blank")
 
       # If we can access an admin page, session is valid
@@ -68,7 +72,7 @@ module PandaCmsHelpers
         # If iframe has no src or about:blank, wait for it to be set
         if src_attr.nil? || src_attr.empty? || src_attr == "about:blank"
           debug_log("[Test] Iframe has no proper src attribute, waiting...")
-          sleep 0.5
+          sleep 0.1
           next
         end
 
@@ -88,7 +92,7 @@ module PandaCmsHelpers
           end
         rescue Ferrum::NodeNotFoundError => e
           debug_log("[Test] Iframe not accessible yet: #{e.message}")
-          sleep 0.5
+          sleep 0.1
           next
         end
 
@@ -104,7 +108,7 @@ module PandaCmsHelpers
         debug_log("[Test] Iframe not ready yet: #{e.message}")
       end
 
-      sleep 0.5
+      sleep 0.1
     end
 
     # Debug information on timeout
