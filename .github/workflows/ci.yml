@@ -101,6 +101,7 @@ jobs:
             -v ci_bundle_cache_stable:/usr/local/bundle \
             -e RAILS_ENV=test \
             -e CI=true \
+            -e CUPRITE_PROCESS_TIMEOUT=30 \
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${IMAGE_TAG} \
             bash -lc '
               set -euxo pipefail
@@ -174,6 +175,7 @@ jobs:
             -v ci_bundle_cache_flaky:/usr/local/bundle \
             -e RAILS_ENV=test \
             -e CI=true \
+            -e CUPRITE_PROCESS_TIMEOUT=30 \
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${IMAGE_TAG} \
             bash -lc '
               set -euxo pipefail
