@@ -23,7 +23,10 @@ jobs:
   # --------------------------------------------------------------
   build:
     runs-on: ubuntu-latest
-    permissions: write-all
+    permissions:
+      contents: read
+      packages: write
+      actions: read
 
     steps:
       - name: Checkout code

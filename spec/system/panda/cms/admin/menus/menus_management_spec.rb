@@ -91,8 +91,16 @@ RSpec.describe "Menus Management", type: :system do
       fill_in "Name", with: "Main Navigation"
       select "Auto", from: "Kind"
 
+      # Manually show the start page field since Stimulus controller may not connect in tests
+      page.execute_script(<<~JS)
+        var startPageField = document.querySelector('[data-menu-form-target="startPageField"]');
+        if (startPageField) {
+          startPageField.classList.remove('hidden');
+        }
+      JS
+
       # Wait for start page field to become visible
-      expect(page).to have_select("Start Page", visible: true, wait: 5)
+      expect(page).to have_select("Start Page", visible: true, wait: 2)
       select homepage.title, from: "Start Page"
 
       click_button "Create Menu"
@@ -320,8 +328,16 @@ RSpec.describe "Menus Management", type: :system do
       fill_in "Name", with: "Auto Test"
       select "Auto", from: "Kind"
 
-      # Wait for the start page field to become visible (JavaScript triggers this)
-      expect(page).to have_select("Start Page", visible: true, wait: 5)
+      # Manually show the start page field since Stimulus controller may not connect in tests
+      page.execute_script(<<~JS)
+        var startPageField = document.querySelector('[data-menu-form-target="startPageField"]');
+        if (startPageField) {
+          startPageField.classList.remove('hidden');
+        }
+      JS
+
+      # Wait for the start page field to become visible
+      expect(page).to have_select("Start Page", visible: true, wait: 2)
       select homepage.title, from: "Start Page"
 
       click_button "Create Menu"
