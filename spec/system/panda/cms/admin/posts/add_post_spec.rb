@@ -54,9 +54,8 @@ RSpec.describe "Adding a post", type: :system do
     # Ensure clean state for this test
     visit "/admin/cms/posts/new"
 
-    # Wait for JavaScript to load
-    # Add a small wait to ensure JavaScript executes
-    sleep 1
+    # Wait for form to be ready
+    expect(page).to have_button("Create Post", wait: 5)
 
     # Check if JavaScript loaded
     js_loaded = begin
@@ -101,11 +100,8 @@ RSpec.describe "Adding a post", type: :system do
       click_button "Create Post"
     end
 
-    # Wait for redirect
-    sleep 1
-
     # Check if we were redirected to login (session expired)
-    if page.has_css?("#button-sign-in-google_oauth2")
+    if page.has_css?("#button-sign-in-google_oauth2", wait: 2)
       # Log back in and check the posts
       login_as_admin
       visit "/admin/cms/posts"
@@ -115,7 +111,7 @@ RSpec.describe "Adding a post", type: :system do
       # Check we're on the edit page (indicates successful creation and redirect)
       expect(page.current_url).to match(%r{/admin/cms/posts/[^/]+/edit})
       # Check the page shows we're editing the created post
-      expect(page).to have_button("Update Post")
+      expect(page).to have_button("Update Post", wait: 5)
       html_content = page.html
       expect(html_content).to include(unique_title)
     end
@@ -134,7 +130,6 @@ RSpec.describe "Adding a post", type: :system do
   it "shows validation errors when title is missing" do
     # REQUIRED: Clean state for validation test (see docs/developers/testing/validation-testing.md)
     visit "/admin/cms/posts/new"
-    sleep 1  # Allow page to stabilize
 
     # Wait for EditorJS to initialize and enable the submit button
     expect(page).to have_button("Create Post", disabled: false, wait: 10)
@@ -155,7 +150,6 @@ RSpec.describe "Adding a post", type: :system do
   it "shows validation errors when URL is missing" do
     # REQUIRED: Clean state for validation test (see docs/developers/testing/validation-testing.md)
     visit "/admin/cms/posts/new"
-    sleep 1  # Allow page to stabilize
 
     # Wait for EditorJS to initialize and enable the submit button
     expect(page).to have_button("Create Post", disabled: false, wait: 10)

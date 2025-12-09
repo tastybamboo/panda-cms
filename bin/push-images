@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+IMAGE="ghcr.io/tastybamboo/panda-cms-test"
+TAG="${1:-latest}"
+
+if [[ "$TAG" == "--local" ]]; then
+  TAG="local"
+  docker buildx build \
+    --platform linux/amd64 \
+    -t "$IMAGE:$TAG" \
+    -f Dockerfile.test \
+    --load \
+    .
+  exit 0
+fi
+
+# Login needed for push
+if [[ -z "${GHCR_TOKEN:-}" ]]; then
+  echo "Missing GHCR_TOKEN"
+  exit 1
+fi
+
+echo "$GHCR_TOKEN" | docker login ghcr.io -u "${GITHUB_ACTOR:-$USER}" --password-stdin
+
+docker buildx build \
+  --platform linux/amd64,linux/arm64 \
+  -t "$IMAGE:$TAG" \
+  -t "$IMAGE:latest" \
+  -f Dockerfile.test \
+  --push \
+  .

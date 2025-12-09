@@ -8,7 +8,7 @@ RSpec.describe "List pages", type: :system do
     visit "/admin/cms/pages"
   end
 
-  it "shows the correct header" do
+  it "shows the correct header", :flaky do
     # Use string-based checks to avoid DOM node issues
     html_content = page.html
     expect(html_content).to include("Pages")

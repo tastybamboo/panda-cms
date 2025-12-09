@@ -15,6 +15,9 @@ RSpec.describe "Page Details Slideover", type: :system do
 
   def open_page_details
     click_button "Page Details"
+
+    # Wait for slideover to be visible
+    expect(page).to have_css("#slideover", visible: true, wait: 5)
   end
 
   describe "opening the slideover" do
@@ -105,7 +108,7 @@ RSpec.describe "Page Details Slideover", type: :system do
     end
 
     it "closes when clicking the close button in the header" do
-      skip "SKIPPED: Failure needs further investigation, or feature is WIP"
+      skip "Test hangs/times out - likely waiting for slideover functionality that doesn't complete"
       visit "/admin/cms/pages/#{about_page.id}/edit"
       open_page_details
 
@@ -258,7 +261,6 @@ RSpec.describe "Page Details Slideover", type: :system do
     end
 
     it "fills fields with parent values when inherit is checked" do
-      pending "Tests appear to be failing"
       visit "/admin/cms/pages/#{about_page.id}/edit"
       open_page_details
 
@@ -276,7 +278,6 @@ RSpec.describe "Page Details Slideover", type: :system do
 
   describe "character counters" do
     before do
-      pending "Tests appear to be failing due to JS not being loaded"
       # Ensure inherit is disabled so fields are editable
       about_page.update!(inherit_seo: false)
     end

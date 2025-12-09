@@ -8,6 +8,10 @@ SimpleCov.start
 
 ENV["RAILS_ENV"] ||= "test"
 
+# Act sets ACT=true; drop DATABASE_URL to avoid panda-core's before(:suite) truncation
+# hook deadlocking on constraint validation in the act Postgres service.
+ENV.delete("DATABASE_URL") if ENV["ACT"] == "true"
+
 require "rubygems"
 require "panda/core"
 require "panda/core/engine"
@@ -27,6 +31,7 @@ require "rspec/rails"
 
 # Load shared test infrastructure from panda-core (after dummy app and rspec/rails are loaded)
 require "panda/core/testing/rails_helper"
+Panda::Core::Testing::CupriteSetup.setup!
 
 # Ensure Panda::Core models are loaded before CMS support files
 Rails.application.eager_load!
@@ -70,4 +75,24 @@ RSpec.configure do |config|
   fixture_files.delete(:panda_core_users)
   fixture_files.delete(:panda_cms_posts)
   config.global_fixtures = fixture_files unless ENV["SKIP_GLOBAL_FIXTURES"]
+
+  config.use_transactional_fixtures = false
+
+  # Clean DB between tests
+  config.before(:suite) do
+    DatabaseCleaner.clean_with(:truncation)
+  end
+
+  config.around(:each) do |example|
+    DatabaseCleaner.strategy = (example.metadata[:type] == :system) ? :truncation : :transaction
+    DatabaseCleaner.cleaning do
+      example.run
+    end
+  end
+
+  config.before(:each, type: :system) do
+    # Use the cuprite driver from panda-core's CupriteSetup
+    # This provides maintained, robust configuration shared across Panda gems
+    driven_by :cuprite
+  end
 end

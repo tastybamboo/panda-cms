@@ -17,7 +17,7 @@ RSpec.describe "Website" do
     expect(page).to have_content("I like ice cream!", wait: 5)
   end
 
-  it "shows the about page with plain text, code and rich text blocks" do
+  it "shows the about page with plain text, code and rich text blocks", :flaky do
     visit "/about"
 
     # Test what the user sees

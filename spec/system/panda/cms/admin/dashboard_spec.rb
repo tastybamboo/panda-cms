@@ -32,8 +32,9 @@ RSpec.describe "Admin dashboard", type: :system do
     it "displays the admin navigation" do
       login_as_admin
       visit "/admin/cms"
-      # Wait for page to load by checking path
-      sleep 2
+
+      # Wait for Dashboard to appear, then check navigation
+      expect(page).to have_content("Dashboard", wait: 5)
 
       # Use string-based checks to avoid DOM node issues
       html_content = page.html

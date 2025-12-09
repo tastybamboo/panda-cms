@@ -17,7 +17,7 @@ module Panda
         # Russian doll caching: Cache component output at block_content level
         # Only cache in non-editable mode (public-facing pages)
         if should_cache?
-          raw cache_component_output
+          raw cache_component_output.to_s.html_safe
         else
           render_content
         end
@@ -84,7 +84,7 @@ module Panda
               data: {inline_code_editor_target: "codeInput"},
               class: "w-full h-64 p-3 font-mono text-sm border border-gray-300 rounded focus:ring-primary focus:border-primary",
               placeholder: "Enter your HTML/embed code here..."
-            ) { raw(@code_content.to_s) }
+            ) { plain @code_content.to_s }
 
             div(class: "mt-3 flex justify-end space-x-2") do
               button(type: "button",

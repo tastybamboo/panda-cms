@@ -70,8 +70,10 @@ RSpec.describe "When following redirects", type: :system, skip: "Redirect tests 
     # Wait for the page to fully load after redirect
     expect(page).to have_content("About")
 
-    # Wait a moment for the visit count to be updated
-    sleep 0.5
+    # Wait for the visit count to be updated (with proper retry logic)
+    expect do
+      new_redirect.reload.visits
+    end.to become(1).within(2.seconds)
 
     # The automatically created redirect should have a visit
     expect(new_redirect.reload.visits).to eq(1)

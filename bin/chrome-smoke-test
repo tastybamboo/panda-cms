@@ -1,0 +1,112 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require "json"
+require "net/http"
+require "timeout"
+require "fileutils"
+
+CHROME = ENV["CHROME_PATH"] || "/usr/bin/google-chrome"
+USER_DATA_DIR = "/tmp/chrome-smoke"
+PORT_FILE = File.join(USER_DATA_DIR, "DevToolsActivePort")
+
+FileUtils.rm_rf(USER_DATA_DIR)
+FileUtils.mkdir_p(USER_DATA_DIR)
+
+FLAGS = [
+  "--headless=new",
+  "--no-sandbox",
+  "--disable-gpu",
+  "--disable-dev-shm-usage",
+  "--disable-features=UseOzonePlatform",
+  "--remote-debugging-port=0", # Chrome chooses the port
+  "--user-data-dir=#{USER_DATA_DIR}",
+  "about:blank"
+]
+
+def fail!(msg)
+  warn "[Chrome Smoke Test] ❌ #{msg}"
+  exit 1
+end
+
+def ok(msg)
+  puts "[Chrome Smoke Test] ✅ #{msg}"
+end
+
+# --------------------------------------------------------------------
+# 1. Ensure Chrome exists
+# --------------------------------------------------------------------
+
+fail!("Chrome not found at #{CHROME}") unless File.exist?(CHROME)
+ok("Chrome binary found")
+
+# --------------------------------------------------------------------
+# 2. Start Chrome
+# --------------------------------------------------------------------
+
+puts "[Chrome Smoke Test] Starting Chrome with flags: #{FLAGS.join(' ')}"
+pid = spawn(CHROME, *FLAGS, out: "/tmp/chrome-stdout.log", err: "/tmp/chrome-stderr.log")
+
+# --------------------------------------------------------------------
+# 3. Wait for DevToolsActivePort
+# --------------------------------------------------------------------
+
+begin
+  Timeout.timeout(5) do
+    sleep 0.05 until File.exist?(PORT_FILE)
+  end
+rescue Timeout::Error
+  Process.kill("TERM", pid) rescue nil
+
+  # Dump Chrome logs for debugging
+  if File.exist?("/tmp/chrome-stdout.log")
+    puts "\n=== Chrome STDOUT ==="
+    puts File.read("/tmp/chrome-stdout.log")
+  end
+  if File.exist?("/tmp/chrome-stderr.log")
+    puts "\n=== Chrome STDERR ==="
+    puts File.read("/tmp/chrome-stderr.log")
+  end
+
+  fail!("Chrome never created DevToolsActivePort — cannot run headless")
+end
+
+ok("DevToolsActivePort created")
+
+# --------------------------------------------------------------------
+# 4. Parse debugger port + token
+# --------------------------------------------------------------------
+
+raw = File.read(PORT_FILE).strip.split("\n")
+port  = raw[0]
+token = raw[1].sub(%r{^/devtools/browser/}, '') # strip prefix if Chrome writes it
+
+ws_url = "ws://127.0.0.1:#{port}/devtools/browser/#{token}"
+ok("WebSocket URL: #{ws_url}")
+
+# --------------------------------------------------------------------
+# 5. Ensure CDP endpoint responds
+# --------------------------------------------------------------------
+
+begin
+  Timeout.timeout(3) do
+    uri = URI("http://127.0.0.1:#{port}/json/version")
+    res = Net::HTTP.get_response(uri)
+
+    unless res.is_a?(Net::HTTPSuccess)
+      fail!("Chrome /json/version returned #{res.code} #{res.message}")
+    end
+  end
+rescue => e
+  fail!("CDP handshake failed: #{e.class} #{e.message}")
+end
+
+ok("CDP handshake succeeded — Chrome is healthy")
+
+# --------------------------------------------------------------------
+# 6. Cleanup
+# --------------------------------------------------------------------
+
+Process.kill("TERM", pid) rescue nil
+
+exit 0
