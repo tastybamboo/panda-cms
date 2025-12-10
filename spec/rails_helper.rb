@@ -89,10 +89,4 @@ RSpec.configure do |config|
       example.run
     end
   end
-
-  config.before(:each, type: :system) do
-    # Use the cuprite driver from panda-core's CupriteSetup
-    # This provides maintained, robust configuration shared across Panda gems
-    driven_by :cuprite
-  end
 end

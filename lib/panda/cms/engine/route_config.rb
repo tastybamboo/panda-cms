@@ -19,8 +19,7 @@ module Panda
               # Catch-all route for CMS pages, but exclude admin paths and assets
               admin_path = Panda::Core.config.admin_path.delete_prefix("/")
               constraints = ->(request) {
-                !request.path.start_with?("/#{admin_path}") &&
-                  !request.path.start_with?("/panda-cms-assets/")
+                !request.path.start_with?("/#{admin_path}", "/panda-cms-assets/")
               }
               get "/*path", to: "panda/cms/pages#show", as: :panda_cms_page, constraints: constraints
 

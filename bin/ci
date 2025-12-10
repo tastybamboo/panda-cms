@@ -35,12 +35,28 @@ Commands:
   shell         Open an interactive shell
   clean         Remove containers and volume
 
+Options (build/push):
+  --no-cache    Force docker build without cache
+
 EOF
   exit 0
 fi
 
+NO_CACHE="${NO_CACHE:-0}"
 COMMAND="$1"
 shift || true
+
+# -------------------------------------------------------------------
+# Parse optional flags (for build/push)
+# -------------------------------------------------------------------
+while [[ "${1:-}" == --* ]]; do
+  case "$1" in
+    --no-cache) NO_CACHE=1 ;;
+    --help|-h)  exec "$0" ;;
+    *) die "Unknown option: $1" ;;
+  esac
+  shift
+done
 
 # -------------------------------------------------------------------
 # Build Image — local (--load)
@@ -48,10 +64,17 @@ shift || true
 build_image() {
   header "Building CI Docker image (with --load)"
 
+  local cache_args=()
+  if [[ "$NO_CACHE" == "1" ]]; then
+    cache_args+=(--no-cache)
+    header "NO_CACHE=1 set — building without cache"
+  fi
+
   docker buildx build \
     --platform "$PLATFORM" \
     --progress plain \
     --load \
+    "${cache_args[@]}" \
     -t "$CI_IMAGE" \
     -f "$CI_DOCKERFILE" \
     .
@@ -65,10 +88,17 @@ build_image() {
 push_image() {
   header "Building & pushing CI Docker image"
 
+  local cache_args=()
+  if [[ "${NO_CACHE:-}" == "1" ]]; then
+    cache_args+=(--no-cache)
+    header "NO_CACHE=1 set — building without cache"
+  fi
+
   docker buildx build \
     --platform "$PLATFORM" \
     --progress plain \
     --push \
+    "${cache_args[@]}" \
     -t "$CI_IMAGE" \
     -f "$CI_DOCKERFILE" \
     .
@@ -107,9 +137,18 @@ run_tests() {
     -v "$(pwd)":/app \
     -v "ci_bundle_cache:/usr/local/bundle" \
     -e RAILS_ENV=test \
+    -e CI=true \
+    -e CUPRITE_TIMEOUT="${CUPRITE_TIMEOUT:-30}" \
+    -e CUPRITE_PROCESS_TIMEOUT="${CUPRITE_PROCESS_TIMEOUT:-60}" \
+    -e FERRUM_TIMEOUT="${FERRUM_TIMEOUT:-${CUPRITE_TIMEOUT:-30}}" \
+    -e FERRUM_PROCESS_TIMEOUT="${FERRUM_PROCESS_TIMEOUT:-${CUPRITE_PROCESS_TIMEOUT:-60}}" \
     "$CI_IMAGE" \
     bash -lc "
       start-services
+      export CUPRITE_TIMEOUT=${CUPRITE_TIMEOUT:-30}
+      export CUPRITE_PROCESS_TIMEOUT=${CUPRITE_PROCESS_TIMEOUT:-60}
+      export FERRUM_TIMEOUT=${FERRUM_TIMEOUT:-${CUPRITE_TIMEOUT:-30}}
+      export FERRUM_PROCESS_TIMEOUT=${FERRUM_PROCESS_TIMEOUT:-${CUPRITE_PROCESS_TIMEOUT:-60}}
       $(env_banner)
       echo '▶ Installing gems...'
       bundle config set --local path 'vendor/bundle'

@@ -88,6 +88,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   libxtst6 \
   libgbm1 \
   libdrm2 \
+  libvips42 \
+  libvips-dev \
   fonts-liberation \
   xdg-utils \
   dbus-x11 \
