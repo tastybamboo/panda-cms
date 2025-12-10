@@ -13,7 +13,7 @@ jobs:
       image: ghcr.io/tastybamboo/panda-cms-test:latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Build gem
         run: gem build *.gemspec
