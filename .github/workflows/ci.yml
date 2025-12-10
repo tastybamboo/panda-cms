@@ -134,7 +134,7 @@ jobs:
 
       - name: Upload stable test failure artifacts
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: cuprite-failures-stable
           path: |
@@ -208,7 +208,7 @@ jobs:
 
       - name: Upload flaky test failure artifacts
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: cuprite-failures-flaky
           path: |

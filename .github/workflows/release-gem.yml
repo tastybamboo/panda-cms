@@ -25,7 +25,7 @@ jobs:
           gem push *.gem --key rubygems --host https://rubygems.org
 
       - name: Upload built gem as artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: gem-package
           path: '*.gem'
