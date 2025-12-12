@@ -1,9 +1,8 @@
 GIT
   remote: https://github.com/tastybamboo/panda-core.git
-  revision: 263bf46bde1bf6b4abd962d48eb1088bfd129bfa
-  ref: 263bf46bde1bf6b4abd962d48eb1088bfd129bfa
+  revision: e57795ded76b2b35daa5d2067303d6f611d7724c
   specs:
-    panda-core (0.11.0)
+    panda-core (0.12.2)
       image_processing (~> 1.2)
       importmap-rails
       literal (~> 1.8)
@@ -252,7 +251,7 @@ GEM
       pp (>= 0.6.0)
       rdoc (>= 4.0.0)
       reline (>= 0.4.2)
-    json (2.17.1)
+    json (2.18.0)
     jwt (2.10.2)
       base64
     language_server-protocol (3.17.0.5)
@@ -280,7 +279,7 @@ GEM
     mini_magick (5.3.1)
       logger
     mini_mime (1.1.5)
-    minitest (5.26.2)
+    minitest (5.27.0)
     multi_xml (0.7.2)
       bigdecimal (~> 3.1)
     multipart-post (2.4.1)

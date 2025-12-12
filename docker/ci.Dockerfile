@@ -88,8 +88,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   libxtst6 \
   libgbm1 \
   libdrm2 \
-  libvips42 \
-  libvips-dev \
   fonts-liberation \
   xdg-utils \
   dbus-x11 \
@@ -216,10 +214,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   libxtst6 \
   libgbm1 \
   libdrm2 \
+  libvips42t64 \
+  libvips-dev \
   fonts-liberation \
   xdg-utils \
   dbus-x11 \
   && rm -rf /var/lib/apt/lists/*
+
+# Fail early if libvips is missing in final image
+RUN ldconfig -p > /tmp/ldconfig && grep -q vips /tmp/ldconfig
 
 # Stub dbus so Chrome 142+ doesn't crash
 RUN mkdir -p /run/dbus && \
