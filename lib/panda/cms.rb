@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "panda/cms/version"
+require "panda/cms/seo/character_counter"
 
 module Panda
   module CMS

@@ -24,7 +24,7 @@ module Panda
 
         # @type POST
         def create
-          menu = Panda::CMS::Menu.new(menu_params)
+          menu = Panda::CMS::Menu.new(menu_params_with_defaults)
 
           if menu.save
             redirect_to admin_cms_menus_path, notice: "Menu was successfully created."
@@ -41,7 +41,7 @@ module Panda
 
         # @type PATCH/PUT
         def update
-          if @menu.update(menu_params)
+          if @menu.update(menu_params_with_defaults)
             redirect_to admin_cms_menus_path, notice: "Menu was successfully updated."
           else
             render :edit, status: :unprocessable_entity
@@ -62,6 +62,14 @@ module Panda
 
         def menu_params
           params.require(:menu).permit(:name, :kind, :start_page_id, menu_items_attributes: [:id, :text, :external_url, :panda_cms_page_id, :_destroy])
+        end
+
+        def menu_params_with_defaults
+          permitted = menu_params
+          return permitted unless permitted[:kind] == "auto"
+
+          permitted[:start_page_id] = permitted[:start_page_id].presence || Panda::CMS::Page.find_by(path: "/")&.id
+          permitted
         end
 
         def set_initial_breadcrumb

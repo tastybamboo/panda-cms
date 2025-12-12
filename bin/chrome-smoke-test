@@ -79,9 +79,9 @@ ok("DevToolsActivePort created")
 
 raw = File.read(PORT_FILE).strip.split("\n")
 port  = raw[0]
-token = raw[1].sub(%r{^/devtools/browser/}, '') # strip prefix if Chrome writes it
+token = raw[1]&.sub(%r{^/devtools/browser/}, '') # strip prefix if Chrome writes it
 
-ws_url = "ws://127.0.0.1:#{port}/devtools/browser/#{token}"
+ws_url = token ? "ws://127.0.0.1:#{port}/devtools/browser/#{token}" : "ws://127.0.0.1:#{port}/devtools/browser/<unknown>"
 ok("WebSocket URL: #{ws_url}")
 
 # --------------------------------------------------------------------

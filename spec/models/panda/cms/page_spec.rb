@@ -519,6 +519,33 @@ RSpec.describe Panda::CMS::Page, type: :model do
         expect(child.effective_seo_title).to eq("Parent SEO Title")
       end
 
+      it "inherits from the nearest ancestor when parent is blank" do
+        grandparent = Panda::CMS::Page.create!(
+          title: "Grandparent",
+          seo_title: "Grandparent SEO Title",
+          path: "/seo-test/grandparent",
+          parent: seo_root,
+          template: test_template
+        )
+
+        parent = Panda::CMS::Page.create!(
+          title: "Parent",
+          path: "/seo-test/grandparent/parent",
+          parent: grandparent,
+          template: test_template
+        )
+
+        child = Panda::CMS::Page.create!(
+          title: "Child",
+          path: "/seo-test/grandparent/parent/child",
+          parent: parent,
+          template: test_template,
+          inherit_seo: true
+        )
+
+        expect(child.effective_seo_title).to eq("Grandparent SEO Title")
+      end
+
       it "does not inherit when inherit_seo is false" do
         parent = Panda::CMS::Page.create!(
           title: "Parent Page",
@@ -686,6 +713,29 @@ RSpec.describe Panda::CMS::Page, type: :model do
         )
 
         expect(page.robots_meta_content).to eq("noindex, nofollow")
+      end
+    end
+
+    describe "#seo_character_states" do
+      it "reports statuses for each field with matching thresholds" do
+        page = Panda::CMS::Page.new(
+          title: "Page",
+          path: "/seo-test/character-state",
+          parent: seo_root,
+          template: test_template,
+          seo_title: "A" * 65, # warning
+          seo_description: "A" * 40, # ok
+          og_title: "A" * 75, # error
+          og_description: "A" * 195 # warning (limit 200, <10 remaining)
+        )
+
+        states = page.seo_character_states
+
+        expect(states[:seo_title].status).to eq(:warning)
+        expect(states[:seo_description].status).to eq(:ok)
+        expect(states[:og_title].status).to eq(:error)
+        expect(states[:og_title].remaining).to eq(-15)
+        expect(states[:og_description].status).to eq(:warning)
       end
     end
 

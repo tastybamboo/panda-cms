@@ -195,7 +195,27 @@ module Panda
         end
       end
 
+      #
+      # Returns character counter states for SEO-related fields. Mirrors client
+      # thresholds so we can assert limits without relying on system specs.
+      #
+      # @return [Hash<Symbol, Panda::CMS::Seo::CharacterCounter::Result>]
+      # @visibility public
+      #
+      def seo_character_states
+        {
+          seo_title: character_state_for(seo_title, 70),
+          seo_description: character_state_for(seo_description, 160),
+          og_title: character_state_for(og_title, 60),
+          og_description: character_state_for(og_description, 200)
+        }
+      end
+
       private
+
+      def character_state_for(value, limit)
+        Panda::CMS::Seo::CharacterCounter.evaluate(value, limit: limit)
+      end
 
       def validate_unique_path_in_scope
         # Skip validation if path is not present (other validations will catch this)

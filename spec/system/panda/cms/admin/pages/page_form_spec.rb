@@ -48,14 +48,9 @@ RSpec.describe "Page form SEO functionality", type: :system do
           # Check counter exists
           expect(container).to have_css(".character-counter")
 
-          # Type some text
           seo_title_field.set("Test SEO Title")
 
-          # Wait for counter to update
-          sleep 0.3
-
-          # Check counter shows correct count
-          expect(container.find(".character-counter")).to have_text("14 / 70 characters")
+          expect(container).to have_css(".character-counter", text: "14 / 70 characters", wait: 3)
         end
       end
 
@@ -66,12 +61,9 @@ RSpec.describe "Page form SEO functionality", type: :system do
           seo_title_field = find_field("SEO Title")
           container = seo_title_field.find(:xpath, "ancestor::div[contains(@class, 'panda-core-field-container')]")
 
-          # Type text close to limit (70 chars)
           seo_title_field.set("A" * 65)
 
-          sleep 0.5
-
-          counter = container.find(".character-counter")
+          counter = container.find(".character-counter", wait: 3)
           expect(counter).to have_text("65 / 70 characters")
           expect(counter[:class]).to include("text-yellow-600")
         end
@@ -84,12 +76,9 @@ RSpec.describe "Page form SEO functionality", type: :system do
           seo_title_field = find_field("SEO Title")
           container = seo_title_field.find(:xpath, "ancestor::div[contains(@class, 'panda-core-field-container')]")
 
-          # Type text over limit
           seo_title_field.set("A" * 75)
 
-          sleep 0.5
-
-          counter = container.find(".character-counter")
+          counter = container.find(".character-counter", wait: 3)
           expect(counter).to have_text("75 / 70 characters (5 over limit)")
           expect(counter[:class]).to include("text-red-600")
         end
@@ -415,11 +404,7 @@ RSpec.describe "Page form SEO functionality", type: :system do
         # Trigger input event to update counter
         seo_title_field.execute_script("this.dispatchEvent(new Event('input', { bubbles: true }))")
 
-        # Wait for counter to update (increased for CI stability)
-        sleep 0.5
-
-        # Check that counter shows error state (red color for over limit)
-        expect(page).to have_css(".character-counter.text-red-600", wait: 2)
+        expect(page).to have_css(".character-counter.text-red-600", wait: 3)
       end
     end
 
@@ -434,10 +419,7 @@ RSpec.describe "Page form SEO functionality", type: :system do
         # Trigger input event
         seo_title_field.execute_script("this.dispatchEvent(new Event('input', { bubbles: true }))")
 
-        sleep 0.3
-
-        # Check that counter shows normal state (not red)
-        expect(page).not_to have_css(".character-counter.text-red-600")
+        expect(page).not_to have_css(".character-counter.text-red-600", wait: 3)
       end
     end
   end
