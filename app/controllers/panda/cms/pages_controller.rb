@@ -27,8 +27,8 @@ module Panda
         layout = page&.template&.file_path
 
         if page.nil? || page.status == "archived" || layout.nil?
-          # This works for now, but we may want to override in future (e.g. custom 404s)
-          render file: "#{Rails.root}/public/404.html", layout: false, status: :not_found and return
+          # Render the default Panda CMS 404 page with public layout
+          render "panda/cms/pages/not_found", layout: "panda/cms/public", status: :not_found and return
         end
 
         # HTTP caching: Send ETag and Last-Modified headers for efficient caching
