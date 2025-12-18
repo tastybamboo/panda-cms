@@ -32,6 +32,12 @@ Panda::CMS::Engine.routes.draw do
 
   # Authentication routes are now handled by Panda::Core
 
+  # Error pages (404, 500, etc.)
+  match "/404", to: "errors#show", via: :all, defaults: {code: "404"}
+  match "/422", to: "errors#show", via: :all, defaults: {code: "422"}
+  match "/500", to: "errors#show", via: :all, defaults: {code: "500"}
+  match "/503", to: "errors#show", via: :all, defaults: {code: "503"}
+
   ### APPENDED ROUTES ###
 
   # TODO: Allow multiple types of post in future

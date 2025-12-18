@@ -42,6 +42,18 @@ module Panda
           urls: ["/panda-cms-assets"],
           root: Panda::CMS::Engine.root.join("public")
       end
+
+      # Configure custom error pages in production-like environments
+      # This enables Panda CMS's custom 404, 500, and other error pages
+      initializer "panda.cms.custom_error_pages", after: :load_config_initializers do |app|
+        app.config.after_initialize do
+          unless app.config.consider_all_requests_local
+            app.config.exceptions_app = Panda::CMS::ExceptionsApp.new(
+              exceptions_app: app.routes
+            )
+          end
+        end
+      end
     end
 
     class MissingBlockError < StandardError; end
