@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/tastybamboo/panda-core.git
-  revision: 90a39d323e367c5e7b2058c817d44b86d2778502
+  revision: 8fc504efda6399fc73d95808e1eeed592c59539d
   specs:
     panda-core (0.12.2)
       image_processing (~> 1.2)
