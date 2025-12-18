@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/tastybamboo/panda-core.git
-  revision: f1f4338a27f56874122559c2524d3c8beae27115
+  revision: 90a39d323e367c5e7b2058c817d44b86d2778502
   specs:
     panda-core (0.12.2)
       image_processing (~> 1.2)
@@ -371,7 +371,7 @@ GEM
     pp (0.6.3)
       prettyprint
     prettyprint (0.2.0)
-    prism (1.6.0)
+    prism (1.7.0)
     propshaft (1.3.1)
       actionpack (>= 7.0.0)
       activesupport (>= 7.0.0)
@@ -432,7 +432,7 @@ GEM
       ffi (~> 1.0)
     rbs (3.9.5)
       logger
-    rdoc (7.0.0)
+    rdoc (7.0.1)
       erb
       psych (>= 4.0.0)
       tsort
