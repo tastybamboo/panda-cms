@@ -1,13 +1,61 @@
 <%= render Panda::Core::Admin::ContainerComponent.new do |component| %>
   <% component.heading(text: "Add Page", level: 1) %>
-  <%= panda_cms_form_with model: page, url: admin_cms_pages_path, method: :post do |f| %>
+
+  <%= panda_cms_form_with model: page, url: admin_cms_pages_path, method: :post, id: "page-form" do |f| %>
     <%= render Panda::Core::Admin::FormErrorComponent.new(model: page) %>
-    <% options = nested_set_options(Panda::CMS::Page, page) { |i| "#{"-" * i.level} #{i.title} (#{i.path})" } %>
-    <%= f.select :parent_id, options %>
-    <%= f.text_field :title %>
-    <%= f.text_field :path, { meta: t(".path.meta") } %>
-    <%= f.collection_select :panda_cms_template_id, available_templates, :id, :name %>
-    <%= f.select :page_type, options_for_select([["Active", "standard"], ["Hidden", "hidden"], ["Code", "code"]], selected: "standard") %>
-    <%= f.button "Create Page" %>
+
+    <div data-controller="slug">
+      <input type="hidden" value="<%= Panda::CMS::Current.root %>" data-slug-target="existing_root">
+
+      <%= f.section_heading "Page Settings" %>
+
+      <div class="space-y-4">
+        <% options = nested_set_options(Panda::CMS::Page, page) { |i| "#{"-" * i.level} #{i.title} (#{i.path})" } %>
+        <%= f.select :parent_id, options, {}, { "data-slug-target": "input_select", "data-action": "change->slug#setPrePath" } %>
+
+        <%= f.text_field :title, {
+          data: { "slug-target": "input_text" },
+          "data-action": "focusout->slug#generatePath"
+        } %>
+
+        <%= f.text_field :path, {
+          meta: t(".path.meta"),
+          data: { "slug-target": "output_text" },
+          "data-action": "input->slug#handlePathInput"
+        } %>
+
+        <%= f.collection_select :panda_cms_template_id, available_templates, :id, :name %>
+      </div>
+
+      <%= f.section_heading "Page Type" %>
+
+      <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <% [
+          ["Standard", "standard", "fa-globe", "Regular page visible in navigation"],
+          ["Hidden", "hidden", "fa-eye-slash", "Page accessible but not in menus"],
+          ["Code", "code", "fa-code", "Custom code-rendered page"]
+        ].each do |label, value, icon, desc| %>
+          <label class="relative flex cursor-pointer rounded-lg border p-4 shadow-sm focus:outline-none border-gray-300 hover:border-gray-400 dark:border-white/10 dark:hover:border-white/20 transition-colors has-[:checked]:border-mid has-[:checked]:ring-2 has-[:checked]:ring-mid">
+            <%= f.radio_button :page_type, value, class: "sr-only", checked: (page.page_type || "standard") == value %>
+            <span class="flex flex-1 flex-col">
+              <span class="flex items-center gap-2 text-sm font-medium text-gray-900 dark:text-white">
+                <i class="fa-solid <%= icon %>"></i>
+                <%= label %>
+              </span>
+              <span class="mt-1 text-xs text-gray-500 dark:text-gray-400"><%= desc %></span>
+            </span>
+          </label>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="flex justify-end gap-x-3 border-t border-gray-200 mt-6 pt-4 dark:border-white/10">
+      <%= link_to admin_cms_pages_path, class: "inline-flex items-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-xs inset-ring inset-ring-gray-300 hover:bg-gray-50 cursor-pointer dark:bg-white/10 dark:text-gray-100 dark:shadow-none dark:inset-ring-white/5 dark:hover:bg-white/20" do %>
+        <i class="fa-solid fa-xmark"></i> Cancel
+      <% end %>
+      <button type="submit" class="inline-flex items-center gap-x-1.5 justify-center rounded-md bg-mid px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-mid/80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mid cursor-pointer dark:shadow-none">
+        <i class="fa-solid fa-plus"></i> Create Page
+      </button>
+    </div>
   <% end %>
 <% end %>

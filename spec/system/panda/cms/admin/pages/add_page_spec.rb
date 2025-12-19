@@ -105,9 +105,14 @@ RSpec.describe "When adding a page", type: :system do
       end
 
       it "doesn't show the homepage template as selectable as it has already been used" do
-        # Template select should have correct options
+        # Template select should show available templates
         expect(page.html).to include("Page")
         expect(page.html).to include("Different Page")
+
+        # Homepage template has max_uses: 1 and pages_count: 1 in fixtures
+        # so it should NOT be available in the template dropdown
+        template_select = find("#page_panda_cms_template_id")
+        expect(template_select).not_to have_content("Homepage")
       end
 
       it "shows validation errors with an incorrect URL" do

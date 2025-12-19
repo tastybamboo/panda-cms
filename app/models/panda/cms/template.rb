@@ -8,7 +8,7 @@ module Panda
 
       # Associations
       has_many :pages, class_name: "Panda::CMS::Page", dependent: :restrict_with_error, inverse_of: :template,
-        foreign_key: :panda_cms_template_id, counter_cache: :pages_count
+        foreign_key: :panda_cms_template_id
       has_many :blocks, class_name: "Panda::CMS::Block", dependent: :restrict_with_error, inverse_of: :template,
         foreign_key: :panda_cms_template_id
       has_many :block_contents, through: :blocks

@@ -69,11 +69,37 @@ RSpec.describe Panda::CMS::Template, type: :model do
     let!(:different_page_template) { panda_cms_templates(:different_page_template) }
 
     describe ".available" do
-      it "returns all templates with no max_uses or available capacity" do
+      it "returns templates with no max_uses limit" do
         available = described_class.available
         expect(available).to include(page_template)
+      end
+
+      it "returns templates with available capacity" do
+        available = described_class.available
+        # different_page_template has max_uses: 3, pages_count: 1
         expect(available).to include(different_page_template)
-        # Homepage template has max_uses: 1, so availability depends on usage
+      end
+
+      it "excludes templates that have reached their max_uses" do
+        # Homepage template has max_uses: 1 and pages_count: 1 in fixtures
+        # so it should be excluded from available
+        available = described_class.available
+        expect(available).not_to include(homepage_template)
+      end
+    end
+  end
+
+  describe "counter cache" do
+    it "page model has counter_cache on belongs_to :template" do
+      # Verify the association is set up correctly
+      reflection = Panda::CMS::Page.reflect_on_association(:template)
+      # Rails 7+ stores counter_cache as {active: true, column: "pages_count"}
+      counter_cache_option = reflection.options[:counter_cache]
+      if counter_cache_option.is_a?(Hash)
+        expect(counter_cache_option[:column]).to eq("pages_count")
+        expect(counter_cache_option[:active]).to be true
+      else
+        expect(counter_cache_option).to eq(:pages_count)
       end
     end
   end

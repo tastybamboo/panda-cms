@@ -85,6 +85,72 @@ RSpec.describe Panda::CMS::Page, type: :model do
     it { should have_many(:menus).through(:menu_items) }
   end
 
+  describe "path normalization" do
+    let(:test_template) { create_test_template("Path Normalization Test", "layouts/path_norm_test") }
+
+    before do
+      stub_redirect_creation
+    end
+
+    let(:test_root) do
+      page = Panda::CMS::Page.new(
+        path: "/norm-test",
+        title: "Normalization Test Root",
+        template: test_template,
+        status: "active"
+      )
+      page.save(validate: false)
+      page
+    end
+
+    it "strips trailing slashes from paths" do
+      page = Panda::CMS::Page.new(
+        title: "Trailing Slash Page",
+        path: "/norm-test/trailing/",
+        parent: test_root,
+        panda_cms_template_id: test_template.id,
+        status: "active"
+      )
+
+      page.valid?
+      expect(page.path).to eq("/norm-test/trailing")
+    end
+
+    it "strips multiple trailing slashes from paths" do
+      page = Panda::CMS::Page.new(
+        title: "Multiple Trailing Slashes",
+        path: "/norm-test/multiple///",
+        parent: test_root,
+        panda_cms_template_id: test_template.id,
+        status: "active"
+      )
+
+      page.valid?
+      expect(page.path).to eq("/norm-test/multiple")
+    end
+
+    it "preserves the homepage path as /" do
+      homepage = Panda::CMS::Page.find_by(path: "/")
+      if homepage
+        homepage.valid?
+        expect(homepage.path).to eq("/")
+      end
+    end
+
+    it "does not modify paths without trailing slashes" do
+      page = Panda::CMS::Page.new(
+        title: "No Trailing Slash",
+        path: "/norm-test/no-trailing",
+        parent: test_root,
+        panda_cms_template_id: test_template.id,
+        status: "active"
+      )
+
+      page.valid?
+      expect(page.path).to eq("/norm-test/no-trailing")
+    end
+  end
+
   describe "path handling" do
     # Create the page hierarchy dynamically for better test isolation
     let(:test_template) { create_test_template("Path Test Template", "layouts/path_test") }

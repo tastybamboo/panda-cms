@@ -9,7 +9,7 @@ module Panda
       self.table_name = "panda_cms_pages"
       self.implicit_order_column = "lft"
 
-      belongs_to :template, class_name: "Panda::CMS::Template", foreign_key: :panda_cms_template_id
+      belongs_to :template, class_name: "Panda::CMS::Template", foreign_key: :panda_cms_template_id, counter_cache: :pages_count
       has_many :block_contents, class_name: "Panda::CMS::BlockContent", foreign_key: :panda_cms_page_id,
         dependent: :destroy
       has_many :blocks, through: :block_contents
@@ -77,6 +77,7 @@ module Panda
       validates :canonical_url, format: {with: URI::DEFAULT_PARSER.make_regexp(%w[http https])}, allow_blank: true
 
       # Callbacks
+      before_validation :normalize_path
       after_save :handle_after_save
       before_save :update_cached_last_updated_at
 
@@ -212,6 +213,11 @@ module Panda
       end
 
       private
+
+      def normalize_path
+        return if path.blank? || path == "/"
+        self.path = path.chomp("/") while path.end_with?("/") && path.length > 1
+      end
 
       def character_state_for(value, limit)
         Panda::CMS::Seo::CharacterCounter.evaluate(value, limit: limit)
