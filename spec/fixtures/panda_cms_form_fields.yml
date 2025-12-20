@@ -1,0 +1,53 @@
+# Panda CMS Form Fields Fixtures
+contact_name:
+  id: "11111111-1111-1111-1111-111111111111"
+  form_id: "a1b2c3d4-e5f6-4a5b-8c9d-0e1f2a3b4c5d"
+  name: "name"
+  label: "Your Name"
+  field_type: "text"
+  placeholder: "Enter your name"
+  required: true
+  position: 1
+  active: true
+  created_at: <%= 1.month.ago %>
+  updated_at: <%= 1.week.ago %>
+
+contact_email:
+  id: "22222222-2222-2222-2222-222222222222"
+  form_id: "a1b2c3d4-e5f6-4a5b-8c9d-0e1f2a3b4c5d"
+  name: "email"
+  label: "Email Address"
+  field_type: "email"
+  placeholder: "you@example.com"
+  required: true
+  position: 2
+  active: true
+  created_at: <%= 1.month.ago %>
+  updated_at: <%= 1.week.ago %>
+
+contact_message:
+  id: "33333333-3333-3333-3333-333333333333"
+  form_id: "a1b2c3d4-e5f6-4a5b-8c9d-0e1f2a3b4c5d"
+  name: "message"
+  label: "Message"
+  field_type: "textarea"
+  placeholder: "How can we help?"
+  hint: "Please provide as much detail as possible"
+  required: true
+  position: 3
+  active: true
+  created_at: <%= 1.month.ago %>
+  updated_at: <%= 1.week.ago %>
+
+newsletter_email:
+  id: "44444444-4444-4444-4444-444444444444"
+  form_id: "b2c3d4e5-f6a7-5b6c-9d0e-1f2a3b4c5d6e"
+  name: "email"
+  label: "Email"
+  field_type: "email"
+  placeholder: "your@email.com"
+  required: true
+  position: 1
+  active: true
+  created_at: <%= 2.weeks.ago %>
+  updated_at: <%= 3.days.ago %>

@@ -1,0 +1,26 @@
+<%= @form.name %>
+New submission received
+<%= "=" * (@form.name.length + 23) %>
+
+<% if @form_fields.any? %>
+<% @form_fields.each do |field| %>
+<% value = @submission_data[field.name] %>
+<% next if value.blank? %>
+<%= field.label %>: <%= value.is_a?(Array) ? value.join(", ") : value %>
+<% end %>
+<% else %>
+<% @submission_data.each do |key, value| %>
+<% next if value.blank? %>
+<%= key.to_s.titleize %>: <%= value.is_a?(Array) ? value.join(", ") : value %>
+<% end %>
+<% end %>
+
+<% if @form_submission.files.attached? %>
+Attachments:
+<% @form_submission.files.each do |file| %>
+- <%= file.filename %> (<%= number_to_human_size(file.byte_size) %>)
+<% end %>
+<% end %>
+
+---
+Submitted on <%= @form_submission.created_at.strftime("%B %d, %Y at %I:%M %p") %><% if @form_submission.ip_address.present? %> from IP: <%= @form_submission.ip_address %><% end %>

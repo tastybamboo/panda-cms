@@ -1,0 +1,31 @@
+<div class="mb-6 pb-6 border-b border-gray-200 dark:border-gray-700 nested-form-wrapper" data-new-record="<%= form.object.new_record? %>">
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <%= form.select :field_type, Panda::CMS::FormField::FIELD_TYPES.map { |t| [t.titleize, t] }, { label: "Field Type" }, { data: { action: "change->form-fields#fieldTypeChanged", form_fields_target: "fieldType" } } %>
+    <%= form.text_field :label, placeholder: "e.g., Your Name", data: { action: "input->form-fields#generateName", form_fields_target: "label" } %>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+    <%= form.text_field :name, placeholder: "your_name", meta: "Unique identifier (auto-generated)", data: { form_fields_target: "name" } %>
+    <%= form.text_field :placeholder, placeholder: "Enter your name..." %>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+    <%= form.text_field :hint, label: "Help Text", placeholder: "Additional instructions for the user" %>
+    <%= form.text_field :position, type: "number", value: form.object.position || 0 %>
+  </div>
+
+  <div class="mt-4 flex items-center gap-6">
+    <%= form.check_box :required %>
+    <%= form.check_box :active %>
+  </div>
+
+  <div class="mt-4 <%= form.object.has_options? ? '' : 'hidden' %>" data-form-fields-target="optionsSection">
+    <%= form.text_area :options, rows: 3, label: "Options", placeholder: "One option per line, or value|label format", meta: "For select, checkbox, and radio fields" %>
+  </div>
+
+  <div class="mt-4 flex items-center gap-4">
+    <%= render Panda::Core::Admin::ButtonComponent.new(text: "Remove Field", action: :delete, link: "#", size: :small, data: { action: "click->nested-form#remove" }) %>
+  </div>
+
+  <%= form.hidden_field :_destroy %>
+</div>

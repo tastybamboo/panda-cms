@@ -1,0 +1,89 @@
+<%= render Panda::Core::Admin::ContainerComponent.new do |component| %>
+  <% component.heading(text: form.name, level: 1) do |heading| %>
+    <% heading.button(text: "View Submissions", href: admin_cms_form_path(form), icon: "fa-solid fa-eye") %>
+  <% end %>
+
+  <%= panda_cms_form_with model: form, url: admin_cms_form_path(form), method: :patch, data: { controller: "form-fields" } do |f| %>
+    <%= render Panda::Core::Admin::FormErrorComponent.new(model: form) %>
+
+    <%= render Panda::Core::Admin::PanelComponent.new do |panel| %>
+      <% panel.heading(text: "Form Settings") %>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <%= f.text_field :name %>
+        <%= f.select :status, [["Active", "active"], ["Draft", "draft"], ["Archived", "archived"]], { label: "Status" } %>
+      </div>
+
+      <div class="mt-4">
+        <%= f.text_area :description, rows: 2, meta: "Optional description for admin reference" %>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+        <%= f.text_field :completion_path, placeholder: "/thank-you", meta: "Path to redirect after submission" %>
+        <%= f.text_field :success_message, placeholder: "Thank you for your submission!", meta: "Flash message shown on success" %>
+      </div>
+    <% end %>
+
+    <%= render Panda::Core::Admin::PanelComponent.new do |panel| %>
+      <% panel.heading(text: "Form Fields") %>
+
+      <div data-controller="nested-form" data-nested-form-wrapper-selector-value=".nested-form-wrapper">
+        <template data-nested-form-target="template">
+          <%= f.fields_for :form_fields, Panda::CMS::FormField.new, child_index: "NEW_RECORD" do |field_form| %>
+            <%= render "form_field_row", form: field_form %>
+          <% end %>
+        </template>
+
+        <div class="space-y-4">
+          <% if form.form_fields.any? %>
+            <%= f.fields_for :form_fields, form.form_fields.ordered do |field_form| %>
+              <%= render "form_field_row", form: field_form %>
+            <% end %>
+          <% end %>
+        </div>
+
+        <div data-nested-form-target="target"></div>
+
+        <div class="mt-4">
+          <%= render Panda::Core::Admin::ButtonComponent.new(text: "Add Field", action: :add, link: "#", size: :small, data: { action: "click->nested-form#add" }) %>
+        </div>
+      </div>
+    <% end %>
+
+    <%= render Panda::Core::Admin::PanelComponent.new do |panel| %>
+      <% panel.heading(text: "Notification Settings") %>
+
+      <div class="mt-4">
+        <%= f.text_field :notification_emails, placeholder: "admin@example.com, team@example.com", meta: "Comma-separated list of email addresses to notify on submission" %>
+      </div>
+
+      <div class="mt-4">
+        <%= f.text_field :notification_subject, placeholder: "New form submission: {{name}}", meta: "Email subject line (use {{field_name}} for dynamic values)" %>
+      </div>
+
+      <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+        <h4 class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-4">Submitter Confirmation Email</h4>
+
+        <div class="mt-4">
+          <%= f.check_box :send_confirmation, label: "Send confirmation email to submitter" %>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+          <% email_fields = form.form_fields.select { |field| field.field_type == "email" } %>
+          <%= f.select :confirmation_email_field, email_fields.map { |field| [field.label, field.name] }, { include_blank: "Select email field...", label: "Email Field", meta: "Which field contains the submitter's email?" } %>
+          <%= f.text_field :confirmation_subject, placeholder: "Thank you for contacting us" %>
+        </div>
+
+        <div class="mt-4">
+          <%= f.text_area :confirmation_body, rows: 5, placeholder: "Thank you {{name}} for your message. We will respond shortly.", meta: "Use {{field_name}} for dynamic values" %>
+        </div>
+      </div>
+    <% end %>
+
+    <div class="flex justify-end gap-x-3 border-t border-gray-200 mt-6 pt-4 dark:border-white/10">
+      <button type="submit" class="inline-flex items-center gap-x-1.5 justify-center rounded-md bg-mid px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-mid/80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mid cursor-pointer dark:shadow-none">
+        <i class="fa-solid fa-check"></i> Save Form
+      </button>
+    </div>
+  <% end %>
+<% end %>

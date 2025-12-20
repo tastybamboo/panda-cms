@@ -12,6 +12,12 @@ module Panda
       def create
         form = Panda::CMS::Form.find(params[:id])
 
+        # Check if form is accepting submissions
+        unless form.accepting_submissions?
+          redirect_to_fallback(form, error: true, message: "This form is not currently accepting submissions.")
+          return
+        end
+
         # Additional spam checks
         if looks_like_spam?(params)
           log_spam_attempt(form, "content")
@@ -26,35 +32,112 @@ module Panda
           return
         end
 
-        # Clean parameters - exclude system params and honeypot field
-        vars = params.except(:authenticity_token, :controller, :action, :id, :_form_timestamp, :spinner)
+        # Build submission data from allowed fields
+        submission_data = build_submission_data(form, params)
 
         # Create submission
-        form_submission = Panda::CMS::FormSubmission.create!(
-          form_id: form.id,
-          data: vars.to_unsafe_h,
+        form_submission = Panda::CMS::FormSubmission.new(
+          form: form,
+          data: submission_data,
           ip_address: request.remote_ip,
           user_agent: request.user_agent
         )
 
+        # Handle file uploads
+        handle_file_uploads(form, form_submission, params)
+
+        # Validate and save
+        unless form_submission.valid?
+          redirect_to_fallback(form, error: true, message: form_submission.errors.full_messages.to_sentence)
+          return
+        end
+
+        form_submission.save!
+
         # Update submission count
         form.increment!(:submission_count)
 
-        # Send notification email (in background if possible)
-        begin
-          Panda::CMS::FormMailer.notification_email(form: form, form_submission: form_submission).deliver_now
-        rescue => e
-          Rails.logger&.error "Failed to send form notification email: #{e.message}"
-          # Don't fail the submission if email fails
-        end
+        # Send notification emails
+        send_notification_emails(form, form_submission)
 
-        redirect_to_fallback(form, success: true)
+        # Redirect with custom success message if configured
+        success_message = form.success_message.presence || "Thank you for your submission!"
+        redirect_to_fallback(form, success: true, message: success_message)
       rescue ActiveRecord::RecordInvalid => e
         Rails.logger&.error "Form submission validation failed: #{e.message}"
-        redirect_to_fallback(form, error: true)
+        redirect_to_fallback(form, error: true, message: e.record.errors.full_messages.to_sentence)
       end
 
       private
+
+      # Build submission data from allowed form fields
+      # If form has field definitions, only allow those fields
+      # Otherwise, allow all params except system params
+      def build_submission_data(form, params)
+        system_params = %i[authenticity_token controller action id _form_timestamp spinner]
+
+        if form.form_fields.any?
+          # Only accept defined field names (excluding file fields which are handled separately)
+          allowed_fields = form.form_fields.active.where.not(field_type: "file").pluck(:name)
+          params.to_unsafe_h.slice(*allowed_fields)
+        else
+          # Legacy behavior - accept all params except system params
+          params.except(*system_params).to_unsafe_h
+        end
+      end
+
+      # Handle file uploads and attach to submission
+      def handle_file_uploads(form, submission, params)
+        return unless form.form_fields.any?
+
+        form.form_fields.where(field_type: "file", active: true).each do |field|
+          uploaded_file = params[field.name]
+          next unless uploaded_file.present? && uploaded_file.respond_to?(:read)
+
+          submission.files.attach(uploaded_file)
+
+          # Store metadata for reference
+          submission.files_metadata ||= {}
+          submission.files_metadata[field.name] = {
+            "filename" => uploaded_file.original_filename,
+            "content_type" => uploaded_file.content_type,
+            "size" => uploaded_file.size
+          }
+        end
+      end
+
+      # Send notification emails
+      def send_notification_emails(form, form_submission)
+        # Send admin notification if configured
+        recipients = form.notification_email_list
+        if recipients.any?
+          begin
+            Panda::CMS::FormMailer.notification_email(
+              form: form,
+              form_submission: form_submission,
+              recipients: recipients
+            ).deliver_later
+          rescue => e
+            Rails.logger&.error "Failed to send form notification email: #{e.message}"
+          end
+        end
+
+        # Send confirmation to submitter if configured
+        if form.send_confirmation && form.confirmation_email_field.present?
+          submitter_email = form_submission.data[form.confirmation_email_field]
+          if submitter_email.present?
+            begin
+              Panda::CMS::FormMailer.confirmation_email(
+                form: form,
+                form_submission: form_submission,
+                recipient: submitter_email
+              ).deliver_later
+            rescue => e
+              Rails.logger&.error "Failed to send form confirmation email: #{e.message}"
+            end
+          end
+        end
+      end
 
       # Check for basic spam indicators
       def looks_like_spam?(params)
@@ -117,7 +200,7 @@ module Panda
       end
 
       # Safe redirect that works in engine context
-      def redirect_to_fallback(form, success: false, spam: false, error: false)
+      def redirect_to_fallback(form, success: false, spam: false, error: false, message: nil)
         fallback = "/"
 
         if spam
@@ -125,19 +208,19 @@ module Panda
           redirect_back(fallback_location: fallback, allow_other_host: false)
         elsif success && form.completion_path.present?
           # Redirect to custom completion path
-          redirect_to form.completion_path, notice: "Thank you for your submission!"
+          redirect_to form.completion_path, notice: message || "Thank you for your submission!"
         elsif success
           # Redirect back to referring page with success message
           redirect_back(
             fallback_location: fallback,
-            notice: "Thank you for your submission!",
+            notice: message || "Thank you for your submission!",
             allow_other_host: false
           )
         elsif error
           # Redirect back with error message
           redirect_back(
             fallback_location: fallback,
-            alert: "There was an error submitting your form. Please try again.",
+            alert: message || "There was an error submitting your form. Please try again.",
             allow_other_host: false
           )
         else

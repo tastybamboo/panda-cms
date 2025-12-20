@@ -15,27 +15,71 @@ export default class extends Controller {
   connect() {
     console.debug("[Panda CMS] EditorIframe controller connected")
     this.frame = this.element
+    this.logLayoutState("connect() start")
     this.setupControls()
+    this.logLayoutState("after setupControls()")
     this.setupFrame()
+    this.logLayoutState("after setupFrame()")
     this.editors = []
     this.editorsInitialized = {
       plain: false,
       rich: false
     }
     this.setupSlideoverHandling()
+    this.logLayoutState("after setupSlideoverHandling()")
     this.setupEditorInitializationListener()
   }
 
-  setupControls() {
-    // Create editor controls if they don't exist
-    if (!parent.document.querySelector('.editor-controls')) {
-      const controls = parent.document.createElement('div')
-      controls.className = 'editor-controls'
-      parent.document.body.appendChild(controls)
+  // Debug helper to log layout state
+  logLayoutState(label) {
+    // Use multiple strategies to find sidebar
+    const pandaContainer = document.getElementById('panda-container')
+    const sidebar = pandaContainer?.firstElementChild
+    const mainContent = document.getElementById('panda-inner-container')
+    const primaryContent = document.getElementById('panda-primary-content')
+
+    const state = {
+      viewportWidth: window.innerWidth,
+      viewportHeight: window.innerHeight,
+      sidebarFound: !!sidebar,
+      sidebarDisplay: sidebar ? getComputedStyle(sidebar).display : 'not found',
+      sidebarPosition: sidebar ? getComputedStyle(sidebar).position : 'not found',
+      sidebarWidth: sidebar ? getComputedStyle(sidebar).width : 'not found',
+      sidebarLeft: sidebar ? getComputedStyle(sidebar).left : 'not found',
+      mainMarginLeft: mainContent ? getComputedStyle(mainContent).marginLeft : 'not found',
+      mainWidth: mainContent ? getComputedStyle(mainContent).width : 'not found',
+      primaryContentWidth: primaryContent ? getComputedStyle(primaryContent).width : 'not found',
+      frameWidth: this.frame ? getComputedStyle(this.frame).width : 'not found',
+      framePosition: this.frame ? getComputedStyle(this.frame).position : 'not found',
+      frameZIndex: this.frame?.style.zIndex || 'not set',
+      documentScrollWidth: document.documentElement.scrollWidth,
+      bodyScrollWidth: document.body?.scrollWidth
     }
 
-    // Create save button if it doesn't exist
+    console.debug(`[Layout Debug] ${label}:`, state)
+
+    // Alert if margin changes from expected value
+    if (mainContent && window.innerWidth >= 1024) {
+      const marginLeft = parseFloat(getComputedStyle(mainContent).marginLeft)
+      if (marginLeft < 280) { // Expected ~288px (18rem)
+        console.error(`[Layout SHIFT DETECTED] ${label}: mainMarginLeft is ${marginLeft}px (expected ~288px)`)
+      }
+    }
+  }
+
+  setupControls() {
+    // The save button should already exist in the page header (created by ERB template)
+    // Only create fallback controls if the save button doesn't exist
     if (!parent.document.getElementById('saveEditableButton')) {
+      // Create editor controls container if needed (hidden by default to prevent layout shift)
+      if (!parent.document.querySelector('.editor-controls')) {
+        const controls = parent.document.createElement('div')
+        controls.className = 'editor-controls'
+        // Position absolutely to prevent layout shift
+        controls.style.cssText = 'position: fixed; top: 10px; right: 10px; z-index: 9999;'
+        parent.document.body.appendChild(controls)
+      }
+
       const saveButton = parent.document.createElement('a')
       saveButton.id = 'saveEditableButton'
       saveButton.href = '#'
@@ -46,56 +90,32 @@ export default class extends Controller {
   }
 
   setupFrame() {
-    // Always show the frame initially to ensure it's visible for tests
-    this.frame.style.display = ""
-    this.frame.style.width = "100%"
-    this.frame.style.height = "100%"
-    this.frame.style.minHeight = "500px"
-
-    // Set up iframe stacking context
-    this.frame.style.position = "relative"
-    this.frame.style.zIndex = "1" // Lower z-index so it doesn't block UI
-
+    // Styles are set in the ERB template - avoid modifying them to prevent reflow
     // Get CSRF token
     this.csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || ""
 
-    // Setup frame load handler
-    this.frame.addEventListener("load", async () => {
-      console.debug("[Panda CMS] Frame loaded")
+    // Handler for when frame is loaded (with guard against double initialization)
+    this.frameInitialized = false
+    const handleFrameLoad = async () => {
+      if (this.frameInitialized) {
+        console.debug("[Panda CMS] Frame already initialized, skipping")
+        return
+      }
+      this.frameInitialized = true
+      this.logLayoutState("handleFrameLoad start")
+
       this.frameDocument = this.frame.contentDocument || this.frame.contentWindow.document
       this.body = this.frameDocument.body
       this.head = this.frameDocument.head
 
-      // Inject CMS assets into the iframe head
-      if (this.hasAssetsValue && this.assetsValue) {
-        console.debug("[Panda CMS] Injecting assets into iframe", {
-          assetsLength: this.assetsValue.length,
-          assetsPreview: this.assetsValue.substring(0, 200)
-        })
-        const assetsHTML = this.assetsValue
-        const tempDiv = document.createElement('div')
-        tempDiv.innerHTML = assetsHTML
-
-        // Append each node to the iframe's head
-        Array.from(tempDiv.childNodes).forEach(node => {
-          if (node.nodeType === Node.ELEMENT_NODE || node.nodeType === Node.TEXT_NODE) {
-            const importedNode = this.frameDocument.importNode(node, true)
-            this.head.appendChild(importedNode)
-            console.debug("[Panda CMS] Injected node:", node.nodeName)
-          }
-        })
-
-        console.debug("[Panda CMS] Assets injected successfully - head element count:", this.head.children.length)
-      } else {
-        console.warn("[Panda CMS] No assets to inject", {
-          hasAssetsValue: this.hasAssetsValue,
-          assetsValue: this.assetsValue
-        })
-      }
-
-      // Ensure iframe content is properly positioned but doesn't block UI
-      this.body.style.position = "relative"
-      this.body.style.zIndex = "1"
+      // NOTE: We intentionally do NOT inject CMS assets into the iframe.
+      // Reasons:
+      // 1. The iframe loads the frontend page which has its own complete CSS styling
+      // 2. EditorJS resources are loaded separately via loadEditorResources()
+      // 3. Injecting admin CSS (panda-core) would conflict with the site's styling
+      //    (causes "black everywhere" due to CSS variable conflicts and global style overrides)
+      // 4. All editor initialization happens from the parent window via this controller
+      console.debug("[Panda CMS] Skipping asset injection (not needed, would conflict with site CSS)")
 
       // Add a class to help identify this frame's editors
       const frameId = this.frame.id || Math.random().toString(36).substring(7)
@@ -147,19 +167,44 @@ export default class extends Controller {
 
       // Initialize editors after frame is loaded
       await this.initializeEditors()
-    })
+    }
+
+    // Setup frame load handler for future loads
+    this.frame.addEventListener("load", handleFrameLoad)
+
+    // Check if iframe is already loaded (timing issue: controller may connect after load event)
+    // An iframe is considered loaded if it has contentDocument with a body
+    try {
+      const doc = this.frame.contentDocument || this.frame.contentWindow?.document
+      if (doc && doc.body && doc.readyState === 'complete') {
+        console.debug("[Panda CMS] Frame already loaded, initializing immediately")
+        handleFrameLoad()
+      }
+    } catch (e) {
+      // Cross-origin or other access error - wait for load event
+      console.debug("[Panda CMS] Cannot access frame document yet, waiting for load event")
+    }
   }
 
   ensureFrameVisibility() {
+    console.debug("[Panda CMS] ensureFrameVisibility called")
+    this.logLayoutState("ensureFrameVisibility - before any changes")
+
     // Force frame to be visible
     this.frame.style.display = ""
+    this.logLayoutState("ensureFrameVisibility - after display=''")
 
     // Check dimensions and fix if needed
-    if (this.frame.offsetWidth === 0 || this.frame.offsetHeight === 0) {
+    const beforeWidth = this.frame.offsetWidth
+    const beforeHeight = this.frame.offsetHeight
+    console.debug("[Panda CMS] Frame dimensions before fix:", { beforeWidth, beforeHeight })
+
+    if (beforeWidth === 0 || beforeHeight === 0) {
       console.warn("[Panda CMS] iFrame has zero dimensions, fixing...")
       this.frame.style.width = "100%"
       this.frame.style.height = "100%"
       this.frame.style.minHeight = "500px"
+      this.logLayoutState("ensureFrameVisibility - after dimension fix")
     }
 
     // Log visibility state
@@ -184,6 +229,7 @@ export default class extends Controller {
 
   async initializeEditors() {
     console.debug("[Panda CMS] Starting editor initialization")
+    this.logLayoutState("initializeEditors start")
 
     // Get all editable elements
     const plainTextElements = this.body.querySelectorAll('[data-editable-kind="plain_text"], [data-editable-kind="markdown"], [data-editable-kind="html"]')
@@ -193,12 +239,14 @@ export default class extends Controller {
 
     // Always ensure frame is visible
     this.ensureFrameVisibility()
+    this.logLayoutState("after ensureFrameVisibility")
 
     // Initialize editors if they exist
     if (plainTextElements.length > 0 || richTextElements.length > 0) {
       try {
         // Load resources first
         await this.loadEditorResources()
+        this.logLayoutState("after loadEditorResources")
 
         // Initialize editors
         await Promise.all([
@@ -207,6 +255,7 @@ export default class extends Controller {
         ])
 
         console.debug("[Panda CMS] All editors initialized successfully")
+        this.logLayoutState("after all editors initialized")
       } catch (error) {
         console.error("[Panda CMS] Error initializing editors:", error)
         throw error
@@ -541,7 +590,7 @@ export default class extends Controller {
   }
 
   checkAllEditorsInitialized() {
-    console.log("[Panda CMS] Editor initialization status:", this.editorsInitialized)
+    console.debug("[Panda CMS] Editor initialization status:", this.editorsInitialized)
 
     // Always ensure frame is visible
     this.ensureFrameVisibility()
@@ -594,6 +643,7 @@ export default class extends Controller {
   }
 
   adjustFrameZIndex(slideoverVisible) {
+    this.logLayoutState(`adjustFrameZIndex - before (slideoverVisible=${slideoverVisible})`)
     if (slideoverVisible) {
       // Lower z-index when slideover is visible
       this.frame.style.zIndex = "0"
@@ -603,6 +653,7 @@ export default class extends Controller {
       this.frame.style.zIndex = "1"
       if (this.body) this.body.style.zIndex = "1"
     }
+    this.logLayoutState(`adjustFrameZIndex - after (slideoverVisible=${slideoverVisible})`)
     console.debug("[Panda CMS] Adjusted frame z-index:", {
       slideoverVisible,
       frameZIndex: this.frame.style.zIndex,
