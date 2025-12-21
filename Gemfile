@@ -2,8 +2,8 @@
 
 source "https://rubygems.org"
 
-gem "panda-core", github: "tastybamboo/panda-core"
-gem "panda-editor"
+gem "panda-core", github: "tastybamboo/panda-core", branch: "main"
+gem "panda-editor", github: "tastybamboo/panda-editor", branch: "main"
 
 # Specify your gem's dependencies in panda-cms.gemspec
 gemspec
