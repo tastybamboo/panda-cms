@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/tastybamboo/panda-core.git
-  revision: aa7f021ec59aa0088446863e852e013d1b8ae08c
+  revision: 0489e9e39d3a3b5047fbd46dac68533102086e33
   branch: main
   specs:
     panda-core (0.12.2)
@@ -660,4 +660,4 @@ DEPENDENCIES
   yard-activerecord
 
 BUNDLED WITH
-   2.7.2
+  4.0.2
