@@ -52,9 +52,12 @@ module Panda
       private
 
       def setup_editability
+        embed_id = view_context.params[:embed_id].to_s
+        page_id = Current.page&.id.to_s
+
         @editable_state = @editable &&
-          view_context.params[:embed_id].present? &&
-          view_context.params[:embed_id] == Current.page.id &&
+          embed_id.present? &&
+          embed_id == page_id &&
           Current.user&.admin?
       end
 
@@ -77,7 +80,13 @@ module Panda
         end
 
         @block_content_id = @block_content.id
-        raw_content = @block_content.cached_content || @block_content.content
+        # For editing, use content (EditorJS JSON) directly
+        # For display, prefer cached_content (pre-rendered HTML) for speed
+        raw_content = if @editable_state
+          @block_content.content
+        else
+          @block_content.cached_content || @block_content.content
+        end
         @content = raw_content.presence || empty_editor_js_content
       end
 

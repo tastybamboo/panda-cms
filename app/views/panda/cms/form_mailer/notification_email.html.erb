@@ -2,10 +2,86 @@
 <html>
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+    <style>
+      body { font-family: system-ui, -apple-system, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
+      .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+      .header { background: #1f2937; color: white; padding: 20px; border-radius: 8px 8px 0 0; }
+      .header h1 { margin: 0; font-size: 20px; }
+      .header p { margin: 8px 0 0; opacity: 0.8; font-size: 14px; }
+      .content { background: #f9fafb; padding: 20px; border: 1px solid #e5e7eb; border-top: none; }
+      .field { margin-bottom: 16px; }
+      .field-label { font-weight: 600; color: #374151; font-size: 14px; margin-bottom: 4px; }
+      .field-value { color: #111827; }
+      .footer { background: #f3f4f6; padding: 16px; text-align: center; font-size: 12px; color: #6b7280; border-radius: 0 0 8px 8px; border: 1px solid #e5e7eb; border-top: none; }
+    </style>
   </head>
   <body>
-    <% @submission_data.each do |field, value| %>
-    <p><strong><%= field %>:</strong> <%= value %></p>
-    <% end %>
+    <div class="container">
+      <div class="header">
+        <h1><%= @form.name %></h1>
+        <p>New submission received</p>
+      </div>
+
+      <div class="content">
+        <% if @form_fields.any? %>
+          <% @form_fields.each do |field| %>
+            <% value = @submission_data[field.name] %>
+            <% next if value.blank? %>
+
+            <div class="field">
+              <div class="field-label"><%= field.label %></div>
+              <div class="field-value">
+                <% if field.field_type == "email" %>
+                  <a href="mailto:<%= value %>"><%= value %></a>
+                <% elsif field.field_type == "url" %>
+                  <a href="<%= value %>"><%= value %></a>
+                <% elsif field.field_type == "textarea" %>
+                  <%= simple_format(value) %>
+                <% elsif value.is_a?(Array) %>
+                  <%= value.join(", ") %>
+                <% else %>
+                  <%= value %>
+                <% end %>
+              </div>
+            </div>
+          <% end %>
+        <% else %>
+          <% @submission_data.each do |key, value| %>
+            <% next if value.blank? %>
+
+            <div class="field">
+              <div class="field-label"><%= key.to_s.titleize %></div>
+              <div class="field-value">
+                <% if key.to_s.include?("email") %>
+                  <a href="mailto:<%= value %>"><%= value %></a>
+                <% elsif value.is_a?(Array) %>
+                  <%= value.join(", ") %>
+                <% else %>
+                  <%= value %>
+                <% end %>
+              </div>
+            </div>
+          <% end %>
+        <% end %>
+
+        <% if @form_submission.files.attached? %>
+          <div class="field">
+            <div class="field-label">Attachments</div>
+            <div class="field-value">
+              <% @form_submission.files.each do |file| %>
+                <p><%= file.filename %> (<%= number_to_human_size(file.byte_size) %>)</p>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+
+      <div class="footer">
+        Submitted on <%= @form_submission.created_at.strftime("%B %d, %Y at %I:%M %p") %>
+        <% if @form_submission.ip_address.present? %>
+          from IP: <%= @form_submission.ip_address %>
+        <% end %>
+      </div>
+    </div>
   </body>
 </html>

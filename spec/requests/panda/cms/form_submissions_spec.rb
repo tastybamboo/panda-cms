@@ -266,10 +266,10 @@ RSpec.describe "Form Submissions", type: :request do
     it "handles invalid form submissions gracefully" do
       timestamp = 5.seconds.ago.to_i
 
-      # Simulate a validation error by stubbing create!
+      # Simulate a validation error by stubbing save!
       invalid_record = Panda::CMS::FormSubmission.new
       invalid_record.errors.add(:base, "Test validation error")
-      allow(Panda::CMS::FormSubmission).to receive(:create!).and_raise(ActiveRecord::RecordInvalid.new(invalid_record))
+      allow_any_instance_of(Panda::CMS::FormSubmission).to receive(:save!).and_raise(ActiveRecord::RecordInvalid.new(invalid_record))
 
       post "/_forms/#{form.id}", params: {
         _form_timestamp: timestamp,

@@ -7,7 +7,8 @@
 
 pin "panda/cms/application", to: "/panda/cms/application.js", preload: true
 pin "@hotwired/stimulus-loading", to: "/panda/cms/stimulus-loading.js", preload: true
-pin "@editorjs/editorjs", to: "/panda/cms/editor/editorjs.js" # @2.30.6
+# NOTE: EditorJS pins are now managed by panda-editor (CDN-based)
+# Don't override with local paths here
 
 # Pin the controllers directory
 pin "panda/cms/controllers/index", to: "/panda/cms/controllers/index.js"

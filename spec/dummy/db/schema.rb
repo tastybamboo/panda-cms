@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_11_21_012455) do
+ActiveRecord::Schema[8.0].define(version: 2025_12_20_000003) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -91,6 +91,24 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_21_012455) do
     t.index ["panda_cms_template_id"], name: "index_panda_cms_blocks_on_panda_cms_template_id"
   end
 
+  create_table "panda_cms_form_fields", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "form_id", null: false
+    t.string "name", null: false
+    t.string "label", null: false
+    t.string "field_type", null: false
+    t.text "placeholder"
+    t.text "hint"
+    t.text "options"
+    t.text "validations"
+    t.boolean "required", default: false
+    t.integer "position", default: 0
+    t.boolean "active", default: true
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["form_id", "name"], name: "index_panda_cms_form_fields_on_form_id_and_name", unique: true
+    t.index ["form_id", "position"], name: "index_panda_cms_form_fields_on_form_id_and_position"
+  end
+
   create_table "panda_cms_form_submissions", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "form_id", null: false
     t.jsonb "data", default: {}, null: false
@@ -98,6 +116,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_21_012455) do
     t.datetime "updated_at", null: false
     t.string "ip_address"
     t.text "user_agent"
+    t.jsonb "files_metadata", default: {}
     t.index ["form_id"], name: "index_panda_cms_form_submissions_on_form_id"
     t.index ["ip_address"], name: "index_panda_cms_form_submissions_on_ip_address"
   end
@@ -108,6 +127,15 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_21_012455) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "completion_path"
+    t.text "notification_emails"
+    t.string "notification_subject"
+    t.boolean "send_confirmation", default: false
+    t.string "confirmation_subject"
+    t.text "confirmation_body"
+    t.string "confirmation_email_field"
+    t.text "success_message"
+    t.string "status", default: "active"
+    t.text "description"
     t.index ["name"], name: "index_panda_cms_forms_on_name", unique: true
   end
 
@@ -269,6 +297,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_21_012455) do
   add_foreign_key "panda_cms_block_contents", "panda_cms_blocks"
   add_foreign_key "panda_cms_block_contents", "panda_cms_pages"
   add_foreign_key "panda_cms_blocks", "panda_cms_templates"
+  add_foreign_key "panda_cms_form_fields", "panda_cms_forms", column: "form_id"
   add_foreign_key "panda_cms_form_submissions", "panda_cms_forms", column: "form_id"
   add_foreign_key "panda_cms_menu_items", "panda_cms_menus"
   add_foreign_key "panda_cms_menu_items", "panda_cms_pages"
