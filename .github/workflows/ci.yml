@@ -98,7 +98,7 @@ jobs:
             --platform linux/amd64 \
             --name panda-cms-ci-stable \
             -v $PWD:/app \
-            -v ci_bundle_cache_stable:/usr/local/bundle \
+            -v ci_bundle_cache_stable_v2:/usr/local/bundle \
             -e RAILS_ENV=test \
             -e CI=true \
             -e CUPRITE_PROCESS_TIMEOUT=30 \
@@ -172,7 +172,7 @@ jobs:
             --platform linux/amd64 \
             --name panda-cms-ci-flaky \
             -v $PWD:/app \
-            -v ci_bundle_cache_flaky:/usr/local/bundle \
+            -v ci_bundle_cache_flaky_v2:/usr/local/bundle \
             -e RAILS_ENV=test \
             -e CI=true \
             -e CUPRITE_PROCESS_TIMEOUT=30 \
