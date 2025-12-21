@@ -1,0 +1,7 @@
+<% if @body_content.present? %>
+<%= @body_content %>
+<% else %>
+Thank you for your submission to <%= @form.name %>.
+
+We have received your information and will be in touch if needed.
+<% end %>

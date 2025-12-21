@@ -130,9 +130,6 @@
     <% end %>
   <% end %>
   <% component.with_footer do %>
-    <button type="button" data-action="click->toggle#toggle touch->toggle#toggle" class="inline-flex items-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-xs inset-ring inset-ring-gray-300 hover:bg-gray-50 cursor-pointer dark:bg-white/10 dark:text-gray-100 dark:shadow-none dark:inset-ring-white/5 dark:hover:bg-white/20">
-      <i class="fa-solid fa-xmark"></i> Cancel
-    </button>
     <button type="submit" form="page-form" class="inline-flex items-center gap-x-1.5 justify-center rounded-md bg-mid px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-mid/80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mid cursor-pointer dark:shadow-none">
       <i class="fa-solid fa-check"></i> Save
     </button>
@@ -148,8 +145,8 @@
 
   <%= content_tag :iframe, nil,
       src: "#{page.path}?embed_id=#{page.id}",
-      class: "p-0 m-0 w-full h-full border border-slate-200",
-      style: "min-height: 500px; width: 100%; height: 100%;",
+      class: "p-0 m-0 w-full h-full border border-slate-200 max-w-full",
+      style: "min-height: 500px; width: 100%; height: 100%; max-width: 100%; overflow: hidden; box-sizing: border-box;",
       id: "editablePageFrame",
       data: {
         controller: "editor-iframe",

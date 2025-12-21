@@ -31,8 +31,40 @@
       "confidence": "Weak",
       "cwe_id": [22],
       "note": "False positive: The component class is hardcoded (Panda::Core::Admin::FormErrorComponent), not dynamically determined. The model parameter is validated through Rails' find method and only used as data to pass to the component, not to determine the rendering path."
+    },
+    {
+      "warning_type": "Dynamic Render Path",
+      "warning_code": 15,
+      "fingerprint": "0da584ca5faf85f949eb1f5825a4e30f7733519ee19088d5e6b7665a08019e64",
+      "check_name": "Render",
+      "message": "Render path contains parameter value",
+      "file": "app/views/panda/cms/admin/forms/edit.html.erb",
+      "line": 7,
+      "link": "https://brakemanscanner.org/docs/warning_types/dynamic_render_path/",
+      "code": "render(action => Panda::Core::Admin::FormErrorComponent.new(:model => Panda::CMS::Form.find(params[:id])), { :locals => ({ :\"panda::core::admin::formerrorcomponent\" => Panda::Core::Admin::FormErrorComponent.new(:model => Panda::CMS::Form.find(params[:id])) }) })",
+      "render_path": [
+        {
+          "type": "controller",
+          "class": "Panda::CMS::Admin::FormsController",
+          "method": "edit",
+          "line": 62,
+          "file": "app/controllers/panda/cms/admin/forms_controller.rb",
+          "rendered": {
+            "name": "panda/cms/admin/forms/edit",
+            "file": "app/views/panda/cms/admin/forms/edit.html.erb"
+          }
+        }
+      ],
+      "location": {
+        "type": "template",
+        "template": "panda/cms/admin/forms/edit"
+      },
+      "user_input": "params[:id]",
+      "confidence": "Weak",
+      "cwe_id": [22],
+      "note": "False positive: The component class is hardcoded (Panda::Core::Admin::FormErrorComponent), not dynamically determined. The model parameter is validated through Rails' find method and only used as data to pass to the component, not to determine the rendering path."
     }
   ],
-  "updated": "2025-11-09 00:00:00 +0000",
+  "updated": "2025-12-20 00:00:00 +0000",
   "brakeman_version": "7.1.1"
 }

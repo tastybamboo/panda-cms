@@ -33,37 +33,13 @@ pandaCmsApplication.register("nested-form", NestedFormController)
 import MenuFormController from "./menu_form_controller.js"
 pandaCmsApplication.register("menu-form", MenuFormController)
 
-// Lazy load editor controllers only when needed
-// These will only be loaded when the data-controller attribute is present in the DOM
-class EditorFormLazyController {
-  connect() {
-    // Only import the editor controller when it's actually needed in the DOM
-    import("./editor_form_controller.js").then(module => {
-      const Controller = module.default
-      // Replace this lazy controller with the real one
-      pandaCmsApplication.register("editor-form", Controller)
-    }).catch(err => {
-      console.error("[Panda CMS] Failed to load editor-form controller:", err)
-    })
-  }
-}
+// Editor controllers - loaded eagerly since they're essential for CMS functionality
+// Note: Previous lazy-loading pattern was broken (didn't extend Controller, dynamic import issues with importmaps)
+import EditorFormController from "./editor_form_controller.js"
+pandaCmsApplication.register("editor-form", EditorFormController)
 
-class EditorIframeLazyController {
-  connect() {
-    // Only import the editor controller when it's actually needed in the DOM
-    import("./editor_iframe_controller.js").then(module => {
-      const Controller = module.default
-      // Replace this lazy controller with the real one
-      pandaCmsApplication.register("editor-iframe", Controller)
-    }).catch(err => {
-      console.error("[Panda CMS] Failed to load editor-iframe controller:", err)
-    })
-  }
-}
-
-// Register the lazy-loading proxy controllers
-pandaCmsApplication.register("editor-form", EditorFormLazyController)
-pandaCmsApplication.register("editor-iframe", EditorIframeLazyController)
+import EditorIframeController from "./editor_iframe_controller.js"
+pandaCmsApplication.register("editor-iframe", EditorIframeController)
 
 // Note: Toggle, Slideover, and other TailwindCSS Stimulus Components
 // are now registered by Panda Core since the admin layout lives there

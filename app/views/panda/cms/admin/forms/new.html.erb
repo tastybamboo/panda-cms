@@ -1,14 +1,21 @@
 <%= render Panda::Core::Admin::ContainerComponent.new do |component| %>
   <% component.heading(text: "Add Form", level: 1) %>
-  <%= panda_cms_form_with model: page, url: admin_cms_pages_path, method: :post do |f| %>
-    <% options = nested_set_options(Panda::CMS::Page, page) { |i| "#{"-" * i.level} #{i.title} (#{i.path})" } %>
-    <div data-controller="slug">
-      <input type="hidden" value="<%= Panda::CMS::Current.root %>" data-slug-target="existing_root">
-      <%= f.select :parent_id, options, {}, { "data-slug-target": "input_select", "data-action": "change->slug#setPrePath" } %>
-      <%= f.text_field :title, { data: { "slug-target": "input_text" }, "data-action": "focusout->slug#generatePath" } %>
-      <%= f.text_field :path, { data: { prefix: Panda::CMS::Current.root, "slug-target": "output_text" } } %>
-      <%= f.collection_select :panda_cms_template_id, Panda::CMS::Template.available, :id, :name %>
-      <%= f.button %>
+
+  <%= panda_cms_form_with model: form, url: admin_cms_forms_path, method: :post, id: "form-form" do |f| %>
+    <%= render Panda::Core::Admin::FormErrorComponent.new(model: form) %>
+
+    <%= f.section_heading "Form Settings" %>
+
+    <div class="space-y-4">
+      <%= f.text_field :name, placeholder: "e.g., Contact Form" %>
+      <%= f.text_area :description, rows: 2, meta: "Optional description for admin reference" %>
+      <%= f.text_field :completion_path, placeholder: "/thank-you", meta: "Path to redirect after submission" %>
+    </div>
+
+    <div class="flex justify-end gap-x-3 border-t border-gray-200 mt-6 pt-4 dark:border-white/10">
+      <button type="submit" class="inline-flex items-center gap-x-1.5 justify-center rounded-md bg-mid px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-mid/80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mid cursor-pointer dark:shadow-none">
+        <i class="fa-solid fa-plus"></i> Create Form
+      </button>
     </div>
   <% end %>
 <% end %>
