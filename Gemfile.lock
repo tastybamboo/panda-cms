@@ -20,10 +20,10 @@ GIT
 
 GIT
   remote: https://github.com/tastybamboo/panda-editor.git
-  revision: e74ad8dc7fcfc1cdce3f59e0d89ec43c4fb0aaff
+  revision: 035713f9c0dcf359b7b91bc7de42f21bb5796433
   branch: main
   specs:
-    panda-editor (0.7.0)
+    panda-editor (0.8.0)
       dry-configurable (~> 1.0)
       nokogiri (~> 1.15)
       panda-core
