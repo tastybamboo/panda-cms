@@ -3,7 +3,7 @@ set -euo pipefail
 
 # ===================================================================
 # Panda CMS — CI Runner (Option A: direct bind-mount)
-# CI Docker image: ubuntu 24.04 + Ruby 3.4.7 (mise) + PG17 + Chrome
+# CI Docker image: ubuntu 24.04 + Ruby 3.4.8 (mise) + PG17 + Chrome
 # ===================================================================
 
 CI_IMAGE="ghcr.io/tastybamboo/panda-cms-test:latest"
