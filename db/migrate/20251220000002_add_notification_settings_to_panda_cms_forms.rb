@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class AddNotificationSettingsToPandaCmsForms < ActiveRecord::Migration[8.0]
+class AddNotificationSettingsToPandaCMSForms < ActiveRecord::Migration[8.0]
   def change
     add_column :panda_cms_forms, :notification_emails, :text
     add_column :panda_cms_forms, :notification_subject, :string
