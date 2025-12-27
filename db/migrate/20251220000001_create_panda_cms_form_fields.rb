@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class CreatePandaCmsFormFields < ActiveRecord::Migration[8.0]
+class CreatePandaCMSFormFields < ActiveRecord::Migration[8.0]
   def change
     create_table :panda_cms_form_fields, id: :uuid do |t|
       t.references :form, type: :uuid, null: false, foreign_key: {to_table: :panda_cms_forms}
