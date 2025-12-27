@@ -121,7 +121,7 @@ module Panda
 
       def component_is_editable?
         # TODO: Permissions
-        @editable && is_embedded? && Current.user&.admin?
+        @editable && is_embedded?
       end
 
       def is_embedded?
