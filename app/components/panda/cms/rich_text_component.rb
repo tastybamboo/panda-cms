@@ -57,8 +57,7 @@ module Panda
 
         @editable_state = @editable &&
           embed_id.present? &&
-          embed_id == page_id &&
-          Current.user&.admin?
+          embed_id == page_id
       end
 
       def load_block_content
