@@ -93,7 +93,7 @@ module Panda
       end
 
       def is_editable_context?
-        view_context.params[:embed_id].present? && view_context.params[:embed_id] == Current.page.id
+        view_context.params[:embed_id].present? && view_context.params[:embed_id].to_s == Current.page&.id.to_s
       end
 
       def handle_error(_error)
