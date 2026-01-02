@@ -1,6 +1,6 @@
 # =====================================================================
 # Panda CMS — Optimised CI Dockerfile (amd64 only)
-# Ubuntu 24.04 + Ruby 3.4.8 (mise) + PostgreSQL 17 + Chrome Stable
+# Ubuntu 24.04 + Ruby 4.0.0 (mise) + PostgreSQL 17 + Chrome Stable
 # =====================================================================
 
 # We *must* force amd64 because Chrome is only published for x86_64
@@ -152,8 +152,8 @@ RUN curl https://mise.run | sh && \
 
 # Install Ruby with warm build cache
 RUN --mount=type=cache,target=/mise/cache \
-  mise install ruby@3.4.8 && \
-  mise use --global ruby@3.4.8
+  mise install ruby@4.0.0 && \
+  mise use --global ruby@4.0.0
 
 RUN gem install bundler -v "~> 2.7"
 
@@ -178,7 +178,7 @@ COPY --from=postgres /var/lib/postgresql          /var/lib/postgresql
 COPY --from=ruby     /mise                        /mise
 COPY --from=ruby     /root/.local                 /root/.local
 
-ENV PATH="/mise/installs/ruby/3.4.8/bin:/root/.local/bin:/usr/lib/postgresql/17/bin:${PATH}"
+ENV PATH="/mise/installs/ruby/4.0.0/bin:/root/.local/bin:/usr/lib/postgresql/17/bin:${PATH}"
 
 # Install runtime dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
