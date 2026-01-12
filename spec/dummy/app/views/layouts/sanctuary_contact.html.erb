@@ -1,0 +1,210 @@
+<%# The Panda Sanctuary - Contact Page Layout %>
+<%= render "shared/sanctuary_header" %>
+
+<main>
+  <%# Page Header %>
+  <div class="bg-gradient-to-br from-green-50 to-white">
+    <div class="mx-auto max-w-7xl px-6 py-16 lg:px-8">
+      <nav class="mb-4" aria-label="Breadcrumb">
+        <ol class="flex items-center gap-2 text-sm text-gray-500">
+          <li><a href="/" class="hover:text-green-700 transition">Home</a></li>
+          <li class="flex items-center gap-2">
+            <i class="fa-solid fa-chevron-right text-xs text-gray-400"></i>
+            <a href="/about" class="hover:text-green-700 transition">About Us</a>
+          </li>
+          <li class="flex items-center gap-2">
+            <i class="fa-solid fa-chevron-right text-xs text-gray-400"></i>
+            <span class="text-gray-900">Contact</span>
+          </li>
+        </ol>
+      </nav>
+
+      <h1 class="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
+        Contact Us
+      </h1>
+      <p class="mt-4 text-xl text-gray-600 max-w-3xl">
+        Have a question about visiting, adoptions, or our conservation work? We'd love to hear from you.
+      </p>
+    </div>
+  </div>
+
+  <%# Main Content %>
+  <div class="mx-auto max-w-7xl px-6 py-16 lg:px-8">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-16">
+      <%# Contact Form %>
+      <div>
+        <h2 class="text-2xl font-bold text-gray-900 mb-6">Send us a message</h2>
+
+        <% if (contact_form = Panda::CMS::Form.find_by(name: "Contact Form")) %>
+          <%= form_with url: "/forms/#{contact_form.id}/submissions", method: :post, local: true, class: "space-y-6" do |f| %>
+            <% contact_form.form_fields.active.order(:position).each do |field| %>
+              <div>
+                <%= label_tag field.name.parameterize.underscore, field.name, class: "block text-sm font-medium text-gray-700 mb-2" %>
+                <% case field.field_type %>
+                <% when "text" %>
+                  <%= text_field_tag field.name.parameterize.underscore, nil,
+                      class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 px-4 py-3",
+                      required: field.required?,
+                      placeholder: field.placeholder,
+                      autocomplete: "off" %>
+                <% when "email" %>
+                  <%= email_field_tag field.name.parameterize.underscore, nil,
+                      class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 px-4 py-3",
+                      required: field.required?,
+                      placeholder: field.placeholder || "you@example.com",
+                      autocomplete: "off" %>
+                <% when "textarea" %>
+                  <%= text_area_tag field.name.parameterize.underscore, nil,
+                      class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 px-4 py-3",
+                      rows: 5,
+                      required: field.required?,
+                      placeholder: field.placeholder %>
+                <% when "select" %>
+                  <%= select_tag field.name.parameterize.underscore,
+                      options_for_select([["Please select...", ""]] + (field.options || []).map { |o| [o, o] }),
+                      class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 px-4 py-3",
+                      required: field.required? %>
+                <% end %>
+              </div>
+            <% end %>
+
+            <div>
+              <button type="submit" class="w-full rounded-md bg-green-700 px-6 py-3 text-base font-semibold text-white shadow-sm hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition">
+                Send Message
+              </button>
+            </div>
+          <% end %>
+        <% else %>
+          <%# Fallback static form %>
+          <form action="/contact" method="post" class="space-y-6">
+            <input type="hidden" name="authenticity_token" value="<%= form_authenticity_token %>">
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div>
+                <label for="name" class="block text-sm font-medium text-gray-700 mb-2">Name *</label>
+                <input type="text" id="name" name="name" required
+                       class="block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 px-4 py-3"
+                       placeholder="Your name"
+                       autocomplete="off">
+              </div>
+              <div>
+                <label for="email" class="block text-sm font-medium text-gray-700 mb-2">Email *</label>
+                <input type="email" id="email" name="email" required
+                       class="block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 px-4 py-3"
+                       placeholder="you@example.com"
+                       autocomplete="off">
+              </div>
+            </div>
+
+            <div>
+              <label for="subject" class="block text-sm font-medium text-gray-700 mb-2">Subject *</label>
+              <select id="subject" name="subject" required
+                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 px-4 py-3">
+                <option value="">Please select...</option>
+                <option value="general">General Enquiry</option>
+                <option value="visit">Visiting Information</option>
+                <option value="adoption">Panda Adoption</option>
+                <option value="education">Education & School Visits</option>
+                <option value="press">Press & Media</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="message" class="block text-sm font-medium text-gray-700 mb-2">Message *</label>
+              <textarea id="message" name="message" rows="5" required
+                        class="block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 px-4 py-3"
+                        placeholder="How can we help you?"></textarea>
+            </div>
+
+            <div>
+              <button type="submit" class="w-full rounded-md bg-green-700 px-6 py-3 text-base font-semibold text-white shadow-sm hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition">
+                Send Message
+              </button>
+            </div>
+          </form>
+        <% end %>
+      </div>
+
+      <%# Contact Information %>
+      <div>
+        <h2 class="text-2xl font-bold text-gray-900 mb-6">Other ways to reach us</h2>
+
+        <div class="space-y-8">
+          <%# Address %>
+          <div class="flex gap-4">
+            <div class="flex-shrink-0 w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+              <i class="fa-solid fa-location-dot text-green-700"></i>
+            </div>
+            <div>
+              <h3 class="font-semibold text-gray-900">Address</h3>
+              <p class="mt-1 text-gray-600">
+                The Panda Sanctuary<br>
+                123 Bamboo Lane<br>
+                Greenwood Valley, GV1 2AB<br>
+                United Kingdom
+              </p>
+            </div>
+          </div>
+
+          <%# Phone %>
+          <div class="flex gap-4">
+            <div class="flex-shrink-0 w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+              <i class="fa-solid fa-phone text-green-700"></i>
+            </div>
+            <div>
+              <h3 class="font-semibold text-gray-900">Phone</h3>
+              <p class="mt-1 text-gray-600">
+                General: +44 (0)20 1234 5678<br>
+                Bookings: +44 (0)20 1234 5679
+              </p>
+            </div>
+          </div>
+
+          <%# Email %>
+          <div class="flex gap-4">
+            <div class="flex-shrink-0 w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+              <i class="fa-solid fa-envelope text-green-700"></i>
+            </div>
+            <div>
+              <h3 class="font-semibold text-gray-900">Email</h3>
+              <p class="mt-1 text-gray-600">
+                General: <a href="mailto:info@pandasanctuary.example" class="text-green-700 hover:underline">info@pandasanctuary.example</a><br>
+                Education: <a href="mailto:education@pandasanctuary.example" class="text-green-700 hover:underline">education@pandasanctuary.example</a>
+              </p>
+            </div>
+          </div>
+
+          <%# Opening Hours %>
+          <div class="flex gap-4">
+            <div class="flex-shrink-0 w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+              <i class="fa-solid fa-clock text-green-700"></i>
+            </div>
+            <div>
+              <h3 class="font-semibold text-gray-900">Opening Hours</h3>
+              <p class="mt-1 text-gray-600">
+                Monday - Friday: 9:00 - 17:00<br>
+                Saturday - Sunday: 10:00 - 18:00<br>
+                <span class="text-sm text-gray-500">Last entry 1 hour before closing</span>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <%# Map placeholder %>
+        <div class="mt-8">
+          <div class="aspect-video bg-gray-100 rounded-xl flex items-center justify-center">
+            <div class="text-center text-gray-500">
+              <i class="fa-solid fa-map text-4xl mb-2"></i>
+              <p class="text-sm">Interactive map</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <%= yield %>
+</main>
+
+<%= render "shared/sanctuary_footer" %>

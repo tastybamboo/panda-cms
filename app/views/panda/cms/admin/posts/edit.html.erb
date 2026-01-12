@@ -1,3 +1,10 @@
+<%= render Panda::Core::Admin::BreadcrumbComponent.new(
+  items: [
+    { text: "Posts", href: admin_cms_posts_path },
+    { text: "Edit Post", href: edit_admin_cms_post_path(post.admin_param) }
+  ]
+) %>
+
 <%= render Panda::Core::Admin::ContainerComponent.new do |component| %>
   <% component.heading(text: post.title, level: 1) do |heading| %>
     <% heading.button(action: :view, text: "View Post", href: post_path(post.admin_param)) %>

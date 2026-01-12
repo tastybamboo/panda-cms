@@ -32,6 +32,11 @@ module Panda
 
           add_breadcrumb page.title, edit_admin_cms_page_path(page)
 
+          # Set session variables for secure iframe editing
+          # This replaces the less secure ?embed_id= URL parameter approach
+          session[:panda_cms_editing_page_id] = page.id.to_s
+          session[:panda_cms_editing_expires_at] = 30.minutes.from_now.iso8601
+
           render :edit, locals: {page: page, template: page.template}
         end
 

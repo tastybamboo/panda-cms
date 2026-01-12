@@ -1,0 +1,120 @@
+<%# The Panda Sanctuary - Blog Post Layout %>
+<%= render "shared/sanctuary_header" %>
+
+<main>
+  <article class="bg-white">
+    <%# Post Header %>
+    <header class="bg-gradient-to-br from-green-50 to-white py-16">
+      <div class="mx-auto max-w-3xl px-6 lg:px-8">
+        <%# Breadcrumbs %>
+        <nav class="mb-6" aria-label="Breadcrumb">
+          <ol class="flex items-center gap-2 text-sm text-gray-500">
+            <li><a href="/" class="hover:text-green-700 transition">Home</a></li>
+            <li class="flex items-center gap-2">
+              <i class="fa-solid fa-chevron-right text-xs text-gray-400"></i>
+              <a href="/news" class="hover:text-green-700 transition">News & Updates</a>
+            </li>
+          </ol>
+        </nav>
+
+        <%# Category tag %>
+        <div class="mb-4">
+          <span class="inline-flex items-center gap-1 rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-800">
+            <i class="fa-solid fa-newspaper"></i>
+            News
+          </span>
+        </div>
+
+        <h1 class="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
+          <%= @post&.title || @page&.title %>
+        </h1>
+
+        <%# Post meta %>
+        <div class="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-gray-600">
+          <time datetime="<%= @post&.published_at&.iso8601 %>" class="flex items-center gap-2">
+            <i class="fa-regular fa-calendar"></i>
+            <%= @post&.published_at&.strftime("%B %d, %Y") || "Draft" %>
+          </time>
+          <% if @post&.author %>
+            <span class="flex items-center gap-2">
+              <i class="fa-regular fa-user"></i>
+              <%= @post.author.name %>
+            </span>
+          <% end %>
+          <span class="flex items-center gap-2">
+            <i class="fa-regular fa-clock"></i>
+            5 min read
+          </span>
+        </div>
+      </div>
+    </header>
+
+    <%# Post Content %>
+    <div class="mx-auto max-w-3xl px-6 py-12 lg:px-8">
+      <div class="prose prose-green prose-lg max-w-none">
+        <%= @post&.cached_content&.html_safe || yield %>
+      </div>
+
+      <%# Post footer %>
+      <footer class="mt-16 pt-8 border-t border-gray-200">
+        <%# Share links %>
+        <div class="flex items-center justify-between">
+          <div>
+            <h4 class="text-sm font-semibold text-gray-900">Share this article</h4>
+            <div class="mt-2 flex gap-4">
+              <a href="#" class="text-gray-400 hover:text-blue-600 transition" aria-label="Share on Facebook">
+                <i class="fab fa-facebook text-xl"></i>
+              </a>
+              <a href="#" class="text-gray-400 hover:text-sky-500 transition" aria-label="Share on Twitter">
+                <i class="fab fa-x-twitter text-xl"></i>
+              </a>
+              <a href="#" class="text-gray-400 hover:text-green-600 transition" aria-label="Share via Email">
+                <i class="fa-solid fa-envelope text-xl"></i>
+              </a>
+              <a href="#" class="text-gray-400 hover:text-gray-600 transition" aria-label="Copy link">
+                <i class="fa-solid fa-link text-xl"></i>
+              </a>
+            </div>
+          </div>
+
+          <a href="/news" class="inline-flex items-center gap-2 text-sm font-medium text-green-700 hover:text-green-800 transition">
+            <i class="fa-solid fa-arrow-left"></i>
+            Back to News
+          </a>
+        </div>
+      </footer>
+    </div>
+  </article>
+
+  <%# Related Posts Section %>
+  <section class="bg-gray-50 py-16">
+    <div class="mx-auto max-w-7xl px-6 lg:px-8">
+      <h2 class="text-2xl font-bold text-gray-900 mb-8">More News</h2>
+      <div class="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+        <% Panda::CMS::Post.active.where.not(id: @post&.id).order(published_at: :desc).limit(3).each do |related_post| %>
+          <article class="group relative bg-white rounded-2xl shadow-sm ring-1 ring-gray-200 overflow-hidden hover:shadow-lg transition">
+            <div class="aspect-[16/9] bg-green-100 flex items-center justify-center">
+              <i class="fa-solid fa-newspaper text-4xl text-green-600"></i>
+            </div>
+            <div class="p-6">
+              <time datetime="<%= related_post.published_at&.iso8601 %>" class="text-xs text-gray-500">
+                <%= related_post.published_at&.strftime("%B %d, %Y") %>
+              </time>
+              <h3 class="mt-2 text-lg font-semibold text-gray-900">
+                <a href="<%= related_post.url %>" class="hover:text-green-700">
+                  <span class="absolute inset-0"></span>
+                  <%= related_post.title %>
+                </a>
+              </h3>
+              <p class="mt-2 text-sm text-gray-600 line-clamp-2">
+                <%= related_post.excerpt %>
+              </p>
+            </div>
+          </article>
+        <% end %>
+      </div>
+    </div>
+  </section>
+</main>
+
+<%= render "shared/sanctuary_footer" %>

@@ -173,12 +173,23 @@ export default class extends Controller {
     this.frame.addEventListener("load", handleFrameLoad)
 
     // Check if iframe is already loaded (timing issue: controller may connect after load event)
-    // An iframe is considered loaded if it has contentDocument with a body
+    // An iframe is considered loaded if it has contentDocument with a body AND the correct URL
+    // Important: We must verify the URL because about:blank also has readyState='complete'
     try {
       const doc = this.frame.contentDocument || this.frame.contentWindow?.document
-      if (doc && doc.body && doc.readyState === 'complete') {
-        console.debug("[Panda CMS] Frame already loaded, initializing immediately")
+      const expectedSrc = this.frame.src
+      const actualUrl = doc?.location?.href || ''
+
+      // Only initialize if the actual document URL matches the expected source
+      // (not about:blank or any other intermediate state)
+      const isCorrectDocument = actualUrl && actualUrl !== 'about:blank' &&
+        (actualUrl === expectedSrc || actualUrl.includes('embed_id='))
+
+      if (doc && doc.body && doc.readyState === 'complete' && isCorrectDocument) {
+        console.debug("[Panda CMS] Frame already loaded with correct URL, initializing immediately", { expectedSrc, actualUrl })
         handleFrameLoad()
+      } else {
+        console.debug("[Panda CMS] Waiting for frame load event", { expectedSrc, actualUrl, readyState: doc?.readyState })
       }
     } catch (e) {
       // Cross-origin or other access error - wait for load event

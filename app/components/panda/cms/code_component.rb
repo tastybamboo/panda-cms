@@ -125,11 +125,21 @@ module Panda
       end
 
       def is_embedded?
-        # Security: Verify embed_id matches the current page being edited
-        # This prevents unauthorized editing by ensuring the embed_id in the URL
-        # matches the actual page ID from Current.page
-        view_context.params[:embed_id].present? &&
-          Current.page&.id.to_s == view_context.params[:embed_id].to_s
+        page_id = Current.page&.id.to_s
+
+        # Check for session-based editing (preferred, more secure)
+        editing_page_id = view_context.session[:panda_cms_editing_page_id]
+        editing_expires_at = view_context.session[:panda_cms_editing_expires_at]
+
+        session_valid = editing_page_id == page_id &&
+          editing_expires_at.present? &&
+          Time.parse(editing_expires_at) > Time.current
+
+        # Fall back to URL param for backwards compatibility (will be removed in future)
+        embed_id = view_context.params[:embed_id].to_s
+        url_param_valid = embed_id.present? && embed_id == page_id
+
+        session_valid || url_param_valid
       end
 
       def handle_error(error)
