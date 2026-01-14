@@ -2,13 +2,17 @@
 
 source "https://rubygems.org"
 
-gem "panda-core", github: "tastybamboo/panda-core", branch: "fix/rails-8.1.2-middleware-freeze"
+gem "panda-core", github: "tastybamboo/panda-core", branch: "main"
 gem "panda-editor", github: "tastybamboo/panda-editor", branch: "main"
 
 # Specify your gem's dependencies in panda-cms.gemspec
 gemspec
 
-gem "rails"
+# Pin to Rails 8.1.1 to avoid Rails 8.1.2 compatibility issues:
+# - FrozenError with autoload_paths and middleware stack
+# - phlex-rails 2.3.1 incompatibility
+# TODO: Remove pin once panda-core and phlex-rails are updated for Rails 8.1.2
+gem "rails", "= 8.1.1"
 gem "tzinfo-data"
 
 # Development and testing dependencies
