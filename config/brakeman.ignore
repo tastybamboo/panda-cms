@@ -63,8 +63,50 @@
       "confidence": "Weak",
       "cwe_id": [22],
       "note": "False positive: The component class is hardcoded (Panda::Core::Admin::FormErrorComponent), not dynamically determined. The model parameter is validated through Rails' find method and only used as data to pass to the component, not to determine the rendering path."
+    },
+    {
+      "warning_type": "Dynamic Render Path",
+      "warning_code": 15,
+      "fingerprint": "8671e1aceb3bc440fdba39a652aa44994f12d27cc219ef6d500d0f5396c188b0",
+      "check_name": "Render",
+      "message": "Render path contains parameter value",
+      "file": "app/views/panda/cms/admin/forms/edit.html.erb",
+      "line": 4,
+      "link": "https://brakemanscanner.org/docs/warning_types/dynamic_render_path/",
+      "user_input": "params[:id]",
+      "confidence": "Weak",
+      "cwe_id": [22],
+      "note": "False positive: BreadcrumbComponent with hardcoded component class. params[:id] is used for Rails find() lookup only."
+    },
+    {
+      "warning_type": "Dynamic Render Path",
+      "warning_code": 15,
+      "fingerprint": "ce84f0d6161a2710ce1ebe5c39dd6d9a242aad2e14b0862ec438ec7cf98c0fd6",
+      "check_name": "Render",
+      "message": "Render path contains parameter value",
+      "file": "app/views/panda/cms/admin/forms/show.html.erb",
+      "line": 4,
+      "link": "https://brakemanscanner.org/docs/warning_types/dynamic_render_path/",
+      "user_input": "params[:id]",
+      "confidence": "Weak",
+      "cwe_id": [22],
+      "note": "False positive: BreadcrumbComponent with hardcoded component class. params[:id] is used for Rails find() lookup only."
+    },
+    {
+      "warning_type": "Dynamic Render Path",
+      "warning_code": 15,
+      "fingerprint": "edba88f921f3a0f89ebac4860f4de887fcbc9dc8694dbc56b5f72ecaf8322b4c",
+      "check_name": "Render",
+      "message": "Render path contains parameter value",
+      "file": "app/views/panda/cms/admin/menus/edit.html.erb",
+      "line": 4,
+      "link": "https://brakemanscanner.org/docs/warning_types/dynamic_render_path/",
+      "user_input": "params[:id]",
+      "confidence": "Weak",
+      "cwe_id": [22],
+      "note": "False positive: BreadcrumbComponent with hardcoded component class. params[:id] is used for Rails find() lookup only."
     }
   ],
-  "updated": "2025-12-20 00:00:00 +0000",
-  "brakeman_version": "7.1.1"
+  "updated": "2026-01-14 21:55:00 +0000",
+  "brakeman_version": "7.1.2"
 }
