@@ -1,7 +1,7 @@
 GIT
   remote: https://github.com/tastybamboo/panda-core.git
-  revision: 07f0b5d19e19d9f31fc94825603ad7226288f284
-  branch: main
+  revision: 2d28a76058f9930ba1a4cb64af618a8c04b2dacc
+  branch: fix/rails-8.1.2-middleware-freeze
   specs:
     panda-core (0.12.5)
       image_processing (~> 1.2)

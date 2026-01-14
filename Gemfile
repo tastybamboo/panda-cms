@@ -2,7 +2,7 @@
 
 source "https://rubygems.org"
 
-gem "panda-core", github: "tastybamboo/panda-core", branch: "main"
+gem "panda-core", github: "tastybamboo/panda-core", branch: "fix/rails-8.1.2-middleware-freeze"
 gem "panda-editor", github: "tastybamboo/panda-editor", branch: "main"
 
 # Specify your gem's dependencies in panda-cms.gemspec
