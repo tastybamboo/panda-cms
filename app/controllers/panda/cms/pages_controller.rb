@@ -35,7 +35,8 @@ module Panda
         # HTTP caching: Send ETag and Last-Modified headers for efficient caching
         # Use cached_last_updated_at which includes block content updates
         # Returns 304 Not Modified if client's cached version is still valid
-        fresh_when(page, last_modified: page.last_updated_at, public: true)
+        # Return early if fresh_when sends a 304 response to avoid DoubleRenderError
+        return if fresh_when(page, last_modified: page.last_updated_at, public: true)
 
         template_vars = {
           page: page,

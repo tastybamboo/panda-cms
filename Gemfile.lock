@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/tastybamboo/panda-core.git
-  revision: 07f0b5d19e19d9f31fc94825603ad7226288f284
+  revision: 3b6a476db2a6a5b232e01a104af4b07469ae5750
   branch: main
   specs:
     panda-core (0.12.5)
@@ -140,6 +140,7 @@ GEM
       activerecord (>= 4.0.0, < 8.2)
     awesome_print (1.9.2)
     base64 (0.3.0)
+    benchmark (0.5.0)
     better_errors (2.10.1)
       erubi (>= 1.0.0)
       rack (>= 0.9.0)
@@ -618,6 +619,7 @@ PLATFORMS
 DEPENDENCIES
   annotaterb
   awesome_print
+  benchmark (~> 0.5)
   better_errors
   binding_of_caller
   brakeman

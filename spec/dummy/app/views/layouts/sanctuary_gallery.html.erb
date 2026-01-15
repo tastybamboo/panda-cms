@@ -21,7 +21,7 @@
       </h1>
 
       <p class="mt-4 text-xl text-gray-600 max-w-3xl">
-        <%= render Panda::CMS::TextComponent.new(key: :intro_text, editable: false) %>
+        <%= render Panda::CMS::TextComponent.new(key: :intro_text, editable: true) %>
       </p>
 
       <%# Filter tabs %>
@@ -91,7 +91,7 @@
   <section class="bg-gray-50 py-16">
     <div class="mx-auto max-w-3xl px-6 lg:px-8">
       <div class="prose prose-green prose-lg max-w-none">
-        <%= render Panda::CMS::RichTextComponent.new(key: :main_content, editable: false) %>
+        <%= render Panda::CMS::RichTextComponent.new(key: :main_content, editable: true) %>
       </div>
     </div>
   </section>

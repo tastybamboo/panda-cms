@@ -6,17 +6,17 @@
   <section class="relative bg-gradient-to-br from-green-800 to-green-950 text-white overflow-hidden">
     <%# Background Image from GitHub CDN %>
     <div class="absolute inset-0">
-      <%= image_tag "https://raw.githubusercontent.com/tastybamboo/tastybamboo.net/main/assets/images/demo/pandas/panda-eating-bamboo-green.jpg?v=3", class: "w-full h-full object-cover opacity-30", alt: "Panda sanctuary" %>
+      <%= image_tag "https://raw.githubusercontent.com/tastybamboo/tastybamboo.net/main/assets/images/demo/pandas/giant-panda-bamboo.jpg?v=3", class: "w-full h-full object-cover object-center", alt: "Panda sanctuary" %>
     </div>
-    <div class="absolute inset-0 bg-gradient-to-br from-green-900/80 to-green-950/80"></div>
+    <div class="absolute inset-0" style="background-color: rgba(0, 0, 0, 0.6);"></div>
 
     <div class="relative px-6 py-24 mx-auto max-w-7xl lg:px-8 lg:py-32">
       <div class="max-w-2xl">
-        <h1 class="text-4xl font-bold tracking-tight sm:text-6xl">
-          <%= render Panda::CMS::TextComponent.new(key: :hero_title, editable: false) %>
+        <h1 class="text-4xl font-bold tracking-tight sm:text-6xl drop-shadow-lg">
+          <%= render Panda::CMS::TextComponent.new(key: :hero_title, editable: true) %>
         </h1>
-        <p class="mt-6 text-xl leading-8 text-green-100">
-          <%= render Panda::CMS::TextComponent.new(key: :hero_subtitle, editable: false) %>
+        <p class="mt-6 text-xl leading-8 text-white drop-shadow-md">
+          <%= render Panda::CMS::TextComponent.new(key: :hero_subtitle, editable: true) %>
         </p>
         <div class="flex gap-x-4 mt-10">
           <a href="/visit" class="rounded-md bg-white px-5 py-3 text-sm font-semibold text-green-900 shadow-sm hover:bg-green-50 transition">
@@ -35,10 +35,10 @@
     <div class="mx-auto max-w-7xl">
       <div class="text-center">
         <h2 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-          <%= render Panda::CMS::TextComponent.new(key: :featured_title, editable: false) %>
+          <%= render Panda::CMS::TextComponent.new(key: :featured_title, editable: true) %>
         </h2>
         <p class="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
-          <%= render Panda::CMS::TextComponent.new(key: :featured_description, editable: false) %>
+          <%= render Panda::CMS::TextComponent.new(key: :featured_description, editable: true) %>
         </p>
       </div>
 
@@ -64,7 +64,7 @@
         <%# Card 2: Conservation %>
         <div class="group relative bg-white rounded-2xl shadow-sm ring-1 ring-gray-200 overflow-hidden hover:shadow-lg transition">
           <div class="aspect-[3/2] overflow-hidden">
-            <%= image_tag "https://raw.githubusercontent.com/tastybamboo/tastybamboo.net/main/assets/images/demo/pandas/panda-tree-branch.jpg?v=3", class: "w-full h-full object-cover group-hover:scale-105 transition-transform duration-300", alt: "Panda in natural habitat" %>
+            <%= image_tag "https://raw.githubusercontent.com/tastybamboo/tastybamboo.net/main/assets/images/demo/pandas/giant-panda-bamboo.jpg?v=3", class: "w-full h-full object-cover group-hover:scale-105 transition-transform duration-300", alt: "Panda in natural habitat" %>
           </div>
           <div class="p-6">
             <h3 class="text-lg font-semibold text-gray-900">
@@ -103,7 +103,7 @@
   <%# Main Content %>
   <section class="bg-gray-50 py-16 px-6 lg:px-8">
     <div class="mx-auto max-w-3xl prose prose-green prose-lg">
-      <%= render Panda::CMS::RichTextComponent.new(key: :main_content, editable: false) %>
+      <%= render Panda::CMS::RichTextComponent.new(key: :main_content, editable: true) %>
     </div>
   </section>
 
