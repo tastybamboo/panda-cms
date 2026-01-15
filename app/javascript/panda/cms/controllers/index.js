@@ -8,38 +8,46 @@ const pandaCmsApplication = application
 
 console.debug("[Panda CMS] Registering controllers...")
 
-// Use relative imports with .js extensions for proper module resolution
-import DashboardController from "./dashboard_controller.js"
-pandaCmsApplication.register("dashboard", DashboardController)
+// Helper to safely load and register a controller with error reporting
+async function registerController(name, path) {
+  try {
+    const module = await import(path)
+    pandaCmsApplication.register(name, module.default)
+    return true
+  } catch (error) {
+    console.error(`[Panda CMS] Failed to load controller "${name}" from ${path}:`, error.message)
+    console.error(`[Panda CMS] Hint: Ensure the controller is pinned in config/importmap.rb`)
+    return false
+  }
+}
 
-import SlugController from "./slug_controller.js"
-pandaCmsApplication.register("slug", SlugController)
+// Define all CMS controllers with absolute paths for dynamic import resolution
+const cmsControllers = [
+  ["dashboard", "/panda/cms/controllers/dashboard_controller.js"],
+  ["slug", "/panda/cms/controllers/slug_controller.js"],
+  ["tree", "/panda/cms/controllers/tree_controller.js"],
+  ["file-gallery", "/panda/cms/controllers/file_gallery_controller.js"],
+  ["file-upload", "/panda/cms/controllers/file_upload_controller.js"],
+  ["page-form", "/panda/cms/controllers/page_form_controller.js"],
+  ["nested-form", "/panda/cms/controllers/nested_form_controller.js"],
+  ["menu-form", "/panda/cms/controllers/menu_form_controller.js"],
+  ["editor-form", "/panda/cms/controllers/editor_form_controller.js"],
+  ["editor-iframe", "/panda/cms/controllers/editor_iframe_controller.js"]
+]
 
-import TreeController from "./tree_controller.js"
-pandaCmsApplication.register("tree", TreeController)
+// Load all controllers with error handling
+Promise.all(
+  cmsControllers.map(([name, path]) => registerController(name, path))
+).then(results => {
+  const loaded = results.filter(Boolean).length
+  const failed = results.length - loaded
 
-import FileGalleryController from "./file_gallery_controller.js"
-pandaCmsApplication.register("file-gallery", FileGalleryController)
+  if (failed > 0) {
+    console.warn(`[Panda CMS] ${failed} controller(s) failed to load - check errors above`)
+  }
 
-import FileUploadController from "./file_upload_controller.js"
-pandaCmsApplication.register("file-upload", FileUploadController)
-
-import PageFormController from "./page_form_controller.js"
-pandaCmsApplication.register("page-form", PageFormController)
-
-import NestedFormController from "./nested_form_controller.js"
-pandaCmsApplication.register("nested-form", NestedFormController)
-
-import MenuFormController from "./menu_form_controller.js"
-pandaCmsApplication.register("menu-form", MenuFormController)
-
-// Editor controllers - loaded eagerly since they're essential for CMS functionality
-// Note: Previous lazy-loading pattern was broken (didn't extend Controller, dynamic import issues with importmaps)
-import EditorFormController from "./editor_form_controller.js"
-pandaCmsApplication.register("editor-form", EditorFormController)
-
-import EditorIframeController from "./editor_iframe_controller.js"
-pandaCmsApplication.register("editor-iframe", EditorIframeController)
+  console.debug(`[Panda CMS] Loaded ${loaded}/${results.length} controllers`)
+})
 
 // Note: Toggle, Slideover, and other TailwindCSS Stimulus Components
 // are now registered by Panda Core since the admin layout lives there

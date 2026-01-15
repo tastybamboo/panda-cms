@@ -40,4 +40,11 @@ Panda::Core.configure do |config|
       options: {}
     }
   end
+  
+  # Developer authentication (development/test only)
+  if Rails.env.development? || Rails.env.test?
+    config.authentication_providers[:developer] = {
+      options: {}
+    }
+  end
 end

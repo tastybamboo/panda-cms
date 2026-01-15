@@ -1,20 +1,19 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@theme {
+  /* Custom theme configuration if needed */
+}
 
 @layer base {
   h1 {
-    @apply text-2xl;
-    @apply font-bold;
-    @apply mb-6;
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
   }
 
   h2 {
-    @apply text-xl;
-    @apply font-semibold;
-    @apply mb-6;
-  }
-
-  div {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
   }
 }
