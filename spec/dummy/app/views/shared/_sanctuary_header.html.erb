@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+  <head>
+    <title><%= @page&.seo_title.presence || @page&.title.presence || "The Panda Sanctuary" %> | The Panda Sanctuary</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="<%= @page&.seo_description.presence || "Visit The Panda Sanctuary - home to giant and red pandas. Experience conservation in action." %>">
+
+    <%# Open Graph %>
+    <meta property="og:title" content="<%= @page&.og_title.presence || @page&.seo_title.presence || @page&.title %>">
+    <meta property="og:description" content="<%= @page&.og_description.presence || @page&.seo_description.presence || "Visit The Panda Sanctuary" %>">
+    <meta property="og:type" content="<%= @page&.og_type.presence || "website" %>">
+    <meta property="og:site_name" content="The Panda Sanctuary">
+
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+    <script async src="https://ga.jspm.io/npm:es-module-shims@2.6.2/dist/es-module-shims.js" crossorigin="anonymous"></script>
+    <%= javascript_importmap_tags %>
+    <%= yield :head_includes %>
+
+    <%# Font Awesome for icons %>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  </head>
+  <body class="h-full bg-white antialiased">
+    <%# Top announcement bar %>
+    <div class="bg-green-700 text-white text-center text-sm py-2 px-4">
+      <p>
+        <i class="fa-solid fa-star"></i>
+        New! Virtual panda cams now live - watch our pandas 24/7
+        <a href="/education/virtual-tours" class="underline hover:no-underline ml-2">Watch now</a>
+      </p>
+    </div>
+
+    <%# Navigation %>
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+      <nav class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8" aria-label="Main navigation">
+        <div class="flex h-16 items-center justify-between">
+          <%# Logo %>
+          <div class="flex items-center">
+            <a href="/" class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                <i class="fa-solid fa-paw text-green-700 text-lg"></i>
+              </div>
+              <span class="font-bold text-xl text-gray-900">The Panda Sanctuary</span>
+            </a>
+          </div>
+
+          <%# Desktop Navigation %>
+          <div class="hidden md:flex md:items-center md:gap-x-8">
+            <% if (main_menu = Panda::CMS::Menu.find_by(name: "Main Menu")) %>
+              <% main_menu.menu_items.limit(6).each do |menu_item| %>
+                <a href="<%= menu_item.page&.path || "#" %>"
+                   class="text-sm font-medium text-gray-700 hover:text-green-700 transition">
+                  <%= menu_item.text %>
+                </a>
+              <% end %>
+            <% else %>
+              <a href="/about" class="text-sm font-medium text-gray-700 hover:text-green-700 transition">About Us</a>
+              <a href="/our-pandas" class="text-sm font-medium text-gray-700 hover:text-green-700 transition">Our Pandas</a>
+              <a href="/visit" class="text-sm font-medium text-gray-700 hover:text-green-700 transition">Visit</a>
+              <a href="/conservation" class="text-sm font-medium text-gray-700 hover:text-green-700 transition">Conservation</a>
+              <a href="/news" class="text-sm font-medium text-gray-700 hover:text-green-700 transition">News</a>
+            <% end %>
+          </div>
+
+          <%# CTA Buttons %>
+          <div class="flex items-center gap-4">
+            <a href="/adopt" class="hidden sm:inline-flex items-center gap-2 rounded-md border border-green-700 px-4 py-2 text-sm font-semibold text-green-700 hover:bg-green-50 transition">
+              <i class="fa-solid fa-heart"></i>
+              Adopt
+            </a>
+            <a href="/visit/tickets" class="inline-flex items-center gap-2 rounded-md bg-green-700 px-4 py-2 text-sm font-semibold text-white hover:bg-green-800 transition">
+              <i class="fa-solid fa-ticket"></i>
+              Book Tickets
+            </a>
+
+            <%# Mobile menu button %>
+            <button type="button" class="md:hidden -m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-gray-700" data-controller="mobile-menu" data-action="click->mobile-menu#toggle">
+              <span class="sr-only">Open main menu</span>
+              <i class="fa-solid fa-bars text-xl"></i>
+            </button>
+          </div>
+        </div>
+      </nav>
+    </header>

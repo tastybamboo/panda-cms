@@ -245,8 +245,12 @@ export default class extends Controller {
   }
 
   disconnect() {
-    if (this.editor) {
-      this.editor.destroy();
+    if (this.editor && typeof this.editor.destroy === 'function') {
+      try {
+        this.editor.destroy();
+      } catch (error) {
+        console.debug("[Panda CMS] Editor cleanup error (safe to ignore):", error.message);
+      }
       this.editor = null;
     }
   }

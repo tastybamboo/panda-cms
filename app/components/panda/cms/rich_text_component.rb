@@ -52,12 +52,21 @@ module Panda
       private
 
       def setup_editability
-        embed_id = view_context.params[:embed_id].to_s
         page_id = Current.page&.id.to_s
 
-        @editable_state = @editable &&
-          embed_id.present? &&
-          embed_id == page_id
+        # Check for session-based editing (preferred, more secure)
+        editing_page_id = view_context.session[:panda_cms_editing_page_id]
+        editing_expires_at = view_context.session[:panda_cms_editing_expires_at]
+
+        session_valid = editing_page_id == page_id &&
+          editing_expires_at.present? &&
+          Time.parse(editing_expires_at) > Time.current
+
+        # Fall back to URL param for backwards compatibility (will be removed in future)
+        embed_id = view_context.params[:embed_id].to_s
+        url_param_valid = embed_id.present? && embed_id == page_id
+
+        @editable_state = @editable && (session_valid || url_param_valid)
       end
 
       def load_block_content

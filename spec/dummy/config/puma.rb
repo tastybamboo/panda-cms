@@ -19,7 +19,8 @@ if ENV['RAILS_ENV'] == 'production'
   worker_count = Integer(ENV.fetch('WEB_CONCURRENCY') { Concurrent.physical_processor_count })
   workers worker_count if worker_count > 1
 else
-  workers 2 # So we can check loading the page editor, 1 worker + master instance + 1 spare
+  # Use 0 workers in development (single mode) to avoid fork() issues on macOS
+  workers 0
 end
 
 # Specifies the `worker_timeout` threshold that Puma will use to wait before

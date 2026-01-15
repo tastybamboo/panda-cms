@@ -1,0 +1,137 @@
+<%# The Panda Sanctuary - Homepage Layout %>
+<%= render "shared/sanctuary_header" %>
+
+<main>
+  <%# Hero Section %>
+  <section class="relative bg-gradient-to-br from-green-800 to-green-950 text-white overflow-hidden">
+    <%# Background Image from GitHub CDN %>
+    <div class="absolute inset-0">
+      <%= image_tag "https://raw.githubusercontent.com/tastybamboo/tastybamboo.net/main/assets/images/demo/pandas/panda-eating-bamboo-green.jpg?v=3", class: "w-full h-full object-cover opacity-30", alt: "Panda sanctuary" %>
+    </div>
+    <div class="absolute inset-0 bg-gradient-to-br from-green-900/80 to-green-950/80"></div>
+
+    <div class="relative px-6 py-24 mx-auto max-w-7xl lg:px-8 lg:py-32">
+      <div class="max-w-2xl">
+        <h1 class="text-4xl font-bold tracking-tight sm:text-6xl">
+          <%= render Panda::CMS::TextComponent.new(key: :hero_title, editable: false) %>
+        </h1>
+        <p class="mt-6 text-xl leading-8 text-green-100">
+          <%= render Panda::CMS::TextComponent.new(key: :hero_subtitle, editable: false) %>
+        </p>
+        <div class="flex gap-x-4 mt-10">
+          <a href="/visit" class="rounded-md bg-white px-5 py-3 text-sm font-semibold text-green-900 shadow-sm hover:bg-green-50 transition">
+            Plan Your Visit
+          </a>
+          <a href="/our-pandas" class="rounded-md border border-white px-5 py-3 text-sm font-semibold text-white hover:bg-white/10 transition">
+            Meet Our Pandas
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <%# Featured Content Section %>
+  <section class="bg-white py-16 px-6 lg:px-8">
+    <div class="mx-auto max-w-7xl">
+      <div class="text-center">
+        <h2 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+          <%= render Panda::CMS::TextComponent.new(key: :featured_title, editable: false) %>
+        </h2>
+        <p class="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
+          <%= render Panda::CMS::TextComponent.new(key: :featured_description, editable: false) %>
+        </p>
+      </div>
+
+      <div class="mt-16 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+        <%# Card 1: Our Pandas %>
+        <div class="group relative bg-white rounded-2xl shadow-sm ring-1 ring-gray-200 overflow-hidden hover:shadow-lg transition">
+          <div class="aspect-[3/2] overflow-hidden">
+            <%= image_tag "https://raw.githubusercontent.com/tastybamboo/tastybamboo.net/main/assets/images/demo/pandas/panda-mother-baby.jpg?v=3", class: "w-full h-full object-cover group-hover:scale-105 transition-transform duration-300", alt: "Giant pandas at The Panda Sanctuary" %>
+          </div>
+          <div class="p-6">
+            <h3 class="text-lg font-semibold text-gray-900">
+              <a href="/our-pandas" class="hover:text-green-700">
+                <span class="absolute inset-0"></span>
+                Meet Our Pandas
+              </a>
+            </h3>
+            <p class="mt-2 text-sm text-gray-600">
+              Get to know the giant and red pandas that call our sanctuary home.
+            </p>
+          </div>
+        </div>
+
+        <%# Card 2: Conservation %>
+        <div class="group relative bg-white rounded-2xl shadow-sm ring-1 ring-gray-200 overflow-hidden hover:shadow-lg transition">
+          <div class="aspect-[3/2] overflow-hidden">
+            <%= image_tag "https://raw.githubusercontent.com/tastybamboo/tastybamboo.net/main/assets/images/demo/pandas/panda-tree-branch.jpg?v=3", class: "w-full h-full object-cover group-hover:scale-105 transition-transform duration-300", alt: "Panda in natural habitat" %>
+          </div>
+          <div class="p-6">
+            <h3 class="text-lg font-semibold text-gray-900">
+              <a href="/conservation" class="hover:text-green-700">
+                <span class="absolute inset-0"></span>
+                Conservation Efforts
+              </a>
+            </h3>
+            <p class="mt-2 text-sm text-gray-600">
+              Learn about our work protecting pandas and their natural habitats.
+            </p>
+          </div>
+        </div>
+
+        <%# Card 3: Visit %>
+        <div class="group relative bg-white rounded-2xl shadow-sm ring-1 ring-gray-200 overflow-hidden hover:shadow-lg transition">
+          <div class="aspect-[3/2] overflow-hidden">
+            <%= image_tag "https://raw.githubusercontent.com/tastybamboo/tastybamboo.net/main/assets/images/demo/pandas/panda-sitting-bamboo.jpg?v=3", class: "w-full h-full object-cover group-hover:scale-105 transition-transform duration-300", alt: "Panda at sanctuary fence" %>
+          </div>
+          <div class="p-6">
+            <h3 class="text-lg font-semibold text-gray-900">
+              <a href="/visit" class="hover:text-green-700">
+                <span class="absolute inset-0"></span>
+                Plan Your Visit
+              </a>
+            </h3>
+            <p class="mt-2 text-sm text-gray-600">
+              Find opening times, tickets, and everything you need for your trip.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <%# Main Content %>
+  <section class="bg-gray-50 py-16 px-6 lg:px-8">
+    <div class="mx-auto max-w-3xl prose prose-green prose-lg">
+      <%= render Panda::CMS::RichTextComponent.new(key: :main_content, editable: false) %>
+    </div>
+  </section>
+
+  <%# Stats Section %>
+  <section class="bg-green-900 py-16">
+    <div class="mx-auto max-w-7xl px-6 lg:px-8">
+      <dl class="grid grid-cols-1 gap-y-8 sm:grid-cols-2 lg:grid-cols-4">
+        <div class="flex flex-col items-center gap-y-3">
+          <dt class="text-sm text-green-200">Pandas in our care</dt>
+          <dd class="text-5xl font-bold text-white">24</dd>
+        </div>
+        <div class="flex flex-col items-center gap-y-3">
+          <dt class="text-sm text-green-200">Years of conservation</dt>
+          <dd class="text-5xl font-bold text-white">35</dd>
+        </div>
+        <div class="flex flex-col items-center gap-y-3">
+          <dt class="text-sm text-green-200">Cubs born here</dt>
+          <dd class="text-5xl font-bold text-white">12</dd>
+        </div>
+        <div class="flex flex-col items-center gap-y-3">
+          <dt class="text-sm text-green-200">Annual visitors</dt>
+          <dd class="text-5xl font-bold text-white">250K</dd>
+        </div>
+      </dl>
+    </div>
+  </section>
+
+  <%= yield %>
+</main>
+
+<%= render "shared/sanctuary_footer" %>

@@ -12,6 +12,7 @@ module Panda
       def root
         params[:path] = ""
         show
+        nil
       end
 
       def show

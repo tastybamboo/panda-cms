@@ -279,6 +279,9 @@ module Panda
         old_path = saved_changes["path"].first
         new_path = saved_changes["path"].last
 
+        # Don't create redirect if there's no old path (new record)
+        return if old_path.blank?
+
         # Create a redirect from the old path to the new path
         Panda::CMS::Redirect.create!(
           origin_panda_cms_page_id: id,
