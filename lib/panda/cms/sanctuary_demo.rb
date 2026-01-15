@@ -18,7 +18,7 @@ module Panda
     #   Panda::CMS::SanctuaryDemo.generate!
     #
     class SanctuaryDemo
-      attr_accessor :templates, :pages, :menus, :forms, :posts
+      attr_accessor :templates, :pages, :menus, :forms, :posts, :users
 
       def initialize
         @templates = {}
@@ -26,6 +26,7 @@ module Panda
         @menus = {}
         @forms = {}
         @posts = []
+        @users = {}
       end
 
       def self.generate!
@@ -35,17 +36,18 @@ module Panda
       def generate!
         puts "Generating The Panda Sanctuary demo site..."
 
+        create_demo_users
         create_templates
         create_pages
+        Panda::CMS::Template.generate_missing_blocks
         create_block_contents
         create_menus
         create_forms
         create_posts
         create_redirects
 
-        Panda::CMS::Template.generate_missing_blocks
-
         puts "Demo site generated successfully!"
+        puts "Users: #{@users.count}"
         puts "Templates: #{@templates.count}"
         puts "Pages: #{@pages.count}"
         puts "Forms: #{@forms.count}"
@@ -55,6 +57,31 @@ module Panda
       end
 
       private
+
+      def create_demo_users
+        puts "  Creating demo users..."
+
+        # Create demo admin user
+        @users[:admin] = Panda::Core::User.find_or_create_by!(email: "admin@pandasanctuary.example") do |user|
+          user.name = "Sarah Chen"
+          user.admin = true
+          user.image_url = "https://api.dicebear.com/7.x/avataaars/svg?seed=SarahChen"
+        end
+
+        # Create demo editor user
+        @users[:editor] = Panda::Core::User.find_or_create_by!(email: "editor@pandasanctuary.example") do |user|
+          user.name = "James Wilson"
+          user.admin = true
+          user.image_url = "https://api.dicebear.com/7.x/avataaars/svg?seed=JamesWilson"
+        end
+
+        # Create demo contributor
+        @users[:contributor] = Panda::Core::User.find_or_create_by!(email: "contributor@pandasanctuary.example") do |user|
+          user.name = "Emily Zhang"
+          user.admin = false
+          user.image_url = "https://api.dicebear.com/7.x/avataaars/svg?seed=EmilyZhang"
+        end
+      end
 
       def create_templates
         puts "  Creating templates..."
@@ -325,8 +352,10 @@ module Panda
       def create_page(attributes)
         template = attributes.delete(:template)
         parent = attributes.delete(:parent)
+        path = attributes[:path]
 
-        page = Panda::CMS::Page.new(attributes)
+        page = Panda::CMS::Page.find_or_initialize_by(path: path)
+        page.assign_attributes(attributes)
         page.panda_cms_template_id = template&.id
         page.parent = parent
         page.status ||= "active"
@@ -447,21 +476,20 @@ module Panda
         end
 
         contact_fields = [
-          {name: "Name", field_type: "text", required: true, position: 1},
-          {name: "Email", field_type: "email", required: true, position: 2},
-          {name: "Subject", field_type: "select", required: true, position: 3,
-           options: ["General Enquiry", "Visiting Information", "Panda Adoption", "Education & School Visits", "Press & Media", "Other"]},
-          {name: "Message", field_type: "textarea", required: true, position: 4}
+          {name: "name", label: "Name", field_type: "text", required: true, position: 1, active: true},
+          {name: "email", label: "Email", field_type: "email", required: true, position: 2, active: true},
+          {name: "subject", label: "Subject", field_type: "select", required: true, position: 3, active: true,
+           options: ["General Enquiry", "Visiting Information", "Panda Adoption", "Education & School Visits", "Press & Media", "Other"].to_json},
+          {name: "message", label: "Message", field_type: "textarea", required: true, position: 4, active: true}
         ]
 
         contact_fields.each do |field_attrs|
-          options = field_attrs.delete(:options)
-          field = Panda::CMS::FormField.find_or_create_by!(
+          Panda::CMS::FormField.find_or_create_by!(
             form_id: @forms[:contact].id,
             name: field_attrs[:name]
-          )
-          field.update!(field_attrs)
-          field.update!(options: options) if options
+          ) do |field|
+            field.assign_attributes(field_attrs)
+          end
         end
 
         # School visit request form
@@ -478,26 +506,25 @@ module Panda
         )
 
         school_fields = [
-          {name: "School Name", field_type: "text", required: true, position: 1},
-          {name: "Contact Name", field_type: "text", required: true, position: 2},
-          {name: "Contact Email", field_type: "email", required: true, position: 3},
-          {name: "Contact Phone", field_type: "phone", required: true, position: 4},
-          {name: "Preferred Date", field_type: "date", required: true, position: 5},
-          {name: "Alternative Date", field_type: "date", required: false, position: 6},
-          {name: "Number of Students", field_type: "number", required: true, position: 7},
-          {name: "Age Group", field_type: "select", required: true, position: 8,
-           options: ["Key Stage 1 (5-7 years)", "Key Stage 2 (7-11 years)", "Key Stage 3 (11-14 years)", "Key Stage 4 (14-16 years)", "Sixth Form/College"]},
-          {name: "Additional Information", field_type: "textarea", required: false, position: 9}
+          {name: "school_name", label: "School Name", field_type: "text", required: true, position: 1, active: true},
+          {name: "contact_name", label: "Contact Name", field_type: "text", required: true, position: 2, active: true},
+          {name: "contact_email", label: "Contact Email", field_type: "email", required: true, position: 3, active: true},
+          {name: "contact_phone", label: "Contact Phone", field_type: "phone", required: true, position: 4, active: true},
+          {name: "preferred_date", label: "Preferred Date", field_type: "date", required: true, position: 5, active: true},
+          {name: "alternative_date", label: "Alternative Date", field_type: "date", required: false, position: 6, active: true},
+          {name: "number_of_students", label: "Number of Students", field_type: "number", required: true, position: 7, active: true},
+          {name: "age_group", label: "Age Group", field_type: "select", required: true, position: 8, active: true,
+           options: ["Key Stage 1 (5-7 years)", "Key Stage 2 (7-11 years)", "Key Stage 3 (11-14 years)", "Key Stage 4 (14-16 years)", "Sixth Form/College"].to_json},
+          {name: "additional_information", label: "Additional Information", field_type: "textarea", required: false, position: 9, active: true}
         ]
 
         school_fields.each do |field_attrs|
-          options = field_attrs.delete(:options)
-          field = Panda::CMS::FormField.find_or_create_by!(
+          Panda::CMS::FormField.find_or_create_by!(
             form_id: @forms[:school_visit].id,
             name: field_attrs[:name]
-          )
-          field.update!(field_attrs)
-          field.update!(options: options) if options
+          ) do |field|
+            field.assign_attributes(field_attrs)
+          end
         end
 
         # Adoption enquiry form
@@ -511,25 +538,24 @@ module Panda
         )
 
         adoption_fields = [
-          {name: "Name", field_type: "text", required: true, position: 1},
-          {name: "Email", field_type: "email", required: true, position: 2},
-          {name: "Phone", field_type: "phone", required: false, position: 3},
-          {name: "Panda Preference", field_type: "select", required: false, position: 4,
-           options: ["No preference", "Mei Mei (Giant Panda)", "Bao Bao (Giant Panda)", "Ling Ling (Giant Panda)", "Rusty (Red Panda)", "Scarlet (Red Panda)", "Maple (Red Panda)"]},
-          {name: "Package", field_type: "select", required: true, position: 5,
-           options: ["Bronze (£35/year)", "Silver (£60/year)", "Gold (£100/year)", "Platinum (£250/year)"]},
-          {name: "Gift Adoption?", field_type: "checkbox", required: false, position: 6},
-          {name: "Message", field_type: "textarea", required: false, position: 7}
+          {name: "name", label: "Name", field_type: "text", required: true, position: 1, active: true},
+          {name: "email", label: "Email", field_type: "email", required: true, position: 2, active: true},
+          {name: "phone", label: "Phone", field_type: "phone", required: false, position: 3, active: true},
+          {name: "panda_preference", label: "Panda Preference", field_type: "select", required: false, position: 4, active: true,
+           options: ["No preference", "Mei Mei (Giant Panda)", "Bao Bao (Giant Panda)", "Ling Ling (Giant Panda)", "Rusty (Red Panda)", "Scarlet (Red Panda)", "Maple (Red Panda)"].to_json},
+          {name: "package", label: "Package", field_type: "select", required: true, position: 5, active: true,
+           options: ["Bronze (£35/year)", "Silver (£60/year)", "Gold (£100/year)", "Platinum (£250/year)"].to_json},
+          {name: "gift_adoption", label: "Gift Adoption?", field_type: "checkbox", required: false, position: 6, active: true},
+          {name: "message", label: "Message", field_type: "textarea", required: false, position: 7, active: true}
         ]
 
         adoption_fields.each do |field_attrs|
-          options = field_attrs.delete(:options)
-          field = Panda::CMS::FormField.find_or_create_by!(
+          Panda::CMS::FormField.find_or_create_by!(
             form_id: @forms[:adoption].id,
             name: field_attrs[:name]
-          )
-          field.update!(field_attrs)
-          field.update!(options: options) if options
+          ) do |field|
+            field.assign_attributes(field_attrs)
+          end
         end
       end
 
@@ -591,6 +617,11 @@ module Panda
           post.cached_content = render_editorjs_content(data[:content])
           post.published_at = (data[:status] == "active") ? data[:slug_date] : nil
           post.seo_description = data[:seo_description]
+
+          # Assign demo user as author
+          post.user = @users[:admin] unless post.user_id
+          post.author = @users[:admin] unless post.author_id
+
           post.save!
 
           @posts << post

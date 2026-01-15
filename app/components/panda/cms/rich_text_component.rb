@@ -54,7 +54,28 @@ module Panda
       def setup_editability
         page_id = Current.page&.id.to_s
 
-        # Check for session-based editing (preferred, more secure)
+        # Editing requires:
+        # 1. embed_id param matching the page (indicates editor iframe context)
+        # 2. Being loaded in an iframe (Sec-Fetch-Dest header check)
+        # 3. Referer from our admin area (same-origin security)
+        embed_id = view_context.params[:embed_id].to_s
+        is_iframe_request = view_context.request.headers["Sec-Fetch-Dest"] == "iframe"
+
+        # Check referer is from our admin area (same domain)
+        referer = view_context.request.headers["Referer"].to_s
+        request_host = view_context.request.host
+        admin_path = Panda::Core.config.admin_path
+        referer_valid = referer.present? &&
+          URI.parse(referer).host == request_host &&
+          referer.include?(admin_path)
+
+        # Must have embed_id AND be in iframe AND from our admin to enable editing
+        unless embed_id.present? && embed_id == page_id && is_iframe_request && referer_valid
+          @editable_state = false
+          return
+        end
+
+        # Validate with session-based check (additional security layer)
         editing_page_id = view_context.session[:panda_cms_editing_page_id]
         editing_expires_at = view_context.session[:panda_cms_editing_expires_at]
 
@@ -62,11 +83,8 @@ module Panda
           editing_expires_at.present? &&
           Time.parse(editing_expires_at) > Time.current
 
-        # Fall back to URL param for backwards compatibility (will be removed in future)
-        embed_id = view_context.params[:embed_id].to_s
-        url_param_valid = embed_id.present? && embed_id == page_id
-
-        @editable_state = @editable && (session_valid || url_param_valid)
+        # All checks passed - enable editing
+        @editable_state = @editable && session_valid
       end
 
       def load_block_content

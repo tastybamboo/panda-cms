@@ -1,10 +1,3 @@
-<%= render Panda::Core::Admin::BreadcrumbComponent.new(
-  items: [
-    { text: "Pages", href: admin_cms_pages_path },
-    { text: page.title, href: edit_admin_cms_page_path(page.id) }
-  ]
-) %>
-
 <%= render Panda::Core::Admin::ContainerComponent.new(full_height: true) do |component| %>
   <% component.heading(text: "#{page.title}", level: 1, meta: (link_to page.path, target: "_blank", class: "text-black/60 hover:text-black/80 inline-flex items-center gap-x-1" do
     raw("#{page.path}<i class='fa-solid fa-arrow-up-right-from-square text-xs ml-1'></i>")

@@ -40,7 +40,8 @@ module Panda
       # @return [void]
       def self.generate_missing_blocks
         # Loop through all templates in app/views/layouts/*.html.erb
-        Dir.glob("app/views/layouts/*.html.erb").each do |file|
+        # Use Rails.root to ensure we scan the correct directory regardless of working directory
+        Dir.glob(Rails.root.join("app", "views", "layouts", "*.html.erb")).each do |file|
           # TODO: Delete all blocks which aren't in use by a template?
 
           File.open(file).each_line do |line|
@@ -48,8 +49,9 @@ module Panda
             # Panda::CMS::RichTextComponent.new(key: :value)
             # Panda::CMS::RichTextComponent.new key: :value, key: value
             line.match(/Panda::CMS::([a-zA-Z]+)Component\.new[ (]+([^)]+)\)*/) do |match|
-              # Extract the hash values
-              template_path = file.gsub("app/views/", "").gsub(".html.erb", "")
+              # Extract the template path relative to app/views
+              # Handle both absolute and relative paths by extracting from "app/views/" onwards
+              template_path = file.to_s.sub(/.*app\/views\//, "").gsub(".html.erb", "")
               template_name = template_path.gsub("layouts/", "").titleize
 
               # Create the template if it doesn't exist
