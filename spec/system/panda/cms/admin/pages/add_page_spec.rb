@@ -111,8 +111,11 @@ RSpec.describe "When adding a page", type: :system do
 
         # Homepage template has max_uses: 1 and pages_count: 1 in fixtures
         # so it should NOT be available in the template dropdown
+        # Note: We check for exact option text, not partial match, since
+        # "Sanctuary Homepage" is a different template that should be allowed
         template_select = find("#page_panda_cms_template_id")
-        expect(template_select).not_to have_content("Homepage")
+        option_texts = template_select.all("option").map(&:text)
+        expect(option_texts).not_to include("Homepage")
       end
 
       it "shows validation errors with an incorrect URL" do
