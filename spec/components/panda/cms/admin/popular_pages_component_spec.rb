@@ -26,14 +26,14 @@ RSpec.describe Panda::CMS::Admin::PopularPagesComponent, type: :component do
   describe "rendering with empty pages" do
     it "displays no pages message when list is empty" do
       component = described_class.new(popular_pages: [])
-      output = Capybara.string(component.call)
+      output = Capybara.string(render_inline(component).to_html)
 
       expect(output).to have_text("No page visits recorded yet.")
     end
 
     it "renders panel component" do
       component = described_class.new(popular_pages: [])
-      output = Capybara.string(component.call)
+      output = Capybara.string(render_inline(component).to_html)
 
       expect(output).to have_css("div")
     end
@@ -47,16 +47,21 @@ RSpec.describe Panda::CMS::Admin::PopularPagesComponent, type: :component do
       ]
     end
 
+    before do
+      # Stub the route helper for component tests
+      allow_any_instance_of(ActionView::Base).to receive(:admin_cms_page_path).and_return("/admin/cms/pages/1")
+    end
+
     it "renders component without errors" do
       component = described_class.new(popular_pages: pages_data)
-      output = Capybara.string(component.call)
+      output = Capybara.string(render_inline(component).to_html)
 
       expect(output).to have_css("table")
     end
 
     it "displays visit counts in table" do
       component = described_class.new(popular_pages: pages_data)
-      output = Capybara.string(component.call)
+      output = Capybara.string(render_inline(component).to_html)
 
       expect(output).to have_text("150")
       expect(output).to have_text("75")
@@ -67,14 +72,14 @@ RSpec.describe Panda::CMS::Admin::PopularPagesComponent, type: :component do
         popular_pages: pages_data,
         period_name: "Last 7 Days"
       )
-      output = Capybara.string(component.call)
+      output = Capybara.string(render_inline(component).to_html)
 
       expect(output).to have_text("Popular Pages (Last 7 Days)")
     end
 
     it "renders table with styling" do
       component = described_class.new(popular_pages: pages_data)
-      output = Capybara.string(component.call)
+      output = Capybara.string(render_inline(component).to_html)
       html = output.native.to_html
 
       expect(html).to include("divide-y")
@@ -82,13 +87,17 @@ RSpec.describe Panda::CMS::Admin::PopularPagesComponent, type: :component do
     end
   end
 
-  describe "Phlex property pattern" do
+  describe "ViewComponent pattern" do
     it "uses @instance_variables for all prop access" do
       source = File.read(Rails.root.join("../../app/components/panda/cms/admin/popular_pages_component.rb"))
 
       # Verify key properties use @ prefix
       expect(source).to include("@popular_pages")
       expect(source).to include("@period_name")
+    end
+
+    it "inherits from Panda::Core::Base" do
+      expect(described_class.superclass).to eq(Panda::Core::Base)
     end
   end
 end
