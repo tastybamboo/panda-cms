@@ -18,30 +18,10 @@ module Panda
         @key = key
         @text = text
         @editable = editable
-        super(**attrs)
+        super()
       end
 
-      def view_template
-        # Russian doll caching: Cache component output at block_content level
-        # Only cache in non-editable mode (public-facing pages)
-        if should_cache?
-          raw cache_component_output
-        else
-          render_content
-        end
-      end
-
-      def render_content
-        div(class: "panda-cms-content", **element_attrs) do
-          if @editable_state
-            # Empty div for EditorJS to initialize into
-          else
-            raw(@rendered_content.html_safe)
-          end
-        end
-      end
-
-      def before_template
+      def before_render
         setup_editability
         load_block_content
         prepare_content
@@ -316,12 +296,18 @@ module Panda
 
       def render_content_to_string
         # Render the component HTML to a string for caching
-        view_context.content_tag(:div, @rendered_content.html_safe, class: "panda-cms-content", **element_attrs)
+        helpers.content_tag(:div, @rendered_content.html_safe, class: "panda-cms-content", **element_attrs)
+      end
+
+      # Helper method for template to decide whether to cache
+      def use_caching?
+        should_cache?
+      end
+
+      # Helper method for template to get cached output
+      def cached_output
+        cache_component_output
       end
     end
   end
-
-      def call
-        render_template
-      end
 end

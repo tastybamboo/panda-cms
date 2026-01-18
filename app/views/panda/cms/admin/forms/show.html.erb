@@ -1,22 +1,49 @@
-<%= render Panda::Core::Admin::BreadcrumbComponent.new(
-  items: [
-    { text: "Forms", href: admin_cms_forms_path },
-    { text: form.name, href: admin_cms_form_path(form) }
-  ]
-) %>
-
 <%= render Panda::Core::Admin::ContainerComponent.new do |component| %>
   <% component.heading(text: "#{form.name} Submissions", level: 1) do |heading| %>
     <% heading.button(text: "Edit Form", href: edit_admin_cms_form_path(form), icon: "fa-solid fa-pen") %>
   <% end %>
 
-  <%= render Panda::Core::Admin::TableComponent.new(term: "submission", rows: submissions) do |table| %>
-    <% fields.each do |field, title| %>
-      <% table.column(title) do |submission| %>
-        <% if field == "email" || field == "email_address" %>
-          <a href="mailto:<%= submission.data[field] %>" class="border-b border-gray-500 hover:text-gray-900"><%= submission.data[field] %></a>
+  <% # Helper to format field values %>
+  <% format_field_value = lambda do |value| %>
+    <% if value.nil? || value.to_s.strip.empty? %>
+      <span class="text-gray-400 italic">—</span>
+    <% elsif value.is_a?(Hash) || (value.is_a?(String) && value.strip.start_with?("{")) %>
+      <% # Handle JSON data (files/images from Tally) %>
+      <% begin %>
+        <% data = value.is_a?(Hash) ? value : JSON.parse(value) rescue nil %>
+        <% if data && data["url"] %>
+          <a href="<%= data["url"] %>" target="_blank" class="text-mid hover:underline flex items-center gap-1">
+            <i class="fa-solid fa-file"></i>
+            <%= data["name"] || "View file" %>
+            <% if data["size"] %>
+              <span class="text-xs text-gray-500">(<%= number_to_human_size(data["size"]) %>)</span>
+            <% end %>
+          </a>
         <% else %>
-          <%= simple_format(submission.data[field]) %>
+          <span class="text-gray-600 text-xs font-mono"><%= value.to_s.truncate(50) %></span>
+        <% end %>
+      <% rescue %>
+        <%= value.to_s.truncate(100) %>
+      <% end %>
+    <% else %>
+      <%= simple_format(value.to_s.truncate(200)) %>
+    <% end %>
+  <% end %>
+
+  <%= render Panda::Core::Admin::TableComponent.new(term: "submission", rows: submissions) do |table| %>
+    <% # Show only first 4 fields plus submitted date to avoid overwhelming the view %>
+    <% visible_fields = fields.take(4) %>
+    <% fields.each_with_index do |(field, title), index| %>
+      <% table.column(title) do |submission| %>
+        <% value = submission.data[field] %>
+        <% if field == "email" || field == "email_address" %>
+          <% if value.present? %>
+            <a href="mailto:<%= value %>" class="text-mid hover:underline"><%= value %></a>
+          <% else %>
+            <span class="text-gray-400 italic">—</span>
+          <% end %>
+        <% else %>
+          <%= format_field_value.call(value) %>
         <% end %>
       <% end %>
     <% end %>
@@ -24,5 +51,15 @@
     <% table.column("Submitted") do |submission| %>
       <%= time_ago_in_words(submission.created_at) %> ago
     <% end %>
+  <% end %>
+
+  <% if fields.length > 4 %>
+    <div class="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+      <p class="text-sm text-gray-700 dark:text-gray-300">
+        <i class="fa-solid fa-info-circle text-blue-600"></i>
+        This form has <%= fields.length %> fields. Showing all fields in the table.
+        The table is scrollable horizontally to view all columns.
+      </p>
+    </div>
   <% end %>
 <% end %>

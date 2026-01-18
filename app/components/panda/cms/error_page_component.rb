@@ -17,7 +17,7 @@ module Panda
     end
   end
 
-      def call
-        render_template
-      end
+  def call
+    render_template
+  end
 end

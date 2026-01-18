@@ -215,8 +215,22 @@ module TallyMigration
         next unless field_name
 
         value = response["answer"]
+
         # Handle arrays (checkboxes, multi-select)
-        value = value.join(", ") if value.is_a?(Array)
+        if value.is_a?(Array)
+          # Check if it's an array of file objects
+          value = if value.first.is_a?(Hash) && value.first.key?("url")
+            # Multiple file uploads - store as JSON
+            value.to_json
+          else
+            # Regular multi-select - join with commas
+            value.join(", ")
+          end
+        elsif value.is_a?(Hash) && value.key?("url")
+          # Single file/image upload - store as JSON for proper rendering
+          value = value.to_json
+        end
+
         submission_data[field_name] = value if value.present?
       end
 
