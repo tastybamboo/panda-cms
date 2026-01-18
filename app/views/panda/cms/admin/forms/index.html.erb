@@ -4,7 +4,7 @@
   <% end %>
 
   <%= render Panda::Core::Admin::TableComponent.new(term: "form", rows: forms, icon: "fa-solid fa-inbox") do |table| %>
-    <% table.column("Name") { |form| block_link_to form.name, admin_cms_form_path(form) } %>
+    <% table.column("Name") { |form| link_to form.name, admin_cms_form_path(form), class: "text-white hover:text-white/80" } %>
     <% table.column("Status") do |form| %>
       <% status = form.status || "active" %>
       <% status_symbol = status == "active" ? :active : (status == "draft" ? :pending : :inactive) %>
