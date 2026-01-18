@@ -41,7 +41,7 @@ RSpec.describe Panda::CMS::GridComponent, type: :component do
       html = output.native.to_html
 
       # Should have 3 divs for the 3 spans
-      expect(html.scan(/<div/).count).to be >= 3
+      expect(html.scan("<div").count).to be >= 3
     end
 
     it "applies correct column span classes" do
