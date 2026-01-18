@@ -386,6 +386,7 @@ user = panda_cms_users(:admin_user)
 
 ## Code Quality Memories
 - Always run "yamllint -c .yamllint ." if you make changes to .yml or .yaml files.
+- If the pre-commit hook fails due to bundle-outdated detecting gem updates, always update the gems before committing. Run `bundle update <gem-name>` for each outdated gem, then commit again.
 
 ## PR Readiness Checker Agent
 - Use the `pr-readiness-checker` agent when preparing to raise pull requests
