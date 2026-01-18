@@ -1,6 +1,7 @@
 <% content_for :title, "Internal Server Error (500)" %>
 
-<h1>500</h1>
-<p>We're sorry, but something went wrong.</p>
-<p>Our team has been notified and we're working to fix the issue.</p>
-<p><a href="/">Return to homepage</a></p>
+<%= render Panda::CMS::ErrorPageComponent.new(
+  error_code: "500",
+  message: "Internal Server Error",
+  description: "We're sorry, but something went wrong. Our team has been notified and we're working to fix the issue."
+) %>

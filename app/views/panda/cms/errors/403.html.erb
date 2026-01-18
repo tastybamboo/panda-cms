@@ -1,5 +1,7 @@
 <% content_for :title, "Forbidden (403)" %>
 
-<h1>403</h1>
-<p>You don't have permission to access this page.</p>
-<p><a href="/">Return to homepage</a></p>
+<%= render Panda::CMS::ErrorPageComponent.new(
+  error_code: "403",
+  message: "Forbidden",
+  description: "You don't have permission to access this page."
+) %>
