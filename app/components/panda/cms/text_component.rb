@@ -16,6 +16,9 @@ module Panda
         @text = text
         @editable = editable
         super(**attrs)
+      end
+
+      def before_render
         prepare_content
       end
 

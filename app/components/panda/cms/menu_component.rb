@@ -23,8 +23,8 @@ module Panda
       end
 
       def call
-        return "" unless menu_exists?
-        "<!-- Menu: #{@name} -->"
+        return "".html_safe unless menu_exists?
+        "<!-- Menu: #{@name} -->".html_safe
       end
 
       private

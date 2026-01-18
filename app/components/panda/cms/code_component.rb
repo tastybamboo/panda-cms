@@ -15,8 +15,11 @@ module Panda
         @key = key
         @text = text
         @editable = editable
-        super(**attrs)
         raise BlockError, "Key 'code' is not allowed for CodeComponent" if @key == :code
+        super(**attrs)
+      end
+
+      def before_render
         prepare_content
       end
 

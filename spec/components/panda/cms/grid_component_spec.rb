@@ -28,7 +28,7 @@ RSpec.describe Panda::CMS::GridComponent, type: :component do
   describe "rendering" do
     it "renders a div with grid classes" do
       component = described_class.new(columns: 2, spans: [1, 1])
-      output = Capybara.string(component.call)
+      output = Capybara.string(render_inline(component).to_html)
       html = output.native.to_html
 
       expect(html).to include("grid")
@@ -37,7 +37,7 @@ RSpec.describe Panda::CMS::GridComponent, type: :component do
 
     it "renders correct number of grid cells" do
       component = described_class.new(columns: 3, spans: [1, 2, 1])
-      output = Capybara.string(component.call)
+      output = Capybara.string(render_inline(component).to_html)
       html = output.native.to_html
 
       # Should have 3 divs for the 3 spans
@@ -46,7 +46,7 @@ RSpec.describe Panda::CMS::GridComponent, type: :component do
 
     it "applies correct column span classes" do
       component = described_class.new(columns: 2, spans: [1, 2])
-      output = Capybara.string(component.call)
+      output = Capybara.string(render_inline(component).to_html)
       html = output.native.to_html
 
       expect(html).to include("col-span-1")
@@ -55,7 +55,7 @@ RSpec.describe Panda::CMS::GridComponent, type: :component do
 
     it "applies grid-cols class with column count" do
       component = described_class.new(columns: 4, spans: [1, 1, 1, 1])
-      output = Capybara.string(component.call)
+      output = Capybara.string(render_inline(component).to_html)
       html = output.native.to_html
 
       expect(html).to include("grid-cols-4")
@@ -63,7 +63,7 @@ RSpec.describe Panda::CMS::GridComponent, type: :component do
 
     it "includes drag event handlers" do
       component = described_class.new(columns: 2, spans: [1, 1])
-      output = Capybara.string(component.call)
+      output = Capybara.string(render_inline(component).to_html)
       html = output.native.to_html
 
       expect(html).to include("onDragOver")
@@ -72,7 +72,7 @@ RSpec.describe Panda::CMS::GridComponent, type: :component do
 
     it "includes border and background styling" do
       component = described_class.new(columns: 2, spans: [1, 1])
-      output = Capybara.string(component.call)
+      output = Capybara.string(render_inline(component).to_html)
       html = output.native.to_html
 
       expect(html).to include("border")
@@ -80,13 +80,17 @@ RSpec.describe Panda::CMS::GridComponent, type: :component do
     end
   end
 
-  describe "Phlex property pattern" do
+  describe "ViewComponent pattern" do
     it "uses @instance_variables for all prop access" do
       source = File.read(Rails.root.join("../../app/components/panda/cms/grid_component.rb"))
 
       # Verify key properties use @ prefix
       expect(source).to include("@columns")
       expect(source).to include("@spans")
+    end
+
+    it "inherits from Panda::Core::Base" do
+      expect(described_class.superclass).to eq(Panda::Core::Base)
     end
   end
 end

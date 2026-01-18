@@ -45,11 +45,11 @@ RSpec.describe Panda::CMS::MenuComponent, type: :component do
   end
 
   describe "rendering" do
-    it "does not render for non-existent menu" do
+    it "renders comment for non-existent menu" do
       component = described_class.new(name: "nonexistent_menu")
-      output = Capybara.string(component.call)
+      output = Capybara.string(render_inline(component).to_html)
 
-      expect(output.native.to_html.strip).to be_empty
+      expect(output.native.to_html).to include("<!-- Menu: nonexistent_menu -->")
     end
 
     it "handles initialization with various properties" do

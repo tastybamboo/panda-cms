@@ -29,7 +29,7 @@ RSpec.describe Panda::CMS::ErrorPageComponent, type: :component do
         error_code: "404",
         message: "Not Found"
       )
-      output = Capybara.string(component.call)
+      output = Capybara.string(render_inline(component).to_html)
 
       expect(output).to have_text("404")
     end
@@ -39,7 +39,7 @@ RSpec.describe Panda::CMS::ErrorPageComponent, type: :component do
         error_code: "404",
         message: "Page Not Found"
       )
-      output = Capybara.string(component.call)
+      output = Capybara.string(render_inline(component).to_html)
 
       expect(output).to have_text("Page Not Found")
     end
@@ -50,7 +50,7 @@ RSpec.describe Panda::CMS::ErrorPageComponent, type: :component do
         message: "Server Error",
         description: "Something went wrong"
       )
-      output = Capybara.string(component.call)
+      output = Capybara.string(render_inline(component).to_html)
 
       expect(output).to have_text("Something went wrong")
     end
@@ -60,7 +60,7 @@ RSpec.describe Panda::CMS::ErrorPageComponent, type: :component do
         error_code: "404",
         message: "Not Found"
       )
-      output = Capybara.string(component.call)
+      output = Capybara.string(render_inline(component).to_html)
       html = output.native.to_html
 
       # Should still have the basic structure
@@ -73,7 +73,7 @@ RSpec.describe Panda::CMS::ErrorPageComponent, type: :component do
         message: "Not Found",
         homepage_link: "/home"
       )
-      output = Capybara.string(component.call)
+      output = Capybara.string(render_inline(component).to_html)
 
       expect(output).to have_link("Return to homepage", href: "/home")
     end
@@ -83,13 +83,13 @@ RSpec.describe Panda::CMS::ErrorPageComponent, type: :component do
         error_code: "404",
         message: "Not Found"
       )
-      output = Capybara.string(component.call)
+      output = Capybara.string(render_inline(component).to_html)
 
       expect(output).to have_link("Return to homepage", href: "/")
     end
   end
 
-  describe "Phlex property pattern" do
+  describe "ViewComponent pattern" do
     it "uses @instance_variables for prop access" do
       source = File.read(Rails.root.join("../../app/components/panda/cms/error_page_component.rb"))
 
@@ -97,6 +97,10 @@ RSpec.describe Panda::CMS::ErrorPageComponent, type: :component do
       expect(source).to include("@message")
       expect(source).to include("@description")
       expect(source).to include("@homepage_link")
+    end
+
+    it "inherits from Panda::CMS::Base" do
+      expect(described_class.superclass).to eq(Panda::CMS::Base)
     end
   end
 end
