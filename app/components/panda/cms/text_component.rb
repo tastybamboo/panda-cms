@@ -9,13 +9,17 @@ module Panda
     class TextComponent < Panda::Core::Base
       KIND = "plain_text"
 
-      prop :key, Symbol, default: :text_component
-      prop :text, String, default: "Lorem ipsum..."
-      prop :editable, _Boolean, default: true
+      attr_reader :key, :text, :editable
 
-      attr_accessor :plain_text
+      def initialize(key: :text_component, text: "Lorem ipsum...", editable: true, **attrs)
+        @key = key
+        @text = text
+        @editable = editable
+        super(**attrs)
+        prepare_content
+      end
 
-      def view_template
+      def call
         return unless @content
 
         # Russian doll caching: Cache component output at block_content level
@@ -29,11 +33,9 @@ module Panda
         handle_error(e)
       end
 
-      def before_template
-        prepare_content
-      end
-
       private
+
+      attr_accessor :plain_text
 
       def prepare_content
         @editable_state = @editable && is_editable_context?
@@ -138,11 +140,10 @@ module Panda
       end
 
       def render_content
-        span(**element_attrs) { raw(@content.html_safe) }
+        content_tag(:span, raw(@content.html_safe), **element_attrs)
       end
 
       def render_content_to_string
-        # Phlex doesn't have a direct way to capture output, so we render directly
         view_context.content_tag(:span, @content.html_safe, **element_attrs)
       end
     end

@@ -6,19 +6,12 @@ module Panda
     # @param columns [Integer] Number of grid columns
     # @param spans [Array<Integer>] Array of column span values for each grid cell
     class GridComponent < Panda::Core::Base
-      prop :columns, Integer, default: 1
-      prop :spans, Array, default: -> { [1].freeze }
+      attr_reader :columns, :spans
 
-      def view_template
-        div(class: "w-full grid #{grid_columns_class} min-h-20") do
-          column_span_classes.each do |colspan|
-            div(
-              class: "border border-red-500 bg-red-50 #{colspan}",
-              onDragOver: "parent.onDragOver(event);",
-              onDrop: "parent.onDrop(event);"
-            )
-          end
-        end
+      def initialize(columns: 1, spans: [1], **attrs)
+        @columns = columns
+        @spans = spans
+        super(**attrs)
       end
 
       private
