@@ -5,7 +5,7 @@ module Panda
     class FormSubmission < ApplicationRecord
       self.table_name = "panda_cms_form_submissions"
 
-      belongs_to :form, class_name: "Panda::CMS::Form"
+      belongs_to :form, class_name: "Panda::CMS::Form", counter_cache: :submission_count
 
       has_many_attached :files
 
