@@ -14,8 +14,6 @@ module Panda
         super(**attrs)
       end
 
-      private
-
       def grid_columns_class
         "grid-cols-#{columns}"
       end
