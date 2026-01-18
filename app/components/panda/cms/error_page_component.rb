@@ -16,4 +16,8 @@ module Panda
       attr_reader :error_code, :message, :description, :homepage_link
     end
   end
+
+      def call
+        render_template
+      end
 end
