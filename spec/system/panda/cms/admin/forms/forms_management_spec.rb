@@ -53,6 +53,30 @@ RSpec.describe "Forms Management", type: :system do
 
       expect(page).to have_link(contact_form.name, wait: 10)
     end
+
+    it "clicking different forms navigates to correct form show pages" do
+      visit "/admin/cms/forms"
+
+      # Wait for page to load
+      expect(page).to have_content("Forms", wait: 10)
+
+      # Click on contact form link
+      click_link contact_form.name
+
+      # Should navigate to contact form show page
+      expect(page).to have_current_path("/admin/cms/forms/#{contact_form.id}", wait: 10)
+      expect(page).to have_content(contact_form.name)
+
+      # Go back to index
+      visit "/admin/cms/forms"
+
+      # Click on newsletter form link
+      click_link newsletter_form.name
+
+      # Should navigate to newsletter form show page (NOT contact form)
+      expect(page).to have_current_path("/admin/cms/forms/#{newsletter_form.id}", wait: 10)
+      expect(page).to have_content(newsletter_form.name)
+    end
   end
 
   describe "creating a new form" do
