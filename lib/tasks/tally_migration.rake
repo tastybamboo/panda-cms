@@ -101,60 +101,42 @@ module TallyMigration
     panda_form.save!
     puts "  Created form: #{panda_form.name} (ID: #{panda_form.id})"
 
-    # Parse and create form fields from blocks
-    blocks = tally_form["blocks"] || []
+    # Get questions from submissions endpoint (more reliable than parsing blocks)
+    uri = URI.parse("https://api.tally.so/forms/#{form_id}/submissions")
+    http = Net::HTTP.new(uri.host, uri.port)
+    http.use_ssl = true
+
+    request = Net::HTTP::Get.new(uri.path)
+    request["Authorization"] = "Bearer #{ENV["TALLY_API_KEY"] || api.api_key}"
+
+    response = http.request(request)
+    data = JSON.parse(response.body)
+    questions = data["questions"] || []
+
     fields_created = 0
-    position = 1
-
-    # Track which questions we've seen (by groupUuid)
-    seen_questions = {}
-    current_title = nil
-
-    blocks.each do |block|
-      block_type = block["type"]
-      group_type = block["groupType"]
-      group_uuid = block["groupUuid"]
-      payload = block["payload"] || {}
-
-      # Store title for the next input field
-      if block_type == "TITLE" && group_type == "QUESTION"
-        # Extract text from safeHTMLSchema
-        title_text = extract_text_from_schema(payload["safeHTMLSchema"])
-        current_title = title_text
-        next
-      end
-
-      # Skip non-input blocks
-      next if %w[FORM_TITLE TEXT PAGE_BREAK CONDITIONAL_LOGIC].include?(block_type)
-      next if block_type == "TITLE"
-
-      # Skip if we've already processed this question group
-      next if seen_questions[group_uuid]
-
-      # Map field type
-      panda_type = FIELD_TYPE_MAP[group_type] || FIELD_TYPE_MAP[block_type] || "text"
-
-      # Generate field name and label
-      label = current_title || payload["placeholder"] || payload["text"] || "Field #{position}"
+    questions.each_with_index do |question, index|
+      label = question["label"] || question["title"] || "Field #{index + 1}"
       field_name = label.parameterize.underscore.gsub(/[^a-z0-9_]/, "_").squeeze("_")[0..50]
-      field_name = "field_#{position}" if field_name.blank? || field_name == "_"
+      field_name = "field_#{index + 1}" if field_name.blank? || field_name == "_"
 
-      # Collect options for select/checkbox/radio fields
+      # Determine field type from question type
+      question_type = question["type"]
+      panda_type = FIELD_TYPE_MAP[question_type] || "text"
+
+      # Extract options for select/checkbox/radio fields
       options = []
-      if %w[DROPDOWN CHECKBOXES MULTIPLE_CHOICE MULTI_SELECT].include?(group_type)
-        blocks.each do |opt_block|
-          if opt_block["groupUuid"] == group_uuid && opt_block["payload"] && opt_block["payload"]["text"]
-            options << opt_block["payload"]["text"] unless opt_block["payload"]["isOtherOption"]
-          end
-        end
+      if question["options"].is_a?(Array)
+        options = question["options"]
+      elsif question["choices"].is_a?(Array)
+        options = question["choices"]
       end
 
-      # For LINEAR_SCALE, create options 1-5 or based on scale range
-      if group_type == "LINEAR_SCALE"
-        min = payload["scaleMinValue"] || 1
-        max = payload["scaleMaxValue"] || 5
+      # Handle LINEAR_SCALE - create numeric options
+      if question_type == "LINEAR_SCALE"
+        min = question["min"] || question["minValue"] || 0
+        max = question["max"] || question["maxValue"] || 10
         options = (min..max).map(&:to_s)
-        panda_type = "select" # Use select for rating scales
+        panda_type = "select"
       end
 
       # Create or update field
@@ -162,19 +144,14 @@ module TallyMigration
       field.assign_attributes(
         label: label,
         field_type: panda_type,
-        placeholder: payload["placeholder"],
-        required: payload["isRequired"] || false,
-        position: position,
+        required: question["required"] || false,
+        position: index + 1,
         active: true,
         options: options.any? ? options.to_json : nil
       )
       field.save!
 
-      seen_questions[group_uuid] = true
-      current_title = nil
-      position += 1
       fields_created += 1
-
       puts "    + #{label} (#{panda_type})"
     end
 
@@ -232,12 +209,12 @@ module TallyMigration
 
       # Build submission data
       submission_data = {}
-      fields = submission["fields"] || []
-      fields.each do |field|
-        field_name = question_map[field["questionId"]]
+      responses = submission["responses"] || []
+      responses.each do |response|
+        field_name = question_map[response["questionId"]]
         next unless field_name
 
-        value = field["value"]
+        value = response["answer"]
         # Handle arrays (checkboxes, multi-select)
         value = value.join(", ") if value.is_a?(Array)
         submission_data[field_name] = value if value.present?
