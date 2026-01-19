@@ -2,7 +2,7 @@
 
 source "https://rubygems.org"
 
-gem "panda-core", path: "../panda-core"
+gem "panda-core", github: "tastybamboo/panda-core", branch: "feat/viewcomponent-migration"
 gem "panda-editor", github: "tastybamboo/panda-editor", branch: "main"
 
 # Fix for CI: explicitly specify benchmark version to avoid conflicts with default gem

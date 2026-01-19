@@ -1,18 +1,7 @@
 GIT
-  remote: https://github.com/tastybamboo/panda-editor.git
-  revision: c656a164b6ae316820b9cbb78a20957a5f73344d
-  branch: main
-  specs:
-    panda-editor (0.8.2)
-      dry-configurable (~> 1.0)
-      nokogiri (~> 1.15)
-      panda-core
-      rails (>= 7.1)
-      redcarpet (~> 3.6)
-      sanitize (~> 6.0)
-
-PATH
-  remote: ../panda-core
+  remote: https://github.com/tastybamboo/panda-core.git
+  revision: 732a5c7ea8f2f711aa5eadb3348ad6acaaeacf9e
+  branch: feat/viewcomponent-migration
   specs:
     panda-core (0.13.0)
       image_processing (~> 1.2)
@@ -26,6 +15,19 @@ PATH
       turbo-rails
       view_component (~> 4.2)
       webrick
+
+GIT
+  remote: https://github.com/tastybamboo/panda-editor.git
+  revision: c656a164b6ae316820b9cbb78a20957a5f73344d
+  branch: main
+  specs:
+    panda-editor (0.8.2)
+      dry-configurable (~> 1.0)
+      nokogiri (~> 1.15)
+      panda-core
+      rails (>= 7.1)
+      redcarpet (~> 3.6)
+      sanitize (~> 6.0)
 
 PATH
   remote: .

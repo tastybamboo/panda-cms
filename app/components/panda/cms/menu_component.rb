@@ -15,22 +15,76 @@ module Panda
       def initialize(name:, current_path: "", styles: {}, overrides: {}, render_page_menu: false, page_menu_styles: {}, **attrs)
         @name = name
         @current_path = current_path
-        @styles = styles
-        @overrides = overrides
+        @styles = styles.freeze
+        @overrides = overrides.freeze
         @render_page_menu = render_page_menu
-        @page_menu_styles = page_menu_styles
+        @page_menu_styles = page_menu_styles.freeze
         super(**attrs)
       end
 
-      def call
-        return "".html_safe unless menu_exists?
-        "<!-- Menu: #{@name} -->".html_safe
+      def before_render
+        load_menu_items
+      end
+
+      def processed_menu_items
+        @processed_menu_items || []
       end
 
       private
 
-      def menu_exists?
-        @name.present?
+      def load_menu_items
+        @menu = Panda::CMS::Menu.find_by(name: @name)
+        return unless @menu
+
+        # Fragment caching: Cache menu_items query results
+        # Cache key includes menu's updated_at to auto-invalidate on changes
+        cache_key = "panda_cms_menu/#{@menu.name}/#{@menu.id}/#{@menu.updated_at.to_i}/items"
+
+        menu_items = Rails.cache.fetch(cache_key, expires_in: 1.hour) do
+          items = @menu.menu_items
+          items = items.where("depth <= ?", @menu.depth) if @menu.depth
+          items.order(:lft).to_a # Convert to array for caching
+        end
+
+        # Filter menu items based on overrides
+        filtered_menu_items = if @overrides[:hidden_items].present?
+          menu_items.reject { |item| @overrides[:hidden_items].include?(item.text) }
+        else
+          menu_items
+        end
+
+        @processed_menu_items = filtered_menu_items.map do |menu_item|
+          add_css_classes_to_item(menu_item)
+          menu_item
+        end
+      end
+
+      def add_css_classes_to_item(menu_item)
+        css_class = if is_active?(menu_item)
+          "#{@styles[:default]} #{@styles[:active]}"
+        else
+          "#{@styles[:default]} #{@styles[:inactive]}"
+        end
+
+        menu_item.define_singleton_method(:css_classes) { css_class }
+      end
+
+      def is_active?(menu_item)
+        return true if @current_path == "/" && active_link?(menu_item.page.path, match: :exact)
+        return true if menu_item.page.path != "/" && active_link?(menu_item.page.path, match: :starts_with)
+
+        false
+      end
+
+      def active_link?(path, match: :starts_with)
+        case match
+        when :starts_with
+          @current_path.starts_with?(path)
+        when :exact
+          @current_path == path
+        else
+          false
+        end
       end
     end
   end

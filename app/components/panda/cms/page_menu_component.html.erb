@@ -1,0 +1,13 @@
+<% if should_render? %>
+  <nav>
+    <% if @show_heading && @menu_item %>
+      <%= link_to @menu_item.text, @menu_item.page.path, class: heading_class %>
+    <% end %>
+
+    <% descendants_with_level.each do |submenu_item, level| %>
+      <%= link_to submenu_item.text,
+                  submenu_item.page.path,
+                  class: "#{menu_item_class(submenu_item)} #{menu_indent(submenu_item)}" %>
+    <% end %>
+  </nav>
+<% end %>
