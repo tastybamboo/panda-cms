@@ -13,8 +13,7 @@ gemspec
 
 # Pin to Rails 8.1.1 to avoid Rails 8.1.2 compatibility issues:
 # - FrozenError with autoload_paths and middleware stack
-# - phlex-rails 2.3.1 incompatibility
-# TODO: Remove pin once panda-core and phlex-rails are updated for Rails 8.1.2
+# TODO: Remove pin once Rails 8.1.2 compatibility issues are resolved
 gem "rails", "= 8.1.1"
 gem "tzinfo-data"
 

@@ -92,7 +92,7 @@ end
 
 ## Admin Components
 
-Panda CMS provides several Phlex components for building consistent admin interfaces:
+Panda CMS provides several ViewComponent components for building consistent admin interfaces:
 
 ### ContainerComponent
 
@@ -143,5 +143,5 @@ Displays status tags with color coding.
 
 ## Further Reading
 
-- [Phlex Component Architecture](../phlex-component-architecture.md)
-- [Phlex Quick Start](../phlex-quick-start.md)
+- [ViewComponent Documentation](https://viewcomponent.org/)
+- [ViewComponent Guide](https://viewcomponent.org/guide/)
