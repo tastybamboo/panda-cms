@@ -54,7 +54,7 @@ RSpec.describe Panda::CMS::PageMenuComponent, type: :component do
     end
   end
 
-  describe "Phlex property pattern" do
+  describe "ViewComponent pattern" do
     it "uses @instance_variables for all prop access" do
       source = File.read(Rails.root.join("../../app/components/panda/cms/page_menu_component.rb"))
 

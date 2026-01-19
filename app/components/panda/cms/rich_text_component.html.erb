@@ -1,9 +1,9 @@
 <% if use_caching? %>
   <%= cached_output.html_safe %>
 <% else %>
-  <div class="panda-cms-content" <%= tag.attributes(element_attrs) %>>
+  <%= tag.div(class: "panda-cms-content", **element_attrs) do %>
     <% unless @editable_state %>
       <%= @rendered_content.html_safe %>
     <% end %>
-  </div>
+  <% end %>
 <% end %>
