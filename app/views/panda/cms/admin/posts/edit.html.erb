@@ -6,7 +6,7 @@
 ) %>
 
 <%= render Panda::Core::Admin::ContainerComponent.new do |component| %>
-  <% component.heading(text: post.title, level: 1) do |heading| %>
+  <% component.with_heading(text: post.title, level: 1) do |heading| %>
     <% heading.button(action: :view, text: "View Post", href: post_path(post.admin_param)) %>
   <% end %>
 

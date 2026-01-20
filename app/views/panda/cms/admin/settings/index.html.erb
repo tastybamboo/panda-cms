@@ -1,5 +1,5 @@
 <%= render Panda::Core::Admin::ContainerComponent.new do |component| %>
-  <% component.heading(text: "Settings", level: 1) %>
+  <% component.with_heading(text: "Settings", level: 1) %>
 
   <%= render Panda::Core::Admin::PanelComponent.new do |panel| %>
     <% panel.heading(text: "System Status") %>

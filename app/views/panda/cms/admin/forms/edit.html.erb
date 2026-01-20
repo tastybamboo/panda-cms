@@ -1,5 +1,5 @@
 <%= render Panda::Core::Admin::ContainerComponent.new do |component| %>
-  <% component.heading(text: form.name, level: 1) do |heading| %>
+  <% component.with_heading(text: form.name, level: 1) do |heading| %>
     <% heading.button(text: "View Submissions", href: admin_cms_form_path(form), icon: "fa-solid fa-eye") %>
   <% end %>
 

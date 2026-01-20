@@ -38,6 +38,12 @@ module Panda
       def setup_editability
         page_id = Current.page&.id.to_s
 
+        # In test/component environments, view_context might not have full request context
+        unless view_context.respond_to?(:params) && view_context.respond_to?(:request) && view_context.respond_to?(:session)
+          @editable_state = false
+          return
+        end
+
         # Editing requires:
         # 1. embed_id param matching the page (indicates editor iframe context)
         # 2. Being loaded in an iframe (Sec-Fetch-Dest header check)

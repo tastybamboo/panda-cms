@@ -6,7 +6,7 @@
 ) %>
 
 <%= render Panda::Core::Admin::ContainerComponent.new do |component| %>
-  <% component.heading(text: "Edit Menu: #{@menu.name}", level: 1) %>
+  <% component.with_heading(text: "Edit Menu: #{@menu.name}", level: 1) %>
 
   <%= panda_cms_form_with model: @menu, url: admin_cms_menu_path(@menu), method: :put, data: { controller: "menu-form" } do |f| %>
     <%= render Panda::Core::Admin::FormErrorComponent.new(model: @menu) %>

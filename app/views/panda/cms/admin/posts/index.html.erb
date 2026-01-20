@@ -1,5 +1,5 @@
 <%= render Panda::Core::Admin::ContainerComponent.new do |component| %>
-  <% component.heading(text: "Posts", level: 1, icon: "fa-solid fa-newspaper") do |heading| %>
+  <% component.with_heading(text: "Posts", level: 1, icon: "fa-solid fa-newspaper") do |heading| %>
     <% heading.button(action: :add, text: "Add Post", href: new_admin_cms_post_path) %>
   <% end %>
 

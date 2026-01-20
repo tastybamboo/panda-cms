@@ -1,16 +1,16 @@
 <%= render Panda::Core::Admin::ContainerComponent.new do |component| %>
-  <% component.heading(text: "#{form.name} Submissions", level: 1) do |heading| %>
+  <% component.with_heading(text: "#{form.name} Submissions", level: 1) do |heading| %>
     <% heading.button(text: "Edit Form", href: edit_admin_cms_form_path(form), icon: "fa-solid fa-pen") %>
   <% end %>
 
-  <% # Helper to format field values %>
+  <%# Helper to format field values %>
   <% format_field_value = lambda do |value| %>
     <% if value.nil? || value.to_s.strip.empty? %>
       <span class="text-gray-400 italic">—</span>
     <% elsif value.is_a?(Hash) || (value.is_a?(String) && value.strip.start_with?("{")) %>
-      <% # Handle JSON data (files/images from Tally) %>
+      <%# Handle JSON data (files/images from Tally) %>
       <% begin %>
-        <% data = value.is_a?(Hash) ? value : JSON.parse(value) rescue nil %>
+        <% data = value.is_a?(Hash) ? value : JSON.parse(value) %>
         <% if data && data["url"] %>
           <a href="<%= data["url"] %>" target="_blank" class="text-mid hover:underline flex items-center gap-1">
             <i class="fa-solid fa-file"></i>
@@ -22,7 +22,8 @@
         <% else %>
           <span class="text-gray-600 text-xs font-mono"><%= value.to_s.truncate(50) %></span>
         <% end %>
-      <% rescue %>
+      <% rescue JSON::ParserError => e %>
+        <% Rails.logger.warn("Failed to parse JSON field value: #{e.message}") %>
         <%= value.to_s.truncate(100) %>
       <% end %>
     <% else %>
@@ -31,8 +32,7 @@
   <% end %>
 
   <%= render Panda::Core::Admin::TableComponent.new(term: "submission", rows: submissions) do |table| %>
-    <% # Show only first 4 fields plus submitted date to avoid overwhelming the view %>
-    <% visible_fields = fields.take(4) %>
+    <%# Show all fields - table is horizontally scrollable if needed %>
     <% fields.each_with_index do |(field, title), index| %>
       <% table.column(title) do |submission| %>
         <% value = submission.data[field] %>
