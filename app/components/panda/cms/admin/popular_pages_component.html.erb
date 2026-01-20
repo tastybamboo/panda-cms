@@ -1,5 +1,5 @@
 <%= render Panda::Core::Admin::PanelComponent.new do |panel| %>
-  <% panel.heading(text: "Popular Pages (#{period_name})", level: :panel) %>
+  <% panel.with_heading_slot(text: "Popular Pages (#{period_name})") %>
 
   <% panel.body do %>
     <% if popular_pages.any? %>
