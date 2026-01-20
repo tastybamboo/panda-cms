@@ -9,8 +9,8 @@
   <% component.with_heading(text: "#{page.title}", level: 1, meta: (link_to page.path, target: "_blank", class: "text-black/60 hover:text-black/80 inline-flex items-center gap-x-1" do
     raw("#{page.path}<i class='fa-solid fa-arrow-up-right-from-square text-xs ml-1'></i>")
   end)) do |h| %>
-    <% h.button(text: "Page Details", action: :secondary, as_button: true, size: :regular, id: "open-page-details", icon: "gear", data: { action: "click->toggle#toggle touch->toggle#toggle" }) %>
-    <% h.button(text: "Save Changes", action: :save, href: "#", size: :regular, id: "saveEditableButton", icon: "check") %>
+    <% h.with_button(text: "Page Details", action: :secondary, as_button: true, size: :regular, id: "open-page-details", icon: "gear", data: { action: "click->toggle#toggle touch->toggle#toggle" }) %>
+    <% h.with_button(text: "Save Changes", action: :save, href: "#", size: :regular, id: "saveEditableButton", icon: "check") %>
   <% end %>
   <% component.with_slideover(title: "Page Details") do %>
     <% parent_seo_data = page.parent ? {

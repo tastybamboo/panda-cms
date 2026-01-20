@@ -1,6 +1,6 @@
 <%= render Panda::Core::Admin::ContainerComponent.new do |component| %>
   <% component.with_heading(text: "Forms", level: 1, icon: "fa-solid fa-inbox") do |heading| %>
-    <% heading.button(action: :add, text: "New Form", href: new_admin_cms_form_path) %>
+    <% heading.with_button(action: :add, text: "New Form", href: new_admin_cms_form_path) %>
   <% end %>
 
   <%= render Panda::Core::Admin::TableComponent.new(term: "form", rows: forms, icon: "fa-solid fa-inbox") do |table| %>
