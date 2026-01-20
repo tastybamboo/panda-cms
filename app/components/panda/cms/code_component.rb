@@ -23,17 +23,7 @@ module Panda
         prepare_content
       end
 
-      def call
-        # Russian doll caching: Cache component output at block_content level
-        # Only cache in non-editable mode (public-facing pages)
-        if should_cache?
-          raw cache_component_output.to_s.html_safe
-        else
-          render_content
-        end
-      rescue => e
-        handle_error(e)
-      end
+      # Template is used instead of call method - see code_component.html.erb
 
       private
 
@@ -99,20 +89,6 @@ module Panda
         end
       end
 
-      def render_content
-        if @editable_state
-          "<!-- Editable code component: #{@key} -->"
-        else
-          raw(@code_content.to_s.html_safe)
-        end
-      end
-
-      def should_cache?
-        !@editable_state &&
-          Panda::CMS.config.performance.dig(:fragment_caching, :enabled) != false &&
-          @block_content_obj.present?
-      end
-
       def cache_component_output
         cache_key = cache_key_for_component
         expires_in = Panda::CMS.config.performance.dig(:fragment_caching, :expires_in) || 1.hour
@@ -129,6 +105,20 @@ module Panda
       def render_content_to_string
         # For code component, we just return the raw HTML content
         @code_content.to_s
+      end
+
+      public
+
+      # Helper method for template to decide whether to cache
+      def should_cache?
+        !@editable_state &&
+          Panda::CMS.config.performance.dig(:fragment_caching, :enabled) != false &&
+          @block_content_obj.present?
+      end
+
+      # Helper method for template to get cached output
+      def cached_output
+        cache_component_output
       end
 
       class BlockError < StandardError; end

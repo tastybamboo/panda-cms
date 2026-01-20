@@ -1,0 +1,48 @@
+<% if should_cache? %>
+  <%= cached_output.html_safe %>
+<% elsif @editable_state %>
+  <div data-controller="inline-code-editor"
+       data-inline-code-editor-page-id-value="<%= Panda::CMS::Current.page.id %>"
+       data-inline-code-editor-block-content-id-value="<%= @block_content_id %>"
+       class="panda-cms-code-editor border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+    <!-- Tab Navigation -->
+    <div class="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+      <nav class="flex -mb-px" aria-label="Tabs">
+        <button type="button"
+                data-inline-code-editor-target="previewTab"
+                data-action="click->inline-code-editor#showPreview"
+                class="px-4 py-2 text-sm font-medium border-b-2 border-primary text-primary">
+          Preview
+        </button>
+        <button type="button"
+                data-inline-code-editor-target="codeTab"
+                data-action="click->inline-code-editor#showCode"
+                class="px-4 py-2 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
+          Code
+        </button>
+      </nav>
+    </div>
+
+    <!-- Preview View -->
+    <div data-inline-code-editor-target="previewView" class="p-4">
+      <%= raw(@code_content.to_s.html_safe) %>
+    </div>
+
+    <!-- Code View (hidden by default) -->
+    <div data-inline-code-editor-target="codeView" class="hidden">
+      <textarea data-inline-code-editor-target="codeInput"
+                class="w-full h-64 p-4 font-mono text-sm bg-gray-900 text-gray-100 border-0 focus:ring-0"
+                spellcheck="false"><%= @code_content %></textarea>
+      <div class="p-4 bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
+        <button type="button"
+                data-action="click->inline-code-editor#saveCode"
+                class="px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary-dark rounded-md">
+          Save Code
+        </button>
+        <div data-inline-code-editor-target="saveMessage" class="hidden mt-2"></div>
+      </div>
+    </div>
+  </div>
+<% else %>
+  <%= raw(@code_content.to_s.html_safe) %>
+<% end %>

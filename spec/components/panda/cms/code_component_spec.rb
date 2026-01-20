@@ -55,10 +55,11 @@ RSpec.describe Panda::CMS::CodeComponent, type: :component do
   end
 
   describe "ViewComponent pattern" do
-    it "uses raw() not unsafe_raw()" do
-      source = File.read(Rails.root.join("../../app/components/panda/cms/code_component.rb"))
-      expect(source).not_to include("unsafe_raw")
-      expect(source).to include("raw(")
+    it "uses raw() not unsafe_raw() in template" do
+      template_path = Rails.root.join("../../app/components/panda/cms/code_component.html.erb")
+      template_source = File.read(template_path)
+      expect(template_source).not_to include("unsafe_raw")
+      expect(template_source).to include("raw(")
     end
 
     it "inherits from Panda::Core::Base" do
