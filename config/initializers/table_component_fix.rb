@@ -11,25 +11,6 @@
 # We need to capture them in render_in instead.
 
 Rails.application.config.to_prepare do
-  # Fix ContainerComponent missing slideover and footer slots
-  # NOTE: This is a workaround for panda-core ViewComponent migration incomplete features
-  # The slideover slot is added but rendering it within ContainerComponent causes
-  # content duplication issues. For now, slideov needs to be handled differently.
-  # TODO: Submit proper fix to panda-core
-  Panda::Core::Admin::ContainerComponent.class_eval do
-    renders_one :slideover, lambda { |title: "", **attrs, &block|
-      Panda::Core::Admin::SlideoverComponent.new(title: title, **attrs, &block)
-    }
-    renders_one :footer
-
-    # Pass footer content to slideover if both exist
-    def before_render
-      if slideover? && footer?
-        slideover.instance_variable_set(:@footer_html, footer)
-      end
-    end
-  end
-
   # Fix TableComponent block handling
   Panda::Core::Admin::TableComponent.class_eval do
     # Override to capture the block properly
