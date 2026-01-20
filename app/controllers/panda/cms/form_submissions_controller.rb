@@ -54,8 +54,7 @@ module Panda
 
         form_submission.save!
 
-        # Update submission count
-        form.increment!(:submission_count)
+        # Note: submission_count is auto-incremented via counter_cache on the belongs_to association
 
         # Send notification emails
         send_notification_emails(form, form_submission)

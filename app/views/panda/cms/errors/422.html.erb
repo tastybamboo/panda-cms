@@ -1,6 +1,7 @@
 <% content_for :title, "Unprocessable Entity (422)" %>
 
-<h1>422</h1>
-<p>The change you wanted was rejected.</p>
-<p>Maybe you tried to change something you didn't have access to.</p>
-<p><a href="/">Return to homepage</a></p>
+<%= render Panda::CMS::ErrorPageComponent.new(
+  error_code: "422",
+  message: "Unprocessable Entity",
+  description: "The change you wanted was rejected. Maybe you tried to change something you didn't have access to."
+) %>

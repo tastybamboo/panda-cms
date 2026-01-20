@@ -1,5 +1,5 @@
 <%= render Panda::Core::Admin::ContainerComponent.new do |component| %>
-  <% component.heading(text: "Bulk Editor", level: 1) %>
+  <% component.with_heading(text: "Bulk Editor", level: 1) %>
 
   <% if @debug && @debug[:error].any? %>
   <div class="p-4 mb-4 bg-red-50 rounded-md">

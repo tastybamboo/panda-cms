@@ -1,20 +1,13 @@
-<%= render Panda::Core::Admin::BreadcrumbComponent.new(
-  items: [
-    { text: "Forms", href: admin_cms_forms_path },
-    { text: "Edit Form", href: edit_admin_cms_form_path(form) }
-  ]
-) %>
-
 <%= render Panda::Core::Admin::ContainerComponent.new do |component| %>
-  <% component.heading(text: form.name, level: 1) do |heading| %>
-    <% heading.button(text: "View Submissions", href: admin_cms_form_path(form), icon: "fa-solid fa-eye") %>
+  <% component.with_heading(text: form.name, level: 1) do |heading| %>
+    <% heading.with_button(text: "View Submissions", href: admin_cms_form_path(form), icon: "fa-solid fa-eye") %>
   <% end %>
 
   <%= panda_cms_form_with model: form, url: admin_cms_form_path(form), method: :patch, data: { controller: "form-fields" } do |f| %>
     <%= render Panda::Core::Admin::FormErrorComponent.new(model: form) %>
 
     <%= render Panda::Core::Admin::PanelComponent.new do |panel| %>
-      <% panel.heading(text: "Form Settings") %>
+      <% panel.with_heading_slot(text: "Form Settings") %>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <%= f.text_field :name %>
@@ -32,7 +25,7 @@
     <% end %>
 
     <%= render Panda::Core::Admin::PanelComponent.new do |panel| %>
-      <% panel.heading(text: "Form Fields") %>
+      <% panel.with_heading_slot(text: "Form Fields") %>
 
       <div data-controller="nested-form" data-nested-form-wrapper-selector-value=".nested-form-wrapper">
         <template data-nested-form-target="template">
@@ -58,7 +51,7 @@
     <% end %>
 
     <%= render Panda::Core::Admin::PanelComponent.new do |panel| %>
-      <% panel.heading(text: "Notification Settings") %>
+      <% panel.with_heading_slot(text: "Notification Settings") %>
 
       <div class="mt-4">
         <%= f.text_field :notification_emails, placeholder: "admin@example.com, team@example.com", meta: "Comma-separated list of email addresses to notify on submission" %>

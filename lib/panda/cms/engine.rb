@@ -15,6 +15,7 @@ require_relative "engine/route_config"
 require_relative "engine/core_config"
 require_relative "engine/helper_config"
 require_relative "engine/backtrace_config"
+require_relative "engine/view_component_config"
 
 module Panda
   module CMS
@@ -30,6 +31,7 @@ module Panda
       include CoreConfig
       include HelperConfig
       include BacktraceConfig
+      include ViewComponentConfig
 
       initializer "panda_cms.importmap", before: "importmap" do |app|
         Panda::CMS.importmap = Importmap::Map.new.tap do |map|

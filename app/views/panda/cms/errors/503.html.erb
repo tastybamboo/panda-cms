@@ -1,6 +1,7 @@
 <% content_for :title, "Service Unavailable (503)" %>
 
-<h1>503</h1>
-<p>The site is temporarily unavailable.</p>
-<p>We're performing scheduled maintenance. Please check back soon.</p>
-<p><a href="/">Return to homepage</a></p>
+<%= render Panda::CMS::ErrorPageComponent.new(
+  error_code: "503",
+  message: "Service Unavailable",
+  description: "The site is temporarily unavailable. We're performing scheduled maintenance. Please check back soon."
+) %>

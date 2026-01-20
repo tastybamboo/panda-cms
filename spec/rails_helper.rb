@@ -13,6 +13,7 @@ ENV["RAILS_ENV"] ||= "test"
 ENV.delete("DATABASE_URL") if ENV["ACT"] == "true"
 
 require "rubygems"
+require "view_component"
 require "panda/core"
 require "panda/core/engine"
 require "panda/cms/railtie"

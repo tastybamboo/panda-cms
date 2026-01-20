@@ -8,23 +8,17 @@ module Panda
     # @param styles [Hash] CSS classes for styling menu elements
     # @param show_heading [Boolean] Whether to show the top-level heading
     class PageMenuComponent < Panda::Core::Base
-      prop :page, Object
-      prop :start_depth, Integer
-      prop :styles, Hash, default: -> { {}.freeze }
-      prop :show_heading, _Boolean, default: true
+      attr_reader :page, :start_depth, :styles, :show_heading
 
-      def view_template
-        return unless should_render?
-
-        nav(class: @styles[:container]) do
-          ul(role: "list", class: "p-0 m-0") do
-            render_heading if @show_heading
-            render_menu_items
-          end
-        end
+      def initialize(page:, start_depth:, styles: {}, show_heading: true, **attrs)
+        @page = page
+        @start_depth = start_depth
+        @styles = styles.freeze
+        @show_heading = show_heading
+        super(**attrs)
       end
 
-      def before_template
+      def before_render
         return if @page.nil?
 
         @start_page = if @page.depth == @start_depth
@@ -50,19 +44,10 @@ module Panda
         @styles[:indent_with] ||= "pl-2" if @styles
       end
 
-      private
+      attr_reader :menu_item
 
       def should_render?
         @page&.path != "/" && @menu_item.present?
-      end
-
-      def render_heading
-        li do
-          a(
-            href: @menu_item.page.path,
-            class: heading_class
-          ) { @menu_item.text }
-        end
       end
 
       def heading_class
@@ -73,15 +58,15 @@ module Panda
         end
       end
 
-      def render_menu_items
-        ul do
-          Panda::CMS::MenuItem.includes(:page).each_with_level(@menu_item.descendants) do |submenu_item, level|
-            next if should_skip_item?(submenu_item, level)
+      def descendants_with_level
+        return [] unless @menu_item
 
-            render_menu_item(submenu_item, level)
-          end
+        Panda::CMS::MenuItem.includes(:page).each_with_level(@menu_item.descendants).select do |submenu_item, level|
+          !should_skip_item?(submenu_item, level)
         end
       end
+
+      private
 
       def should_skip_item?(submenu_item, level)
         # Skip if we're on the top menu item and level > 1
@@ -98,27 +83,16 @@ module Panda
           !Panda::CMS::Current.page&.in?(submenu_item.page.ancestors)
       end
 
-      def render_menu_item(submenu_item, level)
-        li(
-          data: {
-            level: level,
-            page_id: submenu_item.page.id
-          },
-          class: menu_item_class(submenu_item)
-        ) do
-          a(
-            href: submenu_item.page&.path,
-            class: view_context.menu_indent(submenu_item, indent_with: @styles[:indent_with])
-          ) { submenu_item.page&.title }
-        end
-      end
-
       def menu_item_class(submenu_item)
         if submenu_item.page == Panda::CMS::Current.page
           @styles[:active]
         else
           @styles[:inactive]
         end
+      end
+
+      def menu_indent(submenu_item)
+        helpers.menu_indent(submenu_item, indent_with: @styles[:indent_with])
       end
     end
   end

@@ -14,10 +14,9 @@ RSpec.describe Panda::CMS::CodeComponent, type: :component do
       expect(component).to be_a(described_class)
     end
 
-    it "raises error for invalid key 'code' during rendering" do
-      component = described_class.new(key: :code, editable: false)
+    it "raises error for invalid key 'code' during initialization" do
       expect {
-        component.call
+        described_class.new(key: :code, editable: false)
       }.to raise_error(Panda::CMS::CodeComponent::BlockError, /Key 'code' is not allowed/)
     end
   end
@@ -50,16 +49,21 @@ RSpec.describe Panda::CMS::CodeComponent, type: :component do
 
     it "renders HTML content without errors" do
       component = described_class.new(key: :test_code, editable: false)
-      output = Capybara.string(component.call)
+      output = Capybara.string(render_inline(component).to_html)
       expect(output.native.to_html).to include("<p>Test HTML</p>")
     end
   end
 
-  describe "Phlex compatibility" do
-    it "uses raw() not unsafe_raw()" do
-      source = File.read(Rails.root.join("../../app/components/panda/cms/code_component.rb"))
-      expect(source).not_to include("unsafe_raw")
-      expect(source).to include("raw(")
+  describe "ViewComponent pattern" do
+    it "uses raw() not unsafe_raw() in template" do
+      template_path = Rails.root.join("../../app/components/panda/cms/code_component.html.erb")
+      template_source = File.read(template_path)
+      expect(template_source).not_to include("unsafe_raw")
+      expect(template_source).to include("raw(")
+    end
+
+    it "inherits from Panda::Core::Base" do
+      expect(described_class.superclass).to eq(Panda::Core::Base)
     end
   end
 end
