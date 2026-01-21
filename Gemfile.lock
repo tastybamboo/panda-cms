@@ -1,7 +1,7 @@
 GIT
   remote: https://github.com/tastybamboo/panda-core.git
-  revision: 88a8e5c9e4feaf528d8f98519eaf1d0392858a6b
-  branch: feat/viewcomponent-migration
+  revision: 05281e85bfc2dc5d534dca7c1d9d8732f3627b14
+  branch: main
   specs:
     panda-core (0.13.0)
       image_processing (~> 1.2)
