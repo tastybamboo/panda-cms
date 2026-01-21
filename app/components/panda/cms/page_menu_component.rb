@@ -61,9 +61,14 @@ module Panda
       def descendants_with_level
         return [] unless @menu_item
 
-        Panda::CMS::MenuItem.includes(:page).each_with_level(@menu_item.descendants).select do |submenu_item, level|
-          !should_skip_item?(submenu_item, level)
+        # Collect items with their levels first, then filter
+        # This avoids Ruby 4.0 compatibility issues with chaining on each_with_level
+        items_with_levels = []
+        Panda::CMS::MenuItem.includes(:page).each_with_level(@menu_item.descendants) do |submenu_item, level|
+          items_with_levels << [submenu_item, level]
         end
+
+        items_with_levels.reject { |submenu_item, level| should_skip_item?(submenu_item, level) }
       end
 
       private
