@@ -6,7 +6,7 @@ homepage:
   template: homepage_template
   status: "active"
   lft: 1
-  rgt: 10
+  rgt: 14
   depth: 0
   created_at: 2025-01-01 00:00:00
   updated_at: 2025-01-01 00:00:00
@@ -18,7 +18,7 @@ about_page:
   parent: homepage
   status: "active"
   lft: 2
-  rgt: 5
+  rgt: 9
   depth: 1
   created_at: 2025-01-01 00:00:00
   updated_at: 2025-01-01 00:00:00
@@ -30,8 +30,32 @@ about_team_page:
   parent: about_page
   status: "active"
   lft: 3
-  rgt: 4
+  rgt: 8
   depth: 2
+  created_at: 2025-01-01 00:00:00
+  updated_at: 2025-01-01 00:00:00
+
+about_team_member_page:
+  title: "Team Member"
+  path: "/about/team/member"
+  template: page_template
+  parent: about_team_page
+  status: "active"
+  lft: 4
+  rgt: 7
+  depth: 3
+  created_at: 2025-01-01 00:00:00
+  updated_at: 2025-01-01 00:00:00
+
+about_team_member_bio_page:
+  title: "Biography"
+  path: "/about/team/member/bio"
+  template: page_template
+  parent: about_team_member_page
+  status: "active"
+  lft: 5
+  rgt: 6
+  depth: 4
   created_at: 2025-01-01 00:00:00
   updated_at: 2025-01-01 00:00:00
 
@@ -41,8 +65,8 @@ services_page:
   template: page_template
   parent: homepage
   status: "active"
-  lft: 6
-  rgt: 7
+  lft: 10
+  rgt: 11
   depth: 1
   created_at: 2025-01-01 00:00:00
   updated_at: 2025-01-01 00:00:00
@@ -53,8 +77,8 @@ custom_page:
   template: different_page_template
   parent: homepage
   status: "active"
-  lft: 8
-  rgt: 9
+  lft: 12
+  rgt: 13
   depth: 1
   created_at: 2025-01-01 00:00:00
   updated_at: 2025-01-01 00:00:00
