@@ -59,18 +59,22 @@ module Panda
       # Renders a complete form dynamically from its field definitions
       # Includes spam protection and all configured fields
       #
-      # @param form [Panda::CMS::Form] The form model with form_fields
+      # @param form_or_name [Panda::CMS::Form, String] The form model or form name string
       # @param options [Hash] Additional options
       # @option options [String] :class CSS class for the form wrapper
       # @option options [String] :submit_text Text for the submit button (default: "Submit")
       # @option options [String] :submit_class CSS class for the submit button
       #
-      # @example
+      # @example With form object
       #   <%= panda_cms_render_form(Panda::CMS::Form.find_by(name: "Contact")) %>
+      #
+      # @example With form name string
+      #   <%= panda_cms_render_form("Contact") %>
       #
       # @example With options
       #   <%= panda_cms_render_form(form, class: "max-w-lg", submit_text: "Send Message") %>
-      def panda_cms_render_form(form, options = {})
+      def panda_cms_render_form(form_or_name, options = {})
+        form = form_or_name.is_a?(String) ? Panda::CMS::Form.find_by(name: form_or_name) : form_or_name
         return unless form&.accepting_submissions?
 
         wrapper_class = options.delete(:class) || ""

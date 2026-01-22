@@ -4,7 +4,10 @@ module Panda
   module CMS
     class FormSubmissionsController < ApplicationController
       # Spam protection - invisible honeypot field
-      invisible_captcha only: [:create], on_spam: :log_spam
+      # Use custom callbacks to avoid calling root_path (not available in engine context)
+      invisible_captcha only: [:create],
+        on_spam: :handle_invisible_captcha_spam,
+        on_timestamp_spam: :handle_invisible_captcha_spam
 
       # Rate limiting to prevent spam
       before_action :check_rate_limit, only: [:create]
@@ -193,9 +196,11 @@ module Panda
         Rails.logger&.warn "Spam detected (#{reason}) for form #{form.id} from IP: #{request.remote_ip}"
       end
 
-      # Callback for invisible_captcha spam detection
-      def log_spam
+      # Callback for invisible_captcha spam detection (honeypot and timestamp)
+      # Must redirect using fallback "/" since root_path is not available in engine context
+      def handle_invisible_captcha_spam
         Rails.logger&.warn "Invisible captcha triggered from IP: #{request.remote_ip}"
+        redirect_back(fallback_location: "/", allow_other_host: false)
       end
 
       # Safe redirect that works in engine context
