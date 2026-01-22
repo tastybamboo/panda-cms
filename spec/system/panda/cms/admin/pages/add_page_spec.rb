@@ -56,6 +56,7 @@ RSpec.describe "When adding a page", type: :system do
         select "Page", from: "page_panda_cms_template_id"
         click_button "Create Page"
 
+        wait_for_iframe_load("editablePageFrame")
         within_frame "editablePageFrame" do
           expect(page).to have_content("Basic Page Layout")
         end
@@ -99,6 +100,7 @@ RSpec.describe "When adding a page", type: :system do
         expect(page).not_to have_content("URL has already been taken")
         expect(page).not_to have_content("URL has already been taken in this section")
 
+        wait_for_iframe_load("editablePageFrame")
         within_frame "editablePageFrame" do
           expect(page).to have_content("Basic Page Layout")
         end
