@@ -1,7 +1,7 @@
 <%= render Panda::Core::Admin::PanelComponent.new do |panel| %>
   <% panel.with_heading_slot(text: "Popular Pages (#{period_name})") %>
 
-  <% panel.body do %>
+  <% panel.with_body do %>
     <% if popular_pages.any? %>
       <div class="overflow-y-auto max-h-96">
         <table class="min-w-full divide-y divide-gray-300">

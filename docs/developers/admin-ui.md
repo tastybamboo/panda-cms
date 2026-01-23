@@ -112,8 +112,8 @@ Groups related content in a panel with optional heading.
 
 ```erb
 <%= render Panda::Core::Admin::PanelComponent.new do |panel| %>
-  <% panel.heading(text: "Panel Title", level: :panel, icon: "fa-solid fa-icon") %>
-  <% panel.body do %>
+  <% panel.with_heading_slot(text: "Panel Title", icon: "fa-solid fa-icon") %>
+  <% panel.with_body do %>
     <%# Panel content %>
   <% end %>
 <% end %>
