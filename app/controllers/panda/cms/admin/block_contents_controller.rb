@@ -15,8 +15,15 @@ module Panda
 
           # Ensure content isn't HTML escaped before saving
           if params[:content].present?
-            # Convert ActionController::Parameters to a string if needed
-            content_str = params[:content].is_a?(ActionController::Parameters) ? params[:content].to_json : params[:content].to_s
+            # Convert ActionController::Parameters to proper JSON
+            # Using to_unsafe_h ensures we get a regular Hash that serializes correctly
+            content_str = if params[:content].is_a?(ActionController::Parameters)
+              params[:content].to_unsafe_h.to_json
+            else
+              params[:content].to_s
+            end
+            # Ensure proper UTF-8 encoding and unescape any HTML entities
+            content_str = content_str.force_encoding(Encoding::UTF_8) unless content_str.encoding == Encoding::UTF_8
             content = CGI.unescapeHTML(content_str)
           else
             content = nil
