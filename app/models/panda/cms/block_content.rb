@@ -9,6 +9,14 @@ module Panda
 
       belongs_to :page, foreign_key: :panda_cms_page_id, class_name: "Panda::CMS::Page", touch: true
       belongs_to :block, foreign_key: :panda_cms_block_id, class_name: "Panda::CMS::Block"
+      has_many :block_images,
+        class_name: "Panda::CMS::BlockImage",
+        foreign_key: :panda_cms_block_content_id,
+        dependent: :destroy
+
+      accepts_nested_attributes_for :block_images,
+        allow_destroy: true,
+        reject_if: proc { |attrs| attrs["file"].blank? && attrs["id"].blank? }
 
       validates :block, presence: true, uniqueness: {scope: :page}
       validate :block_template_matches_page_template
@@ -29,6 +37,25 @@ module Panda
 
       store_accessor :content, [], prefix: true
       store_accessor :cached_content, [], prefix: true
+
+      # Get the first/primary image for blocks with a single image
+      # @return [Panda::CMS::BlockImage, nil]
+      def primary_image
+        block_images.first
+      end
+
+      # Find a specific image by its key
+      # @param key [String, Symbol] The key identifier
+      # @return [Panda::CMS::BlockImage, nil]
+      def find_image_by_key(key)
+        block_images.find_by(key: key.to_s)
+      end
+
+      # Check if this block has any images attached
+      # @return [Boolean]
+      def has_images?
+        block_images.any?
+      end
 
       private
 
