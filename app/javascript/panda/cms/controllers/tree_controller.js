@@ -156,12 +156,26 @@ export default class extends Controller {
       if (stored) {
         this.collapsedValue = JSON.parse(stored)
 
-        // First, show all pages at level 1 (direct children of Home)
+        // First, hide all pages with level > 1 and show level 1 pages
         this.rowTargets.forEach(row => {
           const level = parseInt(row.dataset.level)
+          const tableRow = this.getTableRow(row)
+          if (!tableRow) return
+
           if (level === 1) {
-            const tableRow = this.getTableRow(row)
-            if (tableRow) tableRow.style.display = ''
+            tableRow.style.display = ''
+          } else if (level > 1) {
+            tableRow.style.display = 'none'
+          }
+        })
+
+        // Update toggle icons for all pages with children
+        this.rowTargets.forEach(row => {
+          const pageId = row.dataset.pageId
+          const hasToggle = row.querySelector('[data-tree-target="toggle"]')
+          if (hasToggle) {
+            const isCollapsed = this.isCollapsed(pageId)
+            this.updateToggleIcon(pageId, isCollapsed)
           }
         })
 
