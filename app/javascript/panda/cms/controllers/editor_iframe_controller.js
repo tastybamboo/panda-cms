@@ -3,6 +3,7 @@ import { PlainTextEditor } from "panda/editor/plain_text_editor"
 import { EditorJSInitializer } from "panda/editor/editor_js_initializer"
 import { EDITOR_JS_RESOURCES, EDITOR_JS_CSS } from "panda/editor/editor_js_config"
 import { ResourceLoader } from "panda/editor/resource_loader"
+import { base64EncodeUTF8, base64DecodeUTF8 } from "panda/editor/encoding"
 
 export default class extends Controller {
   static values = {
@@ -442,8 +443,8 @@ export default class extends Controller {
               try {
                 let parsedData
                 try {
-                  // First try to parse as base64
-                  const decodedData = atob(previousDataAttr)
+                  // First try to parse as base64 (with proper UTF-8 decoding)
+                  const decodedData = base64DecodeUTF8(previousDataAttr)
                   console.debug('[Panda CMS] Decoded base64 data:', decodedData)
                   parsedData = JSON.parse(decodedData)
                 } catch (e) {
@@ -509,7 +510,7 @@ export default class extends Controller {
                   editor.isReady.then(() => {
                     editor.save().then((outputData) => {
                       const jsonString = JSON.stringify(outputData)
-                      element.dataset.editablePreviousData = btoa(jsonString)
+                      element.dataset.editablePreviousData = base64EncodeUTF8(jsonString)
                       element.dataset.editableContent = jsonString
                       element.dataset.editableInitialized = 'true'
                     })
@@ -554,7 +555,7 @@ export default class extends Controller {
 
                   // Update the data attributes with the new content
                   const jsonString = JSON.stringify(outputData)
-                  element.dataset.editablePreviousData = btoa(jsonString)
+                  element.dataset.editablePreviousData = base64EncodeUTF8(jsonString)
                   element.dataset.editableContent = jsonString
                   element.dataset.editableInitialized = 'true'
 

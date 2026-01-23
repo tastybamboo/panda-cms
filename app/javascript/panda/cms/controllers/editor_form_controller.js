@@ -1,6 +1,7 @@
 import { Controller } from "@hotwired/stimulus";
 import { EDITOR_JS_RESOURCES, EDITOR_JS_CSS } from "panda/editor/editor_js_config";
 import { ResourceLoader } from "panda/editor/resource_loader";
+import { base64EncodeUTF8, base64DecodeUTF8 } from "panda/editor/encoding";
 
 export default class extends Controller {
   static targets = ["editorContainer", "hiddenField"];
@@ -70,7 +71,7 @@ export default class extends Controller {
             outputData.source = "editorJS";
             const jsonString = JSON.stringify(outputData);
             // Store both base64 and regular JSON
-            this.editorContainerTarget.dataset.editablePreviousData = btoa(jsonString);
+            this.editorContainerTarget.dataset.editablePreviousData = base64EncodeUTF8(jsonString);
             this.editorContainerTarget.dataset.editableContent = jsonString;
             this.hiddenFieldTarget.value = jsonString;
           });
@@ -143,9 +144,9 @@ export default class extends Controller {
       const initialContent = this.hiddenFieldTarget.getAttribute("data-initial-content");
       if (initialContent && initialContent !== "{}") {
         try {
-          // First try to decode as base64
+          // First try to decode as base64 (with proper UTF-8 handling)
           try {
-            const decodedData = atob(initialContent);
+            const decodedData = base64DecodeUTF8(initialContent);
             const data = JSON.parse(decodedData);
             if (data.blocks) return data;
           } catch (e) {
@@ -164,7 +165,7 @@ export default class extends Controller {
 
       if (previousData) {
         try {
-          const decodedData = atob(previousData);
+          const decodedData = base64DecodeUTF8(previousData);
           const data = JSON.parse(decodedData);
           if (data.blocks) return data;
         } catch (e) {

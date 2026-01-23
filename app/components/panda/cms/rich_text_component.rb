@@ -173,9 +173,17 @@ module Panda
             "level" => block["data"]["level"].to_i
           ))
         when "list"
-          block.merge("data" => block["data"].merge(
-            "items" => (block["data"]["items"] || []).map { |item| item.to_s.presence || "" }
-          ))
+          # Handle both simple string items and nested list format (objects with content/items)
+          normalized_items = (block["data"]["items"] || []).map do |item|
+            if item.is_a?(Hash)
+              # Nested list format: {"content": "text", "items": [...]}
+              item
+            else
+              # Simple string format
+              item.to_s.presence || ""
+            end
+          end
+          block.merge("data" => block["data"].merge("items" => normalized_items))
         else
           block
         end
