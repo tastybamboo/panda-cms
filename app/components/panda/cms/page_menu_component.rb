@@ -84,8 +84,13 @@ module Panda
         return true if submenu_item&.page.nil? || Panda::CMS::Current.page.nil?
 
         # Skip if submenu page is deeper than current page and not an ancestor
-        (submenu_item.page&.depth&.to_i&.> Panda::CMS::Current.page&.depth&.to_i) &&
-          !Panda::CMS::Current.page&.in?(submenu_item.page.ancestors)
+        # Use nested set lft/rgt values instead of calling .ancestors to avoid N+1 queries
+        # A page is an ancestor if: ancestor.lft < page.lft AND ancestor.rgt > page.rgt
+        current_page = Panda::CMS::Current.page
+        submenu_page = submenu_item.page
+
+        (submenu_page.depth.to_i > current_page.depth.to_i) &&
+          !(submenu_page.lft < current_page.lft && submenu_page.rgt > current_page.rgt)
       end
 
       def menu_item_class(submenu_item)

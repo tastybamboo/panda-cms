@@ -27,16 +27,20 @@ module Panda
         transaction do
           menu_items.destroy_all
           menu_item_root = menu_items.create(text: start_page.title, panda_cms_page_id: start_page.id)
-          generate_menu_items(parent_menu_item: menu_item_root, parent_page: start_page)
+          generate_menu_items(parent_menu_item: menu_item_root, parent_page: start_page, current_depth: 0)
         end
       end
 
       private
 
-      def generate_menu_items(parent_menu_item:, parent_page:)
+      def generate_menu_items(parent_menu_item:, parent_page:, current_depth:)
+        # Stop recursing if we've reached the depth limit
+        # depth attribute limits how deep to go (nil means unlimited)
+        return if depth.present? && current_depth >= depth
+
         parent_page.children.where(status: [:active]).each do |page|
           menu_item = menu_items.create(text: page.title, panda_cms_page_id: page.id, parent: parent_menu_item)
-          generate_menu_items(parent_menu_item: menu_item, parent_page: page) if page.children
+          generate_menu_items(parent_menu_item: menu_item, parent_page: page, current_depth: current_depth + 1) if page.children.any?
         end
       end
 
