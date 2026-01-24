@@ -24,7 +24,10 @@ module Panda
         @start_page = if @page.depth == @start_depth
           @page
         else
-          @page.ancestors.find { |anc| anc.depth == @start_depth }
+          # Find ancestor at specific depth using nested set query (more efficient than loading all ancestors)
+          Panda::CMS::Page.where(depth: @start_depth)
+            .where("lft < ? AND rgt > ?", @page.lft, @page.rgt)
+            .first
         end
 
         menu = @start_page&.page_menu
@@ -34,11 +37,11 @@ module Panda
         # Cache key includes menu's updated_at to auto-invalidate on changes
         cache_key = "panda_cms_page_menu/#{menu.id}/#{menu.updated_at.to_i}/items"
 
-        cached_items = Rails.cache.fetch(cache_key, expires_in: 1.hour) do
-          menu.menu_items.order(:lft).to_a
+        @cached_items = Rails.cache.fetch(cache_key, expires_in: 1.hour) do
+          menu.menu_items.includes(:page).order(:lft).to_a
         end
 
-        @menu_item = cached_items.first
+        @menu_item = @cached_items.first
 
         # Set default styles if not already set
         @styles[:indent_with] ||= "pl-2" if @styles
@@ -59,12 +62,18 @@ module Panda
       end
 
       def descendants_with_level
-        return [] unless @menu_item
+        return [] unless @menu_item && @cached_items
+
+        # Compute descendants from cached items using nested set values (no database query)
+        # A descendant has: lft > parent.lft AND rgt < parent.rgt
+        descendants = @cached_items.select do |item|
+          item.lft > @menu_item.lft && item.rgt < @menu_item.rgt
+        end
 
         # Collect items with their levels first, then filter
         # This avoids Ruby 4.0 compatibility issues with chaining on each_with_level
         items_with_levels = []
-        Panda::CMS::MenuItem.includes(:page).each_with_level(@menu_item.descendants) do |submenu_item, level|
+        Panda::CMS::MenuItem.each_with_level(descendants) do |submenu_item, level|
           items_with_levels << [submenu_item, level]
         end
 
