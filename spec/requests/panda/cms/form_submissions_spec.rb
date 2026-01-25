@@ -68,6 +68,7 @@ RSpec.describe "Form Submissions", type: :request do
 
         post "/_forms/#{form.id}", params: {
           _form_timestamp: timestamp,
+          spinner: "", # invisible_captcha honeypot
           name: "Test User",
           email: "test@example.com",
           message: "Valid message"
@@ -83,6 +84,7 @@ RSpec.describe "Form Submissions", type: :request do
       it "accepts submissions without timestamp (graceful degradation)" do
         # Some forms might not have the timestamp field
         post "/_forms/#{form.id}", params: {
+          spinner: "", # invisible_captcha honeypot
           name: "Test User",
           email: "test@example.com"
         }, headers: {"HTTP_REFERER" => "/"}
@@ -112,6 +114,7 @@ RSpec.describe "Form Submissions", type: :request do
 
         post "/_forms/#{form.id}", params: {
           _form_timestamp: timestamp,
+          spinner: "", # invisible_captcha honeypot
           name: "Developer",
           message: valid_message
         }, headers: {"HTTP_REFERER" => "/"}
@@ -133,6 +136,7 @@ RSpec.describe "Form Submissions", type: :request do
         3.times do |i|
           post "/_forms/#{form.id}", params: {
             _form_timestamp: timestamp,
+            spinner: "", # invisible_captcha honeypot
             name: "User #{i}"
           }, headers: {"HTTP_REFERER" => "/"}
 
@@ -149,6 +153,7 @@ RSpec.describe "Form Submissions", type: :request do
         3.times do |i|
           post "/_forms/#{form.id}", params: {
             _form_timestamp: (5 + i).seconds.ago.to_i,
+            spinner: "", # invisible_captcha honeypot
             name: "User #{i}"
           }, headers: {"HTTP_REFERER" => "/"}
         end
@@ -156,6 +161,7 @@ RSpec.describe "Form Submissions", type: :request do
         # 4th submission should be rate limited
         post "/_forms/#{form.id}", params: {
           _form_timestamp: timestamp,
+          spinner: "", # invisible_captcha honeypot
           name: "Blocked User"
         }, headers: {"HTTP_REFERER" => "/"}
 
@@ -170,6 +176,7 @@ RSpec.describe "Form Submissions", type: :request do
 
         post "/_forms/#{form.id}", params: {
           _form_timestamp: timestamp,
+          spinner: "", # invisible_captcha honeypot
           name: "Test User"
         }, headers: {"REMOTE_ADDR" => "192.168.1.100", "HTTP_REFERER" => "/"}
 
@@ -182,6 +189,7 @@ RSpec.describe "Form Submissions", type: :request do
 
         post "/_forms/#{form.id}", params: {
           _form_timestamp: timestamp,
+          spinner: "", # invisible_captcha honeypot
           name: "Test User"
         }, headers: {"HTTP_USER_AGENT" => "TestBot/1.0", "HTTP_REFERER" => "/"}
 
@@ -225,6 +233,7 @@ RSpec.describe "Form Submissions", type: :request do
 
       post "/_forms/#{form.id}", params: {
         _form_timestamp: timestamp,
+        spinner: "", # invisible_captcha honeypot
         name: "Test User"
       }, headers: {"HTTP_REFERER" => "/"}
 
@@ -244,6 +253,7 @@ RSpec.describe "Form Submissions", type: :request do
 
       post "/_forms/#{form.id}", params: {
         _form_timestamp: timestamp,
+        spinner: "", # invisible_captcha honeypot
         name: "Test User"
       }, headers: {"HTTP_REFERER" => "/"}
 
@@ -255,6 +265,7 @@ RSpec.describe "Form Submissions", type: :request do
 
       post "/_forms/#{form.id}", params: {
         _form_timestamp: timestamp,
+        spinner: "", # invisible_captcha honeypot
         name: "Test User"
       }, headers: {"HTTP_REFERER" => "/contact"}
 
@@ -273,6 +284,7 @@ RSpec.describe "Form Submissions", type: :request do
 
       post "/_forms/#{form.id}", params: {
         _form_timestamp: timestamp,
+        spinner: "", # invisible_captcha honeypot
         name: "Test User"
       }, headers: {"HTTP_REFERER" => "/"}
 
