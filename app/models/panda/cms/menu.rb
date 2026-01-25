@@ -5,7 +5,7 @@ module Panda
     class Menu < ApplicationRecord
       self.table_name = "panda_cms_menus"
 
-      after_save :generate_auto_menu_items, if: -> { kind == "auto" }
+      after_save :generate_auto_menu_items, if: :should_regenerate_menu_items?
       after_commit :clear_menu_cache
 
       has_many :menu_items, lambda {
@@ -22,16 +22,25 @@ module Panda
 
       def generate_auto_menu_items
         return false if kind != "auto"
+        return unless start_page # Can't generate without a start page
 
-        # NB: Transactions are not distributed across database connections
         transaction do
-          menu_items.destroy_all
-          menu_item_root = menu_items.create(text: start_page.title, panda_cms_page_id: start_page.id)
+          # Destroy all existing menu items using unscoped to avoid caching issues
+          Panda::CMS::MenuItem.unscoped.where(panda_cms_menu_id: id).destroy_all
+
+          # Create new menu structure
+          menu_item_root = menu_items.create!(text: start_page.title, panda_cms_page_id: start_page.id)
           generate_menu_items(parent_menu_item: menu_item_root, parent_page: start_page, current_depth: 0)
         end
       end
 
       private
+
+      def should_regenerate_menu_items?
+        return false unless kind == "auto"
+        # Only regenerate if relevant attributes changed or it's a new record
+        saved_change_to_kind? || saved_change_to_start_page_id? || saved_change_to_depth?
+      end
 
       def generate_menu_items(parent_menu_item:, parent_page:, current_depth:)
         # Stop recursing if we've reached the depth limit
