@@ -4,60 +4,74 @@
   <%= panda_cms_form_with model: @menu, url: admin_cms_menu_path(@menu), method: :put, data: { controller: "menu-form" } do |f| %>
     <%= render Panda::Core::Admin::FormErrorComponent.new(model: @menu) %>
 
-    <%= f.text_field :name %>
-    <%= f.select :kind, options_for_select([["Static", "static"], ["Auto", "auto"]], selected: @menu.kind), {}, { "data-action": "change->menu-form#kindChanged" } %>
+    <div class="space-y-4">
+      <%= f.text_field :name %>
+      <%= f.select :kind, options_for_select([["Static", "static"], ["Auto", "auto"]], selected: @menu.kind), {}, { "data-action": "change->menu-form#kindChanged" } %>
 
-    <div data-menu-form-target="startPageField" class="<%= 'hidden' unless @menu.kind == 'auto' %>">
-      <%= f.collection_select :start_page_id, Panda::CMS::Page.order(:title), :id, :title, { include_blank: "Select a page...", label: "Start Page" }, { class: "mt-1" } %>
+      <div data-menu-form-target="startPageField" class="<%= 'hidden' unless @menu.kind == 'auto' %>">
+        <%= f.select :start_page_id,
+            options_for_select(hierarchical_pages_for_select, @menu.start_page_id),
+            { include_blank: "Select a page...", label: "Start Page" },
+            { class: "mt-1" } %>
+      </div>
     </div>
 
-      <% if @menu.kind == "static" %>
-        <%= render Panda::Core::Admin::PanelComponent.new do |panel| %>
-          <% panel.with_heading_slot(text: "Menu Items") %>
-          <% panel.with_body do %>
-            <div data-controller="nested-form" data-nested-form-wrapper-selector-value=".nested-form-wrapper">
-              <template data-nested-form-target="template">
-                <%= f.fields_for :menu_items, Panda::CMS::MenuItem.new, child_index: "NEW_RECORD" do |item_form| %>
-                  <%= render "menu_item_fields", form: item_form %>
-                <% end %>
-              </template>
+    <% if @menu.kind == "static" %>
+      <%= f.section_heading "Menu Items" %>
 
-              <div class="space-y-4">
-                <% if @menu.menu_items.any? %>
-                  <%= f.fields_for :menu_items, @menu.menu_items.sort_by(&:lft) do |item_form| %>
-                    <%= render "menu_item_fields", form: item_form %>
-                  <% end %>
-                <% end %>
-              </div>
-
-              <div data-nested-form-target="target"></div>
-
-              <div class="mt-4">
-                <%= render Panda::Core::Admin::ButtonComponent.new(text: "Add Menu Item", action: :add, link: "#", size: :small, data: { action: "click->nested-form#add" }) %>
-              </div>
-            </div>
+      <div data-controller="nested-form sortable" data-nested-form-wrapper-selector-value=".nested-form-wrapper">
+        <template data-nested-form-target="template">
+          <%= f.fields_for :menu_items, Panda::CMS::MenuItem.new, child_index: "NEW_RECORD" do |item_form| %>
+            <%= render "menu_item_fields", form: item_form %>
           <% end %>
-        <% end %>
-      <% else %>
-        <%= render Panda::Core::Admin::PanelComponent.new do |panel| %>
-          <% panel.with_heading_slot(text: "Auto-Generated Menu Items") %>
-          <% panel.with_body do %>
-            <% if @menu.menu_items.any? %>
-              <%= render Panda::Core::Admin::TableComponent.new(term: "menu item", rows: @menu.menu_items.root.self_and_descendants) do |table| %>
-                <% table.column("Text") do |menu_item| %>
-                  <div class="<%= "ml-#{menu_item.depth * 6}" %>">
-                    <%= menu_item.text %>
-                  </div>
-                <% end %>
-                <% table.column("Page") { |menu_item| menu_item.page&.title } %>
-                <% table.column("Path") { |menu_item| menu_item.page&.path } %>
-              <% end %>
-            <% else %>
-              <p class="text-sm text-gray-500 dark:text-gray-400">No menu items generated yet. Select a start page and save to generate menu items.</p>
+        </template>
+
+        <div class="space-y-4" data-sortable-target="container">
+          <% if @menu.menu_items.any? %>
+            <%= f.fields_for :menu_items, @menu.menu_items.sort_by { |item| [item.sort_order, item.lft] } do |item_form| %>
+              <%= render "menu_item_fields", form: item_form %>
             <% end %>
           <% end %>
-        <% end %>
+        </div>
+
+        <div data-nested-form-target="target"></div>
+
+        <div class="mt-4">
+          <%= render Panda::Core::Admin::ButtonComponent.new(text: "Add Menu Item", action: :add, link: "#", size: :small, data: { action: "click->nested-form#add" }) %>
+        </div>
+      </div>
+    <% else %>
+      <%= f.section_heading "Auto-Generated Menu Items" %>
+
+      <% if @menu.menu_items.any? %>
+        <div class="overflow-hidden bg-white shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
+          <table class="min-w-full divide-y divide-gray-300">
+            <thead class="bg-gray-50">
+              <tr>
+                <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">Text</th>
+                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Page</th>
+                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Path</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200 bg-white">
+              <% @menu.menu_items.root.self_and_descendants.each do |menu_item| %>
+                <tr>
+                  <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+                    <div class="<%= "ml-#{menu_item.depth * 6}" %>">
+                      <%= menu_item.text %>
+                    </div>
+                  </td>
+                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"><%= menu_item.page&.title %></td>
+                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"><%= menu_item.page&.path %></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% else %>
+        <p class="text-sm text-gray-500 dark:text-gray-400">No menu items generated yet. Select a start page and save to generate menu items.</p>
       <% end %>
+    <% end %>
 
     <%= f.button "Save Menu" %>
   <% end %>

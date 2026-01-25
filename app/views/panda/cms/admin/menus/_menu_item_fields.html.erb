@@ -1,11 +1,23 @@
-<div class="mb-6 pb-6 border-b border-gray-200 dark:border-gray-700 nested-form-wrapper" data-new-record="<%= form.object.new_record? %>">
-  <%= form.text_field :text, label: "Menu Item Text" %>
-  <%= form.collection_select :panda_cms_page_id, Panda::CMS::Page.order(:title), :id, :title, { include_blank: "Select a page (optional)", label: "Page" }, { class: "mt-1" } %>
-  <%= form.text_field :external_url, label: "External URL (optional)" %>
-
-  <div class="mt-3">
-    <%= render Panda::Core::Admin::ButtonComponent.new(text: "Remove", action: :delete, link: "#", size: :small, data: { action: "click->nested-form#remove" }) %>
+<div class="mb-6 pb-6 border-b border-gray-200 dark:border-gray-700 nested-form-wrapper flex gap-4" data-new-record="<%= form.object.new_record? %>" data-controller="menu-item">
+  <div class="drag-handle cursor-move flex items-center text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300">
+    <i class="fa-solid fa-grip-vertical text-xl"></i>
   </div>
 
-  <%= form.hidden_field :_destroy %>
+  <div class="flex-1">
+    <%= form.text_field :text,
+        label: "Menu Item Text",
+        data: { "menu-item-target": "text" } %>
+    <%= form.select :panda_cms_page_id,
+        options_for_select(hierarchical_pages_for_select, form.object.panda_cms_page_id),
+        { include_blank: "Select a page (optional)", label: "Page" },
+        { class: "mt-1", data: { action: "change->menu-item#pageChanged", "menu-item-target": "pageSelect" } } %>
+    <%= form.text_field :external_url, label: "External URL (optional)" %>
+
+    <div class="mt-3">
+      <%= render Panda::Core::Admin::ButtonComponent.new(text: "Remove", action: :delete, link: "#", size: :small, data: { action: "click->nested-form#remove" }) %>
+    </div>
+
+    <%= form.hidden_field :_destroy %>
+    <%= form.hidden_field :sort_order %>
+  </div>
 </div>

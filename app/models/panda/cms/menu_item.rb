@@ -16,10 +16,8 @@ module Panda
         optional: true
 
       validates :text, presence: true, uniqueness: {scope: :panda_cms_menu_id, case_sensitive: false}
-      validates :page, presence: true, unless: -> { external_url.present? }
-      validates :external_url, presence: true, unless: -> { page.present? }
 
-      validate :validate_is_actual_link
+      validate :validate_page_or_external_url
 
       #
       # Returns the resolved link for the menu item.
@@ -42,20 +40,16 @@ module Panda
       private
 
       #
-      # Validate that the link is an actual link or a page
+      # Validate that either page OR external URL is set, but not both or neither
       #
       # @return nil
       # @visibility private
-      def validate_is_actual_link
-        if page.nil? && external_url.nil?
-          errors.add(:page, "must be a valid page or external link, neither are set")
-          errors.add(:external_url, "must be a valid page or external link, neither are set")
+      def validate_page_or_external_url
+        if page.blank? && external_url.blank?
+          errors.add(:base, "Please select either a page or enter an external URL")
+        elsif page.present? && external_url.present?
+          errors.add(:base, "Please select a page OR enter an external URL, not both")
         end
-
-        return unless !page.nil? && !external_url.nil?
-
-        errors.add(:page, "must be a valid page or external link, both are set")
-        errors.add(:external_url, "must be a valid page or external link, both are set")
       end
     end
   end

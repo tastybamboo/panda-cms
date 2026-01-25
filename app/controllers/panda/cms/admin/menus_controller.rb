@@ -61,7 +61,7 @@ module Panda
         end
 
         def menu_params
-          params.require(:menu).permit(:name, :kind, :start_page_id, menu_items_attributes: [:id, :text, :external_url, :panda_cms_page_id, :_destroy])
+          params.require(:menu).permit(:name, :kind, :start_page_id, menu_items_attributes: [:id, :text, :external_url, :panda_cms_page_id, :sort_order, :_destroy])
         end
 
         def menu_params_with_defaults

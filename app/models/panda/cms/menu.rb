@@ -6,6 +6,7 @@ module Panda
       self.table_name = "panda_cms_menus"
 
       after_save :generate_auto_menu_items, if: :should_regenerate_menu_items?
+      after_save :reorder_static_menu_items, if: -> { kind == "static" }
       after_commit :clear_menu_cache
 
       has_many :menu_items, lambda {
@@ -35,6 +36,28 @@ module Panda
           # Create new menu structure
           menu_item_root = menu_items.create!(text: start_page.title, panda_cms_page_id: start_page.id)
           generate_menu_items(parent_menu_item: menu_item_root, parent_page: start_page, current_depth: 0)
+        end
+      end
+
+      def reorder_static_menu_items
+        # Reorder menu items based on their sort_order field
+        # This is called after menu items are saved via nested attributes
+        items = menu_items.reload.sort_by { |item| [item.sort_order, item.lft] }
+
+        items.each_with_index do |item, index|
+          # Move item to the correct position if needed
+          next if item.lft == index + 1 # Already in correct position
+
+          if index.zero?
+            item.move_to_root
+          else
+            item.move_to_right_of(items[index - 1])
+          end
+        end
+
+        # Update sort_order to match final position
+        items.each_with_index do |item, index|
+          item.update_column(:sort_order, index + 1) if item.sort_order != index + 1
         end
       end
 
