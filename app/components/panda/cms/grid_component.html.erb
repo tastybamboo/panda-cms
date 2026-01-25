@@ -1,0 +1,8 @@
+<div class="w-full grid <%= grid_columns_class %> min-h-20">
+  <% column_span_classes.each do |colspan| %>
+    <div
+      class="border border-red-500 bg-red-50 <%= colspan %>"
+      ondragover="parent.onDragOver(event);"
+      ondrop="parent.onDrop(event);"></div>
+  <% end %>
+</div>

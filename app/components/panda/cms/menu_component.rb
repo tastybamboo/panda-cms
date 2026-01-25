@@ -10,37 +10,24 @@ module Panda
     # @param render_page_menu [Boolean] Whether to render sub-page menus
     # @param page_menu_styles [Hash] Styles for the page menu component
     class MenuComponent < Panda::Core::Base
-      def initialize(name:, current_path: "", styles: {}.freeze, overrides: {}.freeze, render_page_menu: false, page_menu_styles: {}.freeze, **attrs)
+      attr_reader :name, :current_path, :styles, :overrides, :render_page_menu, :page_menu_styles
+
+      def initialize(name:, current_path: "", styles: {}, overrides: {}, render_page_menu: false, page_menu_styles: {}, **attrs)
         @name = name
         @current_path = current_path
-        @styles = styles
-        @overrides = overrides
+        @styles = styles.freeze
+        @overrides = overrides.freeze
         @render_page_menu = render_page_menu
-        @page_menu_styles = page_menu_styles
+        @page_menu_styles = page_menu_styles.freeze
         super(**attrs)
       end
 
-      attr_reader :name, :current_path, :styles, :overrides, :render_page_menu, :page_menu_styles
-
-      def view_template
-        return unless @menu
-
-        @processed_menu_items.each do |menu_item|
-          a(href: menu_item.resolved_link, class: menu_item.css_classes) { menu_item.text }
-
-          if @render_page_menu && menu_item.page
-            render Panda::CMS::PageMenuComponent.new(
-              page: menu_item.page,
-              start_depth: 1,
-              styles: @page_menu_styles,
-              show_heading: false
-            )
-          end
-        end
+      def before_render
+        load_menu_items
       end
 
-      def before_template
-        load_menu_items
+      def processed_menu_items
+        @processed_menu_items || []
       end
 
       private
@@ -56,7 +43,7 @@ module Panda
         menu_items = Rails.cache.fetch(cache_key, expires_in: 1.hour) do
           items = @menu.menu_items
           items = items.where("depth <= ?", @menu.depth) if @menu.depth
-          items.order(:lft).to_a  # Convert to array for caching
+          items.order(:lft).to_a # Convert to array for caching
         end
 
         # Filter menu items based on overrides
@@ -69,11 +56,6 @@ module Panda
         @processed_menu_items = filtered_menu_items.map do |menu_item|
           add_css_classes_to_item(menu_item)
           menu_item
-        end
-
-        # Load current page for page menu rendering
-        if @render_page_menu
-          @current_page = Panda::CMS::Page.find_by(path: @current_path)
         end
       end
 

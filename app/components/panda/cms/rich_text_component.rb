@@ -11,37 +11,17 @@ module Panda
 
       KIND = "rich_text"
 
+      attr_reader :key, :text, :editable
+      attr_accessor :content, :block_content_id
+
       def initialize(key: :text_component, text: "Lorem ipsum...", editable: true, **attrs)
         @key = key
         @text = text
         @editable = editable
-        super(**attrs)
+        super()
       end
 
-      attr_reader :key, :text, :editable
-      attr_accessor :content, :block_content_id
-
-      def view_template
-        # Russian doll caching: Cache component output at block_content level
-        # Only cache in non-editable mode (public-facing pages)
-        if should_cache?
-          raw cache_component_output
-        else
-          render_content
-        end
-      end
-
-      def render_content
-        div(class: "panda-cms-content", **element_attrs) do
-          if @editable_state
-            # Empty div for EditorJS to initialize into
-          else
-            raw(@rendered_content.html_safe)
-          end
-        end
-      end
-
-      def before_template
+      def before_render
         setup_editability
         load_block_content
         prepare_content
@@ -57,6 +37,12 @@ module Panda
 
       def setup_editability
         page_id = Current.page&.id.to_s
+
+        # In test/component environments, view_context might not have full request context
+        unless view_context.respond_to?(:params) && view_context.respond_to?(:request) && view_context.respond_to?(:session)
+          @editable_state = false
+          return
+        end
 
         # Editing requires:
         # 1. embed_id param matching the page (indicates editor iframe context)
@@ -187,9 +173,17 @@ module Panda
             "level" => block["data"]["level"].to_i
           ))
         when "list"
-          block.merge("data" => block["data"].merge(
-            "items" => (block["data"]["items"] || []).map { |item| item.to_s.presence || "" }
-          ))
+          # Handle both simple string items and nested list format (objects with content/items)
+          normalized_items = (block["data"]["items"] || []).map do |item|
+            if item.is_a?(Hash)
+              # Nested list format: {"content": "text", "items": [...]}
+              item
+            else
+              # Simple string format
+              item.to_s.presence || ""
+            end
+          end
+          block.merge("data" => block["data"].merge("items" => normalized_items))
         else
           block
         end
@@ -316,7 +310,17 @@ module Panda
 
       def render_content_to_string
         # Render the component HTML to a string for caching
-        view_context.content_tag(:div, @rendered_content.html_safe, class: "panda-cms-content", **element_attrs)
+        helpers.content_tag(:div, @rendered_content.html_safe, class: "panda-cms-content", **element_attrs)
+      end
+
+      # Helper method for template to decide whether to cache
+      def use_caching?
+        should_cache?
+      end
+
+      # Helper method for template to get cached output
+      def cached_output
+        cache_component_output
       end
     end
   end

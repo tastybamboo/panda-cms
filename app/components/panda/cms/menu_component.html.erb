@@ -1,0 +1,16 @@
+<% if @menu %>
+  <% processed_menu_items.each do |menu_item| %>
+    <%= link_to menu_item.text, menu_item.resolved_link, class: menu_item.css_classes %>
+
+    <% if render_page_menu && menu_item.page %>
+      <%= render Panda::CMS::PageMenuComponent.new(
+        page: menu_item.page,
+        start_depth: 1,
+        styles: page_menu_styles,
+        show_heading: false
+      ) %>
+    <% end %>
+  <% end %>
+<% else %>
+  <!-- Menu: <%= @name %> -->
+<% end %>
