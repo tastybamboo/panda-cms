@@ -312,46 +312,48 @@ module Panda
           "settings" => {}
         }
 
-        # Pages
+        # Pages - populate basic page data for all pages first
         Panda::CMS::Page.includes(:template).order("lft ASC").each do |page|
-          data["pages"][page.path] ||= {}
+          item = data["pages"][page.path] ||= {}
+          item["id"] = page.id
+          item["path"] = page.path
+          item["title"] = page.title
+          item["template"] = page.template.name
+          item["parent"] = page.parent&.path
+          item["status"] = page.status
+          item["page_type"] = page.page_type
+          # SEO fields
+          item["seo_title"] = page.seo_title if page.seo_title.present?
+          item["seo_description"] = page.seo_description if page.seo_description.present?
+          item["seo_keywords"] = page.seo_keywords if page.seo_keywords.present?
+          item["seo_index_mode"] = page.seo_index_mode
+          item["canonical_url"] = page.canonical_url if page.canonical_url.present?
+          # Open Graph fields
+          item["og_type"] = page.og_type
+          item["og_title"] = page.og_title if page.og_title.present?
+          item["og_description"] = page.og_description if page.og_description.present?
+          item["og_image_url"] = active_storage_url(page.og_image) if page.og_image.attached?
+          # Panda CMS Pro fields (if present)
+          item["contributor_count"] = page.contributor_count if page.respond_to?(:contributor_count)
+          item["workflow_status"] = page.workflow_status if page.respond_to?(:workflow_status)
+          item["inherit_seo"] = page.inherit_seo if page.respond_to?(:inherit_seo)
+          item["contents"] ||= {}
         end
 
+        # Add block content data to existing page entries
         # TODO: Eventually set the position of the block in the template, and then order from there rather than the name?
         Panda::CMS::BlockContent.includes(:block,
           page: [:template]).order("panda_cms_pages.lft ASC, panda_cms_blocks.key ASC").each do |block_content|
           # Skip block contents without a page (orphaned data)
           next unless block_content.page
 
-          item = data["pages"][block_content.page.path] ||= {}
-          item["id"] = block_content.page.id
-          item["path"] = block_content.page.path
-          item["title"] = block_content.page.title
-          item["template"] = block_content.page.template.name
-          item["parent"] = block_content.page.parent&.path
-          item["status"] = block_content.page.status
-          item["page_type"] = block_content.page.page_type
-          # SEO fields
-          item["seo_title"] = block_content.page.seo_title if block_content.page.seo_title.present?
-          item["seo_description"] = block_content.page.seo_description if block_content.page.seo_description.present?
-          item["seo_keywords"] = block_content.page.seo_keywords if block_content.page.seo_keywords.present?
-          item["seo_index_mode"] = block_content.page.seo_index_mode
-          item["canonical_url"] = block_content.page.canonical_url if block_content.page.canonical_url.present?
-          # Open Graph fields
-          item["og_type"] = block_content.page.og_type
-          item["og_title"] = block_content.page.og_title if block_content.page.og_title.present?
-          item["og_description"] = block_content.page.og_description if block_content.page.og_description.present?
-          item["og_image_url"] = active_storage_url(block_content.page.og_image) if block_content.page.og_image.attached?
-          # Panda CMS Pro fields (if present)
-          item["contributor_count"] = block_content.page.contributor_count if block_content.page.respond_to?(:contributor_count)
-          item["workflow_status"] = block_content.page.workflow_status if block_content.page.respond_to?(:workflow_status)
-          item["inherit_seo"] = block_content.page.inherit_seo if block_content.page.respond_to?(:inherit_seo)
-          item["contents"] ||= {}
+          item = data["pages"][block_content.page.path]
+          next unless item # Page should already exist from the first loop
+
           item["contents"][block_content.block.key] = {
             kind: block_content.block.kind, # We need the kind to recreate the block
             content: block_content.content
           }
-          data["pages"][block_content.page.path] = item
         end
 
         # Posts
