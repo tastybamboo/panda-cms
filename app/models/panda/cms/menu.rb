@@ -25,8 +25,12 @@ module Panda
         return unless start_page # Can't generate without a start page
 
         transaction do
-          # Destroy all existing menu items using unscoped to avoid caching issues
-          Panda::CMS::MenuItem.unscoped.where(panda_cms_menu_id: id).destroy_all
+          # Clear existing menu items completely before regenerating
+          # Use direct SQL delete to bypass nested_set callbacks
+          Panda::CMS::MenuItem.where(panda_cms_menu_id: id).delete_all
+
+          # Reset the association to ensure clean state
+          menu_items.reset
 
           # Create new menu structure
           menu_item_root = menu_items.create!(text: start_page.title, panda_cms_page_id: start_page.id)
@@ -38,8 +42,9 @@ module Panda
 
       def should_regenerate_menu_items?
         return false unless kind == "auto"
-        # Only regenerate if relevant attributes changed or it's a new record
-        saved_change_to_kind? || saved_change_to_start_page_id? || saved_change_to_depth?
+        # Only regenerate when kind changes to auto or start_page changes
+        # Depth is just a parameter that controls how generation happens
+        saved_change_to_kind? || saved_change_to_start_page_id?
       end
 
       def generate_menu_items(parent_menu_item:, parent_page:, current_depth:)

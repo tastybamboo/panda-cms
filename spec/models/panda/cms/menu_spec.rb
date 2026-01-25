@@ -137,7 +137,8 @@ RSpec.describe Panda::CMS::Menu, type: :model do
       end
 
       it "respects depth limit when creating menu items" do
-        auto_menu.update!(depth: 1)
+        auto_menu.update_column(:depth, 1)
+        auto_menu.generate_auto_menu_items
 
         # Should have root (depth 0) and children (depth 1), but not grandchildren (depth 2)
         expect(auto_menu.menu_items.find_by(panda_cms_page_id: parent_page.id)).to be_present
@@ -146,7 +147,8 @@ RSpec.describe Panda::CMS::Menu, type: :model do
       end
 
       it "creates all levels when depth is nil" do
-        auto_menu.update!(depth: nil)
+        auto_menu.update_column(:depth, nil)
+        auto_menu.generate_auto_menu_items
 
         expect(auto_menu.menu_items.find_by(panda_cms_page_id: parent_page.id)).to be_present
         expect(auto_menu.menu_items.find_by(panda_cms_page_id: child_page.id)).to be_present
@@ -154,7 +156,8 @@ RSpec.describe Panda::CMS::Menu, type: :model do
       end
 
       it "creates only root when depth is 0" do
-        auto_menu.update!(depth: 0)
+        auto_menu.update_column(:depth, 0)
+        auto_menu.generate_auto_menu_items
 
         expect(auto_menu.menu_items.find_by(panda_cms_page_id: parent_page.id)).to be_present
         expect(auto_menu.menu_items.find_by(panda_cms_page_id: child_page.id)).to be_nil
