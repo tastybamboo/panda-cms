@@ -25,6 +25,9 @@ module Panda
         Panda::CMS::Current.page = page || Panda::CMS::Page.find_by(path: "/404")
         Panda::CMS::Current.page.title = @overrides&.dig(:title) || page.title if @overrides
 
+        # Preload all block contents for this page to eliminate N+1 queries in components
+        Panda::CMS::Current.preload_block_contents!
+
         layout = page&.template&.file_path
 
         if page.nil? || page.status == "archived" || layout.nil?
