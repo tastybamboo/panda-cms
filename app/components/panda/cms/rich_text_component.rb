@@ -78,21 +78,27 @@ module Panda
       end
 
       def load_block_content
-        block = Panda::CMS::Block.find_by(
-          kind: KIND,
-          key: @key,
-          panda_cms_template_id: Current.page.panda_cms_template_id
-        )
-        raise ComponentError, "Block not found for key: #{@key}" unless block
+        # Try to get from preloaded cache first (eliminates N+1 query)
+        @block_content = Current.block_content_for(@key)
 
-        @block_content = block.block_contents.find_by(panda_cms_page_id: Current.page.id)
-
-        if @block_content.nil?
-          @block_content = Panda::CMS::BlockContent.create!(
-            block: block,
-            panda_cms_page_id: Current.page.id,
-            content: empty_editor_js_content
+        # Cache miss - need to query and potentially create
+        unless @block_content
+          block = Panda::CMS::Block.find_by(
+            kind: KIND,
+            key: @key,
+            panda_cms_template_id: Current.page.panda_cms_template_id
           )
+          raise ComponentError, "Block not found for key: #{@key}" unless block
+
+          @block_content = block.block_contents.find_by(panda_cms_page_id: Current.page.id)
+
+          if @block_content.nil?
+            @block_content = Panda::CMS::BlockContent.create!(
+              block: block,
+              panda_cms_page_id: Current.page.id,
+              content: empty_editor_js_content
+            )
+          end
         end
 
         @block_content_id = @block_content.id

@@ -49,7 +49,8 @@ module Panda
       end
 
       def find_block_content(block)
-        block.block_contents.find_by(panda_cms_page_id: Current.page.id)
+        # Try to get from preloaded cache first (eliminates N+1 query)
+        Current.block_content_for(@key) || block.block_contents.find_by(panda_cms_page_id: Current.page.id)
       end
 
       def component_is_editable?
