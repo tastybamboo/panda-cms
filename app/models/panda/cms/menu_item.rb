@@ -45,10 +45,14 @@ module Panda
       # @return nil
       # @visibility private
       def validate_page_or_external_url
-        if page.blank? && external_url.blank?
-          errors.add(:base, "Please select either a page or enter an external URL")
-        elsif page.present? && external_url.present?
-          errors.add(:base, "Please select a page OR enter an external URL, not both")
+        if page.nil? && external_url.blank?
+          errors.add(:page, "must be a valid page or external link, neither are set")
+          errors.add(:external_url, "must be a valid page or external link, neither are set")
+        end
+
+        if !page.nil? && !external_url.blank?
+          errors.add(:page, "must be a valid page or external link, both are set")
+          errors.add(:external_url, "must be a valid page or external link, both are set")
         end
       end
     end
