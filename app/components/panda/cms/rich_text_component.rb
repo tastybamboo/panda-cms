@@ -11,10 +11,14 @@ module Panda
 
       KIND = "rich_text"
 
-      prop :key, Symbol, default: :text_component
-      prop :text, String, default: "Lorem ipsum..."
-      prop :editable, _Boolean, default: true
+      def initialize(key: :text_component, text: "Lorem ipsum...", editable: true, **attrs)
+        @key = key
+        @text = text
+        @editable = editable
+        super(**attrs)
+      end
 
+      attr_reader :key, :text, :editable
       attr_accessor :content, :block_content_id
 
       def view_template

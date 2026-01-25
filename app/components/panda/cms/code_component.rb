@@ -9,9 +9,14 @@ module Panda
     class CodeComponent < Panda::Core::Base
       KIND = "code"
 
-      prop :key, Symbol, default: :text_component
-      prop :text, String, default: ""
-      prop :editable, _Boolean, default: true
+      def initialize(key: :text_component, text: "", editable: true, **attrs)
+        @key = key
+        @text = text
+        @editable = editable
+        super(**attrs)
+      end
+
+      attr_reader :key, :text, :editable
 
       def view_template
         # Russian doll caching: Cache component output at block_content level

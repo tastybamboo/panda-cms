@@ -10,12 +10,17 @@ module Panda
     # @param render_page_menu [Boolean] Whether to render sub-page menus
     # @param page_menu_styles [Hash] Styles for the page menu component
     class MenuComponent < Panda::Core::Base
-      prop :name, String
-      prop :current_path, String, default: ""
-      prop :styles, Hash, default: -> { {}.freeze }
-      prop :overrides, Hash, default: -> { {}.freeze }
-      prop :render_page_menu, _Boolean, default: false
-      prop :page_menu_styles, Hash, default: -> { {}.freeze }
+      def initialize(name:, current_path: "", styles: {}.freeze, overrides: {}.freeze, render_page_menu: false, page_menu_styles: {}.freeze, **attrs)
+        @name = name
+        @current_path = current_path
+        @styles = styles
+        @overrides = overrides
+        @render_page_menu = render_page_menu
+        @page_menu_styles = page_menu_styles
+        super(**attrs)
+      end
+
+      attr_reader :name, :current_path, :styles, :overrides, :render_page_menu, :page_menu_styles
 
       def view_template
         return unless @menu

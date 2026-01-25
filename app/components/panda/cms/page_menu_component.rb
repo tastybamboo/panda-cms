@@ -8,10 +8,15 @@ module Panda
     # @param styles [Hash] CSS classes for styling menu elements
     # @param show_heading [Boolean] Whether to show the top-level heading
     class PageMenuComponent < Panda::Core::Base
-      prop :page, Object
-      prop :start_depth, Integer
-      prop :styles, Hash, default: -> { {}.freeze }
-      prop :show_heading, _Boolean, default: true
+      def initialize(page:, start_depth:, styles: {}.freeze, show_heading: true, **attrs)
+        @page = page
+        @start_depth = start_depth
+        @styles = styles
+        @show_heading = show_heading
+        super(**attrs)
+      end
+
+      attr_reader :page, :start_depth, :styles, :show_heading
 
       def view_template
         return unless should_render?
