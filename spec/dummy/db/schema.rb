@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_12_20_000003) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_23_180000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -79,6 +79,20 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_20_000003) do
     t.datetime "updated_at", null: false
     t.index ["panda_cms_block_id"], name: "index_panda_cms_block_contents_on_panda_cms_block_id"
     t.index ["panda_cms_page_id"], name: "index_panda_cms_block_contents_on_panda_cms_page_id"
+  end
+
+  create_table "panda_cms_block_images", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "panda_cms_block_content_id", null: false
+    t.integer "position", default: 0, null: false
+    t.string "key"
+    t.string "alt_text"
+    t.text "caption"
+    t.string "link_url"
+    t.jsonb "metadata", default: {}, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["panda_cms_block_content_id", "key"], name: "index_panda_cms_block_images_on_content_id_and_key", unique: true, where: "(key IS NOT NULL)"
+    t.index ["panda_cms_block_content_id", "position"], name: "index_panda_cms_block_images_on_content_id_and_position"
   end
 
   create_table "panda_cms_blocks", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -297,6 +311,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_20_000003) do
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "panda_cms_block_contents", "panda_cms_blocks"
   add_foreign_key "panda_cms_block_contents", "panda_cms_pages"
+  add_foreign_key "panda_cms_block_images", "panda_cms_block_contents"
   add_foreign_key "panda_cms_blocks", "panda_cms_templates"
   add_foreign_key "panda_cms_form_fields", "panda_cms_forms", column: "form_id"
   add_foreign_key "panda_cms_form_submissions", "panda_cms_forms", column: "form_id"

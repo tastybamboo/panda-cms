@@ -199,7 +199,6 @@ RSpec.describe "Form Submissions", type: :request do
           authenticity_token: "token123",
           controller: "form_submissions",
           action: "create",
-          spinner: "", # invisible_captcha honeypot
           name: "Test User",
           email: "test@example.com"
         }, headers: {"HTTP_REFERER" => "/"}
@@ -208,7 +207,6 @@ RSpec.describe "Form Submissions", type: :request do
         expect(submission.data.keys).to contain_exactly("name", "email")
         expect(submission.data).not_to have_key("_form_timestamp")
         expect(submission.data).not_to have_key("authenticity_token")
-        expect(submission.data).not_to have_key("spinner")
       end
     end
   end
