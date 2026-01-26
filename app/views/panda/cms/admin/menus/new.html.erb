@@ -20,7 +20,7 @@
 
     <div data-menu-form-target="menuItemsSection">
         <%= render Panda::Core::Admin::PanelComponent.new do |panel| %>
-          <% panel.with_heading_slot(text: "Menu Items") %>
+          <% panel.with_heading_slot { "Menu Items" } %>
 
           <div data-controller="nested-form" data-nested-form-wrapper-selector-value=".nested-form-wrapper">
             <template data-nested-form-target="template">

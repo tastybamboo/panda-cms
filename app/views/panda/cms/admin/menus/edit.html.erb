@@ -20,7 +20,7 @@
 
       <% if @menu.kind == "static" %>
         <%= render Panda::Core::Admin::PanelComponent.new do |panel| %>
-          <% panel.with_heading_slot(text: "Menu Items") %>
+          <% panel.with_heading_slot { "Menu Items" } %>
 
           <div data-controller="nested-form" data-nested-form-wrapper-selector-value=".nested-form-wrapper">
             <template data-nested-form-target="template">
@@ -46,7 +46,7 @@
         <% end %>
       <% else %>
         <%= render Panda::Core::Admin::PanelComponent.new do |panel| %>
-          <% panel.with_heading_slot(text: "Auto-Generated Menu Items") %>
+          <% panel.with_heading_slot { "Auto-Generated Menu Items" } %>
 
           <% if @menu.menu_items.any? %>
             <%= render Panda::Core::Admin::TableComponent.new(term: "menu item", rows: @menu.menu_items.root.self_and_descendants) do |table| %>
