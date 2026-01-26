@@ -6,7 +6,7 @@
 ) %>
 
 <%= render Panda::Core::Admin::ContainerComponent.new do |component| %>
-  <% component.heading(text: "Add Page", level: 1) %>
+  <% component.with_heading_slot(text: "Add Page", level: 1) %>
 
   <%= panda_cms_form_with model: page, url: admin_cms_pages_path, method: :post, id: "page-form" do |f| %>
     <%= render Panda::Core::Admin::FormErrorComponent.new(model: page) %>

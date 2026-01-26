@@ -1,7 +1,7 @@
 <%= render Panda::Core::Admin::ContainerComponent.new do |component| %>
-  <% component.heading(text: "Files", level: 1) %>
+  <% component.with_heading_slot(text: "Files", level: 1) %>
 
-  <% component.slideover(title: "File Details") do %>
+  <% component.with_slideover_slot(title: "File Details") do %>
     <div class="pt-4 pb-16 space-y-6" data-file-gallery-target="slideoverContent">
       <% if @selected_file %>
         <%= render partial: "file_details", locals: { file: @selected_file } %>

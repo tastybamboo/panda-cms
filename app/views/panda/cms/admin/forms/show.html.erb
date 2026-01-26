@@ -6,8 +6,8 @@
 ) %>
 
 <%= render Panda::Core::Admin::ContainerComponent.new do |component| %>
-  <% component.heading(text: "#{form.name} Submissions", level: 1) do |heading| %>
-    <% heading.button(text: "Edit Form", href: edit_admin_cms_form_path(form), icon: "fa-solid fa-pen") %>
+  <% component.with_heading_slot(text: "#{form.name} Submissions", level: 1) do |heading| %>
+    <% heading.with_button(text: "Edit Form", href: edit_admin_cms_form_path(form), icon: "fa-solid fa-pen") %>
   <% end %>
 
   <%= render Panda::Core::Admin::TableComponent.new(term: "submission", rows: submissions) do |table| %>
