@@ -5,7 +5,7 @@ require "awesome_nested_set"
 module Panda
   module CMS
     class Page < ApplicationRecord
-      acts_as_nested_set counter_cache: :children_count
+      acts_as_nested_set counter_cache: :children_count, depth_column: :depth
       self.table_name = "panda_cms_pages"
       self.implicit_order_column = "lft"
 
