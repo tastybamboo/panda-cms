@@ -65,6 +65,29 @@ RSpec.describe Panda::CMS::Menu, type: :model do
         expect(menu).to be_valid
       end
     end
+
+    context "ordering validation" do
+      it "defaults to 'default'" do
+        menu = Panda::CMS::Menu.new(name: "Test Menu", kind: "static")
+        expect(menu.ordering).to eq("default")
+      end
+
+      it "is valid with 'default' ordering" do
+        menu = Panda::CMS::Menu.new(name: "Test Menu", kind: "static", ordering: "default")
+        expect(menu).to be_valid
+      end
+
+      it "is valid with 'alphabetical' ordering" do
+        menu = Panda::CMS::Menu.new(name: "Test Menu", kind: "static", ordering: "alphabetical")
+        expect(menu).to be_valid
+      end
+
+      it "is invalid with unknown ordering" do
+        menu = Panda::CMS::Menu.new(name: "Test Menu", kind: "static", ordering: "invalid")
+        expect(menu).not_to be_valid
+        expect(menu.errors[:ordering]).to include("is not included in the list")
+      end
+    end
   end
 
   describe "#generate_auto_menu_items" do
@@ -127,6 +150,53 @@ RSpec.describe Panda::CMS::Menu, type: :model do
     it "wraps operations in a transaction" do
       expect(auto_menu).to receive(:transaction).and_call_original
       auto_menu.generate_auto_menu_items
+    end
+
+    context "with alphabetical ordering" do
+      let(:template) { panda_cms_pages(:homepage).template }
+      let(:test_parent) do
+        Panda::CMS::Page.create!(
+          title: "Test Parent",
+          path: "/test-parent",
+          parent: homepage,
+          template: template,
+          status: :active
+        )
+      end
+      let(:alphabetical_menu) do
+        Panda::CMS::Menu.create!(
+          name: "Alphabetical Test Menu",
+          kind: "auto",
+          ordering: "alphabetical",
+          start_page: test_parent
+        )
+      end
+
+      before do
+        # Create test pages as children in non-alphabetical order
+        Panda::CMS::Page.create!(title: "Zebra Page", path: "/test-parent/zebra", parent: test_parent, template: template, status: :active)
+        Panda::CMS::Page.create!(title: "Alpha Page", path: "/test-parent/alpha", parent: test_parent, template: template, status: :active)
+        Panda::CMS::Page.create!(title: "Middle Page", path: "/test-parent/middle", parent: test_parent, template: template, status: :active)
+      end
+
+      it "orders menu items alphabetically by title" do
+        alphabetical_menu.generate_auto_menu_items
+        root_item = alphabetical_menu.menu_items.roots.find_by(panda_cms_page_id: test_parent.id)
+        child_items = root_item.children.order(:lft)
+
+        titles = child_items.map(&:text)
+        expect(titles).to eq(["Alpha Page", "Middle Page", "Zebra Page"])
+      end
+
+      it "includes 'Alpha Page' before 'Zebra Page'" do
+        alphabetical_menu.generate_auto_menu_items
+        alpha_item = alphabetical_menu.menu_items.find_by(text: "Alpha Page")
+        zebra_item = alphabetical_menu.menu_items.find_by(text: "Zebra Page")
+
+        expect(alpha_item).to be_present
+        expect(zebra_item).to be_present
+        expect(alpha_item.lft).to be < zebra_item.lft
+      end
     end
   end
 

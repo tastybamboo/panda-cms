@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_12_20_000003) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_27_134205) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -18,6 +18,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_20_000003) do
   # Note that some types may not work with other database engines. Be careful if changing database.
   create_enum "panda_cms_block_kind", ["plain_text", "rich_text", "image", "video", "audio", "file", "code", "iframe", "quote", "list", "table", "form"]
   create_enum "panda_cms_menu_kind", ["static", "auto"]
+  create_enum "panda_cms_menu_ordering", ["default", "alphabetical"]
   create_enum "panda_cms_og_type", ["website", "article", "profile", "video", "book"]
   create_enum "panda_cms_page_status", ["active", "draft", "hidden", "archived"]
   create_enum "panda_cms_post_status", ["active", "draft", "hidden", "archived"]
@@ -154,6 +155,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_20_000003) do
     t.string "text", null: false
     t.datetime "updated_at", null: false
     t.index ["lft"], name: "index_panda_cms_menu_items_on_lft"
+    t.index ["panda_cms_menu_id", "lft", "rgt"], name: "index_menu_items_on_menu_id_and_nested_set"
     t.index ["panda_cms_menu_id"], name: "index_panda_cms_menu_items_on_panda_cms_menu_id"
     t.index ["panda_cms_page_id"], name: "index_panda_cms_menu_items_on_panda_cms_page_id"
     t.index ["rgt"], name: "index_panda_cms_menu_items_on_rgt"
@@ -164,6 +166,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_20_000003) do
     t.integer "depth"
     t.enum "kind", default: "static", null: false, enum_type: "panda_cms_menu_kind"
     t.string "name", null: false
+    t.enum "ordering", default: "default", null: false, enum_type: "panda_cms_menu_ordering"
     t.uuid "start_page_id"
     t.datetime "updated_at", null: false
     t.index ["name"], name: "index_panda_cms_menus_on_name", unique: true
@@ -194,9 +197,11 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_20_000003) do
     t.string "title"
     t.datetime "updated_at", null: false
     t.index ["cached_last_updated_at"], name: "index_panda_cms_pages_on_cached_last_updated_at"
+    t.index ["lft", "rgt"], name: "index_pages_on_nested_set"
     t.index ["lft"], name: "index_panda_cms_pages_on_lft"
     t.index ["page_type"], name: "index_panda_cms_pages_on_page_type"
     t.index ["panda_cms_template_id"], name: "index_panda_cms_pages_on_panda_cms_template_id"
+    t.index ["parent_id", "lft"], name: "index_pages_on_parent_and_lft"
     t.index ["parent_id"], name: "index_panda_cms_pages_on_parent_id"
     t.index ["path"], name: "index_panda_cms_pages_on_path"
     t.index ["rgt"], name: "index_panda_cms_pages_on_rgt"

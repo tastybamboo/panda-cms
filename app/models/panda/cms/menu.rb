@@ -16,8 +16,11 @@ module Panda
 
       accepts_nested_attributes_for :menu_items, reject_if: :all_blank, allow_destroy: true
 
+      attribute :ordering, :string, default: "default"
+
       validates :name, presence: true, uniqueness: {case_sensitive: false}
       validates :kind, presence: true, inclusion: {in: %w[static auto]}
+      validates :ordering, inclusion: {in: %w[default alphabetical]}
       validate :validate_start_page
 
       def generate_auto_menu_items
@@ -34,9 +37,21 @@ module Panda
       private
 
       def generate_menu_items(parent_menu_item:, parent_page:)
-        parent_page.children.where(status: [:active]).each do |page|
+        children = parent_page.children.where(status: [:active])
+        children = order_pages(children)
+
+        children.each do |page|
           menu_item = menu_items.create(text: page.title, panda_cms_page_id: page.id, parent: parent_menu_item)
           generate_menu_items(parent_menu_item: menu_item, parent_page: page) if page.children
+        end
+      end
+
+      def order_pages(pages)
+        case ordering
+        when "alphabetical"
+          pages.reorder(:title)
+        else
+          pages # Default uses nested set order (lft)
         end
       end
 
