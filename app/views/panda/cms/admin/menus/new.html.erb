@@ -1,10 +1,3 @@
-<%= render Panda::Core::Admin::BreadcrumbComponent.new(
-  items: [
-    { text: "Menus", href: admin_cms_menus_path },
-    { text: "New Menu", href: new_admin_cms_menu_path }
-  ]
-) %>
-
 <%= render Panda::Core::Admin::ContainerComponent.new do |component| %>
   <% component.with_heading_slot(text: "New Menu", level: 1) %>
 
@@ -40,6 +33,6 @@
         <% end %>
       </div>
 
-    <%= f.button "Create Menu" %>
+    <%= f.submit "Create Menu" %>
   <% end %>
 <% end %>

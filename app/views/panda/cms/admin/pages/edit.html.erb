@@ -1,10 +1,3 @@
-<%= render Panda::Core::Admin::BreadcrumbComponent.new(
-  items: [
-    { text: "Pages", href: admin_cms_pages_path },
-    { text: page.title, href: edit_admin_cms_page_path(page.id) }
-  ]
-) %>
-
 <%= render Panda::Core::Admin::ContainerComponent.new(full_height: true) do |component| %>
   <% component.with_heading_slot(text: "#{page.title}", level: 1, meta: (link_to page.path, target: "_blank", class: "text-black/60 hover:text-black/80 inline-flex items-center gap-x-1" do
     raw("#{page.path}<i class='fa-solid fa-arrow-up-right-from-square text-xs ml-1'></i>")
@@ -134,12 +127,13 @@
           </div>
         <% end %>
       </div>
+
+      <div class="flex justify-end gap-x-3 border-t border-gray-200 mt-6 pt-4 dark:border-white/10">
+        <button type="submit" class="inline-flex items-center gap-x-1.5 justify-center rounded-md bg-mid px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-mid/80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mid cursor-pointer dark:shadow-none">
+          <i class="fa-solid fa-check"></i> Save
+        </button>
+      </div>
     <% end %>
-  <% end %>
-  <% component.with_footer do %>
-    <button type="submit" form="page-form" class="inline-flex items-center gap-x-1.5 justify-center rounded-md bg-mid px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-mid/80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mid cursor-pointer dark:shadow-none">
-      <i class="fa-solid fa-check"></i> Save
-    </button>
   <% end %>
 
   <%= content_tag :div, id: "successMessage", class: "hidden fixed top-4 right-4 z-50" do %>

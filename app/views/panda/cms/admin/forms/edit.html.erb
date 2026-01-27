@@ -1,10 +1,3 @@
-<%= render Panda::Core::Admin::BreadcrumbComponent.new(
-  items: [
-    { text: "Forms", href: admin_cms_forms_path },
-    { text: "Edit Form", href: edit_admin_cms_form_path(form) }
-  ]
-) %>
-
 <%= render Panda::Core::Admin::ContainerComponent.new do |component| %>
   <% component.with_heading_slot(text: form.name, level: 1) do |heading| %>
     <% heading.with_button(text: "View Submissions", href: admin_cms_form_path(form), icon: "fa-solid fa-eye") %>
