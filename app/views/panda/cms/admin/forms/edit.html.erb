@@ -80,10 +80,6 @@
       </div>
     <% end %>
 
-    <div class="flex justify-end gap-x-3 border-t border-gray-200 mt-6 pt-4 dark:border-white/10">
-      <button type="submit" class="inline-flex items-center gap-x-1.5 justify-center rounded-md bg-mid px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-mid/80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mid cursor-pointer dark:shadow-none">
-        <i class="fa-solid fa-check"></i> Save Form
-      </button>
-    </div>
+    <%= render Panda::Core::Admin::FormFooterComponent.new(submit_text: "Save Form") %>
   <% end %>
 <% end %>

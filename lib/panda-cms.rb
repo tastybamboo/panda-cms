@@ -117,5 +117,6 @@ require_relative "panda/cms/sanctuary_demo"
 require_relative "panda/cms/asset_loader"
 require_relative "panda/cms/features"
 require_relative "panda/cms/slug"
+require_relative "panda/cms/analytics"
 
 Panda::CMS.loader.setup

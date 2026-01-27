@@ -9,7 +9,9 @@
       <%= render Panda::Core::Admin::StatisticsComponent.new(metric: "Views Last Month", value: Panda::CMS::Visit.group_by_month(:visited_at, last: 1).count.values.first || 0) %>
     </dl>
 
-    <div class="grid grid-cols-1 gap-5 mt-8">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mt-8">
+      <%= render Panda::CMS::Admin::AnalyticsWidgetComponent.new(period: 30.days) %>
+
       <%= render Panda::CMS::Admin::PopularPagesComponent.new(
         popular_pages: Panda::CMS::Visit.popular_pages(limit: 10),
         period_name: "All Time"

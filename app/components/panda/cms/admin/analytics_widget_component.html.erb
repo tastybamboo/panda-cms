@@ -1,0 +1,73 @@
+<div <%= tag.attributes(**attrs) %>>
+  <div class="flex items-center justify-between mb-6">
+    <h3 class="text-lg font-medium text-gray-900 dark:text-white">
+      <i class="fa-solid fa-chart-line mr-2 text-primary-500"></i>
+      Analytics
+    </h3>
+    <span class="text-sm text-gray-500 dark:text-gray-400"><%= period_label %></span>
+  </div>
+
+  <% if analytics_available? && summary %>
+    <!-- Summary Stats -->
+    <div class="grid grid-cols-2 gap-4 mb-6">
+      <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Page Views</dt>
+        <dd class="mt-1 text-2xl font-semibold text-gray-900 dark:text-white">
+          <%= format_number(summary[:page_views]) %>
+        </dd>
+      </div>
+      <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Unique Visitors</dt>
+        <dd class="mt-1 text-2xl font-semibold text-gray-900 dark:text-white">
+          <%= format_number(summary[:unique_visitors]) %>
+        </dd>
+      </div>
+    </div>
+
+    <!-- Top Pages -->
+    <% if top_pages&.any? %>
+      <div class="border-t border-gray-200 dark:border-gray-700 pt-4">
+        <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-3">Top Pages</h4>
+        <ul class="space-y-2">
+          <% top_pages.each_with_index do |page, index| %>
+            <li class="flex items-center justify-between text-sm">
+              <div class="flex items-center gap-2 truncate">
+                <span class="flex-shrink-0 w-5 h-5 rounded-full bg-primary-100 dark:bg-primary-900 text-primary-600 dark:text-primary-400 text-xs flex items-center justify-center font-medium">
+                  <%= index + 1 %>
+                </span>
+                <span class="text-gray-700 dark:text-gray-300 truncate" title="<%= page[:title] %>">
+                  <%= page[:title] || page[:path] %>
+                </span>
+              </div>
+              <span class="flex-shrink-0 text-gray-500 dark:text-gray-400 ml-2">
+                <%= format_number(page[:views]) %> views
+              </span>
+            </li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <!-- Provider Attribution -->
+    <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+      <p class="text-xs text-gray-400 dark:text-gray-500">
+        Data from <%= provider.name %>
+      </p>
+    </div>
+  <% else %>
+    <!-- No Analytics Available -->
+    <div class="text-center py-6">
+      <i class="fa-solid fa-chart-bar text-3xl text-gray-300 dark:text-gray-600 mb-3"></i>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">
+        No analytics data available.
+      </p>
+      <p class="text-xs text-gray-400 dark:text-gray-500">
+        <% if Panda::CMS::Visit.count.zero? %>
+          Visit tracking will begin when pages receive traffic.
+        <% else %>
+          Configure an analytics provider to see detailed insights.
+        <% end %>
+      </p>
+    </div>
+  <% end %>
+</div>

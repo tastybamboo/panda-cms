@@ -70,10 +70,8 @@
     <% end %>
   </div>
 
-  <%= f.submit f.object.persisted? ? "Update Post" : "Create Post",
-      class: "btn btn-primary",
-      data: {
-        disable_with: "Saving...",
-        action: "click->editor-form#submit"
-      } %>
+  <%= render Panda::Core::Admin::FormFooterComponent.new(
+    submit_text: f.object.persisted? ? "Update Post" : "Create Post",
+    submit_action: "click->editor-form#submit"
+  ) %>
 <% end %>
