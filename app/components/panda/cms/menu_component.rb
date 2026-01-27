@@ -70,8 +70,11 @@ module Panda
       end
 
       def is_active?(menu_item)
-        return true if @current_path == "/" && active_link?(menu_item.page.path, match: :exact)
-        return true if menu_item.page.path != "/" && active_link?(menu_item.page.path, match: :starts_with)
+        link_path = menu_item.resolved_link
+        return false if link_path.blank?
+
+        return true if @current_path == "/" && active_link?(link_path, match: :exact)
+        return true if link_path != "/" && active_link?(link_path, match: :starts_with)
 
         false
       end
