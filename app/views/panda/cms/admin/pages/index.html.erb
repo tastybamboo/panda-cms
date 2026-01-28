@@ -11,9 +11,11 @@
             <%# Add indentation for nested levels %>
             <% indent_class = case page.level
                when 0 then ""
-               when 1 then "ml-6"
-               when 2 then "ml-12"
-               when 3 then "ml-18"
+               when 1 then "ml-4"
+               when 2 then "ml-8"
+               when 3 then "ml-12"
+               when 4 then "ml-16"
+               when 5 then "ml-20"
                else "ml-24"
                end %>
             <div class="flex items-center gap-2 <%= indent_class %>">
