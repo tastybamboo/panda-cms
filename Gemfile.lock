@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/tastybamboo/panda-core.git
-  revision: 3695b0c2e9bf2f8a92f90faae3435a43fbcc80a2
+  revision: 267aa622893f89e1c1a56d455902c8011581a869
   branch: main
   specs:
     panda-core (0.13.0)
@@ -433,8 +433,9 @@ GEM
     rb-fsevent (0.11.2)
     rb-inotify (0.11.1)
       ffi (~> 1.0)
-    rbs (3.10.2)
+    rbs (3.10.3)
       logger
+      tsort
     rdoc (7.1.0)
       erb
       psych (>= 4.0.0)
