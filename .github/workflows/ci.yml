@@ -3,37 +3,40 @@ name: CI
 
 on:  # yamllint disable-line rule:truthy
   push:
-    branches: ['main']
+    branches: [main]
   pull_request:
+    branches: [main]
   workflow_dispatch:
 
-env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: tastybamboo/panda-cms-test
-  PLATFORM: linux/amd64
-  RUBY_YJIT_ENABLE: 1
-
-permissions:
-  contents: read
-  packages: write
-  actions: read
-
 jobs:
-  # --------------------------------------------------------------
-  # BUILD JOB - builds Docker image for both test jobs
-  # --------------------------------------------------------------
-  build:
+  test-stable:
+    name: Test (stable)
     runs-on: ubuntu-latest
     outputs:
       has_flaky_tests: ${{ steps.check-flaky.outputs.has_flaky }}
-    permissions:
-      contents: read
-      packages: write
-      actions: read
+    container:
+      image: ghcr.io/tastybamboo/panda-ci:ruby-4.0.1
+    env:
+      BUNDLE_PATH: vendor/bundle
+      RAILS_ENV: test
+      DISPLAY: :99
+      CUPRITE_TIMEOUT: "30"
+      CUPRITE_PROCESS_TIMEOUT: "180"
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
+      - uses: actions/checkout@v6
 
       - name: Check for flaky tests
         id: check-flaky
@@ -44,107 +47,35 @@ jobs:
             echo "has_flaky=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Log in to GHCR
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Build CI image (PRs only)
-        if: github.event_name == 'pull_request'
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: docker/ci.Dockerfile
-          platforms: ${{ env.PLATFORM }}
-          push: true # push so other jobs can pull it
-          provenance: false
-          tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:pr-${{ github.event.pull_request.number }}
-          cache-from: |
-            type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-
-      - name: Build & push CI image
-        if: github.event_name != 'pull_request'
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: docker/ci.Dockerfile
-          platforms: ${{ env.PLATFORM }}
-          push: true
-          provenance: false
-          tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-          cache-from: |
-            type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-          cache-to: |
-            type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:cache,mode=max
-
-  # --------------------------------------------------------------
-  # TEST STABLE - runs non-flaky tests
-  # --------------------------------------------------------------
-  test-stable:
-    runs-on: ubuntu-latest
-    needs: build
-    permissions: write-all
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-
-      - name: Log in to GHCR
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Run stable tests (exclude flaky)
+      - name: Start Xvfb
         run: |
-          IMAGE_TAG=${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || 'latest' }}
-          docker run --rm \
-            --platform linux/amd64 \
-            --name panda-cms-ci-stable \
-            -v $PWD:/app \
-            -v ci_bundle_cache_stable_v2:/usr/local/bundle \
-            -e RAILS_ENV=test \
-            -e CI=true \
-            -e CUPRITE_PROCESS_TIMEOUT=30 \
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${IMAGE_TAG} \
-            bash -lc '
-              set -euxo pipefail
-              export PGUSER=postgres
-              export PGPASSWORD=password
-              export PGHOST=127.0.0.1
-              export PGPORT=5432
-              export DATABASE_URL="postgres://postgres:${PGPASSWORD}@${PGHOST}:${PGPORT}/panda_cms_dummy_test"
-              export BUNDLE_PATH=/usr/local/bundle
-              echo "==> Starting services..."
-              start-services
-              echo "==> Checking Ruby availability..."
-              which ruby || echo "Ruby not found in PATH"
-              ruby --version || echo "Ruby version check failed"
-              echo "==> Running Chrome smoke test..."
-              bin/chrome-smoke-test
-              echo "==> Installing gems..."
-              bundle install --jobs=4 --retry=3
-              echo "==> Creating test DB..."
-              bundle exec rails db:create db:schema:load
-              echo "==> Running stable tests (excluding flaky)..."
-              echo "Start time:" $(date "+%Y-%m-%d %H:%M:%S")
-              bundle exec rspec --tag ~flaky --format progress --format documentation --out /tmp/rspec.log --color
-              echo "End time:" $(date "+%Y-%m-%d %H:%M:%S")
-              echo "==> Test output:"
-              cat /tmp/rspec.log
-              echo "==> Stopping services:"
-              stop-services
-            '
+          Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
 
-      - name: Upload stable test failure artifacts
+      - name: Cache gems
+        uses: actions/cache@v5
+        with:
+          path: vendor/bundle
+          key: ${{ runner.os }}-gems-stable-${{ hashFiles('Gemfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-gems-stable-
+            ${{ runner.os }}-gems-
+
+      - name: Bundle install
+        run: |
+          bundle config path vendor/bundle
+          bundle install --jobs 4 --retry 3
+
+      - name: Setup database
+        env:
+          DATABASE_URL: postgres://postgres:password@postgres:5432/test
+        run: bundle exec rails db:create db:schema:load
+
+      - name: Run stable tests
+        env:
+          DATABASE_URL: postgres://postgres:password@postgres:5432/test
+        run: bundle exec rspec --tag ~flaky --format progress --color
+
+      - name: Upload failure artifacts
         if: failure()
         uses: actions/upload-artifact@v6
         with:
@@ -156,70 +87,65 @@ jobs:
             spec/dummy/tmp/capybara/**
           if-no-files-found: ignore
 
-  # --------------------------------------------------------------
-  # TEST FLAKY - runs flaky tests (allowed to fail)
-  # Only runs if flaky tests exist
-  # --------------------------------------------------------------
   test-flaky:
+    name: Test (flaky)
+    needs: test-stable
+    if: needs.test-stable.outputs.has_flaky_tests == 'true'
     runs-on: ubuntu-latest
-    needs: build
-    if: needs.build.outputs.has_flaky_tests == 'true'
     continue-on-error: true
-    permissions: write-all
+    container:
+      image: ghcr.io/tastybamboo/panda-ci:ruby-4.0.1
+    env:
+      BUNDLE_PATH: vendor/bundle
+      RAILS_ENV: test
+      DISPLAY: :99
+      CUPRITE_TIMEOUT: "30"
+      CUPRITE_PROCESS_TIMEOUT: "180"
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
+      - uses: actions/checkout@v6
 
-      - name: Log in to GHCR
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Run flaky tests (allowed to fail)
+      - name: Start Xvfb
         run: |
-          IMAGE_TAG=${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || 'latest' }}
-          docker run --rm \
-            --platform linux/amd64 \
-            --name panda-cms-ci-flaky \
-            -v $PWD:/app \
-            -v ci_bundle_cache_flaky_v2:/usr/local/bundle \
-            -e RAILS_ENV=test \
-            -e CI=true \
-            -e CUPRITE_PROCESS_TIMEOUT=30 \
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${IMAGE_TAG} \
-            bash -lc '
-              set -euxo pipefail
-              export PGUSER=postgres
-              export PGPASSWORD=password
-              export PGHOST=127.0.0.1
-              export PGPORT=5432
-              export DATABASE_URL="postgres://postgres:${PGPASSWORD}@${PGHOST}:${PGPORT}/panda_cms_dummy_test_flaky"
-              export BUNDLE_PATH=/usr/local/bundle
-              echo "==> Starting services..."
-              start-services
-              echo "==> Checking Ruby availability..."
-              which ruby || echo "Ruby not found in PATH"
-              ruby --version || echo "Ruby version check failed"
-              echo "==> Running Chrome smoke test..."
-              bin/chrome-smoke-test
-              echo "==> Installing gems..."
-              bundle install --jobs=4 --retry=3
-              echo "==> Creating test DB..."
-              bundle exec rails db:create db:schema:load
-              echo "==> Running flaky tests only..."
-              echo "Start time:" $(date "+%Y-%m-%d %H:%M:%S")
-              bundle exec rspec --tag flaky --format progress --format documentation --out /tmp/rspec-flaky.log --color || true
-              echo "End time:" $(date "+%Y-%m-%d %H:%M:%S")
-              echo "==> Flaky test output:"
-              cat /tmp/rspec-flaky.log
-              echo "==> Stopping services:"
-              stop-services
-            '
+          Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
 
-      - name: Upload flaky test failure artifacts
+      - name: Cache gems
+        uses: actions/cache@v5
+        with:
+          path: vendor/bundle
+          key: ${{ runner.os }}-gems-flaky-${{ hashFiles('Gemfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-gems-flaky-
+            ${{ runner.os }}-gems-
+
+      - name: Bundle install
+        run: |
+          bundle config path vendor/bundle
+          bundle install --jobs 4 --retry 3
+
+      - name: Setup database
+        env:
+          DATABASE_URL: postgres://postgres:password@postgres:5432/test
+        run: bundle exec rails db:create db:schema:load
+
+      - name: Run flaky tests
+        env:
+          DATABASE_URL: postgres://postgres:password@postgres:5432/test
+        run: bundle exec rspec --tag flaky --format progress --color || true
+
+      - name: Upload failure artifacts
         if: failure()
         uses: actions/upload-artifact@v6
         with:
@@ -230,3 +156,49 @@ jobs:
             spec/dummy/tmp/cuprite_failures/**
             spec/dummy/tmp/capybara/**
           if-no-files-found: ignore
+
+  lint:
+    name: Linters
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/tastybamboo/panda-ci:latest
+    env:
+      BUNDLE_PATH: vendor/bundle
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Cache gems
+        uses: actions/cache@v5
+        with:
+          path: vendor/bundle
+          key: ${{ runner.os }}-gems-lint-${{ hashFiles('**/Gemfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-gems-lint-
+            ${{ runner.os }}-gems-
+
+      - name: Bundle install
+        run: |
+          bundle config path vendor/bundle
+          bundle install --jobs 4 --retry 3
+
+      - name: Run StandardRB
+        run: bundle exec standardrb
+
+      - name: Run ERB Lint
+        run: |
+          if [ -f ".erb-lint.yml" ]; then
+            bundle exec erb_lint app/views --lint-all
+          else
+            echo "No .erb-lint.yml found, skipping ERB lint"
+          fi
+
+      - name: Run Brakeman
+        run: bundle exec brakeman --quiet --skip-files app/javascript/
+
+      - name: Run bundle-audit
+        run: |
+          bundle exec bundle-audit update
+          bundle exec bundle-audit check
+
+      - name: Run YAML lint
+        run: yamllint -c .yamllint .
