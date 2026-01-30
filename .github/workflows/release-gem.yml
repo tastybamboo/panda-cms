@@ -10,7 +10,7 @@ jobs:
   release:
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/tastybamboo/panda-cms-test:latest
+      image: ghcr.io/tastybamboo/panda-ci:ruby-4.0.1
 
     steps:
       - uses: actions/checkout@v6
