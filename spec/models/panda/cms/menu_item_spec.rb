@@ -111,6 +111,30 @@ RSpec.describe Panda::CMS::MenuItem, type: :model do
         expect(menu_item.errors[:external_url]).to include("must be a valid page or external link, neither are set")
       end
     end
+
+    context "when marked for destruction" do
+      it "skips link validations" do
+        menu_item = Panda::CMS::MenuItem.new(
+          text: "Doomed Item",
+          menu: main_menu,
+          page: nil,
+          external_url: nil
+        )
+        menu_item.mark_for_destruction
+        expect(menu_item).to be_valid
+      end
+
+      it "skips the both-set validation" do
+        menu_item = Panda::CMS::MenuItem.new(
+          text: "Doomed Item",
+          menu: main_menu,
+          page: homepage,
+          external_url: "https://example.com"
+        )
+        menu_item.mark_for_destruction
+        expect(menu_item).to be_valid
+      end
+    end
   end
 
   describe "nested set behavior" do

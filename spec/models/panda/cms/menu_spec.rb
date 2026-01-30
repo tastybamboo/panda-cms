@@ -212,6 +212,44 @@ RSpec.describe Panda::CMS::Menu, type: :model do
     end
   end
 
+  describe "nested attributes" do
+    it "allows removing menu items via _destroy" do
+      menu = static_menu
+      item = menu.menu_items.first
+
+      expect {
+        menu.update!(menu_items_attributes: [{id: item.id, _destroy: "1"}])
+      }.to change { menu.menu_items.count }.by(-1)
+    end
+
+    it "allows removing multiple menu items at once" do
+      menu = static_menu
+      items = menu.menu_items.to_a
+
+      attrs = items.map { |item| {id: item.id, _destroy: "1"} }
+
+      expect {
+        menu.update!(menu_items_attributes: attrs)
+      }.to change { menu.menu_items.count }.by(-items.size)
+    end
+
+    it "allows removing some items while keeping others" do
+      menu = static_menu
+      keep_item = panda_cms_menu_items(:home_link)
+      remove_item = panda_cms_menu_items(:about_link)
+
+      expect {
+        menu.update!(menu_items_attributes: [
+          {id: keep_item.id, text: keep_item.text},
+          {id: remove_item.id, _destroy: "1"}
+        ])
+      }.to change { menu.menu_items.count }.by(-1)
+
+      expect(menu.menu_items.reload).to include(keep_item)
+      expect(menu.menu_items.reload).not_to include(remove_item)
+    end
+  end
+
   describe "fixture data integrity" do
     it "loads static menu correctly" do
       expect(static_menu.name).to eq("Main Menu")

@@ -16,10 +16,10 @@ module Panda
         optional: true
 
       validates :text, presence: true, uniqueness: {scope: :panda_cms_menu_id, case_sensitive: false}
-      validates :page, presence: true, unless: -> { external_url.present? }
-      validates :external_url, presence: true, unless: -> { page.present? }
+      validates :page, presence: true, unless: -> { marked_for_destruction? || external_url.present? }
+      validates :external_url, presence: true, unless: -> { marked_for_destruction? || page.present? }
 
-      validate :validate_is_actual_link
+      validate :validate_is_actual_link, unless: :marked_for_destruction?
 
       #
       # Returns the resolved link for the menu item.
