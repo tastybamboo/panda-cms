@@ -36,7 +36,7 @@ RSpec.describe Panda::CMS::PageMenuComponent, type: :component do
 
     it "does not render nav for root page" do
       component = described_class.new(page: page, start_depth: 1, styles: {})
-      output = Capybara.string(component.call)
+      output = render_inline(component)
 
       # Root page should not render nav content (returns early in should_render?)
       expect(output).not_to have_css("nav")
@@ -51,18 +51,6 @@ RSpec.describe Panda::CMS::PageMenuComponent, type: :component do
 
       # Just verify it initializes without property access errors
       expect(component).to be_a(described_class)
-    end
-  end
-
-  describe "Phlex property pattern" do
-    it "uses @instance_variables for all prop access" do
-      source = File.read(Rails.root.join("../../app/components/panda/cms/page_menu_component.rb"))
-
-      # Verify key properties use @ prefix
-      expect(source).to include("@page")
-      expect(source).to include("@styles")
-      expect(source).to include("@start_depth")
-      expect(source).to include("@show_heading")
     end
   end
 end
