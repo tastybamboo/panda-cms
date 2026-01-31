@@ -105,58 +105,35 @@ RSpec.describe "Menus Management", type: :system do
 
       click_button "Create Menu"
 
+      expect(page).to have_content(/successfully created/i)
+
       new_menu = Panda::CMS::Menu.find_by(name: "Main Navigation")
+      expect(new_menu).not_to be_nil
       expect(new_menu.start_page_id).to eq(homepage.id)
     end
   end
 
   describe "editing an existing menu" do
     it "shows the edit menu form" do
-      # visit "/admin/cms/menus/#{header_menu.id}/edit"
-
-      # expect(page).to have_content("Edit Menu")
-      # expect(page).to have_field("Name", with: header_menu.name)
+      skip "TODO: Requires header_menu fixture"
     end
 
     it "updates menu basic details" do
-      # visit "/admin/cms/menus/#{header_menu.id}/edit"
-
-      # fill_in "Name", with: "Updated Header Menu"
-      # select "sidebar", from: "Kind"
-
-      # click_button "Update Menu"
-
-      # expect(page).to have_content(/successfully updated/i)
-
-      # header_menu.reload
-      # expect(header_menu.name).to eq("Updated Header Menu")
-      # expect(header_menu.kind).to eq("sidebar")
+      skip "TODO: Requires header_menu fixture"
     end
 
     it "shows existing menu items" do
-      # Create a menu item
-      # header_menu.menu_items.create!(
-      #   text: "Home",
-      #   panda_cms_page_id: homepage.id
-      # )
-
-      # visit "/admin/cms/menus/#{header_menu.id}/edit"
-
-      # expect(page).to have_field("menu[menu_items_attributes][0][text]", with: "Home")
+      skip "TODO: Requires header_menu fixture"
     end
   end
 
   describe "nested menu items" do
     it "shows add menu item button" do
-      # visit "/admin/cms/menus/#{header_menu.id}/edit"
-      # expect(page).to have_button("Add Menu Item")
+      skip "TODO: Requires header_menu fixture"
     end
 
     it "adds a new menu item when clicking add button" do
-      # visit "/admin/cms/menus/#{header_menu.id}/edit"
-      # initial_count = all(".nested-form-wrapper").count
-      # click_button "Add Menu Item"
-      # expect(all(".nested-form-wrapper").count).to eq(initial_count + 1)
+      skip "TODO: Requires header_menu fixture"
     end
 
     it "creates menu with menu items", skip: "Nested form JavaScript issue - menu items validation failing" do
@@ -186,126 +163,51 @@ RSpec.describe "Menus Management", type: :system do
     end
 
     it "adds multiple menu items" do
-      # visit "/admin/cms/menus/#{header_menu.id}/edit"
-      # initial_count = all(".nested-form-wrapper").count
-      # click_button "Add Menu Item"
-      # click_button "Add Menu Item"
-      # click_button "Add Menu Item"
-      # expect(all(".nested-form-wrapper").count).to eq(initial_count + 3)
+      skip "TODO: Requires header_menu fixture"
     end
 
     it "allows entering text for menu item" do
-      # visit "/admin/cms/menus/#{header_menu.id}/edit"
-      # click_button "Add Menu Item"
-      # within(all(".nested-form-wrapper").last) do
-      #   text_field = find("input[placeholder='Menu item text']")
-      #   text_field.fill_in with: "My Menu Item"
-      #   expect(text_field.value).to eq("My Menu Item")
-      # end
+      skip "TODO: Requires header_menu fixture"
     end
 
     it "allows selecting a page for menu item" do
-      # visit "/admin/cms/menus/#{header_menu.id}/edit"
-      # click_button "Add Menu Item"
-      # within(all(".nested-form-wrapper").last) do
-      #   select homepage.title, from: /panda_cms_page_id/
-      # end
-      # click_button "Update Menu"
-      # header_menu.reload
-      # expect(header_menu.menu_items.last.panda_cms_page_id).to eq(homepage.id)
+      skip "TODO: Requires header_menu fixture"
     end
 
     it "allows entering external URL for menu item" do
-      # visit "/admin/cms/menus/#{header_menu.id}/edit"
-      # click_button "Add Menu Item"
-      # within(all(".nested-form-wrapper").last) do
-      #   fill_in "menu[menu_items_attributes][0][text]", with: "External Link"
-      #   fill_in "menu[menu_items_attributes][0][external_url]", with: "https://example.com"
-      # end
-      # click_button "Update Menu"
-      # header_menu.reload
-      # expect(header_menu.menu_items.last.external_url).to eq("https://example.com")
+      skip "TODO: Requires header_menu fixture"
     end
 
     it "removes menu item when clicking remove button" do
-      # header_menu.menu_items.create!(
-      #   text: "To Remove",
-      #   external_url: "https://example.com"
-      # )
-      # visit "/admin/cms/menus/#{header_menu.id}/edit"
-      # initial_count = all(".nested-form-wrapper").count
-      # within(all(".nested-form-wrapper").first) do
-      #   click_button "Remove"
-      # end
-      # expect(all(".nested-form-wrapper", visible: true).count).to eq(initial_count - 1)
+      skip "TODO: Requires header_menu fixture"
     end
 
     it "persists menu item removal on save" do
-      # menu_item = header_menu.menu_items.create!(
-      #   text: "Will Be Deleted",
-      #   external_url: "https://example.com"
-      # )
-      # visit "/admin/cms/menus/#{header_menu.id}/edit"
-      # within(all(".nested-form-wrapper").first) do
-      #   click_button "Remove"
-      # end
-      # click_button "Update Menu"
-      # header_menu.reload
-      # expect(header_menu.menu_items.find_by(id: menu_item.id)).to be_nil
+      skip "TODO: Requires header_menu fixture"
     end
   end
 
   describe "menu item validation" do
     it "requires text for menu item" do
-      # visit "/admin/cms/menus/#{header_menu.id}/edit"
-      # click_button "Add Menu Item"
-      # within(all(".nested-form-wrapper").last) do
-      #   select homepage.title, from: /panda_cms_page_id/
-      # end
-      # click_button "Update Menu"
-      # expect(page).to have_content(/can't be blank/i, wait: 5)
+      skip "TODO: Requires header_menu fixture"
     end
 
     it "accepts menu item with page link" do
-      # visit "/admin/cms/menus/#{header_menu.id}/edit"
-      # click_button "Add Menu Item"
-      # within(all(".nested-form-wrapper").last) do
-      #   fill_in "menu[menu_items_attributes][0][text]", with: "Valid Item"
-      #   select homepage.title, from: "menu[menu_items_attributes][0][panda_cms_page_id]"
-      # end
-      # click_button "Update Menu"
-      # expect(page).to have_content(/successfully updated/i)
+      skip "TODO: Requires header_menu fixture"
     end
 
     it "accepts menu item with external URL" do
-      # visit "/admin/cms/menus/#{header_menu.id}/edit"
-      # click_button "Add Menu Item"
-      # within(all(".nested-form-wrapper").last) do
-      #   fill_in "menu[menu_items_attributes][0][text]", with: "External Item"
-      #   fill_in "menu[menu_items_attributes][0][external_url]", with: "https://external.com"
-      # end
-      # click_button "Update Menu"
-      # expect(page).to have_content(/successfully updated/i)
+      skip "TODO: Requires header_menu fixture"
     end
   end
 
   describe "nested form controller" do
     it "connects the nested-form controller" do
-      # visit "/admin/cms/menus/#{header_menu.id}/edit"
-      # controller_connected = page.evaluate_script("
-      #   const form = document.querySelector('[data-controller*=\"nested-form\"]');
-      #   form && form.hasAttribute('data-controller')
-      # ")
-      # expect(controller_connected).to be true
+      skip "TODO: Requires header_menu fixture"
     end
 
     it "has template for new menu items" do
-      # visit "/admin/cms/menus/#{header_menu.id}/edit"
-      # has_template = page.evaluate_script("
-      #   const template = document.querySelector('#menu-item-template');
-      #   template && template.content
-      # ")
-      # expect(has_template).to be_truthy
+      skip "TODO: Requires header_menu fixture"
     end
   end
 
@@ -386,9 +288,7 @@ RSpec.describe "Menus Management", type: :system do
     end
 
     it "shows breadcrumb navigation on edit" do
-      # visit "/admin/cms/menus/#{header_menu.id}/edit"
-      # expect(page).to have_css("nav[aria-label='Breadcrumb']")
-      # expect(page).to have_link("Menus")
+      skip "TODO: Requires header_menu fixture"
     end
   end
 
