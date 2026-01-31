@@ -1,7 +1,7 @@
 GIT
   remote: https://github.com/tastybamboo/panda-core.git
-  revision: b1f793c35ab399b0ec6654579af6b5a4acbe1642
-  branch: main
+  revision: b3447981f073711a3246a553bee51af4d8276a1c
+  branch: fix/form-builder-field-id
   specs:
     panda-core (0.13.0)
       image_processing (~> 1.2)

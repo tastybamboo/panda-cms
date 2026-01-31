@@ -56,6 +56,7 @@ RSpec.describe "When adding a page", type: :system do
         select "Page", from: "page_panda_cms_template_id"
         click_button "Create Page"
 
+        wait_for_iframe_load("editablePageFrame")
         within_frame "editablePageFrame" do
           expect(page).to have_content("Basic Page Layout")
         end

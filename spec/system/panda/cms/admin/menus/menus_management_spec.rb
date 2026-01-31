@@ -105,7 +105,10 @@ RSpec.describe "Menus Management", type: :system do
 
       click_button "Create Menu"
 
+      expect(page).to have_content(/successfully created/i)
+
       new_menu = Panda::CMS::Menu.find_by(name: "Main Navigation")
+      expect(new_menu).not_to be_nil
       expect(new_menu.start_page_id).to eq(homepage.id)
     end
   end
