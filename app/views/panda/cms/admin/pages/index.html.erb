@@ -11,12 +11,12 @@
             <%# Add indentation for nested levels %>
             <% indent_class = case page.level
                when 0 then ""
-               when 1 then "ml-4"
-               when 2 then "ml-8"
-               when 3 then "ml-12"
-               when 4 then "ml-16"
-               when 5 then "ml-20"
-               else "ml-24"
+               when 1 then "pl-6"
+               when 2 then "pl-12"
+               when 3 then "pl-16"
+               when 4 then "pl-20"
+               when 5 then "pl-24"
+               else "pl-28"
                end %>
             <div class="flex items-center gap-2 <%= indent_class %>">
               <%# Chevron/icon section - all use w-4 for consistent spacing %>
@@ -54,8 +54,11 @@
       <% end %>
     </div>
   <% else %>
-    <div class="p-6 bg-error/10 text-error rounded-lg">
-      <p class="text-base">No homepage (at <code>/</code>) found. Please create a homepage to start building your site.</p>
+    <div class="p-6">
+      <%= render Panda::Core::Admin::CalloutComponent.new(
+        kind: :error,
+        text: "No homepage (at /) found. Please create a homepage to start building your site."
+      ) %>
     </div>
   <% end %>
 <% end %>

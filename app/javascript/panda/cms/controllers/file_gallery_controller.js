@@ -52,15 +52,15 @@ export default class extends Controller {
       const container = button.closest('.relative').querySelector('.group')
       if (container) {
         container.classList.remove('outline', 'outline-2', 'outline-offset-2', 'outline-panda-dark', 'dark:outline-panda-light')
-        container.classList.add('focus-within:outline-2', 'focus-within:outline-offset-2', 'focus-within:outline-indigo-600', 'dark:focus-within:outline-indigo-500')
+        container.classList.add('focus-within:outline-2', 'focus-within:outline-offset-2', 'focus-within:outline-primary-600')
       }
     })
 
     // Add selected state to clicked item
     const container = selectedButton.closest('.relative').querySelector('.group')
     if (container) {
-      container.classList.add('outline', 'outline-2', 'outline-offset-2', 'outline-panda-dark', 'dark:outline-panda-light')
-      container.classList.remove('focus-within:outline-2', 'focus-within:outline-offset-2', 'focus-within:outline-indigo-600', 'dark:focus-within:outline-indigo-500')
+        container.classList.add('outline', 'outline-2', 'outline-offset-2', 'outline-panda-dark', 'dark:outline-panda-light')
+        container.classList.remove('focus-within:outline-2', 'focus-within:outline-offset-2', 'focus-within:outline-primary-600')
     }
   }
 
@@ -75,7 +75,7 @@ export default class extends Controller {
 
     return `
       <div>
-        <div class="block overflow-hidden w-full rounded-lg aspect-h-7 aspect-w-10">
+        <div class="block overflow-hidden w-full rounded-2xl aspect-h-7 aspect-w-10">
           ${isImage ?
             `<img src="${fileData.url}" alt="${fileData.name}" class="object-cover" onerror="this.onerror=null;this.style.display='none';this.nextElementSibling.classList.remove('hidden')">
             <div class="hidden flex items-center justify-center h-full bg-gray-100" role="img" aria-label="Image preview not available">
@@ -116,11 +116,11 @@ export default class extends Controller {
       </div>
 
       <div class="flex gap-x-3">
-        <a href="${fileData.url}?disposition=attachment" class="flex-1 py-2 px-3 text-sm font-semibold text-white bg-black rounded-md shadow-sm hover:bg-gray-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-panda-dark text-center">Download</a>
+        <a href="${fileData.url}?disposition=attachment" class="flex-1 py-2 px-3 text-sm font-medium text-white bg-slate-900 rounded-xl shadow-sm hover:bg-slate-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600 text-center">Download</a>
         <form action="${this.filesPathValue}/${fileData.id}" method="post" class="flex-1" data-turbo-confirm="Are you sure you want to delete this file?">
           <input type="hidden" name="_method" value="delete">
           <input type="hidden" name="authenticity_token" value="${this.csrfToken}">
-          <button type="submit" class="w-full py-2 px-3 text-sm font-semibold text-gray-900 bg-white rounded-md ring-1 ring-inset shadow-sm hover:bg-gray-50 ring-mid">Delete</button>
+          <button type="submit" class="w-full py-2 px-3 text-sm font-medium text-gray-700 bg-white rounded-xl border border-gray-200 shadow-sm hover:bg-gray-50">Delete</button>
         </form>
       </div>
     `

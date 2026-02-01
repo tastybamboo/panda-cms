@@ -40,7 +40,7 @@
         <% if @menu.menu_items.any? %>
           <%= render Panda::Core::Admin::TableComponent.new(term: "menu item", rows: @menu.menu_items.includes(:page)) do |table| %>
             <% table.column("Text") do |menu_item| %>
-              <div class="<%= "ml-#{menu_item.depth * 6}" %>">
+              <div style="padding-left: <%= menu_item.depth * 1.5 %>rem;">
                 <%= menu_item.text %>
               </div>
             <% end %>

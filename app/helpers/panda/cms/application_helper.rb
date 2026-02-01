@@ -72,11 +72,11 @@ module Panda
       end
 
       def selected_nav_highlight_colour_classes(request)
-        "bg-mid text-white relative flex transition-all py-3 px-2 mb-2 rounded-md group flex gap-x-3 rounded-md text-base leading-6 font-normal "
+        "bg-primary-500/20 text-white ring-1 ring-primary-400/30 transition-colors flex items-center gap-x-3 px-3 py-2.5 mb-2 rounded-xl text-sm font-medium"
       end
 
       def nav_highlight_colour_classes(request)
-        "text-white hover:bg-mid/60 transition-all group flex gap-x-3 py-3 px-2 mb-2 rounded-md text-base leading-6 font-normal "
+        "text-white/80 hover:bg-white/5 transition-colors flex items-center gap-x-3 px-3 py-2.5 mb-2 rounded-xl text-sm font-medium"
       end
 
       def level_indent(level)

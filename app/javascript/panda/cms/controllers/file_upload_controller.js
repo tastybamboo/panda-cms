@@ -38,11 +38,11 @@ export default class extends Controller {
   }
 
   highlight(e) {
-    this.dropzoneTarget.classList.add('border-indigo-600', 'bg-indigo-50', 'dark:bg-indigo-950', 'dark:border-indigo-400')
+    this.dropzoneTarget.classList.add('border-primary-600', 'bg-primary-50')
   }
 
   unhighlight(e) {
-    this.dropzoneTarget.classList.remove('border-indigo-600', 'bg-indigo-50', 'dark:bg-indigo-950', 'dark:border-indigo-400')
+    this.dropzoneTarget.classList.remove('border-primary-600', 'bg-primary-50')
   }
 
   handleDrop(e) {

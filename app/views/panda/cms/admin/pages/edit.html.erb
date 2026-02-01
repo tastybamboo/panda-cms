@@ -123,13 +123,13 @@
         } %>
         <% if page.og_image.attached? %>
           <div class="mt-2">
-            <%= image_tag page.og_image.variant(:og_share), class: "max-w-xs rounded border border-gray-300" %>
+            <%= image_tag page.og_image.variant(:og_share), class: "max-w-xs rounded-xl border border-gray-200" %>
           </div>
         <% end %>
       </div>
 
-      <div class="flex justify-end gap-x-3 border-t border-gray-200 mt-6 pt-4 dark:border-white/10">
-        <button type="submit" class="inline-flex items-center gap-x-1.5 justify-center rounded-md bg-mid px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-mid/80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mid cursor-pointer dark:shadow-none">
+      <div class="flex justify-end gap-x-3 border-t border-gray-200 mt-6 pt-4">
+        <button type="submit" class="inline-flex items-center gap-x-2 justify-center rounded-xl bg-primary-500 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600 cursor-pointer">
           <i class="fa-solid fa-check"></i> Save
         </button>
       </div>
