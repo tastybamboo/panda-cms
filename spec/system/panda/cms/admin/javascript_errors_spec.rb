@@ -136,20 +136,12 @@ RSpec.describe "JavaScript errors", type: :system, js: true do
       expect(page).to have_content("Dashboard", wait: 5)
       setup_error_tracking
 
-      # Try to click nested menu items if they exist
-      if page.has_button?("Content", wait: 1)
-        find("button", text: "Content").click
-        check_for_js_errors("After expanding Content menu")
-      end
-
-      if page.has_button?("Forms & Files", wait: 1)
-        find("button", text: "Forms & Files").click
-        check_for_js_errors("After expanding Forms & Files menu")
-      end
-
-      if page.has_button?("Tools", wait: 1)
-        find("button", text: "Tools").click
-        check_for_js_errors("After expanding Tools menu")
+      # Try to click nested menu items in the sidebar navigation
+      %w[Content Forms\ &\ Files Tools].each do |menu_label|
+        if page.has_button?(menu_label, wait: 1)
+          find("button", text: menu_label).trigger("click")
+          check_for_js_errors("After expanding #{menu_label} menu")
+        end
       end
     end
   end
