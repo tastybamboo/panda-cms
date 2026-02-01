@@ -64,6 +64,7 @@ namespace :panda do
       desc "Find and optionally purge duplicate blobs (same checksum). Keeps oldest. Run with CONFIRM=yes to purge."
       task cleanup_duplicates: [:environment] do
         duplicate_checksums = ActiveStorage::Blob
+          .where.not(checksum: nil)
           .group(:checksum)
           .having("COUNT(*) > 1")
           .pluck(:checksum)
@@ -82,7 +83,8 @@ namespace :panda do
           puts "Checksum #{checksum}:"
           puts "  Keeping: #{keeper.filename} (id: #{keeper.id}, created #{keeper.created_at.to_date})"
           duplicates.each do |blob|
-            puts "  Duplicate: #{blob.filename} (id: #{blob.id}, created #{blob.created_at.to_date})"
+            attachment_info = blob.attachments.any? ? " [has #{blob.attachments.count} attachment(s)]" : ""
+            puts "  Duplicate: #{blob.filename} (id: #{blob.id}, created #{blob.created_at.to_date})#{attachment_info}"
             total_duplicates += 1
           end
         end
@@ -91,12 +93,14 @@ namespace :panda do
           purged = 0
           duplicate_checksums.each do |checksum|
             blobs = ActiveStorage::Blob.where(checksum: checksum).order(created_at: :asc)
+            keeper = blobs.first
             blobs.offset(1).find_each do |blob|
+              blob.attachments.update_all(blob_id: keeper.id)
               blob.purge
               purged += 1
             end
           end
-          puts "Purged #{purged} duplicate blobs."
+          puts "Purged #{purged} duplicate blobs (attachments migrated to keeper)."
         else
           puts "\nFound #{total_duplicates} duplicate blobs across #{duplicate_checksums.size} checksums."
           puts "Run with CONFIRM=yes to purge duplicates (keeping the oldest of each)."

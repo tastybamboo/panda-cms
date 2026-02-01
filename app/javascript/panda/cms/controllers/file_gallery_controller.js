@@ -77,7 +77,10 @@ export default class extends Controller {
       <div>
         <div class="block overflow-hidden w-full rounded-lg aspect-h-7 aspect-w-10">
           ${isImage ?
-            `<img src="${fileData.url}" alt="${fileData.name}" class="object-cover" onerror="this.onerror=null;this.parentNode.innerHTML='<div class=\\'flex items-center justify-center h-full bg-gray-100\\'><i class=\\'fa-solid fa-file-image text-4xl text-gray-400\\'></i></div>'">` :
+            `<img src="${fileData.url}" alt="${fileData.name}" class="object-cover" onerror="this.onerror=null;this.style.display='none';this.nextElementSibling.classList.remove('hidden')">
+            <div class="hidden flex items-center justify-center h-full bg-gray-100" role="img" aria-label="Image preview not available">
+              <i class="fa-solid fa-file-image text-4xl text-gray-400"></i>
+            </div>` :
             `<div class="flex items-center justify-center h-full bg-gray-100">
               <div class="text-center">
                 <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">

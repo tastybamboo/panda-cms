@@ -31,8 +31,13 @@ module Panda
 
         def destroy
           blob = ActiveStorage::Blob.find(params[:id])
-          blob.purge
-          redirect_to admin_cms_files_path, notice: "File was successfully deleted.", status: :see_other
+
+          if blob.attachments.exists?
+            redirect_to admin_cms_files_path, alert: "File cannot be deleted because it is still in use.", status: :see_other
+          else
+            blob.purge
+            redirect_to admin_cms_files_path, notice: "File was successfully deleted.", status: :see_other
+          end
         end
 
         private
