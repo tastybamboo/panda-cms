@@ -2,6 +2,19 @@ import { Controller } from "@hotwired/stimulus";
 import { EDITOR_JS_RESOURCES, EDITOR_JS_CSS } from "panda/editor/editor_js_config";
 import { ResourceLoader } from "panda/editor/resource_loader";
 
+// UTF-8 safe Base64 helpers — atob/btoa only handle Latin-1, corrupting multi-byte characters
+function base64Decode(base64) {
+  const binaryString = atob(base64);
+  const bytes = Uint8Array.from(binaryString, (c) => c.charCodeAt(0));
+  return new TextDecoder("utf-8").decode(bytes);
+}
+
+function base64Encode(str) {
+  const bytes = new TextEncoder().encode(str);
+  const binaryString = Array.from(bytes, (b) => String.fromCharCode(b)).join("");
+  return btoa(binaryString);
+}
+
 export default class extends Controller {
   static targets = ["editorContainer", "hiddenField"];
   static values = {
@@ -70,7 +83,7 @@ export default class extends Controller {
             outputData.source = "editorJS";
             const jsonString = JSON.stringify(outputData);
             // Store both base64 and regular JSON
-            this.editorContainerTarget.dataset.editablePreviousData = btoa(jsonString);
+            this.editorContainerTarget.dataset.editablePreviousData = base64Encode(jsonString);
             this.editorContainerTarget.dataset.editableContent = jsonString;
             this.hiddenFieldTarget.value = jsonString;
           });
@@ -145,7 +158,7 @@ export default class extends Controller {
         try {
           // First try to decode as base64
           try {
-            const decodedData = atob(initialContent);
+            const decodedData = base64Decode(initialContent);
             const data = JSON.parse(decodedData);
             if (data.blocks) return data;
           } catch (e) {
@@ -164,7 +177,7 @@ export default class extends Controller {
 
       if (previousData) {
         try {
-          const decodedData = atob(previousData);
+          const decodedData = base64Decode(previousData);
           const data = JSON.parse(decodedData);
           if (data.blocks) return data;
         } catch (e) {

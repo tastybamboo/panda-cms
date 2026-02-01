@@ -4,6 +4,19 @@ import { EditorJSInitializer } from "panda/editor/editor_js_initializer"
 import { EDITOR_JS_RESOURCES, EDITOR_JS_CSS } from "panda/editor/editor_js_config"
 import { ResourceLoader } from "panda/editor/resource_loader"
 
+// UTF-8 safe Base64 helpers — atob/btoa only handle Latin-1, corrupting multi-byte characters
+function base64Decode(base64) {
+  const binaryString = atob(base64);
+  const bytes = Uint8Array.from(binaryString, (c) => c.charCodeAt(0));
+  return new TextDecoder("utf-8").decode(bytes);
+}
+
+function base64Encode(str) {
+  const bytes = new TextEncoder().encode(str);
+  const binaryString = Array.from(bytes, (b) => String.fromCharCode(b)).join("");
+  return btoa(binaryString);
+}
+
 export default class extends Controller {
   static values = {
     pageId: Number,
@@ -443,7 +456,7 @@ export default class extends Controller {
                 let parsedData
                 try {
                   // First try to parse as base64
-                  const decodedData = atob(previousDataAttr)
+                  const decodedData = base64Decode(previousDataAttr)
                   console.debug('[Panda CMS] Decoded base64 data:', decodedData)
                   parsedData = JSON.parse(decodedData)
                 } catch (e) {
@@ -509,7 +522,7 @@ export default class extends Controller {
                   editor.isReady.then(() => {
                     editor.save().then((outputData) => {
                       const jsonString = JSON.stringify(outputData)
-                      element.dataset.editablePreviousData = btoa(jsonString)
+                      element.dataset.editablePreviousData = base64Encode(jsonString)
                       element.dataset.editableContent = jsonString
                       element.dataset.editableInitialized = 'true'
                     })
@@ -554,7 +567,7 @@ export default class extends Controller {
 
                   // Update the data attributes with the new content
                   const jsonString = JSON.stringify(outputData)
-                  element.dataset.editablePreviousData = btoa(jsonString)
+                  element.dataset.editablePreviousData = base64Encode(jsonString)
                   element.dataset.editableContent = jsonString
                   element.dataset.editableInitialized = 'true'
 
