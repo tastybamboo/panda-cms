@@ -11,7 +11,7 @@
     </div>
   <% end %>
 
-  <div data-controller="file-gallery" class="pb-24">
+  <div data-controller="file-gallery" data-file-gallery-files-path-value="<%= admin_cms_files_path %>" class="pb-24">
     <%= render Panda::Core::Admin::FileGalleryComponent.new(files: @files, selected_file: @selected_file) %>
   </div>
 <% end %>

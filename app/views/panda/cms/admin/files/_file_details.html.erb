@@ -1,7 +1,10 @@
 <div>
   <div class="block overflow-hidden w-full rounded-lg aspect-h-7 aspect-w-10">
     <% if file.image? %>
-      <%= image_tag main_app.rails_blob_path(file, only_path: true), alt: file.filename.to_s, class: "object-cover" %>
+      <%= image_tag main_app.rails_blob_path(file, only_path: true), alt: file.filename.to_s, class: "object-cover", onerror: "this.onerror=null;this.style.display='none';this.nextElementSibling.classList.remove('hidden')" %>
+      <div class="hidden flex items-center justify-center h-full bg-gray-100" role="img" aria-label="Image preview not available">
+        <i class="fa-solid fa-file-image text-4xl text-gray-400"></i>
+      </div>
     <% else %>
       <div class="flex items-center justify-center h-full bg-gray-100">
         <div class="text-center">
@@ -41,5 +44,7 @@
 
 <div class="flex gap-x-3">
   <%= link_to "Download", main_app.rails_blob_path(file, disposition: "attachment"), class: "flex-1 py-2 px-3 text-sm font-semibold text-white bg-black rounded-md shadow-sm hover:bg-gray-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-panda-dark text-center" %>
-  <%= button_tag "Delete", type: "button", class: "flex-1 py-2 px-3 text-sm font-semibold text-gray-900 bg-white rounded-md ring-1 ring-inset shadow-sm hover:bg-gray-50 ring-mid", data: { confirm: "Are you sure you want to delete this file?" } %>
+  <%= button_to "Delete", admin_cms_file_path(file), method: :delete, class: "flex-1", form: { data: { turbo_confirm: "Are you sure you want to delete this file?" } } do %>
+    <span class="block w-full py-2 px-3 text-sm font-semibold text-gray-900 bg-white rounded-md ring-1 ring-inset shadow-sm hover:bg-gray-50 ring-mid text-center">Delete</span>
+  <% end %>
 </div>

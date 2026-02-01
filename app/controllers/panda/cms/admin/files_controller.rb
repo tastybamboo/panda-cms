@@ -13,7 +13,7 @@ module Panda
           file = params[:image]
           return render json: {success: 0} unless file
 
-          blob = ActiveStorage::Blob.create_and_upload!(
+          blob = find_existing_blob(file) || ActiveStorage::Blob.create_and_upload!(
             io: file,
             filename: file.original_filename,
             content_type: file.content_type
@@ -29,7 +29,23 @@ module Panda
           }
         end
 
+        def destroy
+          blob = ActiveStorage::Blob.find(params[:id])
+
+          if blob.attachments.exists?
+            redirect_to admin_cms_files_path, alert: "File cannot be deleted because it is still in use.", status: :see_other
+          else
+            blob.purge
+            redirect_to admin_cms_files_path, notice: "File was successfully deleted.", status: :see_other
+          end
+        end
+
         private
+
+        def find_existing_blob(file)
+          checksum = Digest::MD5.file(file.tempfile.path).base64digest
+          ActiveStorage::Blob.find_by(checksum: checksum, byte_size: file.size)
+        end
       end
     end
   end
