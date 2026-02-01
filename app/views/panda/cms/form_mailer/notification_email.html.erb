@@ -35,6 +35,8 @@
                   <a href="mailto:<%= value %>"><%= value %></a>
                 <% elsif field.field_type == "url" %>
                   <a href="<%= value %>"><%= value %></a>
+                <% elsif field.field_type == "signature" && value.start_with?("data:image") %>
+                  <img src="<%= value %>" alt="Signature" style="max-width: 300px; max-height: 100px; border: 1px solid #e5e7eb;">
                 <% elsif field.field_type == "textarea" %>
                   <%= simple_format(value) %>
                 <% elsif value.is_a?(Array) %>

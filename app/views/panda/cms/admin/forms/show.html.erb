@@ -4,12 +4,15 @@
   <% end %>
 
   <%= render Panda::Core::Admin::TableComponent.new(term: "submission", rows: submissions) do |table| %>
-    <% fields.each do |field, title| %>
+    <% fields.each do |field, title, field_type| %>
       <% table.column(title) do |submission| %>
-        <% if field == "email" || field == "email_address" %>
-          <a href="mailto:<%= submission.data[field] %>" class="border-b border-gray-500 hover:text-gray-900"><%= submission.data[field] %></a>
+        <% value = submission.data[field] %>
+        <% if field_type == "signature" && value.present? && value.start_with?("data:image") %>
+          <img src="<%= value %>" alt="Signature" style="max-width: 200px; max-height: 80px; border: 1px solid #e5e7eb;">
+        <% elsif field == "email" || field == "email_address" %>
+          <a href="mailto:<%= value %>" class="border-b border-gray-500 hover:text-gray-900"><%= value %></a>
         <% else %>
-          <%= simple_format(submission.data[field]) %>
+          <%= simple_format(value) %>
         <% end %>
       <% end %>
     <% end %>
