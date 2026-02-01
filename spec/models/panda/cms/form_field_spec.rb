@@ -7,7 +7,7 @@ RSpec.describe Panda::CMS::FormField, type: :model do
 
   describe "constants" do
     it "defines FIELD_TYPES with supported field types" do
-      expect(described_class::FIELD_TYPES).to eq(%w[text email phone url textarea select checkbox radio file hidden date number])
+      expect(described_class::FIELD_TYPES).to eq(%w[text email phone url textarea select checkbox radio file hidden date number signature])
     end
   end
 
@@ -192,6 +192,20 @@ RSpec.describe Panda::CMS::FormField, type: :model do
     end
   end
 
+  describe "#signature?" do
+    it "returns true for signature field type" do
+      field = described_class.new(form: form, name: "test", label: "Test", field_type: "signature")
+      expect(field.signature?).to be true
+    end
+
+    it "returns false for other field types" do
+      %w[text email phone textarea select file].each do |type|
+        field = described_class.new(form: form, name: "test", label: "Test", field_type: type)
+        expect(field.signature?).to be false
+      end
+    end
+  end
+
   describe "#has_options?" do
     it "returns true for select field type" do
       field = described_class.new(form: form, name: "test", label: "Test", field_type: "select")
@@ -209,7 +223,7 @@ RSpec.describe Panda::CMS::FormField, type: :model do
     end
 
     it "returns false for other field types" do
-      %w[text email phone textarea file hidden date number].each do |type|
+      %w[text email phone textarea file hidden date number signature].each do |type|
         field = described_class.new(form: form, name: "test", label: "Test", field_type: type)
         expect(field.has_options?).to be false
       end

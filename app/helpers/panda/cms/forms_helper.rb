@@ -167,6 +167,8 @@ module Panda
           file_field_tag(field.name,
             required: field.required,
             class: "block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200")
+        when "signature"
+          content_tag(:p, "Signature fields are not available for web form input.", class: "text-sm text-gray-500 italic")
         when "hidden"
           hidden_field_tag(field.name, field.placeholder)
         when "date"

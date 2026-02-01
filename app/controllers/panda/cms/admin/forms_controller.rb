@@ -22,10 +22,11 @@ module Panda
           submissions = @form.form_submissions.order(created_at: :desc)
 
           # Use form field definitions if available, otherwise infer from submissions
+          # Fields are triples: [name, label, field_type]
           fields = if @form.form_fields.any?
-            @form.form_fields.active.ordered.map { |f| [f.name, f.label] }
+            @form.form_fields.active.ordered.map { |f| [f.name, f.label, f.field_type] }
           elsif submissions.any?
-            submissions.last.data.keys.reverse.map { |field| [field, field.titleize] }
+            submissions.last.data.keys.reverse.map { |field| [field, field.titleize, "text"] }
           else
             []
           end

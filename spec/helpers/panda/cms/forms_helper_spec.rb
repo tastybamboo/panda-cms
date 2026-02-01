@@ -89,6 +89,19 @@ RSpec.describe Panda::CMS::FormsHelper, type: :helper do
       expect(html).to include("</textarea>")
     end
 
+    it "renders signature field with informational message" do
+      field = form.form_fields.create!(
+        name: "signature",
+        label: "Signature",
+        field_type: "signature"
+      )
+
+      html = helper.send(:render_field_input, field)
+
+      expect(html).to include("Signature fields are not available for web form input.")
+      expect(html).to include("<p")
+    end
+
     it "renders select with options" do
       field = form.form_fields.create!(
         name: "country",

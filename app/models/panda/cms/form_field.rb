@@ -3,7 +3,7 @@
 module Panda
   module CMS
     class FormField < ApplicationRecord
-      FIELD_TYPES = %w[text email phone url textarea select checkbox radio file hidden date number].freeze
+      FIELD_TYPES = %w[text email phone url textarea select checkbox radio file hidden date number signature].freeze
 
       self.table_name = "panda_cms_form_fields"
 
@@ -52,6 +52,12 @@ module Panda
       # @return [Boolean]
       def file_upload?
         field_type == "file"
+      end
+
+      # Check if field contains a signature
+      # @return [Boolean]
+      def signature?
+        field_type == "signature"
       end
 
       # Check if field has multiple options (select, radio, checkbox)
