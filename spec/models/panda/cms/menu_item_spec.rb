@@ -61,6 +61,16 @@ RSpec.describe Panda::CMS::MenuItem, type: :model do
         expect(menu_item).to be_valid
       end
 
+      it "is valid with empty string external_url (as submitted by HTML forms)" do
+        menu_item = Panda::CMS::MenuItem.new(
+          text: "Test Link",
+          menu: main_menu,
+          page: homepage,
+          external_url: ""
+        )
+        expect(menu_item).to be_valid
+      end
+
       it "is invalid with both page and external_url" do
         menu_item = Panda::CMS::MenuItem.new(
           text: "Test Link",
@@ -99,7 +109,7 @@ RSpec.describe Panda::CMS::MenuItem, type: :model do
     end
 
     context "when neither page nor external_url is present" do
-      it "is invalid" do
+      it "is invalid with nil values" do
         menu_item = Panda::CMS::MenuItem.new(
           text: "Invalid Link",
           menu: main_menu,
@@ -109,6 +119,17 @@ RSpec.describe Panda::CMS::MenuItem, type: :model do
         expect(menu_item).not_to be_valid
         expect(menu_item.errors[:page]).to include("must be a valid page or external link, neither are set")
         expect(menu_item.errors[:external_url]).to include("must be a valid page or external link, neither are set")
+      end
+
+      it "is invalid with empty string values (as submitted by HTML forms)" do
+        menu_item = Panda::CMS::MenuItem.new(
+          text: "Invalid Link",
+          menu: main_menu,
+          page: nil,
+          external_url: ""
+        )
+        expect(menu_item).not_to be_valid
+        expect(menu_item.errors[:external_url]).to include("can't be blank")
       end
     end
 

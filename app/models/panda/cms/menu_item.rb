@@ -47,12 +47,12 @@ module Panda
       # @return nil
       # @visibility private
       def validate_is_actual_link
-        if page.nil? && external_url.nil?
+        if page.blank? && external_url.blank?
           errors.add(:page, "must be a valid page or external link, neither are set")
           errors.add(:external_url, "must be a valid page or external link, neither are set")
         end
 
-        return unless !page.nil? && !external_url.nil?
+        return unless page.present? && external_url.present?
 
         errors.add(:page, "must be a valid page or external link, both are set")
         errors.add(:external_url, "must be a valid page or external link, both are set")
