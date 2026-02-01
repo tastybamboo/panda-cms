@@ -32,7 +32,8 @@ const cmsControllers = [
   ["nested-form", "/panda/cms/controllers/nested_form_controller.js"],
   ["menu-form", "/panda/cms/controllers/menu_form_controller.js"],
   ["editor-form", "/panda/cms/controllers/editor_form_controller.js"],
-  ["editor-iframe", "/panda/cms/controllers/editor_iframe_controller.js"]
+  ["editor-iframe", "/panda/cms/controllers/editor_iframe_controller.js"],
+  ["signature-pad", "/panda/cms/controllers/signature_pad_controller.js"]
 ]
 
 // Load all controllers with error handling

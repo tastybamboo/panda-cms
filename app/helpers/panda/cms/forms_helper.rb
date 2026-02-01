@@ -168,7 +168,7 @@ module Panda
             required: field.required,
             class: "block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200")
         when "signature"
-          content_tag(:p, "Signature fields are not available for web form input.", class: "text-sm text-gray-500 italic")
+          render_signature_pad(field)
         when "hidden"
           hidden_field_tag(field.name, field.placeholder)
         when "date"
@@ -219,6 +219,35 @@ module Panda
                 content_tag(:span, label, class: "ml-2 text-sm text-gray-700")
             end
           end.join.html_safe
+        end
+      end
+
+      # Renders a canvas-based signature pad using the signature_pad library
+      # @param field [Panda::CMS::FormField] The signature field
+      # @return [String] HTML for the signature pad
+      def render_signature_pad(field)
+        controller_data = {
+          controller: "signature-pad",
+          signature_pad_required_value: field.required
+        }
+
+        content_tag(:div, data: controller_data) do
+          buffer = ActiveSupport::SafeBuffer.new
+
+          buffer << content_tag(:canvas, nil,
+            data: {signature_pad_target: "canvas"},
+            class: "w-full border border-gray-300 rounded-md cursor-crosshair",
+            style: "height: 200px; touch-action: none;")
+
+          buffer << hidden_field_tag(field.name, nil,
+            data: {signature_pad_target: "hiddenField"})
+
+          buffer << content_tag(:button, "Clear",
+            type: "button",
+            data: {action: "click->signature-pad#clear"},
+            class: "mt-2 text-sm text-gray-600 hover:text-gray-800 underline")
+
+          buffer
         end
       end
 

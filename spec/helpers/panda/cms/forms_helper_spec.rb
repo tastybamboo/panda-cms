@@ -89,17 +89,37 @@ RSpec.describe Panda::CMS::FormsHelper, type: :helper do
       expect(html).to include("</textarea>")
     end
 
-    it "renders signature field with informational message" do
+    it "renders signature field with canvas-based signature pad" do
       field = form.form_fields.create!(
         name: "signature",
         label: "Signature",
-        field_type: "signature"
+        field_type: "signature",
+        required: true
       )
 
       html = helper.send(:render_field_input, field)
 
-      expect(html).to include("Signature fields are not available for web form input.")
-      expect(html).to include("<p")
+      expect(html).to include("<canvas")
+      expect(html).to include('data-signature-pad-target="canvas"')
+      expect(html).to include('data-controller="signature-pad"')
+      expect(html).to include('name="signature"')
+      expect(html).to include('type="hidden"')
+      expect(html).to include("Clear")
+      expect(html).to include('data-signature-pad-required-value="true"')
+    end
+
+    it "renders signature field without required attribute when not required" do
+      field = form.form_fields.create!(
+        name: "consent_signature",
+        label: "Consent Signature",
+        field_type: "signature",
+        required: false
+      )
+
+      html = helper.send(:render_field_input, field)
+
+      expect(html).to include("<canvas")
+      expect(html).to include('data-signature-pad-required-value="false"')
     end
 
     it "renders select with options" do
