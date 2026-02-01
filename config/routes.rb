@@ -32,7 +32,8 @@ Panda::CMS::Engine.routes.draw do
 
   # Authentication routes are now handled by Panda::Core
 
-  # Error pages (404, 500, etc.)
+  # Error pages (403, 404, 500, etc.)
+  match "/403", to: "errors#show", via: :all, defaults: {code: "403"}
   match "/404", to: "errors#show", via: :all, defaults: {code: "404"}
   match "/422", to: "errors#show", via: :all, defaults: {code: "422"}
   match "/500", to: "errors#show", via: :all, defaults: {code: "500"}

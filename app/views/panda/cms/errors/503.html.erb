@@ -1,6 +1,13 @@
-<% content_for :title, "Service Unavailable (503)" %>
+<% content_for :title, "Temporarily Unavailable (503)" %>
 
-<h1>503</h1>
-<p>The site is temporarily unavailable.</p>
-<p>We're performing scheduled maintenance. Please check back soon.</p>
-<p><a href="/">Return to homepage</a></p>
+<div class="error-icon">
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+  </svg>
+</div>
+
+<div class="error-code">503</div>
+<hr class="error-divider">
+<h1 class="error-heading">Temporarily Unavailable</h1>
+<p class="error-description">The site is undergoing scheduled maintenance and will be back shortly. Thank you for your patience.</p>
+<a href="/" class="error-cta">Go to Homepage</a>

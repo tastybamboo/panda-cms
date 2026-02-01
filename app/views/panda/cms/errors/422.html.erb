@@ -1,6 +1,13 @@
-<% content_for :title, "Unprocessable Entity (422)" %>
+<% content_for :title, "Request Rejected (422)" %>
 
-<h1>422</h1>
-<p>The change you wanted was rejected.</p>
-<p>Maybe you tried to change something you didn't have access to.</p>
-<p><a href="/">Return to homepage</a></p>
+<div class="error-icon">
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+  </svg>
+</div>
+
+<div class="error-code">422</div>
+<hr class="error-divider">
+<h1 class="error-heading">Request Rejected</h1>
+<p class="error-description">The request couldn't be processed. This may be due to invalid data or a security check. Please try again.</p>
+<a href="/" class="error-cta">Go to Homepage</a>
