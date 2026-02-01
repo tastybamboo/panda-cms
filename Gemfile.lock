@@ -1,9 +1,9 @@
 GIT
   remote: https://github.com/tastybamboo/panda-core.git
-  revision: 5d16bee9858c0ce07ae23ca6ca9d347c42dfee1a
+  revision: a33701f838018b760c92f3e3455ce9aa6cb12192
   branch: main
   specs:
-    panda-core (0.13.0)
+    panda-core (0.14.0)
       image_processing (~> 1.2)
       importmap-rails
       omniauth
@@ -18,7 +18,7 @@ GIT
 
 GIT
   remote: https://github.com/tastybamboo/panda-editor.git
-  revision: d71e04019bdc8a9acc33e77518bf3fa34c11bd54
+  revision: 2fe46c3cebc23c7ea470d06cfef7d0b99cb5650c
   branch: main
   specs:
     panda-editor (0.8.2)
