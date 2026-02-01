@@ -1,7 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["canvas", "hiddenField", "clearButton"]
+  static targets = ["canvas", "hiddenField"]
   static values = {
     penColor: { type: String, default: "black" },
     backgroundColor: { type: String, default: "rgb(255,255,255)" },
@@ -29,6 +29,10 @@ export default class extends Controller {
       }
     } catch (error) {
       console.error("[Panda CMS] Failed to load signature_pad library:", error.message)
+      this.canvasTarget.insertAdjacentHTML("afterend",
+        '<p class="text-sm text-red-600 mt-1">Signature pad could not be loaded. Please reload the page.</p>'
+      )
+      this.canvasTarget.style.display = "none"
     }
   }
 
@@ -54,11 +58,17 @@ export default class extends Controller {
     const width = canvas.offsetWidth
     const height = canvas.offsetHeight
 
+    const data = this.pad.isEmpty() ? null : this.pad.toData()
+
     canvas.width = width * ratio
     canvas.height = height * ratio
     canvas.getContext("2d").scale(ratio, ratio)
 
-    this.pad.clear()
+    if (data) {
+      this.pad.fromData(data)
+    } else {
+      this.pad.clear()
+    }
   }
 
   clear() {

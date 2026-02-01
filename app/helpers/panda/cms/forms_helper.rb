@@ -237,7 +237,9 @@ module Panda
           buffer << content_tag(:canvas, nil,
             data: {signature_pad_target: "canvas"},
             class: "w-full border border-gray-300 rounded-md cursor-crosshair",
-            style: "height: 200px; touch-action: none;")
+            style: "height: 200px; touch-action: none;",
+            role: "application",
+            aria: {label: "#{field.label} drawing area"})
 
           buffer << hidden_field_tag(field.name, nil,
             data: {signature_pad_target: "hiddenField"})

@@ -106,6 +106,8 @@ RSpec.describe Panda::CMS::FormsHelper, type: :helper do
       expect(html).to include('type="hidden"')
       expect(html).to include("Clear")
       expect(html).to include('data-signature-pad-required-value="true"')
+      expect(html).to include('role="application"')
+      expect(html).to include('aria-label="Signature drawing area"')
     end
 
     it "renders signature field without required attribute when not required" do
