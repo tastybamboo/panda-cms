@@ -2,6 +2,7 @@
 
 require_relative "analytics/provider"
 require_relative "analytics/local_provider"
+require_relative "analytics/ahoy_provider"
 
 module Panda
   module CMS
@@ -65,6 +66,7 @@ module Panda
         # Reset the provider instance (useful after configuration changes)
         def reset!
           @provider = nil
+          @tracking_providers = nil
         end
 
         # Check if analytics is available
@@ -73,6 +75,18 @@ module Panda
           provider.configured?
         rescue
           false
+        end
+
+        # Returns all registered provider instances where tracking is supported and configured
+        # @return [Array<Provider>]
+        def tracking_providers
+          @tracking_providers ||= build_tracking_providers
+        end
+
+        # Returns all provider classes that have a settings page
+        # @return [Array<Class>]
+        def settings_providers
+          providers.values.select(&:has_settings_page?)
         end
 
         private
@@ -87,6 +101,20 @@ module Panda
           end
 
           provider_class.new(provider_config || {})
+        end
+
+        def build_tracking_providers
+          providers.filter_map do |name, klass|
+            config = provider_configs_for(name)
+            instance = klass.new(config)
+            instance if instance.supports_tracking? && instance.tracking_configured?
+          end
+        end
+
+        def provider_configs_for(name)
+          analytics_config = Panda::CMS.config.respond_to?(:analytics) && Panda::CMS.config.analytics
+          return {} unless analytics_config.is_a?(Hash)
+          analytics_config[name] || {}
         end
       end
     end

@@ -43,6 +43,22 @@ module Panda
           root: Panda::CMS::Engine.root.join("public")
       end
 
+      # Auto-register AhoyProvider when the ahoy_matey gem is available.
+      # When detected, Ahoy replaces LocalProvider as the default data source.
+      initializer "panda.cms.ahoy_provider" do
+        config.after_initialize do
+          if defined?(::Ahoy::Visit)
+            Panda::CMS::Analytics.register_provider(:ahoy, Panda::CMS::Analytics::AhoyProvider)
+            # Set Ahoy as the default provider unless one has already been explicitly configured
+            unless Panda::CMS::Analytics.current_provider_name
+              Panda::CMS::Analytics.current_provider_name = :ahoy
+              Panda::CMS::Analytics.reset!
+            end
+            Rails.logger.info "[Panda CMS] Ahoy detected — registered AhoyProvider as default analytics provider"
+          end
+        end
+      end
+
       # Configure custom error pages in production-like environments
       # This enables Panda CMS's custom 404, 500, and other error pages
       initializer "panda.cms.custom_error_pages", after: :load_config_initializers do |app|
