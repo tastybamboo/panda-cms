@@ -29,13 +29,21 @@ export default class extends Controller {
     const html = this.buildSlideoverHTML(fileData)
     this.slideoverContentTarget.innerHTML = html
 
-    // Show the slideover by finding the slideover controller and opening it
-    const slideoverElement = this.slideoverContentTarget.closest('[data-controller*="slideover"]')
-    if (slideoverElement) {
-      const slideoverController = this.application.getControllerForElementAndIdentifier(slideoverElement, 'slideover')
-      if (slideoverController && slideoverController.open) {
-        slideoverController.open()
+    // Find the slideover container and show it
+    let slideoverContainer = this.slideoverContentTarget.closest('[role="complementary"]') || 
+                            this.slideoverContentTarget.closest('.fixed.inset-0') ||
+                            this.slideoverContentTarget.closest('[data-controller*="slideover"]')
+    
+    if (!slideoverContainer) {
+      // Walk up to find a hidden container that might be the slideover
+      slideoverContainer = this.slideoverContentTarget
+      while (slideoverContainer && !slideoverContainer.classList.contains('fixed')) {
+        slideoverContainer = slideoverContainer.parentElement
       }
+    }
+
+    if (slideoverContainer) {
+      slideoverContainer.classList.remove('hidden')
     }
   }
 
