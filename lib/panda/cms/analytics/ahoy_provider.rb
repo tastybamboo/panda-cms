@@ -67,14 +67,14 @@ module Panda
           return 0 unless configured?
           scope = ::Ahoy::Visit.where("started_at >= ?", period.ago)
           scope.sum { |v| v.respond_to?(:events) ? v.events.count : 1 }
-        rescue StandardError
+        rescue
           fallback_provider.page_views(period: period)
         end
 
         def unique_visitors(period: 30.days)
           return 0 unless configured?
           ::Ahoy::Visit.where("started_at >= ?", period.ago).distinct.count(:visitor_token)
-        rescue StandardError
+        rescue
           fallback_provider.unique_visitors(period: period)
         end
 
@@ -90,7 +90,7 @@ module Panda
             .limit(limit)
             .count
             .map { |url, count| {path: url, title: url, views: count} }
-        rescue StandardError
+        rescue
           fallback_provider.top_pages(limit: limit, period: period)
         end
 
@@ -105,7 +105,7 @@ module Panda
             .order(Arel.sql("DATE_TRUNC('#{trunc}', started_at)"))
             .count
             .map { |date, count| {date: date.to_date, views: count} }
-        rescue StandardError
+        rescue
           fallback_provider.page_views_over_time(period: period, interval: interval)
         end
 
@@ -120,7 +120,7 @@ module Panda
             .limit(limit)
             .count
             .map { |domain, count| {source: domain, visits: count} }
-        rescue StandardError
+        rescue
           fallback_provider.top_referrers(limit: limit, period: period)
         end
 
