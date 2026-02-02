@@ -12,6 +12,7 @@ module Panda
           config.to_prepare do
             ApplicationController.helper(::ApplicationHelper)
             ApplicationController.helper(Panda::CMS::AssetHelper)
+            ApplicationController.helper(Panda::CMS::AnalyticsHelper)
           end
         end
       end

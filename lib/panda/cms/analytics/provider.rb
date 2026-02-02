@@ -6,15 +6,24 @@ module Panda
       # Base class for analytics providers.
       #
       # Implement this class to create custom analytics integrations.
-      # Each provider must implement the required methods to fetch analytics data.
+      # Each provider must implement the required methods to fetch analytics data
+      # and may optionally support frontend tracking (script injection).
       #
       # @example Creating a custom provider
       #   class MyAnalyticsProvider < Panda::CMS::Analytics::Provider
-      #     def page_views(period: 30.days)
-      #       # Fetch from your analytics service
+      #     def self.slug = :my_analytics
+      #     def self.display_name = "My Analytics"
+      #     def self.icon = "fa-solid fa-chart-pie"
+      #     def self.has_settings_page? = true
+      #
+      #     def supports_tracking? = true
+      #     def tracking_configured? = config[:enabled] && config[:site_id].present?
+      #     def tracking_script(**options)
+      #       # Return an html_safe script tag
       #     end
       #
-      #     def top_pages(limit: 10, period: 30.days)
+      #     def configured? = config[:api_key].present?
+      #     def page_views(period: 30.days)
       #       # Fetch from your analytics service
       #     end
       #   end
@@ -31,6 +40,57 @@ module Panda
         def initialize(config = {})
           @config = config
         end
+
+        # --- Class-level metadata for UI/navigation ---
+
+        # URL-safe identifier (e.g. :google_analytics)
+        # @return [Symbol]
+        def self.slug
+          base = name.demodulize.gsub("Provider", "")
+          base.empty? ? :provider : base.underscore.to_sym
+        end
+
+        # Human-readable name for settings UI (e.g. "Google Analytics")
+        # @return [String]
+        def self.display_name
+          base = name.demodulize.gsub("Provider", "")
+          base.empty? ? "Provider" : base.titleize
+        end
+
+        # FontAwesome icon class for settings UI
+        # @return [String]
+        def self.icon
+          "fa-solid fa-chart-line"
+        end
+
+        # Whether this provider has a settings page in the admin UI
+        # @return [Boolean]
+        def self.has_settings_page?
+          false
+        end
+
+        # --- Frontend tracking support ---
+
+        # Whether this provider supports frontend tracking (script injection)
+        # @return [Boolean]
+        def supports_tracking?
+          false
+        end
+
+        # Render the tracking script tag(s) for this provider
+        # @param options [Hash] Additional options for the tracking script
+        # @return [ActiveSupport::SafeBuffer, nil]
+        def tracking_script(**options)
+          nil
+        end
+
+        # Whether tracking is fully configured and ready to render
+        # @return [Boolean]
+        def tracking_configured?
+          false
+        end
+
+        # --- Data API support ---
 
         # Check if the provider is properly configured and ready to use
         # @return [Boolean]
@@ -91,7 +151,7 @@ module Panda
         # Human-readable name for this provider
         # @return [String]
         def name
-          self.class.name.demodulize.gsub("Provider", "")
+          self.class.display_name
         end
       end
     end
