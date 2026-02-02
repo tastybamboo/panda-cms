@@ -61,18 +61,20 @@ module Panda
 
         # --- Data API ---
 
+        INTERVAL_TRUNCATIONS = {weekly: "week", monthly: "month", daily: "day"}.freeze
+
         def page_views(period: 30.days)
           return 0 unless configured?
           scope = ::Ahoy::Visit.where("started_at >= ?", period.ago)
           scope.sum { |v| v.respond_to?(:events) ? v.events.count : 1 }
-        rescue
+        rescue StandardError
           fallback_provider.page_views(period: period)
         end
 
         def unique_visitors(period: 30.days)
           return 0 unless configured?
           ::Ahoy::Visit.where("started_at >= ?", period.ago).distinct.count(:visitor_token)
-        rescue
+        rescue StandardError
           fallback_provider.unique_visitors(period: period)
         end
 
@@ -88,18 +90,14 @@ module Panda
             .limit(limit)
             .count
             .map { |url, count| {path: url, title: url, views: count} }
-        rescue
+        rescue StandardError
           fallback_provider.top_pages(limit: limit, period: period)
         end
 
         def page_views_over_time(period: 30.days, interval: :daily)
           return [] unless configured?
 
-          trunc = case interval
-          when :weekly then "week"
-          when :monthly then "month"
-          else "day"
-          end
+          trunc = INTERVAL_TRUNCATIONS.fetch(interval, "day")
 
           ::Ahoy::Visit
             .where("started_at >= ?", period.ago)
@@ -107,7 +105,7 @@ module Panda
             .order(Arel.sql("DATE_TRUNC('#{trunc}', started_at)"))
             .count
             .map { |date, count| {date: date.to_date, views: count} }
-        rescue
+        rescue StandardError
           fallback_provider.page_views_over_time(period: period, interval: interval)
         end
 
@@ -122,12 +120,8 @@ module Panda
             .limit(limit)
             .count
             .map { |domain, count| {source: domain, visits: count} }
-        rescue
+        rescue StandardError
           fallback_provider.top_referrers(limit: limit, period: period)
-        end
-
-        def name
-          "Ahoy"
         end
 
         private
