@@ -25,10 +25,11 @@ module Panda
                   icon: "fa-solid fa-house"
                 }
 
-                # Content group - Pages, Posts, Collections
+                # Content group - Pages, Posts, Files, Collections
                 content_children = [
                   {label: "Pages", path: "#{config.admin_path}/cms/pages"},
-                  {label: "Posts", path: "#{config.admin_path}/cms/posts"}
+                  {label: "Posts", path: "#{config.admin_path}/cms/posts"},
+                  {label: "Files", path: "#{config.admin_path}/cms/files"}
                 ]
 
                 # Add Collections if enabled
@@ -42,21 +43,14 @@ module Panda
                   children: content_children
                 }
 
-                # Forms & Files group
+                # Website group - Menus, Forms
                 items << {
-                  label: "Forms & Files",
-                  icon: "fa-solid fa-folder",
+                  label: "Website",
+                  icon: "fa-solid fa-globe",
                   children: [
-                    {label: "Forms", path: "#{config.admin_path}/cms/forms"},
-                    {label: "Files", path: "#{config.admin_path}/cms/files"}
+                    {label: "Menus", path: "#{config.admin_path}/cms/menus"},
+                    {label: "Forms", path: "#{config.admin_path}/cms/forms"}
                   ]
-                }
-
-                # Menus (standalone)
-                items << {
-                  path: "#{config.admin_path}/cms/menus",
-                  label: "Menus",
-                  icon: "fa-solid fa-bars"
                 }
 
                 # Tools group

@@ -137,7 +137,7 @@ RSpec.describe "JavaScript errors", type: :system, js: true do
       setup_error_tracking
 
       # Try to click nested menu items in the sidebar navigation
-      %w[Content Forms\ &\ Files Tools].each do |menu_label|
+      %w[Content Website Tools].each do |menu_label|
         if page.has_button?(menu_label, wait: 1)
           find("button", text: menu_label).trigger("click")
           check_for_js_errors("After expanding #{menu_label} menu")
