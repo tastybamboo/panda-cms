@@ -29,19 +29,13 @@ export default class extends Controller {
     const html = this.buildSlideoverHTML(fileData)
     this.slideoverContentTarget.innerHTML = html
 
-    // Show the slideover if it's hidden
-    const slideover = document.getElementById('slideover')
-    if (slideover && slideover.classList.contains('hidden')) {
-      slideover.classList.remove('hidden')
-    }
-
-    // Trigger the toggle controller to show the slideover
-    const toggleController = this.application.getControllerForElementAndIdentifier(
-      document.getElementById('panda-inner-container'),
-      'toggle'
-    )
-    if (toggleController) {
-      toggleController.show()
+    // Show the slideover by finding the slideover controller and opening it
+    const slideoverElement = this.slideoverContentTarget.closest('[data-controller*="slideover"]')
+    if (slideoverElement) {
+      const slideoverController = this.application.getControllerForElementAndIdentifier(slideoverElement, 'slideover')
+      if (slideoverController && slideoverController.open) {
+        slideoverController.open()
+      }
     }
   }
 
