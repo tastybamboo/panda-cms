@@ -200,7 +200,7 @@ module Panda
           parse_options(field.options_list).map do |option|
             value, label = option.is_a?(Array) ? option : [option, option]
             content_tag(:label, class: "flex items-center") do
-              check_box_tag("#{field.name}[]", value, false, class: "rounded border-gray-300 text-gray-600 focus:ring-gray-500") +
+              check_box_tag("#{field.name}[]", value, false, class: "rounded border-gray-300 text-primary-600 focus:ring-primary-500") +
                 content_tag(:span, label, class: "ml-2 text-sm text-gray-700")
             end
           end.join.html_safe
@@ -215,7 +215,7 @@ module Panda
           parse_options(field.options_list).map do |option|
             value, label = option.is_a?(Array) ? option : [option, option]
             content_tag(:label, class: "flex items-center") do
-              radio_button_tag(field.name, value, false, class: "border-gray-300 text-gray-600 focus:ring-gray-500") +
+              radio_button_tag(field.name, value, false, class: "border-gray-300 text-primary-600 focus:ring-primary-500") +
                 content_tag(:span, label, class: "ml-2 text-sm text-gray-700")
             end
           end.join.html_safe

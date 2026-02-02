@@ -116,7 +116,7 @@ export default class extends Controller {
       </div>
 
       <div class="flex gap-x-3">
-        <a href="${fileData.url}?disposition=attachment" class="flex-1 py-2 px-3 text-sm font-medium text-white bg-slate-900 rounded-xl shadow-sm hover:bg-slate-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600 text-center">Download</a>
+        <a href="${fileData.url}?disposition=attachment" class="flex-1 py-2 px-3 text-sm font-medium text-white bg-gray-900 rounded-xl shadow-sm hover:bg-gray-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600 text-center">Download</a>
         <form action="${this.filesPathValue}/${fileData.id}" method="post" class="flex-1" data-turbo-confirm="Are you sure you want to delete this file?">
           <input type="hidden" name="_method" value="delete">
           <input type="hidden" name="authenticity_token" value="${this.csrfToken}">
