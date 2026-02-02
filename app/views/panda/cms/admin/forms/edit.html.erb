@@ -61,8 +61,8 @@
         <%= f.text_field :notification_subject, placeholder: "New form submission: {{name}}", meta: "Email subject line (use {{field_name}} for dynamic values)" %>
       </div>
 
-      <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-        <h4 class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-4">Submitter Confirmation Email</h4>
+      <div class="mt-6 pt-6 border-t border-gray-200">
+        <h4 class="text-sm font-medium text-gray-900 mb-4">Submitter Confirmation Email</h4>
 
         <div class="mt-4">
           <%= f.check_box :send_confirmation, label: "Send confirmation email to submitter" %>
