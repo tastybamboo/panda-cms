@@ -1,9 +1,9 @@
 GIT
   remote: https://github.com/tastybamboo/panda-core.git
-  revision: e216cfb9d8dc8e65bb6a4b923067d23f36218ee3
+  revision: 007354105f87a5957cbf065d76989092a8c9839f
   branch: main
   specs:
-    panda-core (0.14.1)
+    panda-core (0.14.3)
       image_processing (~> 1.2)
       importmap-rails
       omniauth
@@ -18,10 +18,10 @@ GIT
 
 GIT
   remote: https://github.com/tastybamboo/panda-editor.git
-  revision: b20f6e72d07e623169aa11574b6a903c8b5b582b
+  revision: 143411a54c0ff7e1768c9b4bd25af472771285d2
   branch: main
   specs:
-    panda-editor (0.8.2)
+    panda-editor (0.8.3)
       dry-configurable (~> 1.0)
       nokogiri (~> 1.15)
       panda-core
@@ -32,7 +32,7 @@ GIT
 PATH
   remote: .
   specs:
-    panda-cms (0.10.9)
+    panda-cms (0.10.10)
       awesome_nested_set (>= 3.8.0)
       down
       faraday
