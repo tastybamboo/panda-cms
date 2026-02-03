@@ -3,20 +3,7 @@
 
   <% if analytics_available? && page_views_data&.any? %>
     <div class="relative">
-      <%= helpers.area_chart chartkick_data,
-        height: "300px",
-        colors: ["#1a9597"],
-        library: {
-          plugins: {
-            legend: { display: false }
-          },
-          scales: {
-            y: {
-              beginAtZero: true,
-              ticks: { precision: 0 }
-            }
-          }
-        } %>
+      <%= area_chart_html.html_safe %>
     </div>
 
     <div class="mt-4 pt-4 border-t border-gray-200">

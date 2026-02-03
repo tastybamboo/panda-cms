@@ -23,6 +23,25 @@ module Panda
 
         attr_reader :interval
 
+        # Render the area chart
+        # @return [String]
+        def area_chart_html
+          helpers.area_chart(chartkick_data,
+            height: "300px",
+            colors: ["#1a9597"],
+            library: {
+              plugins: {
+                legend: {display: false}
+              },
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  ticks: {precision: 0}
+                }
+              }
+            })
+        end
+
         # Get page views over time
         # @return [Array<Hash>, nil]
         def page_views_data
