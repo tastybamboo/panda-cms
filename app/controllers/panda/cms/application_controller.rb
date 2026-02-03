@@ -33,7 +33,7 @@ module Panda
         Panda::Core::Current.user_agent = request.user_agent
         Panda::Core::Current.ip_address = request.ip
         Panda::Core::Current.root = request.base_url
-        Panda::Core::Current.user ||= Panda::Core::User.find_by(id: session[:user_id]) if session[:user_id]
+        Panda::Core::Current.user ||= Panda::Core::User.find_by(id: session[Panda::Core::ADMIN_SESSION_KEY]) if session[Panda::Core::ADMIN_SESSION_KEY]
 
         # Set CMS current attributes (inherits from Core so has access to all Core attributes)
         Panda::CMS::Current.request_id = request.uuid
