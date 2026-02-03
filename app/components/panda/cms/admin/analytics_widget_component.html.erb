@@ -1,21 +1,15 @@
 <div <%= tag.attributes(**attrs) %>>
-  <div class="flex items-center justify-between mb-6">
-    <h3 class="text-sm font-semibold text-gray-700">
-      <i class="fa-solid fa-chart-line mr-2 text-primary-500"></i>
-      Analytics
-    </h3>
-    <span class="text-xs text-gray-500"><%= period_label %></span>
-  </div>
+  <%= render "panda/cms/admin/widget_header", title: "Analytics", subtitle: period_label %>
 
   <% if analytics_available? && summary %>
     <div class="grid grid-cols-2 gap-4 mb-6">
-      <div class="bg-gray-50 rounded-xl p-4">
+      <div class="bg-gray-50 rounded-xl p-3">
         <dt class="text-sm font-medium text-gray-500">Page Views</dt>
         <dd class="mt-1 text-2xl font-semibold text-gray-900">
           <%= format_number(summary[:page_views]) %>
         </dd>
       </div>
-      <div class="bg-gray-50 rounded-xl p-4">
+      <div class="bg-gray-50 rounded-xl p-3">
         <dt class="text-sm font-medium text-gray-500">Unique Visitors</dt>
         <dd class="mt-1 text-2xl font-semibold text-gray-900">
           <%= format_number(summary[:unique_visitors]) %>
@@ -28,17 +22,17 @@
         <h4 class="text-sm font-medium text-gray-700 mb-3">Top Pages</h4>
         <ul class="space-y-2">
           <% top_pages.each_with_index do |page, index| %>
-            <li class="flex items-center justify-between text-sm">
+            <li class="flex items-center justify-between text-sm py-2 border-b border-gray-100 last:border-0">
               <div class="flex items-center gap-2 truncate">
-                <span class="flex-shrink-0 w-5 h-5 rounded-full bg-primary-100 text-primary-600 text-xs flex items-center justify-center font-medium">
+                <span class="flex-shrink-0 w-6 h-6 rounded-full bg-primary-100 text-primary-600 text-xs flex items-center justify-center font-medium">
                   <%= index + 1 %>
                 </span>
                 <span class="text-gray-700 truncate" title="<%= page[:title] %>">
                   <%= page[:title] || page[:path] %>
                 </span>
               </div>
-              <span class="flex-shrink-0 text-gray-500 ml-2">
-                <%= format_number(page[:views]) %> views
+              <span class="flex-shrink-0 text-gray-500 ml-2 font-medium">
+                <%= format_number(page[:views]) %>
               </span>
             </li>
           <% end %>
@@ -53,7 +47,6 @@
     </div>
   <% else %>
     <div class="text-center py-6">
-      <i class="fa-solid fa-chart-bar text-3xl text-gray-300 mb-3"></i>
       <p class="text-sm text-gray-500 mb-2">
         No analytics data available.
       </p>

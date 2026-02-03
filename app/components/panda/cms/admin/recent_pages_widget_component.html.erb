@@ -1,0 +1,29 @@
+<div <%= tag.attributes(**attrs) %>>
+  <%= render "panda/cms/admin/widget_header", title: "Recent Activity" %>
+
+  <% if recent_pages.any? %>
+    <ul class="space-y-3">
+      <% recent_pages.each do |page| %>
+        <li class="flex items-start justify-between text-sm py-2 border-b border-gray-100 last:border-0">
+          <div class="flex-1 truncate">
+            <%= link_to page.title, edit_admin_cms_page_path(page), class: "text-gray-900 hover:text-primary-600 font-medium truncate block" %>
+            <div class="flex items-center gap-2 mt-1">
+              <span class="<%= status_color(page) %> text-xs px-2 py-0.5 rounded-full font-medium">
+                <%= page.status %>
+              </span>
+              <span class="text-xs text-gray-500">
+                <%= time_ago(page.updated_at) %>
+              </span>
+            </div>
+          </div>
+        </li>
+      <% end %>
+    </ul>
+  <% else %>
+    <div class="text-center py-8">
+      <p class="text-sm text-gray-500">
+        No pages yet.
+      </p>
+    </div>
+  <% end %>
+</div>

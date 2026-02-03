@@ -25,6 +25,7 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency "awesome_nested_set", ">= 3.8.0"
   spec.add_dependency "down"
+  spec.add_dependency "chartkick"
   spec.add_dependency "faraday"
   spec.add_dependency "faraday-multipart"
   spec.add_dependency "faraday-retry"

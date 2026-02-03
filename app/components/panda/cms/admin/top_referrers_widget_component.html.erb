@@ -1,0 +1,35 @@
+<div <%= tag.attributes(**attrs) %>>
+  <%= render "panda/cms/admin/widget_header", title: "Top Referrers", subtitle: period_label %>
+
+  <% if analytics_available? && top_referrers&.any? %>
+    <ul class="space-y-2">
+      <% top_referrers.each_with_index do |referrer, index| %>
+        <li class="flex items-center justify-between text-sm py-2 border-b border-gray-100 last:border-0">
+          <div class="flex items-center gap-2 truncate">
+            <span class="flex-shrink-0 w-6 h-6 rounded-full bg-primary-100 text-primary-600 text-xs flex items-center justify-center font-medium">
+              <%= index + 1 %>
+            </span>
+            <span class="text-gray-700 truncate" title="<%= referrer[:source] %>">
+              <%= referrer[:source] %>
+            </span>
+          </div>
+          <span class="flex-shrink-0 text-gray-500 ml-2 font-medium">
+            <%= format_number(referrer[:visits]) %>
+          </span>
+        </li>
+      <% end %>
+    </ul>
+
+    <div class="mt-4 pt-4 border-t border-gray-200">
+      <p class="text-xs text-gray-400">
+        Data from <%= provider.name %>
+      </p>
+    </div>
+  <% else %>
+    <div class="text-center py-8">
+      <p class="text-sm text-gray-500">
+        No referrer data available.
+      </p>
+    </div>
+  <% end %>
+</div>
