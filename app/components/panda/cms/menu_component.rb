@@ -41,10 +41,13 @@ module Panda
         cache_key = "panda_cms_menu/#{@menu.name}/#{@menu.id}/#{@menu.updated_at.to_i}/items"
 
         menu_items = Rails.cache.fetch(cache_key, expires_in: 1.hour) do
-          items = @menu.menu_items
+          items = @menu.menu_items.includes(:page)
           items = items.where("depth <= ?", @menu.depth) if @menu.depth
           items.order(:lft).to_a # Convert to array for caching
         end
+
+        # Re-preload :page associations lost during Marshal deserialization from cache
+        ActiveRecord::Associations::Preloader.new(records: menu_items, associations: :page).call
 
         # Filter menu items based on overrides
         filtered_menu_items = if @overrides[:hidden_items].present?

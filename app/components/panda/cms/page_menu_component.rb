@@ -24,7 +24,7 @@ module Panda
         @start_page = if @page.depth == @start_depth
           @page
         else
-          @page.ancestors.find { |anc| anc.depth == @start_depth }
+          @page.ancestors.where(depth: @start_depth).first
         end
 
         menu = @start_page&.page_menu
@@ -35,8 +35,11 @@ module Panda
         cache_key = "panda_cms_page_menu/#{menu.id}/#{menu.updated_at.to_i}/items"
 
         cached_items = Rails.cache.fetch(cache_key, expires_in: 1.hour) do
-          menu.menu_items.order(:lft).to_a
+          menu.menu_items.includes(:page).order(:lft).to_a
         end
+
+        # Re-preload :page associations lost during Marshal deserialization from cache
+        ActiveRecord::Associations::Preloader.new(records: cached_items, associations: :page).call if cached_items.present?
 
         @menu_item = cached_items.first
 
@@ -64,7 +67,7 @@ module Panda
         # Collect items with their levels first, then filter
         # This avoids Ruby 4.0 compatibility issues with chaining on each_with_level
         items_with_levels = []
-        Panda::CMS::MenuItem.includes(:page).each_with_level(@menu_item.descendants) do |submenu_item, level|
+        Panda::CMS::MenuItem.each_with_level(@menu_item.descendants.includes(:page)) do |submenu_item, level|
           items_with_levels << [submenu_item, level]
         end
 
@@ -84,8 +87,8 @@ module Panda
         return true if submenu_item&.page.nil? || Panda::CMS::Current.page.nil?
 
         # Skip if submenu page is deeper than current page and not an ancestor
-        (submenu_item.page&.depth&.to_i&.> Panda::CMS::Current.page&.depth&.to_i) &&
-          !Panda::CMS::Current.page&.in?(submenu_item.page.ancestors)
+        submenu_item.page.depth.to_i > Panda::CMS::Current.page.depth.to_i &&
+          !submenu_item.page.is_descendant_of?(Panda::CMS::Current.page)
       end
 
       def menu_item_class(submenu_item)
