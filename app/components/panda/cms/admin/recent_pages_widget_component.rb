@@ -14,6 +14,8 @@ module Panda
       #   <%= render Panda::CMS::Admin::RecentPagesWidgetComponent.new(limit: 5) %>
       #
       class RecentPagesWidgetComponent < Panda::Core::Base
+        include Panda::CMS::Engine.routes.url_helpers
+
         # @param limit [Integer] Number of pages to show
         def initialize(limit: 10, **attrs)
           @limit = limit

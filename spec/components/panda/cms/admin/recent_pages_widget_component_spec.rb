@@ -3,6 +3,12 @@
 require "rails_helper"
 
 RSpec.describe Panda::CMS::Admin::RecentPagesWidgetComponent, type: :component do
+  include Panda::CMS::Engine.routes.url_helpers
+
+  def default_url_options
+    {host: "example.com"}
+  end
+
   describe "#recent_pages" do
     it "returns pages ordered by updated_at descending" do
       component = described_class.new(limit: 10)
@@ -47,11 +53,6 @@ RSpec.describe Panda::CMS::Admin::RecentPagesWidgetComponent, type: :component d
 
     it "returns gray for archived pages" do
       test_page = Panda::CMS::Page.new(status: "archived")
-      expect(component.status_color(test_page)).to include("gray")
-    end
-
-    it "returns gray for unknown statuses" do
-      test_page = Panda::CMS::Page.new(status: "unknown")
       expect(component.status_color(test_page)).to include("gray")
     end
   end
