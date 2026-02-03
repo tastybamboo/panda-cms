@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "chartkick"
+
 module Panda
   module CMS
     module Admin
@@ -14,6 +16,8 @@ module Panda
       #   <%= render Panda::CMS::Admin::PageViewsChartComponent.new(period: 7.days, interval: :daily) %>
       #
       class PageViewsChartComponent < BaseAnalyticsWidgetComponent
+        include Chartkick::Helper
+
         # @param period [ActiveSupport::Duration] Time period for analytics
         # @param interval [Symbol] :daily, :weekly, or :monthly
         def initialize(period: 30.days, interval: :daily, **attrs)
@@ -26,7 +30,7 @@ module Panda
         # Render the area chart
         # @return [String]
         def area_chart_html
-          helpers.area_chart(chartkick_data,
+          area_chart(chartkick_data,
             height: "300px",
             colors: ["#1a9597"],
             library: {
