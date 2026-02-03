@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/tastybamboo/panda-core.git
-  revision: 0a8ffa31a20e0ff6ea1edd46a5087d140d6221a7
+  revision: 61d0ff27c029bfb3aa657dcb41a0c06548b5b00f
   branch: main
   specs:
     panda-core (0.14.4)
@@ -154,7 +154,7 @@ GEM
     bigdecimal (4.0.1)
     binding_of_caller (1.0.1)
       debug_inspector (>= 1.2.0)
-    brakeman (8.0.1)
+    brakeman (8.0.2)
       racc
     builder (3.3.0)
     bullet (8.1.0)
