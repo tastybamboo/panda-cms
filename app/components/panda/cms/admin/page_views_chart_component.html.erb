@@ -3,7 +3,7 @@
 
   <% if analytics_available? && page_views_data&.any? %>
     <div class="relative">
-      <%= area_chart chartkick_data,
+      <%= helpers.area_chart chartkick_data,
         height: "300px",
         colors: ["#1a9597"],
         library: {
