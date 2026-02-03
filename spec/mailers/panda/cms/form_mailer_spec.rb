@@ -129,7 +129,7 @@ RSpec.describe Panda::CMS::FormMailer, type: :mailer do
         "email" => "jane@example.com"
       }
       form_submission_with_names = Panda::CMS::FormSubmission.create!(
-        form:newsletter_form,
+        form: newsletter_form,
         data: submission_data_with_names
       )
 
@@ -148,7 +148,7 @@ RSpec.describe Panda::CMS::FormMailer, type: :mailer do
         "message" => "Hello"
       }
       form_submission_no_name = Panda::CMS::FormSubmission.create!(
-        form:newsletter_form,
+        form: newsletter_form,
         data: submission_data_no_name
       )
 
@@ -193,7 +193,7 @@ RSpec.describe Panda::CMS::FormMailer, type: :mailer do
     end
     let(:form_submission) do
       Panda::CMS::FormSubmission.create!(
-        form:newsletter_form,
+        form: newsletter_form,
         data: submission_data
       )
     end
@@ -276,7 +276,7 @@ RSpec.describe Panda::CMS::FormMailer, type: :mailer do
   describe "#process_template (private method behavior)" do
     let(:form_submission) do
       Panda::CMS::FormSubmission.create!(
-        form:contact_form,
+        form: contact_form,
         data: {
           "name" => "Test User",
           "email" => "test@example.com",
@@ -334,7 +334,7 @@ RSpec.describe Panda::CMS::FormMailer, type: :mailer do
   describe "configuration helpers (via behavior testing)" do
     let(:form_submission) do
       Panda::CMS::FormSubmission.create!(
-        form:contact_form,
+        form: contact_form,
         data: {
           "name" => "Test User",
           "email" => "test@example.com",
