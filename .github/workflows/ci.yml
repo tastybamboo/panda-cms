@@ -36,7 +36,7 @@ jobs:
           --health-retries 5
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6.0.2
 
       - name: Check for flaky tests
         id: check-flaky
@@ -115,7 +115,7 @@ jobs:
           --health-retries 5
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6.0.2
 
       - name: Start Xvfb
         run: |
@@ -165,7 +165,7 @@ jobs:
     env:
       BUNDLE_PATH: vendor/bundle
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6.0.2
 
       - name: Cache gems
         uses: actions/cache@v5

@@ -13,7 +13,7 @@ jobs:
       image: ghcr.io/tastybamboo/panda-ci:ruby-4.0.1
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6.0.2
 
       - name: Build gem
         run: gem build *.gemspec
