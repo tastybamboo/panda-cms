@@ -1,6 +1,6 @@
 name: 'Update CHANGELOG'
 
-on:
+'on':
   pull_request:
     types: [closed]
 
