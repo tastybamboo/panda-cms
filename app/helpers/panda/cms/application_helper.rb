@@ -57,10 +57,10 @@ module Panda
         Panda::CMS::Features.enabled?(name)
       end
 
+      # Delegates to panda_form_with from Panda::Core::FormHelper.
+      # Kept for backwards compatibility with existing CMS views.
       def panda_cms_form_with(**options, &)
-        options[:builder] = Panda::Core::FormBuilder
-        options[:class] = ["block visible px-4 sm:px-6 pt-4", options[:class]].compact.join(" ")
-        form_with(**options, &)
+        panda_form_with(**options, &)
       end
 
       def nav_class(mode)
