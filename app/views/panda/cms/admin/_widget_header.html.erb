@@ -1,13 +1,16 @@
 <div class="flex items-center justify-between pb-4 mb-6 border-b border-gray-200">
   <h3 class="text-sm font-semibold text-gray-700"><%= title %></h3>
   <% if local_assigns[:period_options].present? %>
-    <select data-action="change->dashboard#changePeriod"
-            class="text-xs text-gray-500 border border-gray-200 rounded-lg px-2 py-1 bg-white"
-            aria-label="Analytics period">
-      <% period_options.each do |label, value| %>
-        <option value="<%= value %>" <%= "selected" if value.to_s == local_assigns[:selected_period].to_s %>><%= label %></option>
+    <% selected_label = period_options.find { |_, v| v.to_s == local_assigns[:selected_period].to_s }&.first || period_options.first&.first %>
+    <%= render Panda::Core::Admin::DropdownComponent.new do |dropdown| %>
+      <% dropdown.with_trigger_slot do %>
+        <span class="text-xs text-gray-500"><%= selected_label %></span>
+        <i class="fa-solid fa-chevron-down text-xs" aria-hidden="true"></i>
       <% end %>
-    </select>
+      <% period_options.each do |label, value| %>
+        <% dropdown.with_item(label: label, href: "?period=#{value}") %>
+      <% end %>
+    <% end %>
   <% elsif local_assigns[:subtitle].present? %>
     <span class="text-xs text-gray-500"><%= subtitle %></span>
   <% end %>

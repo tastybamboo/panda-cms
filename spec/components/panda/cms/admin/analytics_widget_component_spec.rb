@@ -57,7 +57,8 @@ RSpec.describe Panda::CMS::Admin::AnalyticsWidgetComponent, type: :component do
     it "displays the period selector" do
       render_inline(described_class.new(period: 30.days))
 
-      expect(page).to have_css("select option[selected]", text: "Last 30 days")
+      expect(page).to have_text("Last 30 days")
+      expect(page).to have_css("[role='menuitem']", text: "Last 7 days")
     end
 
     context "when analytics is available" do
