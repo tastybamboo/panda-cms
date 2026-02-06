@@ -49,7 +49,8 @@ module Panda
                   icon: "fa-solid fa-globe",
                   children: [
                     {label: "Menus", path: "#{config.admin_path}/cms/menus"},
-                    {label: "Forms", path: "#{config.admin_path}/cms/forms"}
+                    {label: "Forms", path: "#{config.admin_path}/cms/forms"},
+                    {label: "Redirects", path: "#{config.admin_path}/cms/redirects"}
                   ]
                 }
 
