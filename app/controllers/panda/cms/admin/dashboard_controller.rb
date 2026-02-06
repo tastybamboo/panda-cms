@@ -21,13 +21,7 @@ module Panda
         end
 
         def parse_period(param)
-          case param
-          when "1h" then 1.hour
-          when "24h" then 1.day
-          when "7d" then 7.days
-          when "90d" then 90.days
-          else 30.days
-          end
+          Panda::CMS::Admin::BaseAnalyticsWidgetComponent.duration_for(param)
         end
       end
     end

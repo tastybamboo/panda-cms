@@ -21,6 +21,25 @@ module Panda
       #   end
       #
       class BaseAnalyticsWidgetComponent < Panda::Core::Base
+        # Shared period mapping: query param code → [label, duration]
+        PERIODS = {
+          "1h" => ["Last hour", 1.hour],
+          "24h" => ["Last 24 hours", 1.day],
+          "7d" => ["Last 7 days", 7.days],
+          "30d" => ["Last 30 days", 30.days],
+          "90d" => ["Last 90 days", 90.days]
+        }.freeze
+
+        DEFAULT_PERIOD_CODE = "30d"
+        DEFAULT_PERIOD_DURATION = PERIODS[DEFAULT_PERIOD_CODE].last
+
+        # Resolve a query param code to a duration
+        # @param code [String, nil]
+        # @return [ActiveSupport::Duration]
+        def self.duration_for(code)
+          PERIODS.dig(code, 1) || DEFAULT_PERIOD_DURATION
+        end
+
         # @param period [ActiveSupport::Duration] Time period for analytics
         def initialize(period: 30.days, **attrs)
           @period = period
@@ -61,41 +80,22 @@ module Panda
         # Human-readable period label
         # @return [String]
         def period_label
-          case period
-          when 1.hour then "Last hour"
-          when 1.day then "Last 24 hours"
-          when 7.days then "Last 7 days"
-          when 30.days then "Last 30 days"
-          when 90.days then "Last 90 days"
-          when 1.year then "Last year"
-          else
-            "Last #{(period / 1.day).to_i} days"
+          PERIODS.each_value do |label, duration|
+            return label if duration == period
           end
+          "Last #{(period / 1.day).to_i} days"
         end
 
         # Available period options for the dropdown
-        # @return [Array<Array(String, String)>] label/value pairs
+        # @return [Array<[String, String]>] label/value pairs
         def period_options
-          [
-            ["Last hour", "1h"],
-            ["Last 24 hours", "24h"],
-            ["Last 7 days", "7d"],
-            ["Last 30 days", "30d"],
-            ["Last 90 days", "90d"]
-          ]
+          PERIODS.map { |code, (label, _duration)| [label, code] }
         end
 
         # Current period as a query param value
         # @return [String]
         def period_value
-          case period
-          when 1.hour then "1h"
-          when 1.day then "24h"
-          when 7.days then "7d"
-          when 30.days then "30d"
-          when 90.days then "90d"
-          else "30d"
-          end
+          PERIODS.find { |_code, (_label, duration)| duration == period }&.first || DEFAULT_PERIOD_CODE
         end
       end
     end

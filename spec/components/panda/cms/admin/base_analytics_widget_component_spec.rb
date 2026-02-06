@@ -43,9 +43,9 @@ RSpec.describe Panda::CMS::Admin::BaseAnalyticsWidgetComponent, type: :component
       expect(component.period_label).to eq("Last 90 days")
     end
 
-    it "returns 'Last year' for 1.year period" do
+    it "returns fallback label for 1.year period" do
       component = described_class.new(period: 1.year)
-      expect(component.period_label).to eq("Last year")
+      expect(component.period_label).to eq("Last 365 days")
     end
 
     it "returns custom label for other periods" do
