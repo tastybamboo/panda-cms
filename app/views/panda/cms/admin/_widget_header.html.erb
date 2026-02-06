@@ -1,6 +1,14 @@
-<div class="flex items-center justify-between mb-6">
+<div class="flex items-center justify-between pb-4 mb-6 border-b border-gray-200">
   <h3 class="text-sm font-semibold text-gray-700"><%= title %></h3>
-  <% if local_assigns[:subtitle].present? %>
+  <% if local_assigns[:period_options].present? %>
+    <select data-action="change->dashboard#changePeriod"
+            class="text-xs text-gray-500 border border-gray-200 rounded-lg px-2 py-1 bg-white"
+            aria-label="Analytics period">
+      <% period_options.each do |label, value| %>
+        <option value="<%= value %>" <%= "selected" if value.to_s == local_assigns[:selected_period].to_s %>><%= label %></option>
+      <% end %>
+    </select>
+  <% elsif local_assigns[:subtitle].present? %>
     <span class="text-xs text-gray-500"><%= subtitle %></span>
   <% end %>
 </div>

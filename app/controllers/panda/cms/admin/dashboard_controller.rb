@@ -10,7 +10,7 @@ module Panda
 
         # CMS-specific dashboard
         def show
-          # Render the CMS dashboard view
+          @period = parse_period(params[:period])
           render :show
         end
 
@@ -18,6 +18,10 @@ module Panda
 
         def set_initial_breadcrumb
           add_breadcrumb "Dashboard", admin_cms_dashboard_path
+        end
+
+        def parse_period(param)
+          Panda::CMS::Admin::BaseAnalyticsWidgetComponent.duration_for(param)
         end
       end
     end

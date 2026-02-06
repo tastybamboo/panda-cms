@@ -1,5 +1,5 @@
 <div <%= tag.attributes(**attrs) %>>
-  <%= render "panda/cms/admin/widget_header", title: "Page Views Over Time", subtitle: period_label %>
+  <%= render "panda/cms/admin/widget_header", title: "Page Views Over Time", period_options: period_options, selected_period: period_value %>
 
   <% if analytics_available? && page_views_data&.any? %>
     <div class="relative">

@@ -62,11 +62,14 @@ module Panda
                   ]
                 }
 
-                # Settings (standalone)
+                # Settings group - Users, System Status
                 items << {
-                  path: "#{config.admin_path}/cms/settings",
                   label: "Settings",
-                  icon: "fa-solid fa-gear"
+                  icon: "fa-solid fa-gear",
+                  children: [
+                    {label: "Users", path: "#{config.admin_path}/users"},
+                    {label: "System Status", path: "#{config.admin_path}/cms/settings"}
+                  ]
                 }
 
                 items

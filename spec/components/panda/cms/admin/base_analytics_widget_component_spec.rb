@@ -23,9 +23,14 @@ RSpec.describe Panda::CMS::Admin::BaseAnalyticsWidgetComponent, type: :component
       expect(component.period_label).to eq("Last 30 days")
     end
 
-    it "returns 'Today' for 1.day period" do
+    it "returns 'Last 24 hours' for 1.day period" do
       component = described_class.new(period: 1.day)
-      expect(component.period_label).to eq("Today")
+      expect(component.period_label).to eq("Last 24 hours")
+    end
+
+    it "returns 'Last hour' for 1.hour period" do
+      component = described_class.new(period: 1.hour)
+      expect(component.period_label).to eq("Last hour")
     end
 
     it "returns 'Last 7 days' for 7.days period" do
@@ -38,9 +43,9 @@ RSpec.describe Panda::CMS::Admin::BaseAnalyticsWidgetComponent, type: :component
       expect(component.period_label).to eq("Last 90 days")
     end
 
-    it "returns 'Last year' for 1.year period" do
+    it "returns fallback label for 1.year period" do
       component = described_class.new(period: 1.year)
-      expect(component.period_label).to eq("Last year")
+      expect(component.period_label).to eq("Last 365 days")
     end
 
     it "returns custom label for other periods" do
