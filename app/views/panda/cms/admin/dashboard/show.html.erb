@@ -1,3 +1,4 @@
+<% period = @period || 30.days %>
 <div class="" data-controller="dashboard">
   <%= render Panda::Core::Admin::ContainerComponent.new do |container| %>
     <% container.with_heading_slot(text: "Dashboard", level: 1) do |heading| %>
@@ -15,12 +16,12 @@
     <% if ga_available %>
       <!-- Analytics widgets when GA is configured -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mt-8">
-        <%= render Panda::CMS::Admin::AnalyticsWidgetComponent.new(period: 30.days) %>
-        <%= render Panda::CMS::Admin::TopReferrersWidgetComponent.new(period: 30.days) %>
+        <%= render Panda::CMS::Admin::AnalyticsWidgetComponent.new(period: period) %>
+        <%= render Panda::CMS::Admin::TopReferrersWidgetComponent.new(period: period) %>
       </div>
 
       <div class="grid grid-cols-1 gap-5 mt-5">
-        <%= render Panda::CMS::Admin::PageViewsChartComponent.new(period: 30.days, interval: :daily) %>
+        <%= render Panda::CMS::Admin::PageViewsChartComponent.new(period: period, interval: :daily) %>
       </div>
 
       <div class="grid grid-cols-1 gap-5 mt-5">
@@ -29,7 +30,7 @@
     <% else %>
       <!-- Local analytics widgets when GA is not configured -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mt-8">
-        <%= render Panda::CMS::Admin::AnalyticsWidgetComponent.new(period: 30.days) %>
+        <%= render Panda::CMS::Admin::AnalyticsWidgetComponent.new(period: period) %>
         <%= render Panda::CMS::Admin::PopularPagesComponent.new(
           popular_pages: Panda::CMS::Visit.popular_pages(limit: 10),
           period_name: "All Time"

@@ -1,5 +1,5 @@
 <div <%= tag.attributes(**attrs) %>>
-  <%= render "panda/cms/admin/widget_header", title: "Top Referrers", subtitle: period_label %>
+  <%= render "panda/cms/admin/widget_header", title: "Top Referrers", period_options: period_options, selected_period: period_value %>
 
   <% if analytics_available? && top_referrers&.any? %>
     <ul class="space-y-2">

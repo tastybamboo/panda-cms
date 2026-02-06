@@ -62,13 +62,39 @@ module Panda
         # @return [String]
         def period_label
           case period
-          when 1.day then "Today"
+          when 1.hour then "Last hour"
+          when 1.day then "Last 24 hours"
           when 7.days then "Last 7 days"
           when 30.days then "Last 30 days"
           when 90.days then "Last 90 days"
           when 1.year then "Last year"
           else
             "Last #{(period / 1.day).to_i} days"
+          end
+        end
+
+        # Available period options for the dropdown
+        # @return [Array<Array(String, String)>] label/value pairs
+        def period_options
+          [
+            ["Last hour", "1h"],
+            ["Last 24 hours", "24h"],
+            ["Last 7 days", "7d"],
+            ["Last 30 days", "30d"],
+            ["Last 90 days", "90d"]
+          ]
+        end
+
+        # Current period as a query param value
+        # @return [String]
+        def period_value
+          case period
+          when 1.hour then "1h"
+          when 1.day then "24h"
+          when 7.days then "7d"
+          when 30.days then "30d"
+          when 90.days then "90d"
+          else "30d"
           end
         end
       end

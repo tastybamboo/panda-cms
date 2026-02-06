@@ -23,9 +23,9 @@ RSpec.describe Panda::CMS::Admin::AnalyticsWidgetComponent, type: :component do
       expect(component.period_label).to eq("Last 30 days")
     end
 
-    it "returns 'Today' for 1.day period" do
+    it "returns 'Last 24 hours' for 1.day period" do
       component = described_class.new(period: 1.day)
-      expect(component.period_label).to eq("Today")
+      expect(component.period_label).to eq("Last 24 hours")
     end
 
     it "returns 'Last 7 days' for 7.days period" do
@@ -54,10 +54,10 @@ RSpec.describe Panda::CMS::Admin::AnalyticsWidgetComponent, type: :component do
       expect(page).to have_text("Analytics")
     end
 
-    it "displays the period label" do
+    it "displays the period selector" do
       render_inline(described_class.new(period: 30.days))
 
-      expect(page).to have_text("Last 30 days")
+      expect(page).to have_css("select option[selected]", text: "Last 30 days")
     end
 
     context "when analytics is available" do
