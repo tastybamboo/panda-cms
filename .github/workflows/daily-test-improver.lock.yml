@@ -55,7 +55,7 @@ jobs:
       comment_repo: ''
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@d47697b2bf91080b55fb9c6905576c36e061011a # v0.41.1
+        uses: github/gh-aw/actions/setup@3b965e45a261981212a2d6809771033fd48f04ac # v0.42.4
         with:
           destination: /opt/gh-aw/actions
       - name: Check workflow file timestamps
@@ -104,7 +104,7 @@ jobs:
       secret_verification_result: ${{ steps.validate-secret.outputs.verification_result }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@d47697b2bf91080b55fb9c6905576c36e061011a # v0.41.1
+        uses: github/gh-aw/actions/setup@3b965e45a261981212a2d6809771033fd48f04ac # v0.42.4
         with:
           destination: /opt/gh-aw/actions
       - name: Create gh-aw temp directory
@@ -938,7 +938,7 @@ jobs:
       total_count: ${{ steps.missing_tool.outputs.total_count }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@d47697b2bf91080b55fb9c6905576c36e061011a # v0.41.1
+        uses: github/gh-aw/actions/setup@3b965e45a261981212a2d6809771033fd48f04ac # v0.42.4
         with:
           destination: /opt/gh-aw/actions
       - name: Debug job inputs
@@ -1057,7 +1057,7 @@ jobs:
       success: ${{ steps.parse_results.outputs.success }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@d47697b2bf91080b55fb9c6905576c36e061011a # v0.41.1
+        uses: github/gh-aw/actions/setup@3b965e45a261981212a2d6809771033fd48f04ac # v0.42.4
         with:
           destination: /opt/gh-aw/actions
       - name: Download agent artifacts
@@ -1152,7 +1152,7 @@ jobs:
       activated: ${{ steps.check_stop_time.outputs.stop_time_ok == 'true' }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@d47697b2bf91080b55fb9c6905576c36e061011a # v0.41.1
+        uses: github/gh-aw/actions/setup@3b965e45a261981212a2d6809771033fd48f04ac # v0.42.4
         with:
           destination: /opt/gh-aw/actions
       - name: Check stop-time limit
@@ -1191,7 +1191,7 @@ jobs:
       process_safe_outputs_temporary_id_map: ${{ steps.process_safe_outputs.outputs.temporary_id_map }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@d47697b2bf91080b55fb9c6905576c36e061011a # v0.41.1
+        uses: github/gh-aw/actions/setup@3b965e45a261981212a2d6809771033fd48f04ac # v0.42.4
         with:
           destination: /opt/gh-aw/actions
       - name: Download agent output artifact
