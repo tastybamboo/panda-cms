@@ -2,6 +2,9 @@
   <% component.with_heading_slot(text: "#{page.title}", level: 1, meta: (link_to page.path, target: "_blank", class: "text-black/60 hover:text-black/80 inline-flex items-center gap-x-1" do
     raw("#{page.path}<i class='fa-solid fa-arrow-up-right-from-square text-xs ml-1'></i>")
   end)) do |h| %>
+    <% if page.respond_to?(:content_versions) %>
+      <% h.with_button(text: "Version History", action: :secondary, href: admin_cms_page_versions_path(page), size: :regular, icon: "clock-rotate-left") %>
+    <% end %>
     <% h.with_button(text: "Page Details", action: :secondary, as_button: true, size: :regular, id: "open-page-details", icon: "gear", data: { action: "click->toggle#toggle touch->toggle#toggle" }) %>
     <% h.with_button(text: "Save Changes", action: :save, href: "#", size: :regular, id: "saveEditableButton", icon: "check") %>
   <% end %>

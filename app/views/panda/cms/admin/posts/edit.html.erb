@@ -1,5 +1,8 @@
 <%= render Panda::Core::Admin::ContainerComponent.new do |component| %>
   <% component.with_heading_slot(text: post.title, level: 1) do |heading| %>
+    <% if post.respond_to?(:content_versions) %>
+      <% heading.with_button(action: :secondary, text: "Version History", href: admin_cms_post_versions_path(post), icon: "clock-rotate-left") %>
+    <% end %>
     <% heading.with_button(action: :view, text: "View Post", href: post_path(post.admin_param)) %>
   <% end %>
 
