@@ -1,7 +1,7 @@
 <%= render Panda::Core::Admin::ContainerComponent.new do |component| %>
   <% component.with_heading_slot(text: "Add Redirect", level: 1) %>
 
-  <%= panda_cms_form_with model: redirect_record, url: admin_cms_redirects_path, method: :post do |f| %>
+  <%= panda_form_with model: redirect_record, url: admin_cms_redirects_path, method: :post do |f| %>
     <%= render Panda::Core::Admin::FormErrorComponent.new(model: redirect_record) %>
 
     <%= render Panda::Core::Admin::PanelComponent.new do |panel| %>

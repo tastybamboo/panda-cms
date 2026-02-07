@@ -8,6 +8,19 @@
     <% h.with_button(text: "Page Details", action: :secondary, as_button: true, size: :regular, id: "open-page-details", icon: "gear", data: { action: "click->toggle#toggle touch->toggle#toggle" }) %>
     <% h.with_button(text: "Save Changes", action: :save, href: "#", size: :regular, id: "saveEditableButton", icon: "check") %>
   <% end %>
+  <% if defined?(Panda::CMS::Pro::PagePresenceChannel) %>
+    <div data-controller="page-presence"
+         data-page-presence-page-id-value="<%= page.id %>"
+         data-page-presence-current-user-id-value="<%= current_user.id %>"
+         data-page-presence-current-user-name-value="<%= current_user.name || current_user.email %>"
+         data-page-presence-presence-url-value="<%= admin_cms_page_presence_path(page) rescue '' %>">
+      <div data-page-presence-target="banner"
+           class="hidden mb-3 mx-2 rounded-lg bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-800 flex items-center gap-2">
+        <i class="fa-solid fa-users text-amber-500"></i>
+        <span data-page-presence-target="editorList"></span>
+      </div>
+    </div>
+  <% end %>
   <% component.with_slideover_slot(title: "Page Details") do %>
     <% parent_seo_data = page.parent ? {
       seoTitle: page.parent.seo_title,
@@ -23,120 +36,122 @@
        rescue NoMethodError
          nil
        end %>
-    <%= panda_cms_form_with model: page, url: admin_cms_page_path, method: :put, id: "page-form", data: {
-      controller: "page-form",
-      page_form_parent_seo_data_value: parent_seo_data,
-      page_form_page_id_value: page.id,
-      page_form_ai_generation_url_value: ai_generation_url
-    } do |f| %>
-      <%= f.text_field :title, { data: { page_form_target: "pageTitle" } } %>
-      <%= f.text_field :template, value: template.name, readonly: true %>
-      <%= f.select :status, options_for_select([["Active", "active"], ["Draft", "draft"], ["Hidden", "hidden"], ["Archived", "archived"]], selected: page.status) %>
-      <% if page.page_type.in?(["system", "posts"]) %>
-        <%= f.text_field :page_type, value: page.page_type.humanize, readonly: true %>
-      <% else %>
-        <%= f.select :page_type, options_for_select([["Standard", "standard"], ["Hidden", "hidden"], ["Code", "code"]], selected: page.page_type) %>
-      <% end %>
-
-      <%= f.section_heading "SEO Settings" %>
-
-      <% if defined?(Panda::CMS::Pro) && ai_generation_url.present? %>
-        <div class="mb-4">
-          <%= render Panda::Core::Admin::ButtonComponent.new(
-            text: "Generate With AI",
-            action: :save,
-            icon: "wand-magic-sparkles",
-            size: :regular,
-            as_button: true,
-            data: {
-              action: "click->page-form#generateSeoWithAI",
-              page_form_target: "generateButton"
-            }
-          ) %>
-          <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Uses AI to analyze page content and generate optimized SEO fields.</p>
-        </div>
-      <% end %>
-
-      <% unless page.parent_id.nil? %>
-        <%= f.check_box :inherit_seo, {
-          label: "Inherit SEO from parent page",
-          data: {
-            page_form_target: "inheritCheckbox"
-          },
-          "data-action": "change->page-form#toggleInherit"
-        } %>
-      <% end %>
-
-      <div class="space-y-4">
-        <%= f.text_field :seo_title, {
-          meta: "Max 70 characters. Leave blank to use page title.",
-          max_length: 70,
-          data: { page_form_target: "seoTitle" }
-        } %>
-        <%= f.text_area :seo_description, {
-          rows: 3,
-          meta: "Max 160 characters. Shown in search results.",
-          max_length: 160,
-          data: { page_form_target: "seoDescription" }
-        } %>
-        <%= f.text_field :seo_keywords, {
-          meta: "Comma-separated keywords for search engines.",
-          data: { page_form_target: "seoKeywords" }
-        } %>
-        <%= f.radio_button_group :seo_index_mode,
-            [["Visible to search engines", "visible"], ["Hidden from search engines", "invisible"]],
-            { meta: "Control how search engines index this page." } %>
-        <%= f.text_field :canonical_url, {
-          meta: "Optional. Full URL to the canonical version of this page.",
-          data: { page_form_target: "canonicalUrl" }
-        } %>
-      </div>
-
-      <%= f.section_heading "Social Sharing" %>
-
-      <div class="space-y-4">
-        <%= f.text_field :og_title, {
-          label: "Social Media Title",
-          meta: "Max 60 characters. Leave blank to use SEO title.",
-          max_length: 60,
-          data: { page_form_target: "ogTitle" }
-        } %>
-        <%= f.text_area :og_description, {
-          label: "Social Media Description",
-          rows: 2,
-          meta: "Max 200 characters. Used on Facebook, LinkedIn, Twitter.",
-          max_length: 200,
-          data: { page_form_target: "ogDescription" }
-        } %>
-        <%= f.select :og_type,
-            options_for_select(
-              [["Website", "website"], ["Article", "article"], ["Profile", "profile"], ["Video", "video"], ["Book", "book"]],
-              selected: page.og_type
-            ),
-            { label: "Content Type" },
-            { data: { page_form_target: "ogType" } } %>
-        <%= f.file_field :og_image, {
-          label: "Social Media Image",
-          meta: "Recommended: 1200×630px (1.91:1 ratio). Used on Facebook, LinkedIn, Twitter.",
-          accept: "image/png,image/jpeg,image/jpg,image/webp",
-          with_cropper: true,
-          aspect_ratio: 1.91,
-          min_width: 1200,
-          min_height: 630
-        } %>
-        <% if page.og_image.attached? %>
-          <div class="mt-2">
-            <%= image_tag page.og_image.variant(:og_share), class: "max-w-xs rounded-xl border border-gray-200" %>
-          </div>
+    <div class="px-4 sm:px-6 pt-4 pb-16 space-y-6">
+      <%= panda_form_with model: page, url: admin_cms_page_path, method: :put, id: "page-form", data: {
+        controller: "page-form",
+        page_form_parent_seo_data_value: parent_seo_data,
+        page_form_page_id_value: page.id,
+        page_form_ai_generation_url_value: ai_generation_url
+      } do |f| %>
+        <%= f.text_field :title, { data: { page_form_target: "pageTitle" } } %>
+        <%= f.text_field :template, value: template.name, readonly: true %>
+        <%= f.select :status, options_for_select([["Active", "active"], ["Draft", "draft"], ["Hidden", "hidden"], ["Archived", "archived"]], selected: page.status) %>
+        <% if page.page_type.in?(["system", "posts"]) %>
+          <%= f.text_field :page_type, value: page.page_type.humanize, readonly: true %>
+        <% else %>
+          <%= f.select :page_type, options_for_select([["Standard", "standard"], ["Hidden", "hidden"], ["Code", "code"]], selected: page.page_type) %>
         <% end %>
-      </div>
 
-      <div class="flex justify-end gap-x-3 border-t border-gray-200 mt-6 pt-4">
-        <button type="submit" class="inline-flex items-center gap-x-2 justify-center rounded-xl bg-primary-500 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600 cursor-pointer">
-          <i class="fa-solid fa-check"></i> Save
-        </button>
-      </div>
-    <% end %>
+        <%# SEO Settings %>
+        <div class="mt-2">
+          <h3 class="font-medium text-gray-900 dark:text-gray-100">SEO Settings</h3>
+          <div class="mt-3 space-y-4">
+            <% if defined?(Panda::CMS::Pro) && ai_generation_url.present? %>
+              <div class="mb-4">
+                <%= render Panda::Core::Admin::ButtonComponent.new(
+                  text: "Generate With AI",
+                  action: :save,
+                  icon: "wand-magic-sparkles",
+                  size: :regular,
+                  as_button: true,
+                  data: {
+                    action: "click->page-form#generateSeoWithAI",
+                    page_form_target: "generateButton"
+                  }
+                ) %>
+                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Uses AI to analyze page content and generate optimized SEO fields.</p>
+              </div>
+            <% end %>
+
+            <% unless page.parent_id.nil? %>
+              <%= f.check_box :inherit_seo, {
+                label: "Inherit SEO from parent page",
+                data: {
+                  page_form_target: "inheritCheckbox"
+                },
+                "data-action": "change->page-form#toggleInherit"
+              } %>
+            <% end %>
+
+            <%= f.text_field :seo_title, {
+              meta: "Max 70 characters. Leave blank to use page title.",
+              max_length: 70,
+              data: { page_form_target: "seoTitle" }
+            } %>
+            <%= f.text_area :seo_description, {
+              rows: 3,
+              meta: "Max 160 characters. Shown in search results.",
+              max_length: 160,
+              data: { page_form_target: "seoDescription" }
+            } %>
+            <%= f.text_field :seo_keywords, {
+              meta: "Comma-separated keywords for search engines.",
+              data: { page_form_target: "seoKeywords" }
+            } %>
+            <%= f.radio_button_group :seo_index_mode,
+                [["Visible to search engines", "visible"], ["Hidden from search engines", "invisible"]],
+                { meta: "Control how search engines index this page." } %>
+            <%= f.text_field :canonical_url, {
+              meta: "Optional. Full URL to the canonical version of this page.",
+              data: { page_form_target: "canonicalUrl" }
+            } %>
+          </div>
+        </div>
+
+        <%# Social Sharing %>
+        <div class="mt-2">
+          <h3 class="font-medium text-gray-900 dark:text-gray-100">Social Sharing</h3>
+          <div class="mt-3 space-y-4">
+            <%= f.text_field :og_title, {
+              label: "Social Media Title",
+              meta: "Max 60 characters. Leave blank to use SEO title.",
+              max_length: 60,
+              data: { page_form_target: "ogTitle" }
+            } %>
+            <%= f.text_area :og_description, {
+              label: "Social Media Description",
+              rows: 2,
+              meta: "Max 200 characters. Used on Facebook, LinkedIn, Twitter.",
+              max_length: 200,
+              data: { page_form_target: "ogDescription" }
+            } %>
+            <%= f.select :og_type,
+                options_for_select(
+                  [["Website", "website"], ["Article", "article"], ["Profile", "profile"], ["Video", "video"], ["Book", "book"]],
+                  selected: page.og_type
+                ),
+                { label: "Content Type" },
+                { data: { page_form_target: "ogType" } } %>
+            <%= f.file_field :og_image, {
+              label: "Social Media Image",
+              meta: "Recommended: 1200×630px (1.91:1 ratio). Used on Facebook, LinkedIn, Twitter.",
+              accept: "image/png,image/jpeg,image/jpg,image/webp",
+              with_cropper: true,
+              aspect_ratio: 1.91,
+              min_width: 1200,
+              min_height: 630
+            } %>
+            <% if page.og_image.attached? %>
+              <div class="mt-2">
+                <%= image_tag page.og_image.variant(:og_share), class: "max-w-xs rounded-xl border border-gray-200" %>
+              </div>
+            <% end %>
+          </div>
+        </div>
+
+        <%= render Panda::Core::Admin::FormFooterComponent.new(submit_text: "Save") %>
+      <% end %>
+    </div>
   <% end %>
 
   <%= content_tag :div, id: "successMessage", class: "hidden fixed top-4 right-4 z-50" do %>

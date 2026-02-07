@@ -2,17 +2,17 @@
   <%= render "panda/cms/admin/widget_header", title: "Page Views Over Time", period_options: period_options, selected_period: period_value %>
 
   <% if analytics_available? && page_views_data&.any? %>
-    <div class="relative">
+    <div class="relative px-4 pt-4">
       <%= area_chart_html.html_safe %>
     </div>
 
-    <div class="mt-4 pt-4 border-t border-gray-200">
+    <div class="mt-4 pt-4 border-t border-gray-200 px-4 pb-4">
       <p class="text-xs text-gray-400">
         Data from <%= provider.name %>
       </p>
     </div>
   <% else %>
-    <div class="text-center py-12">
+    <div class="text-center py-12 px-4">
       <p class="text-sm text-gray-500">
         No chart data available.
       </p>

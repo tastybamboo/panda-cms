@@ -49,7 +49,7 @@ module Panda
         attr_reader :period
 
         def default_attrs
-          {class: "bg-white rounded-2xl border border-gray-200 p-6"}
+          {class: "bg-white rounded-2xl border border-gray-200 shadow-sm"}
         end
 
         # Check if analytics is available and configured

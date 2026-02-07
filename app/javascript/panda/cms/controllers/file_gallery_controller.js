@@ -1,50 +1,93 @@
 import { Controller } from '@hotwired/stimulus'
 
 export default class extends Controller {
-  static targets = ['slideoverContent']
+  static targets = ['uploadBackdrop', 'uploadPanel']
   static values = { filesPath: String }
+
+  connect() {
+    this._handleFilenameInput = this.handleFilenameInput.bind(this)
+    this._handleFilenameBlur = this.handleFilenameBlur.bind(this)
+    document.addEventListener('input', this._handleFilenameInput)
+    document.addEventListener('focusout', this._handleFilenameBlur)
+  }
+
+  disconnect() {
+    document.removeEventListener('input', this._handleFilenameInput)
+    document.removeEventListener('focusout', this._handleFilenameBlur)
+  }
+
+  handleFilenameInput(event) {
+    if (event.target.id !== 'blob_filename') return
+    const { selectionStart } = event.target
+    event.target.value = event.target.value.replace(/\s/g, '_').replace(/[^a-z0-9_-]/gi, '')
+    event.target.setSelectionRange(selectionStart, selectionStart)
+  }
+
+  handleFilenameBlur(event) {
+    if (event.target.id !== 'blob_filename') return
+    event.target.value = event.target.value.toLowerCase()
+  }
 
   selectFile(event) {
     const button = event.currentTarget
-    const fileData = {
-      id: button.dataset.fileId,
-      url: button.dataset.fileUrl,
-      name: button.dataset.fileName,
-      size: button.dataset.fileSize,
-      type: button.dataset.fileType,
-      created: button.dataset.fileCreated,
-    }
+    const fileId = button.dataset.fileId
 
-    // Update slideover content
-    this.updateSlideover(fileData)
-
-    // Update selected state
+    this.selectedFileId = fileId
     this.updateSelectedState(button)
+    this.loadFileDetails(fileId)
   }
 
-  updateSlideover(fileData) {
-    if (!this.hasSlideoverContentTarget) return
+  async loadFileDetails(fileId) {
+    const slideoverContent = document.getElementById('file-gallery-slideover-content')
+    if (!slideoverContent) return
 
-    // Build the slideover content HTML
-    const html = this.buildSlideoverHTML(fileData)
-    this.slideoverContentTarget.innerHTML = html
+    // Show loading state
+    slideoverContent.innerHTML =
+      '<div class="flex items-center justify-center py-12"><i class="fa-solid fa-spinner fa-spin text-2xl text-gray-400"></i></div>'
+    this.showSlideover()
 
-    // Find the slideover container and show it
-    let slideoverContainer = this.slideoverContentTarget.closest('[role="complementary"]') || 
-                            this.slideoverContentTarget.closest('.fixed.inset-0') ||
-                            this.slideoverContentTarget.closest('[data-controller*="slideover"]')
-    
-    if (!slideoverContainer) {
-      // Walk up to find a hidden container that might be the slideover
-      slideoverContainer = this.slideoverContentTarget
-      while (slideoverContainer && !slideoverContainer.classList.contains('fixed')) {
-        slideoverContainer = slideoverContainer.parentElement
-      }
+    try {
+      const response = await fetch(`${this.filesPathValue}/${fileId}`, {
+        headers: { Accept: 'text/html' },
+      })
+
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+
+      slideoverContent.innerHTML = await response.text()
+    } catch {
+      slideoverContent.innerHTML =
+        '<div class="text-center py-12"><i class="fa-solid fa-exclamation-triangle text-2xl text-red-400 mb-2"></i><p class="text-sm text-gray-500">Failed to load file details</p></div>'
     }
+  }
 
-    if (slideoverContainer) {
-      slideoverContainer.classList.remove('hidden')
+  showSlideover() {
+    // Toggle controller is now a descendant (inside ContainerComponent)
+    const toggleElement = this.element.querySelector('[data-controller*="toggle"]')
+    if (!toggleElement) return
+
+    const toggleController = this.application.getControllerForElementAndIdentifier(
+      toggleElement,
+      'toggle'
+    )
+    if (toggleController) {
+      toggleController.show()
     }
+  }
+
+  reopenSlideover() {
+    if (this.selectedFileId) {
+      this.loadFileDetails(this.selectedFileId)
+    }
+  }
+
+  openUpload() {
+    this.uploadBackdropTarget.classList.remove('hidden')
+    this.uploadPanelTarget.classList.remove('hidden')
+  }
+
+  closeUpload() {
+    this.uploadBackdropTarget.classList.add('hidden')
+    this.uploadPanelTarget.classList.add('hidden')
   }
 
   updateSelectedState(selectedButton) {
@@ -84,81 +127,5 @@ export default class extends Controller {
         'focus-within:outline-primary-600'
       )
     }
-  }
-
-  buildSlideoverHTML(fileData) {
-    const isImage = fileData.type && fileData.type.startsWith('image/')
-    const humanSize = this.humanFileSize(parseInt(fileData.size))
-    const createdDate = new Date(fileData.created).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    })
-
-    return `
-      <div>
-        <div class="block overflow-hidden w-full rounded-2xl aspect-h-7 aspect-w-10">
-          ${
-            isImage
-              ? `<img src="${fileData.url}" alt="${fileData.name}" class="object-cover" onerror="this.onerror=null;this.style.display='none';this.nextElementSibling.classList.remove('hidden')">
-            <div class="hidden flex items-center justify-center h-full bg-gray-100" role="img" aria-label="Image preview not available">
-              <i class="fa-solid fa-file-image text-4xl text-gray-400"></i>
-            </div>`
-              : `<div class="flex items-center justify-center h-full bg-gray-100">
-              <div class="text-center">
-                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-                </svg>
-                <p class="mt-1 text-xs text-gray-500 uppercase">${fileData.type ? fileData.type.split('/')[1] : 'file'}</p>
-              </div>
-            </div>`
-          }
-        </div>
-        <div class="flex justify-between items-start mt-4">
-          <div>
-            <h2 class="text-lg font-medium text-gray-900">
-              <span class="sr-only">Details for </span>${fileData.name}
-            </h2>
-            <p class="text-sm font-medium text-gray-500">${humanSize}</p>
-          </div>
-        </div>
-      </div>
-
-      <div>
-        <h3 class="font-medium text-gray-900">Information</h3>
-        <dl class="mt-2 border-t border-b border-gray-200 divide-y divide-gray-200">
-          <div class="flex justify-between py-3 text-sm font-medium">
-            <dt class="text-gray-500">Created</dt>
-            <dd class="text-gray-900 whitespace-nowrap">${createdDate}</dd>
-          </div>
-          <div class="flex justify-between py-3 text-sm font-medium">
-            <dt class="text-gray-500">Content Type</dt>
-            <dd class="text-gray-900 whitespace-nowrap">${fileData.type || 'Unknown'}</dd>
-          </div>
-        </dl>
-      </div>
-
-      <div class="flex gap-x-3">
-        <a href="${fileData.url}?disposition=attachment" class="flex-1 py-2 px-3 text-sm font-semibold text-white bg-black rounded-md shadow-sm hover:bg-gray-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-panda-dark text-center">Download</a>
-        <form action="${this.filesPathValue}/${fileData.id}" method="post" class="flex-1" data-turbo-confirm="Are you sure you want to delete this file?">
-          <input type="hidden" name="_method" value="delete">
-          <input type="hidden" name="authenticity_token" value="${this.csrfToken}">
-          <button type="submit" class="w-full py-2 px-3 text-sm font-semibold text-gray-900 bg-white rounded-md ring-1 ring-inset shadow-sm hover:bg-gray-50 ring-mid">Delete</button>
-        </form>
-      </div>
-    `
-  }
-
-  get csrfToken() {
-    const meta = document.querySelector('meta[name="csrf-token"]')
-    return meta ? meta.getAttribute('content') : ''
-  }
-
-  humanFileSize(bytes) {
-    if (bytes === 0) return '0 Bytes'
-    const k = 1024
-    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB']
-    const i = Math.floor(Math.log(bytes) / Math.log(k))
-    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i]
   }
 }

@@ -1,17 +1,51 @@
-<%= render Panda::Core::Admin::ContainerComponent.new do |component| %>
-  <% component.with_heading_slot(text: "Files", level: 1) %>
+<div data-controller="file-gallery" data-file-gallery-files-path-value="<%= admin_cms_files_path %>">
+  <%= render Panda::Core::Admin::ContainerComponent.new do |component| %>
+    <% component.with_heading_slot(text: "Files", level: 1) do |heading| %>
+      <% heading.with_button(text: "Upload", icon: "upload", action: :add, as_button: true, data: { action: "click->file-gallery#openUpload" }) %>
+    <% end %>
 
-  <% component.with_slideover_slot(title: "File Details") do %>
-    <div class="pt-4 pb-16 space-y-6" data-file-gallery-target="slideoverContent">
-      <% if @selected_file %>
-        <%= render partial: "file_details", locals: { file: @selected_file } %>
-      <% else %>
+    <% component.with_slideover_slot(title: "File Details") do %>
+      <div class="px-4 sm:px-6 pt-4 pb-16 space-y-6" id="file-gallery-slideover-content">
         <p class="text-sm text-gray-500">Select a file to view details</p>
-      <% end %>
+      </div>
+    <% end %>
+
+    <div class="pb-24">
+      <%= render Panda::Core::Admin::FileGalleryComponent.new(files: @files) %>
     </div>
   <% end %>
 
-  <div data-controller="file-gallery" data-file-gallery-files-path-value="<%= admin_cms_files_path %>" class="pb-24">
-    <%= render Panda::Core::Admin::FileGalleryComponent.new(files: @files, selected_file: @selected_file) %>
+  <%# Upload slideover - managed by file-gallery controller %>
+  <div class="hidden fixed inset-0 bg-gray-500/75 transition-opacity duration-500 ease-in-out dark:bg-gray-900/50 z-40"
+       data-file-gallery-target="uploadBackdrop"
+       data-action="click->file-gallery#closeUpload"></div>
+
+  <div class="hidden ml-auto block size-full max-w-md transform fixed right-0 top-0 h-full z-50"
+       data-file-gallery-target="uploadPanel">
+    <div class="relative flex h-full flex-col bg-white shadow-xl dark:bg-gray-800">
+      <div class="bg-gradient-admin px-4 py-6 sm:px-6">
+        <div class="flex items-center justify-between">
+          <h2 class="text-base font-semibold text-white">Upload File</h2>
+          <button type="button" data-action="click->file-gallery#closeUpload"
+            class="inline-flex items-center gap-1 rounded-full bg-white/10 px-2 py-1 text-xs text-white/80 hover:text-white">
+            <span>Close</span>
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="flex-1 overflow-y-auto">
+        <div class="px-4 sm:px-6 pt-4 pb-16 space-y-6">
+          <%= panda_form_with url: admin_cms_files_path, scope: :file_upload do |f| %>
+            <%= f.file_field :file, label: "File", accept: "*/*", file_types_display: "All file types", max_size: "50MB" %>
+            <%= f.select :file_category_id,
+              options_for_select(@file_categories.map { |c| [c.name, c.id] }),
+              { label: "Category", prompt: "Select a category" },
+              { required: true } %>
+            <%= render Panda::Core::Admin::FormFooterComponent.new(submit_text: "Upload") %>
+          <% end %>
+        </div>
+      </div>
+    </div>
   </div>
-<% end %>
+</div>
