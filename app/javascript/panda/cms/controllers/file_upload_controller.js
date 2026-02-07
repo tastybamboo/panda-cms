@@ -14,13 +14,13 @@ export default class extends Controller {
     const dropzone = this.dropzoneTarget
 
     // Prevent default drag behaviors
-    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+    ;['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
       dropzone.addEventListener(eventName, this.preventDefaults.bind(this), false)
       document.body.addEventListener(eventName, this.preventDefaults.bind(this), false)
     })
 
     // Highlight drop zone when item is dragged over it
-    ['dragenter', 'dragover'].forEach(eventName => {
+    ;['dragenter', 'dragover'].forEach(eventName => {
       dropzone.addEventListener(eventName, this.highlight.bind(this), false)
     })
 

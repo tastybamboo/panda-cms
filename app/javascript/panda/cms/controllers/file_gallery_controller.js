@@ -48,7 +48,10 @@ export default class extends Controller {
 
     try {
       const response = await fetch(`${this.filesPathValue}/${fileId}`, {
-        headers: { Accept: 'text/html' },
+        headers: {
+          Accept: 'text/html',
+          'X-Requested-With': 'XMLHttpRequest',
+        },
       })
 
       if (!response.ok) throw new Error(`HTTP ${response.status}`)

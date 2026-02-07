@@ -110,6 +110,7 @@ module Panda
               end
             end
           else
+            Panda::Core::FileCategorization.where(blob_id: @blob.id).destroy_all
             @blob.purge
             redirect_to admin_cms_files_path, notice: "File was successfully deleted.", status: :see_other
           end
