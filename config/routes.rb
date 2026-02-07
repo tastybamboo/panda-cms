@@ -16,6 +16,7 @@ Panda::CMS::Engine.routes.draw do
         resources :block_contents, only: %i[update]
       end
       resources :posts
+      resources :redirects
 
       get "settings", to: "settings#index"
 
