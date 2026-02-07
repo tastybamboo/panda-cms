@@ -7,8 +7,9 @@
         <span class="text-xs text-gray-500"><%= selected_label %></span>
         <i class="fa-solid fa-chevron-down text-xs" aria-hidden="true"></i>
       <% end %>
+      <% existing_params = defined?(request) ? request.query_parameters.except("period") : {} %>
       <% period_options.each do |label, value| %>
-        <% dropdown.with_item(label: label, href: "?period=#{value}") %>
+        <% dropdown.with_item(label: label, href: "?#{existing_params.merge("period" => value).to_query}") %>
       <% end %>
     <% end %>
   <% elsif local_assigns[:subtitle].present? %>

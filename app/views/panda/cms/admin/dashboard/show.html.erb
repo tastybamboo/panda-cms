@@ -21,20 +21,28 @@
       <div class="grid grid-cols-1 gap-5 mt-5">
         <%= render Panda::CMS::Admin::RecentPagesWidgetComponent.new(limit: 10) %>
       </div>
-    <% elsif has_local_visits %>
-      <!-- Local analytics widgets when visit data exists -->
-      <dl class="grid grid-cols-1 gap-5 mt-5 sm:grid-cols-3">
-        <%= render Panda::Core::Admin::StatisticsComponent.new(metric: "Views Today", value: Panda::CMS::Visit.group_by_day(:visited_at, last: 1).count.values.first || 0) %>
-        <%= render Panda::Core::Admin::StatisticsComponent.new(metric: "Views Last Week", value: Panda::CMS::Visit.group_by_week(:visited_at, last: 1).count.values.first || 0) %>
-        <%= render Panda::Core::Admin::StatisticsComponent.new(metric: "Views Last Month", value: Panda::CMS::Visit.group_by_month(:visited_at, last: 1).count.values.first || 0) %>
-      </dl>
+    <% else %>
+      <!-- Local analytics widgets -->
+      <% if has_local_visits %>
+        <dl class="grid grid-cols-1 gap-5 mt-5 sm:grid-cols-3">
+          <%= render Panda::Core::Admin::StatisticsComponent.new(metric: "Views Today", value: Panda::CMS::Visit.group_by_day(:visited_at, last: 1).count.values.first || 0) %>
+          <%= render Panda::Core::Admin::StatisticsComponent.new(metric: "Views Last Week", value: Panda::CMS::Visit.group_by_week(:visited_at, last: 1).count.values.first || 0) %>
+          <%= render Panda::Core::Admin::StatisticsComponent.new(metric: "Views Last Month", value: Panda::CMS::Visit.group_by_month(:visited_at, last: 1).count.values.first || 0) %>
+        </dl>
+      <% end %>
 
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mt-8">
         <%= render Panda::CMS::Admin::AnalyticsWidgetComponent.new(period: period) %>
-        <%= render Panda::CMS::Admin::PopularPagesComponent.new(
-          popular_pages: Panda::CMS::Visit.popular_pages(limit: 10),
-          period_name: "All Time"
-        ) %>
+        <% if has_local_visits %>
+          <%= render Panda::CMS::Admin::PopularPagesComponent.new(
+            popular_pages: Panda::CMS::Visit.popular_pages(limit: 10),
+            period_name: "All Time"
+          ) %>
+        <% end %>
+      </div>
+
+      <div class="grid grid-cols-1 gap-5 mt-5">
+        <%= render Panda::CMS::Admin::RecentPagesWidgetComponent.new(limit: 10) %>
       </div>
     <% end %>
   <% end %>

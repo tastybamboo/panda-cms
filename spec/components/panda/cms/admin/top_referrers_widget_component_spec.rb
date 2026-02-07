@@ -64,7 +64,7 @@ RSpec.describe Panda::CMS::Admin::TopReferrersWidgetComponent, type: :component 
     it "displays the period selector" do
       render_inline(described_class.new(period: 7.days))
 
-      expect(page).to have_text("Last 7 days")
+      expect(page).to have_css("button[aria-haspopup]", text: "Last 7 days")
       expect(page).to have_css("[role='menuitem']", text: "Last 30 days")
     end
 
