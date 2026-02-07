@@ -54,12 +54,12 @@ module Panda
 
         return unless redirect
 
-        redirect.increment!(:visits)
+        redirect.update_columns(visits: redirect.visits + 1, last_visited_at: Time.current)
 
         # Check if the destination is also a redirect
         next_redirect = Panda::CMS::Redirect.find_by(origin_path: redirect.destination_path)
         if next_redirect
-          next_redirect.increment!(:visits)
+          next_redirect.update_columns(visits: next_redirect.visits + 1, last_visited_at: Time.current)
           redirect_to next_redirect.destination_path, status: redirect.status_code and return
         end
 
