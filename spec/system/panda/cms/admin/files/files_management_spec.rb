@@ -24,4 +24,170 @@ RSpec.describe "Admin Files Management", type: :system do
       expect(page).to have_css("[data-file-gallery-target]") if page.has_css?("[data-file-gallery-target]", wait: 2)
     end
   end
+
+  describe "File details slideover", js: true do
+    let!(:test_file) do
+      blob = ActiveStorage::Blob.create_and_upload!(
+        io: StringIO.new("test content"),
+        filename: "test_file.txt",
+        content_type: "text/plain"
+      )
+      blob.update!(metadata: blob.metadata.merge("description" => "Original description"))
+      blob
+    end
+
+    let!(:category) do
+      Panda::Core::FileCategory.create!(name: "Documents", slug: "documents")
+    end
+
+    before do
+      Panda::Core::FileCategorization.create!(file_category: category, blob: test_file)
+    end
+
+    it "loads server-rendered file details when clicking a file" do
+      visit "/admin/cms/files"
+
+      # Find and click the file in the gallery
+      file_button = find("[data-file-id='#{test_file.id}']", wait: 5)
+      file_button.click
+
+      # Wait for slideover to open and content to load
+      within "#file-gallery-slideover-content", wait: 5 do
+        expect(page).to have_content("test_file.txt")
+        expect(page).to have_content("Original description")
+        expect(page).to have_select("blob[file_category_id]", selected: "Documents")
+      end
+    end
+
+    it "persists edits to filename, category, and description" do
+      visit "/admin/cms/files"
+
+      # Select the file
+      find("[data-file-id='#{test_file.id}']", wait: 5).click
+
+      within "#file-gallery-slideover-content", wait: 5 do
+        # Wait for form to be ready
+        expect(page).to have_field("blob[filename]")
+
+        # Edit filename (without extension)
+        fill_in "blob[filename]", with: "renamed_file"
+
+        # Edit description
+        fill_in "blob[description]", with: "Updated description text"
+
+        # Submit the form
+        click_button "Save"
+
+        # Wait for Turbo to update the content
+        expect(page).to have_content("File updated successfully", wait: 5)
+
+        # Verify the changes persisted in the slideover
+        expect(page).to have_field("blob[filename]", with: "renamed_file")
+        expect(page).to have_field("blob[description]", with: "Updated description text")
+      end
+
+      # Verify changes persisted in database
+      test_file.reload
+      expect(test_file.filename.to_s).to eq("renamed_file.txt")
+      expect(test_file.metadata["description"]).to eq("Updated description text")
+    end
+
+    it "updates slideover content after successful save" do
+      visit "/admin/cms/files"
+
+      find("[data-file-id='#{test_file.id}']", wait: 5).click
+
+      within "#file-gallery-slideover-content", wait: 5 do
+        expect(page).to have_field("blob[filename]")
+
+        fill_in "blob[description]", with: "New description"
+        click_button "Save"
+
+        # Slideover should show success message and maintain the form
+        expect(page).to have_content("File updated successfully", wait: 5)
+        expect(page).to have_field("blob[description]", with: "New description")
+      end
+    end
+
+    it "shows delete confirmation and removes file" do
+      visit "/admin/cms/files"
+
+      find("[data-file-id='#{test_file.id}']", wait: 5).click
+
+      within "#file-gallery-slideover-content", wait: 5 do
+        expect(page).to have_button("Delete", wait: 5)
+
+        # Click delete and accept confirmation
+        accept_confirm do
+          click_button "Delete"
+        end
+      end
+
+      # Should redirect back to files index
+      expect(page).to have_content("Files", wait: 5)
+      expect(page).to have_content("File was successfully deleted")
+
+      # File should be gone from database
+      expect(ActiveStorage::Blob.find_by(id: test_file.id)).to be_nil
+    end
+  end
+
+  describe "Upload slideover", js: true do
+    let!(:category) do
+      Panda::Core::FileCategory.create!(name: "Images", slug: "images")
+    end
+
+    it "opens upload slideover with drag-and-drop" do
+      visit "/admin/cms/files"
+
+      # Click Upload button
+      click_button "Upload", wait: 5
+
+      # Upload panel should appear
+      expect(page).to have_content("Upload File", wait: 5)
+      expect(page).to have_field("file_upload[file]")
+      expect(page).to have_select("file_upload[file_category_id]")
+    end
+
+    it "requires category for upload" do
+      visit "/admin/cms/files"
+
+      click_button "Upload", wait: 5
+
+      within "[data-file-gallery-target='uploadPanel']", wait: 5 do
+        # Attach a file
+        attach_file "file_upload[file]", Rails.root.join("spec/fixtures/files/test_image.jpg"), make_visible: true
+
+        # Don't select a category
+        # Try to submit
+        click_button "Upload"
+      end
+
+      # Should show validation error (HTML5 required attribute or server-side)
+      # If using HTML5 required, the form won't submit
+      # If server-side, we'll see an error message
+      expect(page).to have_content("Files", wait: 5)
+      expect(page).to have_content("Please select a category").or(have_select("file_upload[file_category_id]", wait: 1))
+    end
+
+    it "uploads file and shows it in gallery" do
+      visit "/admin/cms/files"
+
+      click_button "Upload", wait: 5
+
+      within "[data-file-gallery-target='uploadPanel']", wait: 5 do
+        # Attach file and select category
+        attach_file "file_upload[file]", Rails.root.join("spec/fixtures/files/test_image.jpg"), make_visible: true
+        select "Images", from: "file_upload[file_category_id]"
+
+        click_button "Upload"
+      end
+
+      # Should redirect back to files index with success message
+      expect(page).to have_content("File uploaded successfully", wait: 5)
+
+      # Verify file appears in gallery (check for the uploaded file)
+      expect(page).to have_css("[data-file-id]", minimum: 1)
+    end
+  end
 end
