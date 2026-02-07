@@ -40,7 +40,7 @@ RSpec.describe "Menus Management", type: :system do
     it "has a link to create new menu" do
       visit "/admin/cms/menus"
 
-      expect(page).to have_link("New Menu")
+      expect(page).to have_link("Add Menu")
     end
 
     it "has edit links for each menu" do
