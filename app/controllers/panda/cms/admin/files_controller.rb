@@ -14,8 +14,8 @@ module Panda
 
         def show
           @file_categories = Panda::Core::FileCategory.ordered
-          
-          if request.xhr? || request.headers['Turbo-Frame'].present?
+
+          if request.xhr? || request.headers["Turbo-Frame"].present?
             render partial: "file_details", locals: {file: @blob, file_categories: @file_categories}
           else
             redirect_to admin_cms_files_path
