@@ -109,7 +109,8 @@ RSpec.describe Panda::CMS::Admin::PageViewsChartComponent, type: :component do
     it "displays the period selector" do
       render_inline(described_class.new(period: 7.days))
 
-      expect(page).to have_css("select option[selected]", text: "Last 7 days")
+      expect(page).to have_text("Last 7 days")
+      expect(page).to have_css("[role='menuitem']", text: "Last 30 days")
     end
 
     context "when no chart data is available" do
