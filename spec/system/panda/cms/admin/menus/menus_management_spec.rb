@@ -40,7 +40,7 @@ RSpec.describe "Menus Management", type: :system do
     it "has a link to create new menu" do
       visit "/admin/cms/menus"
 
-      expect(page).to have_link("New Menu")
+      expect(page).to have_link("Add Menu")
     end
 
     it "has edit links for each menu" do
@@ -56,7 +56,7 @@ RSpec.describe "Menus Management", type: :system do
     it "shows the new menu form" do
       visit "/admin/cms/menus/new"
 
-      expect(page).to have_content("New Menu")
+      expect(page).to have_content("Add Menu")
       expect(page).to have_field("Name")
       expect(page).to have_field("Kind")
     end
@@ -220,6 +220,8 @@ RSpec.describe "Menus Management", type: :system do
 
       click_button "Create Menu"
 
+      expect(page).to have_content(/successfully created/i)
+
       menu = Panda::CMS::Menu.find_by(name: "Static Test")
       expect(menu.kind).to eq("static")
     end
@@ -243,6 +245,8 @@ RSpec.describe "Menus Management", type: :system do
       select homepage.title, from: "Start Page"
 
       click_button "Create Menu"
+
+      expect(page).to have_content(/successfully created/i)
 
       menu = Panda::CMS::Menu.find_by(name: "Auto Test")
       expect(menu.kind).to eq("auto")
@@ -303,7 +307,7 @@ RSpec.describe "Menus Management", type: :system do
     it "has proper heading structure" do
       visit "/admin/cms/menus/new"
 
-      expect(page).to have_css("h1", text: /New Menu/i)
+      expect(page).to have_css("h1", text: /Add Menu/i)
     end
   end
 end

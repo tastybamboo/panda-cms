@@ -1,18 +1,24 @@
 <%= render Panda::Core::Admin::ContainerComponent.new do |component| %>
   <% component.with_heading_slot(text: "Edit Menu: #{@menu.name}", level: 1) %>
 
-  <%= panda_cms_form_with model: @menu, url: admin_cms_menu_path(@menu), method: :put, data: { controller: "menu-form" } do |f| %>
+  <%= panda_form_with model: @menu, url: admin_cms_menu_path(@menu), method: :put, data: { controller: "menu-form" } do |f| %>
     <%= render Panda::Core::Admin::FormErrorComponent.new(model: @menu) %>
 
-    <%= f.text_field :name %>
-    <%= f.select :kind, options_for_select([["Static", "static"], ["Auto", "auto"]], selected: @menu.kind), {}, { "data-action": "change->menu-form#kindChanged" } %>
+    <%= render Panda::Core::Admin::PanelComponent.new do |panel| %>
+      <% panel.with_heading_slot { "Menu Settings" } %>
+      <div class="space-y-4">
+        <%= f.text_field :name %>
+        <%= f.select :kind, options_for_select([["Static", "static"], ["Auto", "auto"]], selected: @menu.kind), {}, { "data-action": "change->menu-form#kindChanged" } %>
 
-    <div data-menu-form-target="startPageField" class="<%= 'hidden' unless @menu.kind == 'auto' %>">
-      <%= f.collection_select :start_page_id, Panda::CMS::Page.order(:title), :id, :title, { include_blank: "Select a page...", label: "Start Page" }, { class: "mt-1" } %>
-    </div>
+        <div data-menu-form-target="startPageField" class="<%= 'hidden' unless @menu.kind == 'auto' %>">
+          <%= f.collection_select :start_page_id, Panda::CMS::Page.order(:title), :id, :title, { include_blank: "Select a page...", label: "Start Page" }, { class: "mt-1" } %>
+        </div>
+      </div>
+    <% end %>
 
     <% if @menu.kind == "static" %>
-      <%= render Panda::Core::Admin::FormSectionComponent.new(title: "Menu Items", icon: "fa-bars") do %>
+      <%= render Panda::Core::Admin::PanelComponent.new do |panel| %>
+        <% panel.with_heading_slot { "Menu Items" } %>
         <div data-controller="nested-form" data-nested-form-wrapper-selector-value=".nested-form-wrapper">
           <template data-nested-form-target="template">
             <%= f.fields_for :menu_items, Panda::CMS::MenuItem.new, child_index: "NEW_RECORD" do |item_form| %>
@@ -36,7 +42,8 @@
         </div>
       <% end %>
     <% else %>
-      <%= render Panda::Core::Admin::FormSectionComponent.new(title: "Auto-Generated Menu Items", icon: "fa-bars") do %>
+      <%= render Panda::Core::Admin::PanelComponent.new do |panel| %>
+        <% panel.with_heading_slot { "Auto-Generated Menu Items" } %>
         <% if @menu.menu_items.any? %>
           <%= render Panda::Core::Admin::TableComponent.new(term: "menu item", rows: @menu.menu_items.includes(:page)) do |table| %>
             <% table.column("Text") do |menu_item| %>

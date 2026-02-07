@@ -17,10 +17,6 @@
       <div class="grid grid-cols-1 gap-5 mt-5">
         <%= render Panda::CMS::Admin::PageViewsChartComponent.new(period: period, interval: :daily) %>
       </div>
-
-      <div class="grid grid-cols-1 gap-5 mt-5">
-        <%= render Panda::CMS::Admin::RecentPagesWidgetComponent.new(limit: 10) %>
-      </div>
     <% else %>
       <!-- Local analytics widgets -->
       <% if has_local_visits %>
@@ -41,9 +37,6 @@
         <% end %>
       </div>
 
-      <div class="grid grid-cols-1 gap-5 mt-5">
-        <%= render Panda::CMS::Admin::RecentPagesWidgetComponent.new(limit: 10) %>
-      </div>
     <% end %>
   <% end %>
 </div>

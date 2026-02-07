@@ -1,53 +1,54 @@
 <%= render Panda::Core::Admin::ContainerComponent.new do |component| %>
   <% component.with_heading_slot(text: "Add Page", level: 1) %>
 
-  <%= panda_cms_form_with model: page, url: admin_cms_pages_path, method: :post, id: "page-form" do |f| %>
+  <%= panda_form_with model: page, url: admin_cms_pages_path, method: :post, id: "page-form" do |f| %>
     <%= render Panda::Core::Admin::FormErrorComponent.new(model: page) %>
 
-    <div data-controller="slug">
-      <input type="hidden" value="<%= Panda::CMS::Current.root %>" data-slug-target="existing_root">
+    <%= render Panda::Core::Admin::PanelComponent.new do |panel| %>
+      <% panel.with_heading_slot { "Page Settings" } %>
+      <div data-controller="slug">
+        <input type="hidden" value="<%= Panda::CMS::Current.root %>" data-slug-target="existing_root">
 
-      <%= f.section_heading "Page Settings" %>
+        <div class="space-y-4">
+          <% options = nested_set_options(Panda::CMS::Page, page) { |i| "#{"-" * i.level} #{i.title} (#{i.path})" } %>
+          <%= f.select :parent_id, options, {}, { "data-slug-target": "input_select", "data-action": "change->slug#setPrePath" } %>
 
-      <div class="space-y-4">
-        <% options = nested_set_options(Panda::CMS::Page, page) { |i| "#{"-" * i.level} #{i.title} (#{i.path})" } %>
-        <%= f.select :parent_id, options, {}, { "data-slug-target": "input_select", "data-action": "change->slug#setPrePath" } %>
+          <%= f.text_field :title, {
+            data: { "slug-target": "input_text" },
+            "data-action": "focusout->slug#generatePath"
+          } %>
 
-        <%= f.text_field :title, {
-          data: { "slug-target": "input_text" },
-          "data-action": "focusout->slug#generatePath"
-        } %>
+          <%= f.text_field :path, {
+            meta: t(".path.meta"),
+            data: { "slug-target": "output_text" },
+            "data-action": "input->slug#handlePathInput"
+          } %>
 
-        <%= f.text_field :path, {
-          meta: t(".path.meta"),
-          data: { "slug-target": "output_text" },
-          "data-action": "input->slug#handlePathInput"
-        } %>
+          <%= f.collection_select :panda_cms_template_id, available_templates, :id, :name %>
+        </div>
 
-        <%= f.collection_select :panda_cms_template_id, available_templates, :id, :name %>
-      </div>
+        <h3 class="mt-6 mb-4 text-sm font-semibold text-gray-700">Page Type</h3>
 
-      <%= f.section_heading "Page Type" %>
-
-      <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <% [
-          ["Standard", "standard", "fa-globe", "Regular page visible in navigation"],
-          ["Hidden", "hidden", "fa-eye-slash", "Page accessible but not in menus"],
-          ["Code", "code", "fa-code", "Custom code-rendered page"]
-        ].each do |label, value, icon, desc| %>
-          <label class="relative flex cursor-pointer rounded-2xl border border-gray-200 bg-white p-4 transition-colors hover:border-gray-300 has-[:checked]:border-primary-500 has-[:checked]:ring-2 has-[:checked]:ring-primary-200">
-            <%= f.radio_button :page_type, value, class: "sr-only", checked: (page.page_type || "standard") == value %>
-            <span class="flex flex-1 flex-col">
-              <span class="flex items-center gap-2 text-sm font-medium text-gray-800">
-                <i class="fa-solid <%= icon %>"></i>
-                <%= label %>
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <% [
+            ["Standard", "standard", "fa-globe", "Regular page visible in navigation"],
+            ["Hidden", "hidden", "fa-eye-slash", "Page accessible but not in menus"],
+            ["Code", "code", "fa-code", "Custom code-rendered page"]
+          ].each do |label, value, icon, desc| %>
+            <label class="relative flex cursor-pointer rounded-2xl border border-gray-200 bg-white p-4 transition-colors hover:border-gray-300 has-[:checked]:border-primary-500 has-[:checked]:ring-2 has-[:checked]:ring-primary-200">
+              <%= f.radio_button :page_type, value, class: "sr-only", checked: (page.page_type || "standard") == value %>
+              <span class="flex flex-1 flex-col">
+                <span class="flex items-center gap-2 text-sm font-medium text-gray-800">
+                  <i class="fa-solid <%= icon %>"></i>
+                  <%= label %>
+                </span>
+                <span class="mt-1 text-xs text-gray-500"><%= desc %></span>
               </span>
-              <span class="mt-1 text-xs text-gray-500"><%= desc %></span>
-            </span>
-          </label>
-        <% end %>
+            </label>
+          <% end %>
+        </div>
       </div>
-    </div>
+    <% end %>
 
     <%= render Panda::Core::Admin::FormFooterComponent.new(submit_text: "Create Page") %>
   <% end %>

@@ -1,6 +1,6 @@
 <%= render Panda::Core::Admin::ContainerComponent.new do |component| %>
   <% component.with_heading_slot(text: "Redirects", level: 1) do |heading| %>
-    <% heading.with_button(action: :add, text: "New Redirect", href: new_admin_cms_redirect_path) %>
+    <% heading.with_button(action: :add, text: "Add Redirect", href: new_admin_cms_redirect_path) %>
   <% end %>
 
   <%= render Panda::Core::Admin::TableComponent.new(term: "redirect", rows: redirects, icon: "fa-solid fa-arrow-right") do |table| %>
