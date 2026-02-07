@@ -149,7 +149,7 @@ RSpec.describe "Admin Files Management", type: :system do
       expect(page).to have_select("file_upload[file_category_id]")
     end
 
-    it "requires category for upload" do
+    it "requires category for upload with HTML5 validation" do
       visit "/admin/cms/files"
 
       click_button "Upload", wait: 5
@@ -158,16 +158,33 @@ RSpec.describe "Admin Files Management", type: :system do
         # Attach a file
         attach_file "file_upload[file]", Rails.root.join("spec/fixtures/files/test_image.jpg"), make_visible: true
 
-        # Don't select a category
-        # Try to submit
+        # Don't select a category - the select has required: true attribute
+        # HTML5 validation should prevent form submission
+        click_button "Upload"
+
+        # Form should still be visible because HTML5 validation prevented submission
+        expect(page).to have_select("file_upload[file_category_id]", wait: 1)
+      end
+    end
+
+    it "shows server-side validation error when category is missing" do
+      visit "/admin/cms/files"
+
+      click_button "Upload", wait: 5
+
+      # Simulate bypassing HTML5 validation (e.g., via API or disabled JS)
+      within "[data-file-gallery-target='uploadPanel']", wait: 5 do
+        attach_file "file_upload[file]", Rails.root.join("spec/fixtures/files/test_image.jpg"), make_visible: true
+
+        # Remove required attribute to test server-side validation
+        page.execute_script("document.querySelector('#file_upload_file_category_id').removeAttribute('required')")
+
         click_button "Upload"
       end
 
-      # Should show validation error (HTML5 required attribute or server-side)
-      # If using HTML5 required, the form won't submit
-      # If server-side, we'll see an error message
+      # Should redirect back with server-side validation error
       expect(page).to have_content("Files", wait: 5)
-      expect(page).to have_content("Please select a category").or(have_select("file_upload[file_category_id]", wait: 1))
+      expect(page).to have_content("Please select a category")
     end
 
     it "uploads file and shows it in gallery" do

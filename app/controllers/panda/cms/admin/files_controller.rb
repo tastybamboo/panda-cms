@@ -42,8 +42,7 @@ module Panda
             return
           end
 
-          category = Panda::Core::FileCategory.find_by(id: category_id)
-          if category.nil?
+          unless (category = Panda::Core::FileCategory.find_by(id: category_id))
             redirect_to admin_cms_files_path, alert: "Selected category not found."
             return
           end
