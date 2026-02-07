@@ -23,7 +23,6 @@ async function registerController(name, path) {
 
 // Define all CMS controllers with absolute paths for dynamic import resolution
 const cmsControllers = [
-  ["dashboard", "/panda/cms/controllers/dashboard_controller.js"],
   ["slug", "/panda/cms/controllers/slug_controller.js"],
   ["tree", "/panda/cms/controllers/tree_controller.js"],
   ["file-gallery", "/panda/cms/controllers/file_gallery_controller.js"],
