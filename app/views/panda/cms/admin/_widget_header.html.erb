@@ -1,5 +1,5 @@
 <div class="flex items-center justify-between text-sm font-medium px-4 py-3 text-gray-500 truncate border-b border-gray-200">
-  <span><%= title %></span>
+  <h3 class="text-sm font-medium text-gray-500"><%= title %></h3>
   <% if local_assigns[:period_options].present? %>
     <% selected_label = period_options.find { |_, v| v.to_s == local_assigns[:selected_period].to_s }&.first || period_options.first&.first %>
     <%= render Panda::Core::Admin::DropdownComponent.new do |dropdown| %>

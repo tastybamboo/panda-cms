@@ -14,7 +14,12 @@ module Panda
 
         def show
           @file_categories = Panda::Core::FileCategory.ordered
-          render partial: "file_details", locals: {file: @blob, file_categories: @file_categories}
+          
+          if request.xhr? || request.headers['Turbo-Frame'].present?
+            render partial: "file_details", locals: {file: @blob, file_categories: @file_categories}
+          else
+            redirect_to admin_cms_files_path
+          end
         end
 
         def create
@@ -37,16 +42,19 @@ module Panda
             return
           end
 
+          category = Panda::Core::FileCategory.find_by(id: category_id)
+          if category.nil?
+            redirect_to admin_cms_files_path, alert: "Selected category not found."
+            return
+          end
+
           blob = find_existing_blob(file) || ActiveStorage::Blob.create_and_upload!(
             io: file,
             filename: file.original_filename,
             content_type: file.content_type
           )
 
-          category = Panda::Core::FileCategory.find_by(id: category_id)
-          if category
-            Panda::Core::FileCategorization.find_or_create_by!(file_category: category, blob: blob)
-          end
+          Panda::Core::FileCategorization.find_or_create_by!(file_category: category, blob: blob)
 
           redirect_to admin_cms_files_path, notice: "File uploaded successfully."
         end
@@ -81,7 +89,7 @@ module Panda
               )
             end
             format.html do
-              render partial: "file_details", locals: locals
+              redirect_to admin_cms_files_path, notice: "File updated successfully.", status: :see_other
             end
           end
         end

@@ -13,7 +13,7 @@
          data-page-presence-page-id-value="<%= page.id %>"
          data-page-presence-current-user-id-value="<%= current_user.id %>"
          data-page-presence-current-user-name-value="<%= current_user.name || current_user.email %>"
-         data-page-presence-presence-url-value="<%= admin_cms_page_presence_path(page) rescue '' %>">
+         data-page-presence-presence-url-value="<%= respond_to?(:admin_cms_page_presence_path) ? admin_cms_page_presence_path(page) : '' %>">
       <div data-page-presence-target="banner"
            class="hidden mb-3 mx-2 rounded-lg bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-800 flex items-center gap-2">
         <i class="fa-solid fa-users text-amber-500"></i>
