@@ -116,6 +116,20 @@ RSpec.describe "Admin pages smoke tests", type: :system do
     end
   end
 
+  describe "Redirects management" do
+    it "loads redirects index without errors" do
+      visit "/admin/cms/redirects"
+      expect(page).to have_css("h1")
+      expect(page.status_code).to eq(200)
+    end
+
+    it "loads new redirect form without errors" do
+      visit "/admin/cms/redirects/new"
+      expect(page).to have_css("h1")
+      expect(page.status_code).to eq(200)
+    end
+  end
+
   describe "Files management" do
     it "loads files index without errors" do
       visit "/admin/cms/files"

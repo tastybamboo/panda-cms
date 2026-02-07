@@ -7,11 +7,17 @@
     <% table.column("Origin Path") { |r| block_link_to r.origin_path, edit_admin_cms_redirect_path(r) } %>
     <% table.column("Destination Path") { |r| r.destination_path } %>
     <% table.column("Status Code") do |r| %>
-      <% status_text = r.status_code == 301 ? "Permanent" : "Temporary" %>
-      <% status_symbol = r.status_code == 301 ? :active : :pending %>
+      <% status_text, status_symbol = case r.status_code
+                                     when 301, 308
+                                       ["Permanent", :active]
+                                     when 302, 307
+                                       ["Temporary", :pending]
+                                     else
+                                       ["Unknown", :pending]
+                                     end %>
       <%= render Panda::Core::Admin::TagComponent.new(status: status_symbol, text: "#{r.status_code} — #{status_text}") %>
     <% end %>
-    <% table.column("Visits") { |r| r.visits } %>
+    <% table.column("Visits") { |r| r.visits.to_s } %>
     <% table.column("") do |r| %>
       <%= link_to "Edit", edit_admin_cms_redirect_path(r), class: "text-primary-600 hover:text-primary-700 mr-3" %>
       <%= link_to "Delete", admin_cms_redirect_path(r),
