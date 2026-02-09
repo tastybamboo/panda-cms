@@ -24,7 +24,7 @@
   <% editor_id = "editor_#{dom_id(post, :content)}" %>
   <div data-controller="editor-form"
        data-editor-form-editor-id-value="<%= editor_id %>"
-       data-editor-form-link-metadata-url-value="<%= admin_cms_link_metadata_index_path %>"
+       data-editor-form-link-metadata-url-value="<%= admin_cms_link_metadata_path %>"
        data-editor-form-file-upload-url-value="<%= admin_cms_files_path %>"
        data-editor-form-editor-search-url-value="<%= panda_core.admin_editor_search_path %>">
     <%= f.hidden_field :content,
