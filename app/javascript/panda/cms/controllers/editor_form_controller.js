@@ -80,6 +80,8 @@ export default class extends Controller {
       const initialContent = this.getInitialContent();
       console.debug("[Panda CMS] Using initial content:", initialContent);
 
+      const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+
       const config = {
         ...getEditorConfig(holderId, initialContent),
         holder: holderId,
@@ -137,7 +139,10 @@ export default class extends Controller {
           linkTool: {
             class: window.LinkTool,
             config: {
-              endpoint: window.PANDA_CMS_EDITOR_JS_ENDPOINTS?.linkMetadata
+              endpoint: window.PANDA_CMS_EDITOR_JS_ENDPOINTS?.linkMetadata,
+              headers: {
+                'X-CSRF-Token': csrfToken
+              }
             }
           },
           attaches: {
@@ -145,7 +150,10 @@ export default class extends Controller {
             config: {
               endpoint: window.PANDA_CMS_EDITOR_JS_ENDPOINTS?.fileUpload,
               field: 'file',
-              buttonText: 'Select file to upload'
+              buttonText: 'Select file to upload',
+              additionalRequestHeaders: {
+                'X-CSRF-Token': csrfToken
+              }
             }
           },
           link: {

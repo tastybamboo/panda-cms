@@ -4,8 +4,6 @@ module Panda
   module CMS
     module Admin
       class LinkMetadataController < ::Panda::CMS::Admin::BaseController
-        skip_forgery_protection only: [:create]
-
         def create
           url = params[:url].to_s.strip
           if url.blank?

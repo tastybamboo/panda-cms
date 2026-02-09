@@ -266,6 +266,8 @@ export default class extends Controller {
         fileUpload: this.fileUploadUrlValue || undefined,
         editorSearch: this.editorSearchUrlValue || undefined,
       }
+      // Pass CSRF token from parent document to iframe window for EditorJS tool requests
+      iframeWindow.PANDA_CMS_CSRF_TOKEN = parent.document.querySelector('meta[name="csrf-token"]')?.content
     }
 
     // Get all editable elements

@@ -3,6 +3,8 @@
 require "net/http"
 require "uri"
 require "nokogiri"
+require "ipaddr"
+require "resolv"
 
 module Panda
   module CMS
@@ -33,8 +35,23 @@ module Panda
         unless uri.is_a?(URI::HTTP) || uri.is_a?(URI::HTTPS)
           raise ArgumentError, "Only http and https URLs are allowed"
         end
+
+        # Block requests to private/reserved IP ranges
+        validate_not_private_ip!(uri.host)
       rescue URI::InvalidURIError
         raise ArgumentError, "Invalid URL"
+      end
+
+      def validate_not_private_ip!(host)
+        addresses = Resolv.getaddresses(host)
+        addresses.each do |addr|
+          ip = IPAddr.new(addr)
+          if ip.private? || ip.loopback? || ip.link_local?
+            raise ArgumentError, "Requests to private networks are not allowed"
+          end
+        end
+      rescue Resolv::ResolvError
+        raise ArgumentError, "Could not resolve hostname"
       end
 
       def fetch_html(url, redirects_remaining)
@@ -48,27 +65,31 @@ module Panda
         request["User-Agent"] = "PandaCMS LinkTool/1.0"
         request["Accept"] = "text/html"
 
-        response = http.request(request)
-
-        case response
-        when Net::HTTPRedirection
-          if redirects_remaining > 0
-            location = response["location"]
-            # Handle relative redirects
-            location = URI.join(url, location).to_s unless location.start_with?("http")
-            fetch_html(location, redirects_remaining - 1)
+        result = nil
+        http.request(request) do |response|
+          case response
+          when Net::HTTPRedirection
+            if redirects_remaining > 0
+              location = response["location"]
+              raise "Redirect without Location header" if location.blank?
+              location = URI.join(url, location).to_s unless location.start_with?("http")
+              validate_not_private_ip!(URI.parse(location).host)
+              result = fetch_html(location, redirects_remaining - 1)
+            else
+              raise "Too many redirects"
+            end
+          when Net::HTTPSuccess
+            body = +""
+            response.read_body do |chunk|
+              body << chunk
+              raise "Response too large" if body.bytesize > MAX_RESPONSE_SIZE
+            end
+            result = body.force_encoding("UTF-8")
           else
-            raise "Too many redirects"
+            raise "HTTP #{response.code}: #{response.message}"
           end
-        when Net::HTTPSuccess
-          body = response.body.to_s
-          if body.bytesize > MAX_RESPONSE_SIZE
-            body = body.byteslice(0, MAX_RESPONSE_SIZE)
-          end
-          body.force_encoding("UTF-8")
-        else
-          raise "HTTP #{response.code}"
         end
+        result
       end
 
       def parse_metadata(html)
