@@ -28,6 +28,11 @@ module Panda
             return create_from_editor
           end
 
+          # File uploads from EditorJS AttachesTool
+          if params[:file].present?
+            return create_file_from_editor
+          end
+
           # HTML form uploads from the file gallery
           file = params.dig(:file_upload, :file)
           category_id = params.dig(:file_upload, :file_category_id)
@@ -142,6 +147,29 @@ module Panda
               url: Rails.application.routes.url_helpers.rails_blob_url(blob, only_path: true),
               name: blob.filename.to_s,
               size: blob.byte_size
+            }
+          }
+        end
+
+        def create_file_from_editor
+          file = params[:file]
+          return render json: {success: 0} unless file
+
+          blob = find_existing_blob(file) || ActiveStorage::Blob.create_and_upload!(
+            io: file,
+            filename: file.original_filename,
+            content_type: file.content_type
+          )
+
+          extension = File.extname(blob.filename.to_s).delete_prefix(".")
+
+          render json: {
+            success: 1,
+            file: {
+              url: Rails.application.routes.url_helpers.rails_blob_url(blob, only_path: true),
+              name: blob.filename.to_s,
+              size: blob.byte_size,
+              extension: extension
             }
           }
         end

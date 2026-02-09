@@ -452,6 +452,86 @@ RSpec.describe Panda::CMS::Page, type: :model do
     end
   end
 
+  describe ".editor_search" do
+    let(:test_template) { create_test_template("Search Test", "layouts/search_test") }
+
+    before do
+      stub_redirect_creation
+    end
+
+    let(:search_root) do
+      page = Panda::CMS::Page.new(
+        path: "/search-test",
+        title: "Search Test Root",
+        template: test_template,
+        status: "active"
+      )
+      page.save(validate: false)
+      page
+    end
+
+    let!(:active_page) do
+      Panda::CMS::Page.create!(
+        title: "Active Page",
+        path: "/search-test/active-page",
+        parent: search_root,
+        template: test_template,
+        status: "active"
+      )
+    end
+
+    let!(:draft_page) do
+      Panda::CMS::Page.create!(
+        title: "Draft Page",
+        path: "/search-test/draft-page",
+        parent: search_root,
+        template: test_template,
+        status: "draft"
+      )
+    end
+
+    let!(:another_active_page) do
+      Panda::CMS::Page.create!(
+        title: "Another Active",
+        path: "/search-test/another-active",
+        parent: search_root,
+        template: test_template,
+        status: "active"
+      )
+    end
+
+    it "returns only active records" do
+      results = Panda::CMS::Page.editor_search("page")
+      hrefs = results.map { |r| r[:href] }
+      expect(hrefs).to include("/search-test/active-page")
+      expect(hrefs).not_to include("/search-test/draft-page")
+    end
+
+    it "matches by title" do
+      results = Panda::CMS::Page.editor_search("Another Active")
+      expect(results.length).to eq(1)
+      expect(results.first[:name]).to eq("Another Active")
+    end
+
+    it "matches by path" do
+      results = Panda::CMS::Page.editor_search("active-page")
+      expect(results.map { |r| r[:href] }).to include("/search-test/active-page")
+    end
+
+    it "respects limit" do
+      results = Panda::CMS::Page.editor_search("search-test", limit: 1)
+      expect(results.length).to eq(1)
+    end
+
+    it "returns correct hash structure" do
+      results = Panda::CMS::Page.editor_search("Active Page")
+      expect(results.first).to include(:href, :name, :description)
+      expect(results.first[:href]).to eq("/search-test/active-page")
+      expect(results.first[:name]).to eq("Active Page")
+      expect(results.first[:description]).to eq("/search-test/active-page")
+    end
+  end
+
   describe "SEO functionality" do
     let(:test_template) { create_test_template("SEO Test", "layouts/seo_test") }
 

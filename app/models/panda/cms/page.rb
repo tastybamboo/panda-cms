@@ -35,6 +35,13 @@ module Panda
 
       scope :ordered, -> { order(:lft) }
 
+      def self.editor_search(query, limit: 5)
+        where(status: :active)
+          .where("title ILIKE :q OR path ILIKE :q", q: "%#{sanitize_sql_like(query)}%")
+          .limit(limit)
+          .map { |p| {href: p.path, name: p.title, description: p.path} }
+      end
+
       enum :status, {
         active: "active",
         draft: "draft",

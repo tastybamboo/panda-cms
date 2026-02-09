@@ -59,6 +59,20 @@ module Panda
         end
       end
 
+      # Register search providers for editor link-autocomplete
+      initializer "panda_cms.search_providers" do
+        ActiveSupport.on_load(:active_record) do
+          Panda::Core::SearchRegistry.register(
+            name: "pages",
+            search_class: Panda::CMS::Page
+          )
+          Panda::Core::SearchRegistry.register(
+            name: "posts",
+            search_class: Panda::CMS::Post
+          )
+        end
+      end
+
       # Configure custom error pages in production-like environments
       # This enables Panda CMS's custom 404, 500, and other error pages
       initializer "panda.cms.custom_error_pages", after: :load_config_initializers do |app|
