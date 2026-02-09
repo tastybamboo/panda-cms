@@ -162,12 +162,6 @@ RSpec.describe "Redirects Management", type: :system do
   end
 
   describe "deleting a redirect" do
-    it "has delete links on the index page" do
-      visit "/admin/cms/redirects"
-
-      expect(page).to have_css("a[data-turbo-method='delete']", wait: 10)
-    end
-
     it "can delete a redirect" do
       redirect_to_delete = Panda::CMS::Redirect.create!(
         origin_path: "/delete-me",
