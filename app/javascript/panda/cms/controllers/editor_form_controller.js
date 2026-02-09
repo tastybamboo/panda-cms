@@ -1,5 +1,5 @@
 import { Controller } from "@hotwired/stimulus";
-import { EDITOR_JS_RESOURCES, EDITOR_JS_CSS } from "panda/editor/editor_js_config";
+import { EDITOR_JS_RESOURCES, EDITOR_JS_CSS, initializeEditorUndo } from "panda/editor/editor_js_config";
 import { ResourceLoader } from "panda/editor/resource_loader";
 
 // UTF-8 safe Base64 helpers — atob/btoa only handle Latin-1, corrupting multi-byte characters
@@ -19,6 +19,9 @@ export default class extends Controller {
   static targets = ["editorContainer", "hiddenField"];
   static values = {
     editorId: String,
+    linkMetadataUrl: String,
+    fileUploadUrl: String,
+    editorSearchUrl: String,
   };
 
   connect() {
@@ -51,6 +54,13 @@ export default class extends Controller {
 
   async initializeEditor() {
     if (this.editor) return;
+
+    // Set endpoint URLs for EditorJS tools (link, attaches)
+    window.PANDA_CMS_EDITOR_JS_ENDPOINTS = {
+      linkMetadata: this.linkMetadataUrlValue || undefined,
+      fileUpload: this.fileUploadUrlValue || undefined,
+      editorSearch: this.editorSearchUrlValue || undefined,
+    };
 
     try {
       const holderId =
@@ -123,6 +133,27 @@ export default class extends Controller {
           table: {
             class: window.Table,
             inlineToolbar: true
+          },
+          linkTool: {
+            class: window.LinkTool,
+            config: {
+              endpoint: window.PANDA_CMS_EDITOR_JS_ENDPOINTS?.linkMetadata
+            }
+          },
+          attaches: {
+            class: window.AttachesTool,
+            config: {
+              endpoint: window.PANDA_CMS_EDITOR_JS_ENDPOINTS?.fileUpload,
+              field: 'file',
+              buttonText: 'Select file to upload'
+            }
+          },
+          link: {
+            class: window.LinkAutocomplete,
+            config: {
+              endpoint: window.PANDA_CMS_EDITOR_JS_ENDPOINTS?.editorSearch,
+              queryParam: 'search'
+            }
           }
         }
       };
@@ -137,6 +168,7 @@ export default class extends Controller {
 
       // Wait for editor to be ready
       await this.editor.isReady;
+      initializeEditorUndo(this.editor, window);
       console.debug("[Panda CMS] Editor initialized successfully");
 
     } catch (error) {

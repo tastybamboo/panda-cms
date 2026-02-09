@@ -172,7 +172,10 @@
         editor_iframe_page_id_value: @page.id,
         editor_iframe_admin_path_value: "#{admin_cms_dashboard_url}",
         editor_iframe_autosave_value: false,
-        editor_iframe_assets_value: panda_cms_injectable_assets
+        editor_iframe_assets_value: panda_cms_injectable_assets,
+        editor_iframe_link_metadata_url_value: admin_cms_link_metadata_index_path,
+        editor_iframe_file_upload_url_value: admin_cms_files_path,
+        editor_iframe_editor_search_url_value: panda_core.admin_editor_search_path
       } %>
 
   <%# Vanilla JS character counters - works independently of Stimulus %>

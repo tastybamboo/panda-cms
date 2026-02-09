@@ -27,6 +27,14 @@ module Panda
         }
 
       scope :ordered, -> { order(published_at: :desc) }
+
+      def self.editor_search(query, limit: 5)
+        posts_prefix = Panda::CMS.config.posts[:prefix]
+        where(status: :active)
+          .where("title ILIKE :q OR slug ILIKE :q", q: "%#{sanitize_sql_like(query)}%")
+          .limit(limit)
+          .map { |p| {href: "#{posts_prefix}#{p.slug}", name: p.title, description: "Post"} }
+      end
       scope :with_user, -> { includes(:user) }
       scope :with_author, -> { includes(:author) }
 

@@ -11,6 +11,7 @@ Panda::CMS::Engine.routes.draw do
     namespace admin_path.delete_prefix("/").to_sym, path: "#{admin_path}/cms", as: :admin_cms, module: :admin do
       resources :files
       resources :forms
+      resources :link_metadata, only: [:create]
       resources :menus
       resources :pages do
         resources :block_contents, only: %i[update]

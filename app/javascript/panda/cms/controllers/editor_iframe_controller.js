@@ -22,7 +22,10 @@ export default class extends Controller {
     pageId: Number,
     adminPath: String,
     autosave: Boolean,
-    assets: String
+    assets: String,
+    linkMetadataUrl: String,
+    fileUploadUrl: String,
+    editorSearchUrl: String
   }
 
   connect() {
@@ -255,6 +258,16 @@ export default class extends Controller {
     console.debug("[Panda CMS] Starting editor initialization")
     this.logLayoutState("initializeEditors start")
 
+    // Set endpoint URLs for EditorJS tools (link, attaches) in the iframe window
+    const iframeWindow = this.frameDocument.defaultView || this.frame.contentWindow
+    if (iframeWindow) {
+      iframeWindow.PANDA_CMS_EDITOR_JS_ENDPOINTS = {
+        linkMetadata: this.linkMetadataUrlValue || undefined,
+        fileUpload: this.fileUploadUrlValue || undefined,
+        editorSearch: this.editorSearchUrlValue || undefined,
+      }
+    }
+
     // Get all editable elements
     const plainTextElements = this.body.querySelectorAll('[data-editable-kind="plain_text"], [data-editable-kind="markdown"], [data-editable-kind="html"]')
     const richTextElements = this.body.querySelectorAll('[data-editable-kind="rich_text"]')
@@ -356,7 +369,9 @@ export default class extends Controller {
         'quote': 'Quote',
         'simple-image': 'SimpleImage',
         'table': 'Table',
-        'embed': 'Embed'
+        'embed': 'Embed',
+        'link': 'LinkTool',
+        'attaches': 'AttachesTool'
       }
 
       const check = () => {
