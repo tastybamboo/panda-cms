@@ -91,6 +91,53 @@ RSpec.describe "Admin Files", type: :request do
     end
   end
 
+  describe "DELETE /admin/cms/files/:id" do
+    it "deletes a blob with no attachments" do
+      blob = ActiveStorage::Blob.create_and_upload!(
+        io: StringIO.new("delete me"),
+        filename: "delete_me.txt",
+        content_type: "text/plain"
+      )
+
+      expect {
+        delete "/admin/cms/files/#{blob.id}"
+      }.to change(ActiveStorage::Blob, :count).by(-1)
+
+      expect(response).to redirect_to("/admin/cms/files")
+    end
+
+    it "deletes a blob that has active attachments" do
+      admin_user.avatar.attach(
+        io: StringIO.new("avatar data"),
+        filename: "avatar.jpg",
+        content_type: "image/jpeg"
+      )
+      blob = admin_user.avatar.blob
+
+      expect {
+        delete "/admin/cms/files/#{blob.id}"
+      }.to change(ActiveStorage::Blob, :count).by(-1)
+        .and change(ActiveStorage::Attachment, :count).by(-1)
+
+      expect(response).to redirect_to("/admin/cms/files")
+    end
+
+    it "also removes associated file categorizations" do
+      blob = ActiveStorage::Blob.create_and_upload!(
+        io: StringIO.new("categorized"),
+        filename: "categorized.txt",
+        content_type: "text/plain"
+      )
+      Panda::Core::FileCategorization.create!(file_category: category, blob: blob)
+
+      expect {
+        delete "/admin/cms/files/#{blob.id}"
+      }.to change(Panda::Core::FileCategorization, :count).by(-1)
+
+      expect(response).to redirect_to("/admin/cms/files")
+    end
+  end
+
   describe "POST /admin/cms/files (gallery upload)" do
     it "stamps the uploader metadata on the blob" do
       file = Rack::Test::UploadedFile.new(
