@@ -10,7 +10,8 @@
       </div>
     <% end %>
 
-    <%# Category filter pills — matches helpdesk ticket filter style %>
+    <%# Category filter pills — uses same style as helpdesk ticket filters %>
+    <%# TODO: Convert to Panda::Core::Admin::FilterPillsComponent after panda-core PR merges %>
     <% if @file_categories.any? %>
       <div class="flex flex-wrap gap-2 mb-4">
         <%= link_to "All",
