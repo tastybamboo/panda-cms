@@ -10,8 +10,18 @@
       </div>
     <% end %>
 
+    <% if @file_categories.any? %>
+      <% filter_items = @file_categories.map { |c| { label: c.name, value: c.slug } } %>
+      <% filter_items << { label: "Uncategorized", value: "uncategorized" } %>
+      <%= render Panda::Core::Admin::FilterPillsComponent.new(
+        items: filter_items,
+        url_helper: ->(value) { value ? admin_cms_files_path(category: value) : admin_cms_files_path },
+        active_value: @active_category
+      ) %>
+    <% end %>
+
     <div class="pb-24">
-      <%= render Panda::Core::Admin::FileGalleryComponent.new(files: @files) %>
+      <%= render Panda::Core::Admin::FileGalleryComponent.new(files: @files, blob_categories: @blob_categories) %>
     </div>
   <% end %>
 
@@ -27,7 +37,7 @@
         <div class="flex items-center justify-between">
           <h2 class="text-base font-semibold text-white">Upload File</h2>
           <button type="button" data-action="click->file-gallery#closeUpload"
-            class="inline-flex items-center gap-1 rounded-full bg-white/10 px-2 py-1 text-xs text-white/80 hover:text-white">
+            class="inline-flex items-center gap-1 rounded-full bg-white/10 px-2 py-1 text-xs text-white/80 hover:text-white cursor-pointer">
             <span>Close</span>
             <i class="fa-solid fa-xmark"></i>
           </button>
