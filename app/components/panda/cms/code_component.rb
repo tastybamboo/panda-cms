@@ -57,8 +57,14 @@ module Panda
       end
 
       def can_edit_code?
-        return false unless view_context.respond_to?(:can?)
-        view_context.can?(:edit_code_blocks)
+        if view_context.respond_to?(:can?)
+          view_context.can?(:edit_code_blocks)
+        else
+          # In front-end context (page iframe editing), can? is not available
+          # because the front-end controller doesn't include Authorizable.
+          # Fall back to admin check since only admins can initiate editing.
+          Panda::Core::Current.user&.admin? || false
+        end
       end
 
       def is_embedded?
