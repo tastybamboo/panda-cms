@@ -71,13 +71,14 @@ RSpec.describe "Admin Block Contents", type: :request do
     let(:text_block) { panda_cms_blocks(:plain_text_block) }
 
     before do
+      @original_authorization_policy = Panda::Core.config.authorization_policy
       Panda::Core.config.authorization_policy = ->(_user, action, _resource) {
         action == :access_admin
       }
     end
 
     after do
-      Panda::Core.reset_config!
+      Panda::Core.config.authorization_policy = @original_authorization_policy
     end
 
     it "checks permission for code blocks" do
