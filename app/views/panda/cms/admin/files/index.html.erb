@@ -10,22 +10,14 @@
       </div>
     <% end %>
 
-    <%# Category filter pills — uses same style as helpdesk ticket filters %>
-    <%# TODO: Convert to Panda::Core::Admin::FilterPillsComponent after panda-core PR merges %>
     <% if @file_categories.any? %>
-      <div class="flex flex-wrap gap-2 mb-4">
-        <%= link_to "All",
-          admin_cms_files_path,
-          class: "inline-flex items-center rounded-full px-3 py-1.5 text-xs font-medium #{@active_category.blank? ? "bg-primary-100 text-primary-700" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}" %>
-        <% @file_categories.each do |category| %>
-          <%= link_to category.name,
-            admin_cms_files_path(category: category.slug),
-            class: "inline-flex items-center rounded-full px-3 py-1.5 text-xs font-medium #{@active_category == category.slug ? "bg-primary-100 text-primary-700" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}" %>
-        <% end %>
-        <%= link_to "Uncategorized",
-          admin_cms_files_path(category: "uncategorized"),
-          class: "inline-flex items-center rounded-full px-3 py-1.5 text-xs font-medium #{@active_category == "uncategorized" ? "bg-primary-100 text-primary-700" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}" %>
-      </div>
+      <% filter_items = @file_categories.map { |c| { label: c.name, value: c.slug } } %>
+      <% filter_items << { label: "Uncategorized", value: "uncategorized" } %>
+      <%= render Panda::Core::Admin::FilterPillsComponent.new(
+        items: filter_items,
+        url_helper: ->(value) { value ? admin_cms_files_path(category: value) : admin_cms_files_path },
+        active_value: @active_category
+      ) %>
     <% end %>
 
     <div class="pb-24">
