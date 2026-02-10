@@ -32,6 +32,9 @@ Panda::CMS::Engine.routes.draw do
 
   ### PUBLIC ROUTES ###
 
+  # Sitemap
+  get "sitemap", to: "sitemaps#index", as: :sitemap, defaults: {format: :xml}
+
   # Authentication routes are now handled by Panda::Core
 
   # Error pages (403, 404, 500, etc.)
