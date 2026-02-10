@@ -122,6 +122,28 @@ RSpec.describe "Admin Files", type: :request do
       expect(response).to redirect_to("/admin/cms/files")
     end
 
+    it "deletes a blob that has variant records" do
+      blob = ActiveStorage::Blob.create_and_upload!(
+        io: StringIO.new("image data"),
+        filename: "with_variants.jpg",
+        content_type: "image/jpeg"
+      )
+      variant_record = ActiveStorage::VariantRecord.create!(blob: blob, variation_digest: "test_digest")
+      variant_blob = ActiveStorage::Blob.create_and_upload!(
+        io: StringIO.new("variant data"),
+        filename: "variant.jpg",
+        content_type: "image/jpeg"
+      )
+      variant_record.image.attach(variant_blob)
+
+      expect {
+        delete "/admin/cms/files/#{blob.id}"
+      }.to change(ActiveStorage::Blob, :count).by(-2)
+        .and change(ActiveStorage::VariantRecord, :count).by(-1)
+
+      expect(response).to redirect_to("/admin/cms/files")
+    end
+
     it "also removes associated file categorizations" do
       blob = ActiveStorage::Blob.create_and_upload!(
         io: StringIO.new("categorized"),
