@@ -3,6 +3,8 @@
 require "system_helper"
 
 RSpec.describe "Admin Files Management", type: :system do
+  include ActiveJob::TestHelper
+
   before do
     login_as_admin
   end
@@ -112,16 +114,18 @@ RSpec.describe "Admin Files Management", type: :system do
 
       within "#file-gallery-slideover-content", wait: 5 do
         expect(page).to have_button("Delete", wait: 5)
+      end
 
-        # Click delete and accept confirmation
+      # Wrap in perform_enqueued_jobs so purge_later runs inline
+      perform_enqueued_jobs do
         accept_confirm do
           click_button "Delete"
         end
-      end
 
-      # Should redirect back to files index
-      expect(page).to have_content("Files", wait: 5)
-      expect(page).to have_content("File was successfully deleted")
+        # Should redirect back to files index
+        expect(page).to have_content("Files", wait: 5)
+        expect(page).to have_content("File was successfully deleted")
+      end
 
       # File should be gone from database
       expect(ActiveStorage::Blob.find_by(id: test_file.id)).to be_nil
