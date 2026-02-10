@@ -94,53 +94,53 @@
   end
 %>
 
-<%# Variants (images only) %>
+<%# Versions (images only — always show original, plus any variants) %>
 <% if file.image? %>
   <% variant_blobs = file.variant_records.includes(image_attachment: :blob).filter_map { |vr| vr.image&.blob } %>
   <% variant_blobs.sort_by! { |b| [-(b.metadata["width"].to_i * b.metadata["height"].to_i), -b.byte_size] } %>
-  <% if variant_blobs.any? %>
-    <div class="mt-4">
-      <h3 class="font-medium text-gray-900 dark:text-gray-100">Variants</h3>
-      <div class="mt-2 space-y-3">
-        <%# Original %>
+  <div class="mt-4">
+    <h3 class="font-medium text-gray-900 dark:text-gray-100">Versions</h3>
+    <div class="mt-2 space-y-3">
+      <%# Original %>
+      <div class="border border-gray-200 dark:border-white/10 rounded-lg p-3">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-900 dark:text-gray-100">Original</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400">
+              <% if file.metadata["width"] && file.metadata["height"] %>
+                <%= file.metadata["width"] %>&times;<%= file.metadata["height"] %> &middot;
+              <% end %>
+              <%= number_to_human_size(file.byte_size) %> &middot;
+              <%= friendly_content_type.call(file.content_type) %>
+            </p>
+          </div>
+          <%= link_to main_app.rails_blob_path(file, disposition: "attachment"), class: "text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" do %>
+            <i class="fa-solid fa-download text-sm"></i>
+          <% end %>
+        </div>
+      </div>
+      <%# Variant records (sorted by dimensions desc) %>
+      <% variant_blobs.each do |variant_blob| %>
         <div class="border border-gray-200 dark:border-white/10 rounded-lg p-3">
           <div class="flex items-center justify-between">
             <div>
-              <p class="text-sm font-medium text-gray-900 dark:text-gray-100">Original</p>
+              <p class="text-sm font-medium text-gray-900 dark:text-gray-100">Variant</p>
               <p class="text-xs text-gray-500 dark:text-gray-400">
-                <%= file.metadata["width"] %>×<%= file.metadata["height"] %> &middot;
-                <%= number_to_human_size(file.byte_size) %> &middot;
-                <%= friendly_content_type.call(file.content_type) %>
+                <% if variant_blob.metadata["width"] && variant_blob.metadata["height"] %>
+                  <%= variant_blob.metadata["width"] %>&times;<%= variant_blob.metadata["height"] %> &middot;
+                <% end %>
+                <%= number_to_human_size(variant_blob.byte_size) %> &middot;
+                <%= friendly_content_type.call(variant_blob.content_type) %>
               </p>
             </div>
-            <%= link_to main_app.rails_blob_path(file, disposition: "attachment"), class: "text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" do %>
+            <%= link_to main_app.rails_blob_path(variant_blob, disposition: "attachment"), class: "text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" do %>
               <i class="fa-solid fa-download text-sm"></i>
             <% end %>
           </div>
         </div>
-        <%# Variant records (sorted by dimensions desc) %>
-        <% variant_blobs.each do |variant_blob| %>
-          <div class="border border-gray-200 dark:border-white/10 rounded-lg p-3">
-            <div class="flex items-center justify-between">
-              <div>
-                <p class="text-sm font-medium text-gray-900 dark:text-gray-100">Variant</p>
-                <p class="text-xs text-gray-500 dark:text-gray-400">
-                  <% if variant_blob.metadata["width"] && variant_blob.metadata["height"] %>
-                    <%= variant_blob.metadata["width"] %>×<%= variant_blob.metadata["height"] %> &middot;
-                  <% end %>
-                  <%= number_to_human_size(variant_blob.byte_size) %> &middot;
-                  <%= friendly_content_type.call(variant_blob.content_type) %>
-                </p>
-              </div>
-              <%= link_to main_app.rails_blob_path(variant_blob, disposition: "attachment"), class: "text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" do %>
-                <i class="fa-solid fa-download text-sm"></i>
-              <% end %>
-            </div>
-          </div>
-        <% end %>
-      </div>
+      <% end %>
     </div>
-  <% end %>
+  </div>
 <% end %>
 
 <%# Action buttons %>
