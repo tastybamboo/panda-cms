@@ -131,26 +131,9 @@ module Panda
         end
 
         def destroy
-          if @blob.attachments.exists?
-            @file_categories = Panda::Core::FileCategory.ordered
-            locals = {file: @blob, file_categories: @file_categories, error: "File cannot be deleted because it is still in use."}
-            respond_to do |format|
-              format.turbo_stream do
-                render turbo_stream: turbo_stream.update(
-                  "file-gallery-slideover-content",
-                  partial: "file_details",
-                  locals: locals
-                )
-              end
-              format.html do
-                redirect_to admin_cms_files_path, alert: "File cannot be deleted because it is still in use.", status: :see_other
-              end
-            end
-          else
-            Panda::Core::FileCategorization.where(blob_id: @blob.id).destroy_all
-            @blob.purge
-            redirect_to admin_cms_files_path, notice: "File was successfully deleted.", status: :see_other
-          end
+          @blob.attachments.destroy_all
+          @blob.purge
+          redirect_to admin_cms_files_path, notice: "File was successfully deleted.", status: :see_other
         end
 
         private
