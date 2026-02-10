@@ -33,6 +33,16 @@ RSpec.describe "Admin Block Contents", type: :request do
         expect(response).to have_http_status(:ok)
         expect(text_block_content.reload.content).to eq("Updated text")
       end
+
+      it "rejects block content that belongs to a different page" do
+        other_page_content = panda_cms_block_contents(:services_page_html_code)
+
+        expect {
+          patch "/admin/cms/pages/#{page.id}/block_contents/#{other_page_content.id}",
+            params: {content: "Cross-page attack"},
+            as: :json
+        }.to raise_error(ActiveRecord::RecordNotFound)
+      end
     end
 
     context "when user lacks edit_code_blocks permission" do
@@ -40,7 +50,7 @@ RSpec.describe "Admin Block Contents", type: :request do
 
       before do
         # Grant admin access but deny code block editing
-        Panda::Core.config.authorization_policy = ->(user, action, _resource) {
+        Panda::Core.config.authorization_policy = ->(_user, action, _resource) {
           action == :access_admin
         }
         post "/admin/test_sessions", params: {user_id: editor_user.id}
@@ -60,11 +70,6 @@ RSpec.describe "Admin Block Contents", type: :request do
       end
 
       it "allows updating non-code blocks" do
-        # Grant access_admin and general content editing but not code blocks
-        Panda::Core.config.authorization_policy = ->(user, action, _resource) {
-          %i[access_admin].include?(action)
-        }
-
         patch "/admin/cms/pages/#{page.id}/block_contents/#{text_block_content.id}",
           params: {content: "Updated by editor"},
           as: :json
@@ -77,7 +82,7 @@ RSpec.describe "Admin Block Contents", type: :request do
       let(:editor_user) { create_regular_user }
 
       before do
-        Panda::Core.config.authorization_policy = ->(user, action, _resource) {
+        Panda::Core.config.authorization_policy = ->(_user, action, _resource) {
           %i[access_admin edit_code_blocks].include?(action)
         }
         post "/admin/test_sessions", params: {user_id: editor_user.id}

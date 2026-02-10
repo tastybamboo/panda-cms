@@ -57,7 +57,7 @@ module Panda
       end
 
       def can_edit_code?
-        return true unless view_context.respond_to?(:can?)
+        return false unless view_context.respond_to?(:can?)
         view_context.can?(:edit_code_blocks)
       end
 

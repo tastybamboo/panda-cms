@@ -47,7 +47,7 @@ module Panda
         # @type private
         # @return Panda::CMS::BlockContent
         def set_block_content
-          @block_content = Panda::CMS::BlockContent.find(params[:id])
+          @block_content = @page.block_contents.find(params[:id])
         end
 
         # Require :edit_code_blocks permission for code block updates
