@@ -53,8 +53,12 @@ module Panda
       end
 
       def component_is_editable?
-        # TODO: Permissions
-        @editable && is_embedded?
+        @editable && is_embedded? && can_edit_code?
+      end
+
+      def can_edit_code?
+        return true unless view_context.respond_to?(:can?)
+        view_context.can?(:edit_code_blocks)
       end
 
       def is_embedded?
