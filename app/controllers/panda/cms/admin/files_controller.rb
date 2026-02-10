@@ -8,8 +8,38 @@ module Panda
         before_action :set_blob, only: [:show, :update, :destroy]
 
         def index
-          @files = ActiveStorage::Blob.order(created_at: :desc)
+          # Exclude variant blobs — they are attached to VariantRecord, not user-uploaded
+          variant_blob_ids = ActiveStorage::Attachment
+            .where(record_type: "ActiveStorage::VariantRecord")
+            .select(:blob_id)
+
+          @files = ActiveStorage::Blob
+            .where.not(id: variant_blob_ids)
+            .includes(:variant_records)
+            .order(created_at: :desc)
+
           @file_categories = Panda::Core::FileCategory.ordered
+          @active_category = params[:category]
+
+          # Apply category filter
+          if @active_category == "uncategorized"
+            categorized_blob_ids = Panda::Core::FileCategorization.select(:blob_id)
+            @files = @files.where.not(id: categorized_blob_ids)
+          elsif @active_category.present?
+            category = Panda::Core::FileCategory.find_by(slug: @active_category)
+            if category
+              blob_ids = Panda::Core::FileCategorization.where(file_category: category).select(:blob_id)
+              @files = @files.where(id: blob_ids)
+            end
+          end
+
+          # Preload category names for gallery display
+          categorizations = Panda::Core::FileCategorization
+            .where(blob_id: @files.select(:id))
+            .includes(:file_category)
+          @blob_categories = categorizations.each_with_object({}) do |cat, hash|
+            hash[cat.blob_id] = cat.file_category
+          end
         end
 
         def show
@@ -57,6 +87,8 @@ module Panda
             filename: file.original_filename,
             content_type: file.content_type
           )
+
+          stamp_uploader(blob)
 
           Panda::Core::FileCategorization.find_or_create_by!(file_category: category, blob: blob)
 
@@ -141,6 +173,8 @@ module Panda
             content_type: file.content_type
           )
 
+          stamp_uploader(blob)
+
           render json: {
             success: true,
             file: {
@@ -161,6 +195,8 @@ module Panda
             content_type: file.content_type
           )
 
+          stamp_uploader(blob)
+
           extension = File.extname(blob.filename.to_s).delete_prefix(".")
 
           render json: {
@@ -177,6 +213,14 @@ module Panda
         def find_existing_blob(file)
           checksum = Digest::MD5.file(file.tempfile.path).base64digest
           ActiveStorage::Blob.find_by(checksum: checksum, byte_size: file.size)
+        end
+
+        def stamp_uploader(blob)
+          return unless current_user
+          metadata = blob.metadata || {}
+          metadata["uploaded_by_id"] = current_user.id
+          metadata["uploaded_by_name"] = current_user.name
+          blob.update_column(:metadata, metadata)
         end
 
         def update_file_category(category_id)
