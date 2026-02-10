@@ -131,7 +131,8 @@ module Panda
         end
 
         def destroy
-          @blob.attachments.destroy_all
+          ActiveStorage::Attachment.where(blob_id: @blob.id).delete_all
+          Panda::Core::FileCategorization.where(blob_id: @blob.id).delete_all
           @blob.purge
           redirect_to admin_cms_files_path, notice: "File was successfully deleted.", status: :see_other
         end
