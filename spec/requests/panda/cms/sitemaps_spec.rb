@@ -190,6 +190,22 @@ RSpec.describe "Sitemap", type: :request do
       end
     end
 
+    context "with no content" do
+      before do
+        Panda::CMS::Page.update_all(status: :draft)
+      end
+
+      it "returns a valid empty sitemap" do
+        get "/sitemap.xml"
+        expect(response).to have_http_status(:ok)
+        doc = Nokogiri::XML(response.body)
+        expect(doc.errors).to be_empty
+        expect(doc.root.name).to eq("urlset")
+        urls = doc.xpath("//xmlns:loc", "xmlns" => "http://www.sitemaps.org/schemas/sitemap/0.9")
+        expect(urls).to be_empty
+      end
+    end
+
     context "HTTP caching" do
       it "returns 304 Not Modified for cached requests" do
         get "/sitemap.xml"

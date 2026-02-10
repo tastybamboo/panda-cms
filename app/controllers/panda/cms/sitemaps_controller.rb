@@ -20,7 +20,7 @@ module Panda
         end
 
         latest = [@pages.maximum(:updated_at), @posts.maximum(:updated_at)].compact.max
-        if latest && stale?(last_modified: latest, public: true)
+        if latest.nil? || stale?(last_modified: latest, public: true)
           respond_to do |format|
             format.xml
           end
