@@ -1,15 +1,12 @@
 # Panda CMS
 
-> [!CAUTION]
-> This application is being developed in public. It is not ready for production use. If you'd like to try it out (or help with documentation), please contact [@jfi](https://github.com/jfi) by emailing [bamboo@pandacms.io](mailto:bamboo@pandacms.io).
+## Better websites, on Rails. 🐼
 
-## Panda CMS is the CMS we always wanted. 🐼
+A modern, modular content management system built for Ruby on Rails. Simple enough for small sites, powerful enough to scale. No bloat, just the features you need.
 
-Better websites, on Rails.
+Panda CMS has been in production since March 2024 and is actively maintained by [Otaina](https://www.otaina.co.uk).
 
-[Read more about the project...](https://github.com/pandacms/.github/blob/main/profile/README.md) ✨
-
-🐼 is grown from our work at [Otaina](https://www.otaina.co.uk), a small group of freelancers. We needed something that could handle websites large and small – but where we could expand it too. We sent our first websites live in March 2024.
+**[Website](https://tastybamboo.net)** · **[Pro Features](https://tastybamboo.net/pro.html)** · **[Managed Hosting](https://tastybamboo.net/hosting.html)**
 
 ![Gem Version](https://img.shields.io/gem/v/panda-cms) ![Build Status](https://img.shields.io/github/actions/workflow/status/tastybamboo/panda-cms/ci.yml)
 ![GitHub Last Commit](https://img.shields.io/github/last-commit/tastybamboo/panda-cms) [![Ruby Code Style](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://github.com/standardrb/standard)
@@ -252,4 +249,4 @@ Artifacts are uploaded automatically on CI.
 
 The gem is available as open source under the terms of the [BSD-3-Clause License](https://opensource.org/licenses/bsd-3-clause).
 
-Copyright © 2024 - 2025, Otaina Limited.
+Copyright © 2024 - 2026, Otaina Limited.
