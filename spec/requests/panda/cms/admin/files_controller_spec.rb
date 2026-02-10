@@ -3,6 +3,8 @@
 require "rails_helper"
 
 RSpec.describe "Admin Files", type: :request do
+  include ActiveJob::TestHelper
+
   let(:admin_user) { create_admin_user }
   let!(:category) { Panda::Core::FileCategory.create!(name: "Test Category", slug: "test-category") }
 
@@ -99,9 +101,11 @@ RSpec.describe "Admin Files", type: :request do
         content_type: "text/plain"
       )
 
-      expect {
-        delete "/admin/cms/files/#{blob.id}"
-      }.to change(ActiveStorage::Blob, :count).by(-1)
+      perform_enqueued_jobs do
+        expect {
+          delete "/admin/cms/files/#{blob.id}"
+        }.to change(ActiveStorage::Blob, :count).by(-1)
+      end
 
       expect(response).to redirect_to("/admin/cms/files")
     end
@@ -114,10 +118,36 @@ RSpec.describe "Admin Files", type: :request do
       )
       blob = admin_user.avatar.blob
 
-      expect {
-        delete "/admin/cms/files/#{blob.id}"
-      }.to change(ActiveStorage::Blob, :count).by(-1)
-        .and change(ActiveStorage::Attachment, :count).by(-1)
+      perform_enqueued_jobs do
+        expect {
+          delete "/admin/cms/files/#{blob.id}"
+        }.to change(ActiveStorage::Blob, :count).by(-1)
+          .and change(ActiveStorage::Attachment, :count).by(-1)
+      end
+
+      expect(response).to redirect_to("/admin/cms/files")
+    end
+
+    it "deletes a blob that has variant records" do
+      blob = ActiveStorage::Blob.create_and_upload!(
+        io: StringIO.new("image data"),
+        filename: "with_variants.jpg",
+        content_type: "image/jpeg"
+      )
+      variant_record = ActiveStorage::VariantRecord.create!(blob: blob, variation_digest: "test_digest")
+      variant_blob = ActiveStorage::Blob.create_and_upload!(
+        io: StringIO.new("variant data"),
+        filename: "variant.jpg",
+        content_type: "image/jpeg"
+      )
+      variant_record.image.attach(variant_blob)
+
+      perform_enqueued_jobs do
+        expect {
+          delete "/admin/cms/files/#{blob.id}"
+        }.to change(ActiveStorage::Blob, :count).by(-2)
+          .and change(ActiveStorage::VariantRecord, :count).by(-1)
+      end
 
       expect(response).to redirect_to("/admin/cms/files")
     end

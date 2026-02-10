@@ -131,9 +131,17 @@ module Panda
         end
 
         def destroy
+          # Remove variant records and their blobs first (each variant has its own blob)
+          @blob.variant_records.includes(image_attachment: :blob).find_each do |vr|
+            vr.image.purge_later if vr.image.attached?
+            vr.destroy
+          end
+
+          # Remove remaining FK references before purging the blob
           ActiveStorage::Attachment.where(blob_id: @blob.id).delete_all
           Panda::Core::FileCategorization.where(blob_id: @blob.id).delete_all
-          @blob.purge
+          @blob.purge_later
+
           redirect_to admin_cms_files_path, notice: "File was successfully deleted.", status: :see_other
         end
 
