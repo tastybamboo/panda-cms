@@ -23,9 +23,9 @@ rails new demo $(curl -fsSL https://raw.githubusercontent.com/tastybamboo/genera
 
 `cd` into your directory (e.g. `demo`), then run `bin/dev`. A basic website has automatically been created for you at http://localhost:3000/
 
-Visit http://localhost:3000/admin and click **Developer Login** to sign in with any name and email. As the first user, you'll automatically be given an administrator account.
+Visit http://localhost:3000/admin and sign in with **GitHub** — it works immediately in development using shared dev credentials (no OAuth app setup needed). As the first user, you'll automatically be given an administrator account.
 
-For production, configure GitHub OAuth (or another provider) in `config/initializers/panda.rb` — see [Configuration](#configuration) below.
+For production, configure your own GitHub OAuth credentials in `config/initializers/panda.rb` — see [Configuration](#configuration) below.
 
 ### Existing applications
 
@@ -51,7 +51,7 @@ The install generator will:
 - Add `omniauth-github` to your Gemfile (hence the second `bundle install`)
 - Copy all required database migrations
 
-Start your server with `bin/dev` and visit `/admin`. In development, click **Developer Login** to sign in immediately — no OAuth setup needed.
+Start your server with `bin/dev` and visit `/admin`. In development, GitHub OAuth works immediately using shared dev credentials — just click **GitHub** and authorize. A **Developer Login** (name/email form) is also available as a fallback.
 
 For production, add your GitHub OAuth credentials:
 
@@ -82,8 +82,16 @@ Panda::Core.configure do |config|
     github: {
       enabled: true,
       name: "GitHub",
-      client_id: Rails.application.credentials.dig(:github, :client_id),
-      client_secret: Rails.application.credentials.dig(:github, :client_secret)
+      client_id: if Rails.env.development?
+                   "Ov23liFMGyVvRrpuvyTT" # Shared Panda dev app (localhost:3000 only)
+                 else
+                   Rails.application.credentials.dig(:github, :client_id)
+                 end,
+      client_secret: if Rails.env.development?
+                       "394a7024d7dd9c0ee0c8540768331d59d9e22477"
+                     else
+                       Rails.application.credentials.dig(:github, :client_secret)
+                     end
     },
     developer: {
       enabled: true,
@@ -103,9 +111,11 @@ end
 
 ### Authentication providers
 
-The **Developer** provider is built into OmniAuth and only appears in development mode. It shows a simple form to enter a name and email — no OAuth app setup needed.
+In **development**, GitHub OAuth works out of the box using shared dev credentials that are restricted to `localhost:3000`. No OAuth app setup needed — just click "GitHub" and authorize.
 
-For production, configure one or more OAuth providers. Supported providers:
+The **Developer** provider is also available in development as a fallback. It shows a simple form to enter a name and email.
+
+For **production**, replace the dev credentials with your own via `rails credentials:edit`. Supported providers:
 
 | Provider | Gem | Config key |
 |----------|-----|------------|
