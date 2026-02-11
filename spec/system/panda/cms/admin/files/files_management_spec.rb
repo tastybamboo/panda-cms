@@ -64,7 +64,7 @@ RSpec.describe "Admin Files Management", type: :system do
       end
     end
 
-    it "persists edits to filename, category, and description", skip: "SKIPPED: Failure needs further investigation, or feature is WIP" do
+    it "persists edits to filename, category, and description", skip: "Turbo Stream response not refreshing slideover after save" do
       visit "/admin/cms/files"
 
       # Select the file and wait for slideover to load
@@ -93,7 +93,7 @@ RSpec.describe "Admin Files Management", type: :system do
       expect(test_file.metadata["description"]).to eq("Updated description text")
     end
 
-    it "updates slideover content after successful save", skip: "SKIPPED: Failure needs further investigation, or feature is WIP" do
+    it "updates slideover content after successful save", skip: "Turbo Stream response not refreshing slideover after save" do
       visit "/admin/cms/files"
 
       find("[data-file-id='#{test_file.id}']", wait: 5).click

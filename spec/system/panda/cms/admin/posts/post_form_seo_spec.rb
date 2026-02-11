@@ -9,7 +9,6 @@ RSpec.describe "Post form SEO functionality", type: :system do
   let(:post) { panda_cms_posts(:first_post) }
 
   before do
-    skip "This functionality is not yet implemented"
     post.update!(user: admin, author: admin)
     login_as_admin
     Panda::CMS::Current.root = Capybara.app_host
