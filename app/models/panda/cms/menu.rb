@@ -35,6 +35,11 @@ module Panda
           menu_item_root = menu_items.create(text: start_page.title, panda_cms_page_id: start_page.id)
           generate_menu_items(parent_menu_item: menu_item_root, parent_page: start_page)
         end
+
+        # Bump updated_at to bust fragment caches that depend on it.
+        # Uses update_column to avoid re-triggering after_save callbacks.
+        update_column(:updated_at, Time.current)
+        clear_menu_cache
       end
 
       def page_pinned?(page_id)

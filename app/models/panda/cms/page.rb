@@ -88,16 +88,23 @@ module Panda
       before_validation :infer_parent_from_path
       after_save :handle_after_save
       before_save :update_cached_last_updated_at
+      before_destroy :cache_ancestor_ids_for_menu_update
+      after_destroy :regenerate_auto_menus_after_destroy
 
       #
-      # Update any menus which include this page or its parent as a menu item
+      # Regenerate any auto menus whose scope includes this page.
+      # Finds menus by checking if any ancestor (or self) is the menu's start page,
+      # which is more robust than relying on existing menu_items associations
+      # (which don't exist yet for newly created pages).
       #
       # @return nil
       # @visibility public
       #
       def update_auto_menus
-        menus.find_each(&:generate_auto_menu_items)
-        menus_of_parent.find_each(&:generate_auto_menu_items)
+        return unless should_update_auto_menus?
+
+        ancestor_ids = self_and_ancestors.pluck(:id)
+        Panda::CMS::Menu.where(kind: "auto", start_page_id: ancestor_ids).find_each(&:generate_auto_menu_items)
       end
 
       #
@@ -319,6 +326,20 @@ module Panda
         # Only update if column exists (for backwards compatibility with older schemas)
         return unless self.class.column_names.include?("cached_last_updated_at")
         self.cached_last_updated_at = Time.current
+      end
+
+      def should_update_auto_menus?
+        previously_new_record? || saved_change_to_title? || saved_change_to_status? || saved_change_to_path?
+      end
+
+      def cache_ancestor_ids_for_menu_update
+        @ancestor_ids_for_menu = self_and_ancestors.pluck(:id)
+      end
+
+      def regenerate_auto_menus_after_destroy
+        return unless @ancestor_ids_for_menu
+
+        Panda::CMS::Menu.where(kind: "auto", start_page_id: @ancestor_ids_for_menu).find_each(&:generate_auto_menu_items)
       end
     end
   end
