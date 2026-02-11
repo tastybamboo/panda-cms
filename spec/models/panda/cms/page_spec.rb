@@ -1011,7 +1011,8 @@ RSpec.describe Panda::CMS::Page, type: :model do
       end
 
       it "finds and regenerates menus for newly created child pages" do
-        # Set up: create section_page and menu explicitly
+        # Set up: Ensure section_page and auto_menu are fully initialized
+        # (RSpec let blocks are lazy-evaluated)
         section_page.reload
         auto_menu.reload
         auto_menu.generate_auto_menu_items
@@ -1020,6 +1021,8 @@ RSpec.describe Panda::CMS::Page, type: :model do
         expect(initial_count).to eq(1)
 
         # Create and save child page
+        # Note: The after_save callback (handle_after_save -> update_auto_menus)
+        # should automatically regenerate the menu, but we test the logic explicitly
         child_page = Panda::CMS::Page.create!(
           title: "Child Page",
           path: "/section/child",
@@ -1028,18 +1031,19 @@ RSpec.describe Panda::CMS::Page, type: :model do
           status: :active
         )
 
-        # Check ancestors to debug
+        # Verify the ancestor-based lookup logic that update_auto_menus uses
         ancestor_ids = child_page.self_and_ancestors.pluck(:id)
         expect(ancestor_ids).to include(section_page.id)
         
-        # Check if menu would be found
+        # Verify that the menu would be found by the update_auto_menus query
         menus = Panda::CMS::Menu.where(kind: "auto", start_page_id: ancestor_ids)
         expect(menus).to include(auto_menu)
 
-        # Manually regenerate to verify it works
+        # Manually regenerate the menu (simulating what update_auto_menus does)
+        # to verify the regeneration logic works correctly
         auto_menu.generate_auto_menu_items
 
-        # Verify menu was regenerated
+        # Verify menu was regenerated with the new child page
         auto_menu.reload
         expect(auto_menu.menu_items.count).to eq(2)
         page_ids = auto_menu.menu_items.pluck(:panda_cms_page_id)
@@ -1060,7 +1064,7 @@ RSpec.describe Panda::CMS::Page, type: :model do
         auto_menu.generate_auto_menu_items
         expect(auto_menu.menu_items.count).to eq(2)
 
-        # Create a deeply nested page
+        # Create a deeply nested page (3 levels deep)
         deep_page = Panda::CMS::Page.create!(
           title: "Deep Page",
           path: "/section/mid/deep",
@@ -1069,17 +1073,19 @@ RSpec.describe Panda::CMS::Page, type: :model do
           status: :active
         )
 
-        # Verify the logic that update_auto_menus uses
+        # Verify the ancestor-based lookup logic that update_auto_menus uses
+        # Deep page should have ancestors: [homepage, section_page, mid_page]
         ancestor_ids = deep_page.self_and_ancestors.pluck(:id)
         expect(ancestor_ids).to include(section_page.id, mid_page.id)
         
+        # Verify that the menu would be found (start_page is in ancestors)
         menus = Panda::CMS::Menu.where(kind: "auto", start_page_id: ancestor_ids)
         expect(menus).to include(auto_menu)
 
-        # Manually regenerate
+        # Manually regenerate (simulating what update_auto_menus does)
         auto_menu.generate_auto_menu_items
 
-        # Menu should be regenerated with the new deep page
+        # Verify menu includes all three levels
         auto_menu.reload
         expect(auto_menu.menu_items.count).to eq(3)
         page_ids = auto_menu.menu_items.pluck(:panda_cms_page_id)
@@ -1135,34 +1141,36 @@ RSpec.describe Panda::CMS::Page, type: :model do
       end
 
       it "adds page to new menu when moved to different section" do
-        # Ensure the movable page exists first
+        # Ensure the movable page exists before generating menus
         movable_page.reload
         
         # Generate initial menus - this should include movable_page in menu_a
         menu_a.generate_auto_menu_items
         menu_b.generate_auto_menu_items
 
-        # Verify page is in menu A initially
+        # Verify initial state: page is in menu A but not menu B
         expect(menu_a.menu_items.pluck(:panda_cms_page_id)).to include(movable_page.id, section_a.id)
         expect(menu_b.menu_items.pluck(:panda_cms_page_id)).not_to include(movable_page.id)
         expect(menu_b.menu_items.pluck(:panda_cms_page_id)).to include(section_b.id)
 
         # Move the page to section B by changing path and parent
+        # This triggers saved_change_to_path? and should call update_auto_menus
         movable_page.update!(
           path: "/section-b/movable",
           parent: section_b
         )
 
-        # Verify the logic that update_auto_menus uses
+        # Verify the ancestor-based lookup logic after the move
+        # Old parent (section_a) is no longer in ancestors
         ancestor_ids = movable_page.self_and_ancestors.pluck(:id)
         expect(ancestor_ids).to include(section_b.id)
-        expect(ancestor_ids).not_to include(section_a.id) # Old parent is gone
+        expect(ancestor_ids).not_to include(section_a.id)
 
-        # Find menus that should be regenerated
+        # Verify that menu_b would be found by update_auto_menus query
         menus = Panda::CMS::Menu.where(kind: "auto", start_page_id: ancestor_ids)
         expect(menus).to include(menu_b)
 
-        # Manually regenerate menu_b to verify it works
+        # Manually regenerate menu_b (simulating what update_auto_menus does)
         menu_b.generate_auto_menu_items
 
         # Verify page is now in menu B
@@ -1170,7 +1178,7 @@ RSpec.describe Panda::CMS::Page, type: :model do
         expect(menu_b.menu_items.pluck(:panda_cms_page_id)).to include(movable_page.id)
         
         # Note: menu_a is not automatically cleaned up because update_auto_menus
-        # only looks at NEW ancestors after the move
+        # only looks at NEW ancestors after the move, not old ancestors
       end
 
       it "updates new menu when moving a page with children" do
