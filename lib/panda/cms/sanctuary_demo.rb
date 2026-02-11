@@ -358,7 +358,7 @@ module Panda
         page.assign_attributes(attributes)
         page.panda_cms_template_id = template&.id
         page.parent = parent
-        page.status ||= "active"
+        page.status ||= "published"
         page.save!
         page
       end
@@ -566,42 +566,42 @@ module Panda
           {
             title: "Meet Our Newest Arrival: Baby Panda Mei Mei",
             slug_date: 3.days.ago,
-            status: "active",
+            status: "published",
             content: mei_mei_post_content,
             seo_description: "We're thrilled to announce the birth of Mei Mei, our newest giant panda cub born at The Panda Sanctuary."
           },
           {
             title: "Conservation Success: Wild Panda Population Update",
             slug_date: 1.week.ago,
-            status: "active",
+            status: "published",
             content: conservation_post_content,
             seo_description: "New census data shows encouraging growth in wild giant panda populations, with our conservation efforts playing a key role."
           },
           {
             title: "Behind the Scenes: A Day in the Life of a Panda Keeper",
             slug_date: 2.weeks.ago,
-            status: "active",
+            status: "published",
             content: keeper_post_content,
             seo_description: "Join us as we follow head keeper Sarah through a typical day caring for our pandas at the sanctuary."
           },
           {
             title: "Bamboo Forest Expansion Project Complete",
             slug_date: 3.weeks.ago,
-            status: "active",
+            status: "published",
             content: bamboo_post_content,
             seo_description: "We've completed our bamboo forest expansion, adding 2 hectares of new habitat for our giant pandas."
           },
           {
             title: "Virtual Panda Cams Now Live 24/7",
             slug_date: 1.month.ago,
-            status: "active",
+            status: "published",
             content: webcam_post_content,
             seo_description: "Watch our pandas live anytime with our new 24/7 panda cam streaming service."
           },
           {
             title: "Summer Events Programme Announced",
             slug_date: 5.weeks.ago,
-            status: "draft",
+            status: "hidden",
             content: events_post_content,
             seo_description: "Check out our exciting lineup of summer events including keeper talks, feeding sessions, and family activities."
           }
@@ -615,7 +615,7 @@ module Panda
           post.status = data[:status]
           post.content = data[:content]
           post.cached_content = render_editorjs_content(data[:content])
-          post.published_at = (data[:status] == "active") ? data[:slug_date] : nil
+          post.published_at = (data[:status] == "published") ? data[:slug_date] : nil
           post.seo_description = data[:seo_description]
 
           # Assign demo user as author

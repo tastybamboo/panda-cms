@@ -20,8 +20,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_11_175501) do
   create_enum "panda_cms_menu_kind", ["static", "auto"]
   create_enum "panda_cms_menu_ordering", ["default", "alphabetical"]
   create_enum "panda_cms_og_type", ["website", "article", "profile", "video", "book"]
-  create_enum "panda_cms_page_status", ["active", "draft", "hidden", "archived"]
-  create_enum "panda_cms_post_status", ["active", "draft", "hidden", "archived"]
+  create_enum "panda_cms_page_status", ["published", "unlisted", "hidden", "archived"]
+  create_enum "panda_cms_post_status", ["published", "unlisted", "hidden", "archived"]
   create_enum "panda_cms_seo_index_mode", ["visible", "invisible"]
 
   create_table "action_mailbox_inbound_emails", force: :cascade do |t|
@@ -195,7 +195,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_11_175501) do
     t.enum "seo_index_mode", default: "visible", null: false, enum_type: "panda_cms_seo_index_mode"
     t.string "seo_keywords"
     t.string "seo_title"
-    t.enum "status", default: "active", null: false, enum_type: "panda_cms_page_status"
+    t.enum "status", default: "published", null: false, enum_type: "panda_cms_page_status"
     t.string "title"
     t.datetime "updated_at", null: false
     t.index ["cached_last_updated_at"], name: "index_panda_cms_pages_on_cached_last_updated_at"
@@ -225,7 +225,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_11_175501) do
     t.string "seo_keywords"
     t.string "seo_title"
     t.string "slug"
-    t.enum "status", default: "draft", null: false, enum_type: "panda_cms_post_status"
+    t.enum "status", default: "published", null: false, enum_type: "panda_cms_post_status"
     t.string "title"
     t.datetime "updated_at", null: false
     t.uuid "user_id"

@@ -5,14 +5,14 @@ module Panda
     class SitemapsController < ApplicationController
       def index
         @pages = Panda::CMS::Page
-          .where(status: :active)
+          .in_sitemap
           .where.not(page_type: [:hidden_type, :system])
           .where(seo_index_mode: :visible)
           .order(:lft)
 
         @posts = if Panda::CMS.config.posts[:enabled]
           Panda::CMS::Post
-            .where(status: :active)
+            .in_sitemap
             .where(seo_index_mode: :visible)
             .order(published_at: :desc)
         else

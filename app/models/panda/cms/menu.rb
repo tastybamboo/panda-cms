@@ -59,7 +59,7 @@ module Panda
       private
 
       def generate_menu_items(parent_menu_item:, parent_page:)
-        children = parent_page.children.where(status: [:active])
+        children = parent_page.children.where(status: :published)
         children = order_pages(children)
 
         children.each do |page|

@@ -84,7 +84,7 @@ module Panda
             Panda::CMS::Post.find(params[:id])
           else
             Panda::CMS::Post.new(
-              status: "active",
+              status: "published",
               published_at: Time.zone.now
             )
           end
@@ -98,7 +98,7 @@ module Panda
           add_breadcrumb "Add Post", new_admin_cms_post_path
 
           post ||= Panda::CMS::Post.new(
-            status: "active",
+            status: "published",
             published_at: Time.zone.now
           )
 

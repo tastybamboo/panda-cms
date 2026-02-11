@@ -11,7 +11,7 @@ RSpec.describe Panda::CMS::Post, type: :model do
         slug: "/test-post",
         user: admin_user,
         author: admin_user,
-        status: "active"
+        status: "published"
       )
     end
 
@@ -47,7 +47,7 @@ RSpec.describe Panda::CMS::Post, type: :model do
         slug: "/active-post",
         user: admin_user,
         author: admin_user,
-        status: "active"
+        status: "published"
       )
     end
 
@@ -57,7 +57,7 @@ RSpec.describe Panda::CMS::Post, type: :model do
         slug: "/draft-post",
         user: admin_user,
         author: admin_user,
-        status: "draft"
+        status: "hidden"
       )
     end
 
@@ -67,7 +67,7 @@ RSpec.describe Panda::CMS::Post, type: :model do
         slug: "/another-active-post",
         user: admin_user,
         author: admin_user,
-        status: "active"
+        status: "published"
       )
     end
 
@@ -112,7 +112,7 @@ RSpec.describe Panda::CMS::Post, type: :model do
         slug: "/test-post",
         user: admin_user,
         author: admin_user,
-        status: "active"
+        status: "published"
       )
     end
 

@@ -17,7 +17,7 @@
       </div>
       <%= f.select :author_id, Panda::Core::User.admins.map { |u| [u.name, u.id] } %>
       <%= f.datetime_field :published_at %>
-      <%= f.select :status, options_for_select([["Active", "active"], ["Draft", "draft"], ["Hidden", "hidden"], ["Archived", "archived"]], selected: post.status) %>
+      <%= f.select :status, options_for_select([["Published", "published"], ["Unlisted", "unlisted"], ["Hidden", "hidden"], ["Archived", "archived"]], selected: post.status) %>
     </div>
   <% end %>
 
