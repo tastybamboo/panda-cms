@@ -13,6 +13,8 @@
         <div data-menu-form-target="startPageField" class="<%= 'hidden' unless @menu.kind == 'auto' %>">
           <%= f.collection_select :start_page_id, Panda::CMS::Page.order(:title), :id, :title, { include_blank: "Select a page...", label: "Start Page" }, { class: "mt-1" } %>
         </div>
+
+        <%= f.check_box :promote_active_item, label: "Promote active item to top" %>
       </div>
     <% end %>
 

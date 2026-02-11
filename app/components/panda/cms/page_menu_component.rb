@@ -27,15 +27,15 @@ module Panda
           @page.ancestors.where(depth: @start_depth).first
         end
 
-        menu = @start_page&.page_menu
-        return if menu.nil?
+        @menu = @start_page&.page_menu
+        return if @menu.nil?
 
         # Fragment caching: Cache menu items for this page menu
         # Cache key includes menu's updated_at to auto-invalidate on changes
-        cache_key = "panda_cms_page_menu/#{menu.id}/#{menu.updated_at.to_i}/items"
+        cache_key = "panda_cms_page_menu/#{@menu.id}/#{@menu.updated_at.to_i}/items"
 
         cached_items = Rails.cache.fetch(cache_key, expires_in: 1.hour) do
-          menu.menu_items.includes(:page).order(:lft).to_a
+          @menu.menu_items.includes(:page).order(:lft).to_a
         end
 
         # Re-preload :page associations lost during Marshal deserialization from cache
@@ -62,10 +62,16 @@ module Panda
       end
 
       def descendants_with_level
+        items = collect_descendants
+        items = promote_current_page(items) if @menu&.promote_active_item?
+        items
+      end
+
+      private
+
+      def collect_descendants
         return [] unless @menu_item
 
-        # Collect items with their levels first, then filter
-        # This avoids Ruby 4.0 compatibility issues with chaining on each_with_level
         items_with_levels = []
         Panda::CMS::MenuItem.each_with_level(@menu_item.descendants.includes(:page)) do |submenu_item, level|
           items_with_levels << [submenu_item, level]
@@ -74,7 +80,14 @@ module Panda
         items_with_levels.reject { |submenu_item, level| should_skip_item?(submenu_item, level) }
       end
 
-      private
+      def promote_current_page(items)
+        return items if items.empty?
+        current_page = Panda::CMS::Current.page
+        return items unless current_page
+
+        current_item, other_items = items.partition { |submenu_item, _level| submenu_item.page == current_page }
+        current_item + other_items
+      end
 
       def should_skip_item?(submenu_item, level)
         # Skip if we're on the top menu item and level > 1

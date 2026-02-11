@@ -19,6 +19,7 @@ module Panda
       accepts_nested_attributes_for :menu_items, reject_if: :all_blank, allow_destroy: true
 
       attribute :ordering, :string, default: "default"
+      attribute :promote_active_item, :boolean, default: false
 
       validates :name, presence: true, uniqueness: {case_sensitive: false}
       validates :kind, presence: true, inclusion: {in: %w[static auto]}
