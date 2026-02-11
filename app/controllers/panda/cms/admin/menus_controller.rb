@@ -27,7 +27,7 @@ module Panda
           menu = Panda::CMS::Menu.new(menu_params_with_defaults)
 
           if menu.save
-            redirect_to admin_cms_menus_path, notice: "Menu was successfully created."
+            redirect_to admin_cms_menus_path, notice: "Menu was successfully created.", status: :see_other
           else
             render :new, locals: {menu: menu}, status: :unprocessable_entity
           end
@@ -42,7 +42,7 @@ module Panda
         # @type PATCH/PUT
         def update
           if @menu.update(menu_params_with_defaults)
-            redirect_to admin_cms_menus_path, notice: "Menu was successfully updated."
+            redirect_to admin_cms_menus_path, notice: "Menu was successfully updated.", status: :see_other
           else
             render :edit, status: :unprocessable_entity
           end
@@ -51,7 +51,7 @@ module Panda
         # @type DELETE
         def destroy
           @menu.destroy
-          redirect_to admin_cms_menus_path, notice: "Menu was successfully deleted."
+          redirect_to admin_cms_menus_path, notice: "Menu was successfully deleted.", status: :see_other
         end
 
         # @type POST
@@ -63,7 +63,7 @@ module Panda
             @menu.pin_page(page_id)
           end
           @menu.save!
-          redirect_to edit_admin_cms_menu_path(@menu), notice: "Pin state updated."
+          redirect_to edit_admin_cms_menu_path(@menu), notice: "Pin state updated.", status: :see_other
         end
 
         private
