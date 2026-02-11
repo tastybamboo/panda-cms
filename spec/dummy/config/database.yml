@@ -1,4 +1,8 @@
 # Dummy engine app: always use Postgres for test
+#
+# Priority:
+# 1. DATABASE_URL if provided (CI, docker-compose, act)
+# 2. Fallback to local Postgres (for local `rails s` or `rspec`)
 
 default: &default
   adapter: postgresql
@@ -7,16 +11,19 @@ default: &default
   timeout: 5000
 
 development:
-  <<: *default
-  database: panda_cms_dummy_development
-  host: 127.0.0.1
+  adapter: postgresql
+  encoding: unicode
+  host: localhost
   username: postgres
-  password: password
+  password:
+  database: panda_cms_dummy_development
+  pool: 5
 
 test:
-  <<: *default
-  database: panda_cms_dummy_test
-  host: 127.0.0.1
+  adapter: postgresql
+  encoding: unicode
+  host: localhost
   username: postgres
-  password: password
+  password:
+  database: panda_cms_dummy_test
   pool: 5
