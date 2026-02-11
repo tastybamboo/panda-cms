@@ -85,6 +85,7 @@ module Panda
 
       # Callbacks
       before_validation :normalize_path
+      before_validation :infer_parent_from_path
       after_save :handle_after_save
       before_save :update_cached_last_updated_at
 
@@ -224,6 +225,18 @@ module Panda
       def normalize_path
         return if path.blank? || path == "/"
         self.path = path.chomp("/") while path.end_with?("/") && path.length > 1
+      end
+
+      def infer_parent_from_path
+        return if path.blank? || path == "/"
+
+        expected_parent_path = File.dirname(path) # e.g. "/advice-hub/foo" => "/advice-hub"
+        return if parent&.path == expected_parent_path
+
+        expected_parent = self.class.find_by(path: expected_parent_path)
+        return unless expected_parent
+
+        self.parent = expected_parent if parent_id.nil? || parent_id != expected_parent.id
       end
 
       def character_state_for(value, limit)
