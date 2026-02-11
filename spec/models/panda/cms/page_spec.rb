@@ -1016,7 +1016,7 @@ RSpec.describe Panda::CMS::Page, type: :model do
         section_page.reload
         auto_menu.reload
         auto_menu.generate_auto_menu_items
-        
+
         initial_count = auto_menu.menu_items.count
         expect(initial_count).to eq(1)
 
@@ -1034,7 +1034,7 @@ RSpec.describe Panda::CMS::Page, type: :model do
         # Verify the ancestor-based lookup logic that update_auto_menus uses
         ancestor_ids = child_page.self_and_ancestors.pluck(:id)
         expect(ancestor_ids).to include(section_page.id)
-        
+
         # Verify that the menu would be found by the update_auto_menus query
         menus = Panda::CMS::Menu.where(kind: "auto", start_page_id: ancestor_ids)
         expect(menus).to include(auto_menu)
@@ -1077,7 +1077,7 @@ RSpec.describe Panda::CMS::Page, type: :model do
         # Deep page should have ancestors: [homepage, section_page, mid_page]
         ancestor_ids = deep_page.self_and_ancestors.pluck(:id)
         expect(ancestor_ids).to include(section_page.id, mid_page.id)
-        
+
         # Verify that the menu would be found (start_page is in ancestors)
         menus = Panda::CMS::Menu.where(kind: "auto", start_page_id: ancestor_ids)
         expect(menus).to include(auto_menu)
@@ -1143,7 +1143,7 @@ RSpec.describe Panda::CMS::Page, type: :model do
       it "adds page to new menu when moved to different section" do
         # Ensure the movable page exists before generating menus
         movable_page.reload
-        
+
         # Generate initial menus - this should include movable_page in menu_a
         menu_a.generate_auto_menu_items
         menu_b.generate_auto_menu_items
@@ -1176,7 +1176,7 @@ RSpec.describe Panda::CMS::Page, type: :model do
         # Verify page is now in menu B
         menu_b.reload
         expect(menu_b.menu_items.pluck(:panda_cms_page_id)).to include(movable_page.id)
-        
+
         # Note: menu_a is not automatically cleaned up because update_auto_menus
         # only looks at NEW ancestors after the move, not old ancestors
       end

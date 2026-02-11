@@ -260,13 +260,13 @@ export default class extends Controller {
   async submit(event) {
     // Prevent the default button click behavior temporarily
     event.preventDefault();
-    
-    const submitButton = event.target;
+
+    const submitButton = event.currentTarget;
     const form = submitButton.closest('form');
-    
+
     // Re-enable the button that was disabled by data-disable-with
     submitButton.disabled = false;
-    
+
     // Ensure editor content is saved before form submission
     if (this.editor) {
       try {
@@ -278,20 +278,35 @@ export default class extends Controller {
       } catch (error) {
         console.error("[Panda CMS] Failed to save editor content:", error);
       }
+
+      // Destroy the editor before form submission so its document-level
+      // click handler is removed. Without this, the *original* trusted click
+      // can keep bubbling after `submit()` returns, reach `document`, and
+      // trigger EditorJS's `documentClicked`, which then tries to access
+      // toolbar DOM elements that Turbo has already removed — causing
+      // "Cannot read properties of undefined (reading 'classList')". The
+      // synthetic click we dispatch below is non-trusted and ignored by
+      // `documentClicked` in the vendored EditorJS build.
+      try {
+        this.editor.destroy();
+      } catch (e) {
+        console.debug("[Panda CMS] Editor cleanup before submit (safe to ignore):", e.message);
+      }
+      this.editor = null;
     }
-    
+
     // Now trigger the normal form submission (this will let Rails/Turbo handle it properly)
     if (form) {
       // Remove our custom action to prevent infinite loop
       submitButton.removeAttribute('data-action');
-      
+
       // Create a new click event that will trigger the normal form submission
       const clickEvent = new MouseEvent('click', {
         bubbles: true,
         cancelable: true,
         view: window
       });
-      
+
       // Dispatch the click event, which will trigger normal Rails form submission
       submitButton.dispatchEvent(clickEvent);
     }

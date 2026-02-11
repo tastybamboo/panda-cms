@@ -18,7 +18,7 @@ GIT
 
 GIT
   remote: https://github.com/tastybamboo/panda-editor.git
-  revision: e5572a4deeee4902439b90f0c56d4e61852d3123
+  revision: 0199ee0a53172deb8a4b6a61478a3077e14187f9
   branch: main
   specs:
     panda-editor (0.8.3)
@@ -538,7 +538,7 @@ GEM
     uri (1.1.1)
     useragent (0.16.11)
     version_gem (1.1.9)
-    view_component (4.2.0)
+    view_component (4.3.0)
       actionview (>= 7.1.0)
       activesupport (>= 7.1.0)
       concurrent-ruby (~> 1)
