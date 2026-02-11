@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_07_112500) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_11_000000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -173,6 +173,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_07_112500) do
     t.enum "kind", default: "static", null: false, enum_type: "panda_cms_menu_kind"
     t.string "name", null: false
     t.enum "ordering", default: "default", null: false, enum_type: "panda_cms_menu_ordering"
+    t.jsonb "pinned_page_ids", default: [], null: false
     t.uuid "start_page_id"
     t.datetime "updated_at", null: false
     t.index ["name"], name: "index_panda_cms_menus_on_name", unique: true

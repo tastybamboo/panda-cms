@@ -12,7 +12,9 @@ Panda::CMS::Engine.routes.draw do
       resources :files
       resources :forms
       post "link_metadata", to: "link_metadata#create", as: :link_metadata
-      resources :menus
+      resources :menus do
+        post :toggle_pin, on: :member
+      end
       resources :pages do
         resources :block_contents, only: %i[update]
       end
