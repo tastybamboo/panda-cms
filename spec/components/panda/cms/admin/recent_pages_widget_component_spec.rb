@@ -41,13 +41,13 @@ RSpec.describe Panda::CMS::Admin::RecentPagesWidgetComponent, type: :component d
   describe "#status_color" do
     let(:component) { described_class.new }
 
-    it "returns green for active pages" do
-      test_page = Panda::CMS::Page.new(status: "active")
+    it "returns green for published pages" do
+      test_page = Panda::CMS::Page.new(status: "published")
       expect(component.status_color(test_page)).to include("green")
     end
 
-    it "returns yellow for draft pages" do
-      test_page = Panda::CMS::Page.new(status: "draft")
+    it "returns yellow for hidden pages" do
+      test_page = Panda::CMS::Page.new(status: "hidden")
       expect(component.status_color(test_page)).to include("yellow")
     end
 

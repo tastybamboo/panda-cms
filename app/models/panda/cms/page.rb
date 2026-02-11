@@ -36,19 +36,21 @@ module Panda
       scope :ordered, -> { order(:lft) }
 
       def self.editor_search(query, limit: 5)
-        where(status: :active)
+        where(status: :published)
           .where("title ILIKE :q OR path ILIKE :q", q: "%#{sanitize_sql_like(query)}%")
           .limit(limit)
           .map { |p| {href: p.path, name: p.title, description: p.path} }
       end
 
       enum :status, {
-        active: "active",
-        draft: "draft",
-        pending_review: "pending_review",
+        published: "published",
+        unlisted: "unlisted",
         hidden: "hidden",
         archived: "archived"
       }
+
+      scope :servable, -> { where(status: [:published, :unlisted, :hidden]) }
+      scope :in_sitemap, -> { where(status: [:published, :unlisted]) }
 
       enum :page_type, {
         standard: "standard",

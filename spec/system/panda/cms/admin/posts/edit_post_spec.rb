@@ -12,7 +12,7 @@ RSpec.describe "Editing a post", type: :system do
     @post = Panda::CMS::Post.create!(
       title: "Test Post 1",
       slug: "/#{Time.current.strftime("%Y/%m")}/test-post-1",
-      status: "active",
+      status: "published",
       user: @admin,
       author: @admin,
       published_at: Time.current,

@@ -45,7 +45,7 @@
       } do |f| %>
         <%= f.text_field :title, { data: { page_form_target: "pageTitle" } } %>
         <%= f.text_field :template, value: template.name, readonly: true %>
-        <%= f.select :status, options_for_select([["Active", "active"], ["Draft", "draft"], ["Hidden", "hidden"], ["Archived", "archived"]], selected: page.status) %>
+        <%= f.select :status, options_for_select([["Published", "published"], ["Unlisted", "unlisted"], ["Hidden", "hidden"], ["Archived", "archived"]], selected: page.status) %>
         <% if page.page_type.in?(["system", "posts"]) %>
           <%= f.text_field :page_type, value: page.page_type.humanize, readonly: true %>
         <% else %>

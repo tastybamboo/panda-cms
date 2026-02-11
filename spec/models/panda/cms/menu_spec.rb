@@ -132,7 +132,7 @@ RSpec.describe Panda::CMS::Menu, type: :model do
     end
 
     it "only includes active pages" do
-      child_page.update!(status: :draft)
+      child_page.update!(status: :hidden)
       auto_menu.generate_auto_menu_items
 
       child_item = auto_menu.menu_items.find_by(panda_cms_page_id: child_page.id)
@@ -159,7 +159,7 @@ RSpec.describe Panda::CMS::Menu, type: :model do
           path: "/test-parent",
           parent: homepage,
           template: template,
-          status: :active
+          status: :published
         )
       end
       let(:alphabetical_menu) do
@@ -173,9 +173,9 @@ RSpec.describe Panda::CMS::Menu, type: :model do
 
       before do
         # Create test pages as children in non-alphabetical order
-        Panda::CMS::Page.create!(title: "Zebra Page", path: "/test-parent/zebra", parent: test_parent, template: template, status: :active)
-        Panda::CMS::Page.create!(title: "Alpha Page", path: "/test-parent/alpha", parent: test_parent, template: template, status: :active)
-        Panda::CMS::Page.create!(title: "Middle Page", path: "/test-parent/middle", parent: test_parent, template: template, status: :active)
+        Panda::CMS::Page.create!(title: "Zebra Page", path: "/test-parent/zebra", parent: test_parent, template: template, status: :published)
+        Panda::CMS::Page.create!(title: "Alpha Page", path: "/test-parent/alpha", parent: test_parent, template: template, status: :published)
+        Panda::CMS::Page.create!(title: "Middle Page", path: "/test-parent/middle", parent: test_parent, template: template, status: :published)
       end
 
       it "orders menu items alphabetically by title" do
@@ -257,13 +257,13 @@ RSpec.describe Panda::CMS::Menu, type: :model do
         path: "/pin-test-parent",
         parent: homepage,
         template: template,
-        status: :active
+        status: :published
       )
     end
 
-    let!(:page_a) { Panda::CMS::Page.create!(title: "Alpha", path: "/pin-test-parent/alpha", parent: test_parent, template: template, status: :active) }
-    let!(:page_b) { Panda::CMS::Page.create!(title: "Beta", path: "/pin-test-parent/beta", parent: test_parent, template: template, status: :active) }
-    let!(:page_c) { Panda::CMS::Page.create!(title: "Gamma", path: "/pin-test-parent/gamma", parent: test_parent, template: template, status: :active) }
+    let!(:page_a) { Panda::CMS::Page.create!(title: "Alpha", path: "/pin-test-parent/alpha", parent: test_parent, template: template, status: :published) }
+    let!(:page_b) { Panda::CMS::Page.create!(title: "Beta", path: "/pin-test-parent/beta", parent: test_parent, template: template, status: :published) }
+    let!(:page_c) { Panda::CMS::Page.create!(title: "Gamma", path: "/pin-test-parent/gamma", parent: test_parent, template: template, status: :published) }
 
     describe "#page_pinned?" do
       it "returns true for a pinned page" do

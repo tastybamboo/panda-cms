@@ -70,7 +70,7 @@ RSpec.describe Panda::CMS::Page, type: :model do
           path: "/", # Root pages are allowed without parent only for path "/"
           panda_cms_template_id: template.id,
           parent: nil,
-          status: "active"
+          status: "published"
         )
         expect(page).to be_valid
       end
@@ -97,7 +97,7 @@ RSpec.describe Panda::CMS::Page, type: :model do
         path: "/norm-test",
         title: "Normalization Test Root",
         template: test_template,
-        status: "active"
+        status: "published"
       )
       page.save(validate: false)
       page
@@ -109,7 +109,7 @@ RSpec.describe Panda::CMS::Page, type: :model do
         path: "/norm-test/trailing/",
         parent: test_root,
         panda_cms_template_id: test_template.id,
-        status: "active"
+        status: "published"
       )
 
       page.valid?
@@ -122,7 +122,7 @@ RSpec.describe Panda::CMS::Page, type: :model do
         path: "/norm-test/multiple///",
         parent: test_root,
         panda_cms_template_id: test_template.id,
-        status: "active"
+        status: "published"
       )
 
       page.valid?
@@ -143,7 +143,7 @@ RSpec.describe Panda::CMS::Page, type: :model do
         path: "/norm-test/no-trailing",
         parent: test_root,
         panda_cms_template_id: test_template.id,
-        status: "active"
+        status: "published"
       )
 
       page.valid?
@@ -166,7 +166,7 @@ RSpec.describe Panda::CMS::Page, type: :model do
         path: "/test-root",
         title: "Test Root",
         template: test_template,
-        status: "active"
+        status: "published"
       )
       page.save(validate: false)
       page
@@ -178,7 +178,7 @@ RSpec.describe Panda::CMS::Page, type: :model do
         title: "Parent",
         template: test_template,
         parent: root_page,
-        status: "active"
+        status: "published"
       )
     end
 
@@ -188,7 +188,7 @@ RSpec.describe Panda::CMS::Page, type: :model do
         title: "Mid Level",
         template: test_template,
         parent: parent_page,
-        status: "active"
+        status: "published"
       )
     end
 
@@ -200,7 +200,7 @@ RSpec.describe Panda::CMS::Page, type: :model do
           path: "/test-root/parent/nested-page",
           parent: parent_page,
           panda_cms_template_id: test_template.id,
-          status: "active"
+          status: "published"
         )
 
         # Simulate controller logic
@@ -221,7 +221,7 @@ RSpec.describe Panda::CMS::Page, type: :model do
           path: "/nested-page",
           parent: parent_page,
           panda_cms_template_id: test_template.id,
-          status: "active"
+          status: "published"
         )
 
         # Simulate controller logic
@@ -242,7 +242,7 @@ RSpec.describe Panda::CMS::Page, type: :model do
           path: "/test-root/parent/mid-level/deep-page",
           parent: mid_level_page,
           panda_cms_template_id: test_template.id,
-          status: "active"
+          status: "published"
         )
 
         # Simulate controller logic
@@ -270,7 +270,7 @@ RSpec.describe Panda::CMS::Page, type: :model do
         path: "/validation-test",
         title: "Validation Test Root",
         template: test_template,
-        status: "active"
+        status: "published"
       )
       page.save(validate: false)
       page
@@ -282,7 +282,7 @@ RSpec.describe Panda::CMS::Page, type: :model do
         title: "Section A",
         template: test_template,
         parent: root_page,
-        status: "active"
+        status: "published"
       )
     end
 
@@ -292,7 +292,7 @@ RSpec.describe Panda::CMS::Page, type: :model do
         title: "Section B",
         template: test_template,
         parent: root_page,
-        status: "active"
+        status: "published"
       )
     end
 
@@ -303,7 +303,7 @@ RSpec.describe Panda::CMS::Page, type: :model do
         title: "Team A",
         template: test_template,
         parent: section_a,
-        status: "active"
+        status: "published"
       )
     end
 
@@ -314,7 +314,7 @@ RSpec.describe Panda::CMS::Page, type: :model do
         path: "/validation-test/section-b/team",
         parent: section_b,
         panda_cms_template_id: test_template.id,
-        status: "active"
+        status: "published"
       )
 
       expect(team_under_section_b).to be_valid
@@ -327,7 +327,7 @@ RSpec.describe Panda::CMS::Page, type: :model do
         path: "/validation-test/section-a/existing",
         parent: section_a,
         panda_cms_template_id: test_template.id,
-        status: "active"
+        status: "published"
       )
 
       duplicate_page = Panda::CMS::Page.new(
@@ -335,7 +335,7 @@ RSpec.describe Panda::CMS::Page, type: :model do
         path: "/validation-test/section-a/existing",
         parent: section_a,
         panda_cms_template_id: test_template.id,
-        status: "active"
+        status: "published"
       )
 
       expect(duplicate_page).not_to be_valid
@@ -356,7 +356,7 @@ RSpec.describe Panda::CMS::Page, type: :model do
         path: "/callback-test",
         title: "Callback Test Root",
         template: test_template,
-        status: "active"
+        status: "published"
       )
       page.save(validate: false)
       page
@@ -385,7 +385,7 @@ RSpec.describe Panda::CMS::Page, type: :model do
           path: "/callback-test/test-page-2",
           parent: test_root,
           template: test_template,
-          status: "active"
+          status: "published"
         )
 
         # Create a mock block
@@ -411,7 +411,7 @@ RSpec.describe Panda::CMS::Page, type: :model do
         homepage = Panda::CMS::Page.find_or_create_by!(path: "/") do |p|
           p.title = "Home"
           p.template = test_template
-          p.status = "active"
+          p.status = "published"
         end
         homepage.valid?
         expect(homepage.parent_id).to be_nil
@@ -436,7 +436,7 @@ RSpec.describe Panda::CMS::Page, type: :model do
           path: "/callback-test/wrong-section",
           parent: test_root,
           template: test_template,
-          status: "active"
+          status: "published"
         )
         page = Panda::CMS::Page.new(
           title: "Misparented Page",
@@ -454,7 +454,7 @@ RSpec.describe Panda::CMS::Page, type: :model do
           path: "/callback-test/mid",
           parent: test_root,
           template: test_template,
-          status: "active"
+          status: "published"
         )
 
         deep_page = Panda::CMS::Page.new(
@@ -501,7 +501,7 @@ RSpec.describe Panda::CMS::Page, type: :model do
           path: "/callback-test/old-path",
           parent: test_root,
           template: test_template,
-          status: "active"
+          status: "published"
         )
 
         # Directly test the method by mocking behavior
@@ -525,7 +525,7 @@ RSpec.describe Panda::CMS::Page, type: :model do
           path: "/callback-test/same-path",
           parent: test_root,
           template: test_template,
-          status: "active"
+          status: "published"
         )
 
         # Directly test the logic - path hasn't changed
@@ -549,7 +549,7 @@ RSpec.describe Panda::CMS::Page, type: :model do
         path: "/search-test",
         title: "Search Test Root",
         template: test_template,
-        status: "active"
+        status: "published"
       )
       page.save(validate: false)
       page
@@ -561,7 +561,7 @@ RSpec.describe Panda::CMS::Page, type: :model do
         path: "/search-test/active-page",
         parent: search_root,
         template: test_template,
-        status: "active"
+        status: "published"
       )
     end
 
@@ -571,7 +571,7 @@ RSpec.describe Panda::CMS::Page, type: :model do
         path: "/search-test/draft-page",
         parent: search_root,
         template: test_template,
-        status: "draft"
+        status: "hidden"
       )
     end
 
@@ -581,7 +581,7 @@ RSpec.describe Panda::CMS::Page, type: :model do
         path: "/search-test/another-active",
         parent: search_root,
         template: test_template,
-        status: "active"
+        status: "published"
       )
     end
 
@@ -629,7 +629,7 @@ RSpec.describe Panda::CMS::Page, type: :model do
         path: "/seo-test",
         title: "SEO Test Root",
         template: test_template,
-        status: "active"
+        status: "published"
       )
       page.save(validate: false)
       page

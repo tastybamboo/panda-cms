@@ -53,7 +53,7 @@ RSpec.describe "Sitemap", type: :request do
         Panda::CMS::Page.create!(
           title: "Draft Page",
           path: "/draft-page",
-          status: :draft,
+          status: :hidden,
           template: panda_cms_templates(:page_template),
           parent: panda_cms_pages(:homepage)
         )
@@ -100,7 +100,7 @@ RSpec.describe "Sitemap", type: :request do
         Panda::CMS::Page.create!(
           title: "Hidden Type Page",
           path: "/hidden-type-page",
-          status: :active,
+          status: :published,
           page_type: :hidden_type,
           template: panda_cms_templates(:page_template),
           parent: panda_cms_pages(:homepage)
@@ -118,7 +118,7 @@ RSpec.describe "Sitemap", type: :request do
         Panda::CMS::Page.create!(
           title: "System Page",
           path: "/system-page",
-          status: :active,
+          status: :published,
           page_type: :system,
           template: panda_cms_templates(:page_template),
           parent: panda_cms_pages(:homepage)
@@ -192,7 +192,7 @@ RSpec.describe "Sitemap", type: :request do
 
     context "with no content" do
       before do
-        Panda::CMS::Page.update_all(status: :draft)
+        Panda::CMS::Page.update_all(status: :hidden)
       end
 
       it "returns a valid empty sitemap" do

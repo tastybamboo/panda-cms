@@ -53,7 +53,7 @@ module Panda
               page = Panda::CMS::Page.create!(
                 path: path,
                 title: page_data["title"],
-                status: page_data["status"] || "active",
+                status: page_data["status"] || "published",
                 page_type: page_data["page_type"] || "standard",
                 template: Panda::CMS::Template.find_by(name: page_data["template"]),
                 parent: Panda::CMS::Page.find_by(path: page_data["parent"]),
@@ -177,7 +177,7 @@ module Panda
               post = Panda::CMS::Post.create!(
                 slug: slug,
                 title: post_data["title"],
-                status: post_data["status"] || "draft",
+                status: post_data["status"] || "published",
                 published_at: post_data["published_at"],
                 user: user,
                 author: author,

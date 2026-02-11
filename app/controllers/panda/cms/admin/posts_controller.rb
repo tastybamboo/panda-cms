@@ -84,7 +84,7 @@ module Panda
             Panda::CMS::Post.find(params[:id])
           else
             Panda::CMS::Post.new(
-              status: "active",
+              status: "published",
               published_at: Time.zone.now
             )
           end
