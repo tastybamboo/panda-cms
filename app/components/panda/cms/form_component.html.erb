@@ -1,0 +1,51 @@
+<% if @editable_state %>
+  <div data-controller="inline-form-selector"
+       data-inline-form-selector-page-id-value="<%= Panda::CMS::Current.page.id %>"
+       data-inline-form-selector-block-content-id-value="<%= @block_content_id %>"
+       class="panda-cms-form-selector border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+    <!-- Header -->
+    <div class="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-4 py-2 flex items-center justify-between">
+      <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Form Block</span>
+      <div class="flex items-center gap-2">
+        <select data-inline-form-selector-target="formSelect"
+                data-action="change->inline-form-selector#previewForm"
+                class="text-sm border-gray-300 rounded-md shadow-sm focus:border-primary focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
+          <option value="">-- No form selected --</option>
+          <% @available_forms.each do |available_form| %>
+            <option value="<%= available_form.id %>"
+                    <%= "selected" if @form_id == available_form.id.to_s %>
+                    data-field-count="<%= available_form.form_fields.count %>"
+                    data-status="<%= available_form.status %>">
+              <%= available_form.name %>
+              (<%= available_form.form_fields.count %> fields)
+              <% unless available_form.accepting_submissions? %>
+                - not accepting submissions
+              <% end %>
+            </option>
+          <% end %>
+        </select>
+        <button type="button"
+                data-action="click->inline-form-selector#saveSelection"
+                class="px-3 py-1 text-sm font-medium text-white bg-primary hover:bg-primary-dark rounded-md">
+          Save
+        </button>
+      </div>
+      <div data-inline-form-selector-target="saveMessage" class="hidden"></div>
+    </div>
+
+    <!-- Preview area -->
+    <div data-inline-form-selector-target="previewArea" class="p-4">
+      <% if @form %>
+        <div class="opacity-60 pointer-events-none">
+          <%= helpers.panda_cms_render_form(@form) %>
+        </div>
+      <% else %>
+        <div class="text-center py-8 text-gray-400">
+          <p class="text-sm">No form selected. Choose a form from the dropdown above.</p>
+        </div>
+      <% end %>
+    </div>
+  </div>
+<% elsif @form&.accepting_submissions? %>
+  <%= helpers.panda_cms_render_form(@form) %>
+<% end %>

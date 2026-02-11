@@ -34,7 +34,7 @@ module Panda
       #   <% end %>
       def panda_cms_protected_form(form, options = {}, &block)
         default_options = {
-          url: "/forms/#{form.id}",
+          url: "/_forms/#{form.id}",
           method: :post,
           data: {turbo: false}
         }
@@ -78,17 +78,13 @@ module Panda
         submit_class = options.delete(:submit_class) || "inline-flex items-center rounded-md bg-gray-900 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
 
         panda_cms_protected_form(form, options.merge(class: wrapper_class)) do |f|
-          content = ActiveSupport::SafeBuffer.new
-
           form.form_fields.active.ordered.each do |field|
-            content << render_form_field(field)
+            concat render_form_field(field)
           end
 
-          content << content_tag(:div, class: "mt-6") do
+          concat content_tag(:div, class: "mt-6") {
             content_tag(:button, submit_text, type: "submit", class: submit_class)
-          end
-
-          content
+          }
         end
       end
 
