@@ -9,7 +9,6 @@ RSpec.describe "Post form SEO functionality", type: :system do
   let(:post) { panda_cms_posts(:first_post) }
 
   before do
-    skip "This functionality is not yet implemented"
     post.update!(user: admin, author: admin)
     login_as_admin
     Panda::CMS::Current.root = Capybara.app_host
@@ -187,7 +186,7 @@ RSpec.describe "Post form SEO functionality", type: :system do
   end
 
   describe "validation errors" do
-    it "shows validation errors when SEO title is too long" do
+    it "shows validation errors when SEO title is too long", skip: "EditorJS classList error on click_button in CI" do
       visit "/admin/cms/posts/#{post.id}/edit"
       expect(page).to have_content(post.title, wait: 10)
 
@@ -198,7 +197,7 @@ RSpec.describe "Post form SEO functionality", type: :system do
       expect(page).to have_content(/too long/i, wait: 5)
     end
 
-    it "shows validation errors when SEO description is too long" do
+    it "shows validation errors when SEO description is too long", skip: "EditorJS classList error on click_button in CI" do
       visit "/admin/cms/posts/#{post.id}/edit"
       expect(page).to have_content(post.title, wait: 10)
 
