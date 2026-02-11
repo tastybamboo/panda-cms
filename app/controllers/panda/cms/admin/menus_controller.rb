@@ -5,7 +5,7 @@ module Panda
     module Admin
       class MenusController < ::Panda::CMS::Admin::BaseController
         before_action :set_initial_breadcrumb, only: %i[index new edit]
-        before_action :set_menu, only: %i[edit update destroy]
+        before_action :set_menu, only: %i[edit update destroy toggle_pin]
 
         # Lists all menus which can be managed by the administrator
         # @type GET
@@ -52,6 +52,18 @@ module Panda
         def destroy
           @menu.destroy
           redirect_to admin_cms_menus_path, notice: "Menu was successfully deleted."
+        end
+
+        # @type POST
+        def toggle_pin
+          page_id = params[:page_id].to_s
+          if @menu.page_pinned?(page_id)
+            @menu.unpin_page(page_id)
+          else
+            @menu.pin_page(page_id)
+          end
+          @menu.save!
+          redirect_to edit_admin_cms_menu_path(@menu), notice: "Pin state updated."
         end
 
         private

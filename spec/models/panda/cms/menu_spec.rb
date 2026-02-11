@@ -96,9 +96,8 @@ RSpec.describe Panda::CMS::Menu, type: :model do
 
     before do
       # Set up page hierarchy for testing
-      child_page.update!(parent: parent_page)
-      parent_page.update!(status: :active)
-      child_page.update!(status: :active)
+      child_page.move_to_child_of(parent_page)
+      child_page.reload
       auto_menu.update!(start_page: parent_page)
     end
 
@@ -247,6 +246,180 @@ RSpec.describe Panda::CMS::Menu, type: :model do
 
       expect(menu.menu_items.reload).to include(keep_item)
       expect(menu.menu_items.reload).not_to include(remove_item)
+    end
+  end
+
+  describe "pinned pages" do
+    let(:template) { panda_cms_pages(:homepage).template }
+    let(:test_parent) do
+      Panda::CMS::Page.create!(
+        title: "Pin Test Parent",
+        path: "/pin-test-parent",
+        parent: homepage,
+        template: template,
+        status: :active
+      )
+    end
+
+    let!(:page_a) { Panda::CMS::Page.create!(title: "Alpha", path: "/pin-test-parent/alpha", parent: test_parent, template: template, status: :active) }
+    let!(:page_b) { Panda::CMS::Page.create!(title: "Beta", path: "/pin-test-parent/beta", parent: test_parent, template: template, status: :active) }
+    let!(:page_c) { Panda::CMS::Page.create!(title: "Gamma", path: "/pin-test-parent/gamma", parent: test_parent, template: template, status: :active) }
+
+    describe "#page_pinned?" do
+      it "returns true for a pinned page" do
+        menu = Panda::CMS::Menu.new(pinned_page_ids: [page_a.id.to_s])
+        expect(menu.page_pinned?(page_a.id)).to be true
+      end
+
+      it "returns false for an unpinned page" do
+        menu = Panda::CMS::Menu.new(pinned_page_ids: [])
+        expect(menu.page_pinned?(page_a.id)).to be false
+      end
+
+      it "handles integer and string page IDs" do
+        menu = Panda::CMS::Menu.new(pinned_page_ids: [page_a.id.to_s])
+        expect(menu.page_pinned?(page_a.id.to_s)).to be true
+        expect(menu.page_pinned?(page_a.id)).to be true
+      end
+    end
+
+    describe "#pin_page" do
+      it "adds a page to pinned_page_ids" do
+        menu = Panda::CMS::Menu.new(pinned_page_ids: [])
+        menu.pin_page(page_a.id)
+        expect(menu.pinned_page_ids).to eq([page_a.id.to_s])
+      end
+
+      it "does not duplicate an already-pinned page" do
+        menu = Panda::CMS::Menu.new(pinned_page_ids: [page_a.id.to_s])
+        menu.pin_page(page_a.id)
+        expect(menu.pinned_page_ids).to eq([page_a.id.to_s])
+      end
+    end
+
+    describe "#unpin_page" do
+      it "removes a page from pinned_page_ids" do
+        menu = Panda::CMS::Menu.new(pinned_page_ids: [page_a.id.to_s, page_b.id.to_s])
+        menu.unpin_page(page_a.id)
+        expect(menu.pinned_page_ids).to eq([page_b.id.to_s])
+      end
+
+      it "is a no-op for a page that is not pinned" do
+        menu = Panda::CMS::Menu.new(pinned_page_ids: [page_a.id.to_s])
+        menu.unpin_page(page_b.id)
+        expect(menu.pinned_page_ids).to eq([page_a.id.to_s])
+      end
+    end
+
+    context "with default ordering" do
+      let(:pinned_menu) do
+        Panda::CMS::Menu.create!(
+          name: "Pinned Default Menu",
+          kind: "auto",
+          ordering: "default",
+          start_page: test_parent,
+          pinned_page_ids: [page_c.id.to_s]
+        )
+      end
+
+      it "places pinned pages first" do
+        root_item = pinned_menu.menu_items.roots.find_by(panda_cms_page_id: test_parent.id)
+        child_items = root_item.children.order(:lft)
+        titles = child_items.map(&:text)
+
+        expect(titles.first).to eq("Gamma")
+      end
+
+      it "preserves default order for unpinned pages" do
+        root_item = pinned_menu.menu_items.roots.find_by(panda_cms_page_id: test_parent.id)
+        child_items = root_item.children.order(:lft)
+        titles = child_items.map(&:text)
+
+        expect(titles.first).to eq("Gamma")
+        expect(titles[1..]).to eq(["Alpha", "Beta"])
+      end
+    end
+
+    context "with alphabetical ordering" do
+      let(:pinned_alpha_menu) do
+        Panda::CMS::Menu.create!(
+          name: "Pinned Alpha Menu",
+          kind: "auto",
+          ordering: "alphabetical",
+          start_page: test_parent,
+          pinned_page_ids: [page_c.id.to_s]
+        )
+      end
+
+      it "places pinned pages first, then alphabetical" do
+        root_item = pinned_alpha_menu.menu_items.roots.find_by(panda_cms_page_id: test_parent.id)
+        child_items = root_item.children.order(:lft)
+        titles = child_items.map(&:text)
+
+        expect(titles).to eq(["Gamma", "Alpha", "Beta"])
+      end
+    end
+
+    context "with multiple pinned pages" do
+      let(:multi_pin_menu) do
+        Panda::CMS::Menu.create!(
+          name: "Multi Pin Menu",
+          kind: "auto",
+          ordering: "alphabetical",
+          start_page: test_parent,
+          pinned_page_ids: [page_c.id.to_s, page_a.id.to_s]
+        )
+      end
+
+      it "maintains pinned_page_ids order for pinned pages" do
+        root_item = multi_pin_menu.menu_items.roots.find_by(panda_cms_page_id: test_parent.id)
+        child_items = root_item.children.order(:lft)
+        titles = child_items.map(&:text)
+
+        expect(titles).to eq(["Gamma", "Alpha", "Beta"])
+      end
+    end
+
+    context "with stale pinned IDs" do
+      let(:stale_pin_menu) do
+        Panda::CMS::Menu.create!(
+          name: "Stale Pin Menu",
+          kind: "auto",
+          ordering: "alphabetical",
+          start_page: test_parent,
+          pinned_page_ids: ["nonexistent-id", page_b.id.to_s]
+        )
+      end
+
+      it "ignores stale IDs and pins valid pages" do
+        root_item = stale_pin_menu.menu_items.roots.find_by(panda_cms_page_id: test_parent.id)
+        child_items = root_item.children.order(:lft)
+        titles = child_items.map(&:text)
+
+        expect(titles).to eq(["Beta", "Alpha", "Gamma"])
+      end
+    end
+
+    context "pin state survives regeneration" do
+      it "preserves pinned_page_ids after regeneration" do
+        menu = Panda::CMS::Menu.create!(
+          name: "Regen Pin Menu",
+          kind: "auto",
+          ordering: "alphabetical",
+          start_page: test_parent,
+          pinned_page_ids: [page_c.id.to_s]
+        )
+
+        # Trigger regeneration via save
+        menu.update!(name: "Regen Pin Menu Updated")
+
+        root_item = menu.menu_items.roots.find_by(panda_cms_page_id: test_parent.id)
+        child_items = root_item.children.order(:lft)
+        titles = child_items.map(&:text)
+
+        expect(titles.first).to eq("Gamma")
+        expect(menu.reload.pinned_page_ids).to eq([page_c.id.to_s])
+      end
     end
   end
 
