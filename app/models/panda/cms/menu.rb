@@ -8,6 +8,8 @@ module Panda
       after_save :generate_auto_menu_items, if: -> { kind == "auto" }
       after_commit :clear_menu_cache
 
+      attribute :pinned_page_ids, :json, default: []
+
       has_many :menu_items, lambda {
         order(lft: :asc)
       }, foreign_key: :panda_cms_menu_id, class_name: "Panda::CMS::MenuItem", inverse_of: :menu
@@ -34,6 +36,20 @@ module Panda
         end
       end
 
+      def page_pinned?(page_id)
+        pinned_page_ids.include?(page_id.to_s)
+      end
+
+      def pin_page(page_id)
+        id_str = page_id.to_s
+        return if pinned_page_ids.include?(id_str)
+        self.pinned_page_ids = pinned_page_ids + [id_str]
+      end
+
+      def unpin_page(page_id)
+        self.pinned_page_ids = pinned_page_ids - [page_id.to_s]
+      end
+
       private
 
       def generate_menu_items(parent_menu_item:, parent_page:)
@@ -47,12 +63,20 @@ module Panda
       end
 
       def order_pages(pages)
-        case ordering
+        ordered = case ordering
         when "alphabetical"
           pages.reorder(:title)
         else
           pages # Default uses nested set order (lft)
         end
+
+        return ordered if pinned_page_ids.empty?
+
+        all_pages = ordered.to_a
+        pin_ids = pinned_page_ids.map(&:to_s)
+        pinned, unpinned = all_pages.partition { |p| pin_ids.include?(p.id.to_s) }
+        pinned.sort_by! { |p| pin_ids.index(p.id.to_s) }
+        pinned + unpinned
       end
 
       #

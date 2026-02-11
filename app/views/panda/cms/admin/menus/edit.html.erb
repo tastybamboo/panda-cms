@@ -53,6 +53,14 @@
             <% end %>
             <% table.column("Page") { |menu_item| menu_item.page&.title } %>
             <% table.column("Path") { |menu_item| menu_item.page&.path } %>
+            <% table.column("Pinned", width: "5rem") do |menu_item| %>
+              <% if menu_item.depth > 0 && menu_item.page.present? %>
+                <% pinned = @menu.page_pinned?(menu_item.page.id) %>
+                <%= button_to toggle_pin_admin_cms_menu_path(@menu, page_id: menu_item.page.id), method: :post, class: "inline-flex items-center justify-center" do %>
+                  <i class="fa-solid fa-thumbtack <%= pinned ? 'text-blue-500' : 'text-gray-300 hover:text-gray-400' %>"></i>
+                <% end %>
+              <% end %>
+            <% end %>
           <% end %>
         <% else %>
           <p class="text-sm text-gray-500 dark:text-gray-400">No menu items generated yet. Select a start page and save to generate menu items.</p>
