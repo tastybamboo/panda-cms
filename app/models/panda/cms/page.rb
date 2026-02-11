@@ -231,6 +231,8 @@ module Panda
         return if path.blank? || path == "/"
 
         expected_parent_path = File.dirname(path) # e.g. "/advice-hub/foo" => "/advice-hub"
+        return if parent&.path == expected_parent_path
+
         expected_parent = self.class.find_by(path: expected_parent_path)
         return unless expected_parent
 

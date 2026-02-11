@@ -408,11 +408,13 @@ RSpec.describe Panda::CMS::Page, type: :model do
 
     describe "#infer_parent_from_path" do
       it "skips for root page" do
-        homepage = Panda::CMS::Page.find_by(path: "/")
-        if homepage
-          homepage.valid?
-          expect(homepage.parent_id).to be_nil
+        homepage = Panda::CMS::Page.find_or_create_by!(path: "/") do |p|
+          p.title = "Home"
+          p.template = test_template
+          p.status = "active"
         end
+        homepage.valid?
+        expect(homepage.parent_id).to be_nil
       end
 
       it "infers parent from path when parent_id is nil" do
@@ -429,7 +431,13 @@ RSpec.describe Panda::CMS::Page, type: :model do
 
       it "corrects wrong parent_id based on path hierarchy" do
         test_root # ensure correct parent exists before validation
-        wrong_parent = Panda::CMS::Page.find_by(path: "/")
+        wrong_parent = Panda::CMS::Page.create!(
+          title: "Wrong Parent",
+          path: "/callback-test/wrong-section",
+          parent: test_root,
+          template: test_template,
+          status: "active"
+        )
         page = Panda::CMS::Page.new(
           title: "Misparented Page",
           path: "/callback-test/misparented",
