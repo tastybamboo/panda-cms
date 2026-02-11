@@ -261,7 +261,7 @@ export default class extends Controller {
     // Prevent the default button click behavior temporarily
     event.preventDefault();
 
-    const submitButton = event.target;
+    const submitButton = event.currentTarget;
     const form = submitButton.closest('form');
 
     // Re-enable the button that was disabled by data-disable-with
