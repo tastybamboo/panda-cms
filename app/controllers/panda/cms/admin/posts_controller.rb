@@ -98,7 +98,7 @@ module Panda
           add_breadcrumb "Add Post", new_admin_cms_post_path
 
           post ||= Panda::CMS::Post.new(
-            status: "active",
+            status: "published",
             published_at: Time.zone.now
           )
 

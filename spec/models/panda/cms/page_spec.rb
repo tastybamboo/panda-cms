@@ -998,7 +998,7 @@ RSpec.describe Panda::CMS::Page, type: :model do
           path: "/section",
           parent: homepage,
           template: test_template,
-          status: :active
+          status: :published
         )
       end
 
@@ -1028,7 +1028,7 @@ RSpec.describe Panda::CMS::Page, type: :model do
           path: "/section/child",
           parent: section_page,
           template: test_template,
-          status: :active
+          status: :published
         )
 
         # Verify the ancestor-based lookup logic that update_auto_menus uses
@@ -1057,7 +1057,7 @@ RSpec.describe Panda::CMS::Page, type: :model do
           path: "/section/mid",
           parent: section_page,
           template: test_template,
-          status: :active
+          status: :published
         )
 
         # Generate the menu - should have section_page + mid_page
@@ -1070,7 +1070,7 @@ RSpec.describe Panda::CMS::Page, type: :model do
           path: "/section/mid/deep",
           parent: mid_page,
           template: test_template,
-          status: :active
+          status: :published
         )
 
         # Verify the ancestor-based lookup logic that update_auto_menus uses
@@ -1100,7 +1100,7 @@ RSpec.describe Panda::CMS::Page, type: :model do
           path: "/section-a",
           parent: homepage,
           template: test_template,
-          status: :active
+          status: :published
         )
       end
 
@@ -1110,7 +1110,7 @@ RSpec.describe Panda::CMS::Page, type: :model do
           path: "/section-b",
           parent: homepage,
           template: test_template,
-          status: :active
+          status: :published
         )
       end
 
@@ -1136,7 +1136,7 @@ RSpec.describe Panda::CMS::Page, type: :model do
           path: "/section-a/movable",
           parent: section_a,
           template: test_template,
-          status: :active
+          status: :published
         )
       end
 
@@ -1188,7 +1188,7 @@ RSpec.describe Panda::CMS::Page, type: :model do
           path: "/section-a/movable/child",
           parent: movable_page,
           template: test_template,
-          status: :active
+          status: :published
         )
 
         # Generate initial menus
@@ -1223,7 +1223,7 @@ RSpec.describe Panda::CMS::Page, type: :model do
           path: "/section",
           parent: homepage,
           template: test_template,
-          status: :active
+          status: :published
         )
       end
 
@@ -1241,7 +1241,7 @@ RSpec.describe Panda::CMS::Page, type: :model do
           path: "/section/child",
           parent: section_page,
           template: test_template,
-          status: :active
+          status: :published
         )
       end
 
@@ -1259,23 +1259,23 @@ RSpec.describe Panda::CMS::Page, type: :model do
         expect(menu_item.text).to eq("New Title")
       end
 
-      it "regenerates menu when page status changes to draft" do
-        # Change status to draft
-        child_page.update!(status: :draft)
+      it "regenerates menu when page status changes to archived" do
+        # Change status to archived (not servable, removed from menus)
+        child_page.update!(status: :archived)
 
         # Page should be removed from menu
         auto_menu.reload
         expect(auto_menu.menu_items.pluck(:panda_cms_page_id)).not_to include(child_page.id)
       end
 
-      it "regenerates menu when page status changes to active" do
-        # First make it draft
-        child_page.update!(status: :draft)
+      it "regenerates menu when page status changes to published" do
+        # First make it archived
+        child_page.update!(status: :archived)
         auto_menu.reload
         expect(auto_menu.menu_items.pluck(:panda_cms_page_id)).not_to include(child_page.id)
 
-        # Then make it active again
-        child_page.update!(status: :active)
+        # Then make it published again
+        child_page.update!(status: :published)
         auto_menu.reload
         expect(auto_menu.menu_items.pluck(:panda_cms_page_id)).to include(child_page.id)
       end
@@ -1288,7 +1288,7 @@ RSpec.describe Panda::CMS::Page, type: :model do
           path: "/orphan",
           parent: homepage,
           template: test_template,
-          status: :active
+          status: :published
         )
       end
 
@@ -1307,7 +1307,7 @@ RSpec.describe Panda::CMS::Page, type: :model do
           path: "/section",
           parent: homepage,
           template: test_template,
-          status: :active
+          status: :published
         )
       end
 
@@ -1325,7 +1325,7 @@ RSpec.describe Panda::CMS::Page, type: :model do
           path: "/section/child",
           parent: section_page,
           template: test_template,
-          status: :active
+          status: :published
         )
 
         # Spy on the update_auto_menus method
@@ -1344,7 +1344,7 @@ RSpec.describe Panda::CMS::Page, type: :model do
           path: "/section/child",
           parent: section_page,
           template: test_template,
-          status: :active
+          status: :published
         )
 
         # Update title
