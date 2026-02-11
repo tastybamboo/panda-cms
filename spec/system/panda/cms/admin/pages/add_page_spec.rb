@@ -242,7 +242,6 @@ RSpec.describe "When adding a page", type: :system do
       end
 
       it "can access the pages index first" do
-        skip "Test hangs/times out - likely waiting for assets or JavaScript that doesn't load"
         # Check for successful page load
         expect(page.status_code).to eq(200)
         expect(page.html).to include("Pages")

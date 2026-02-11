@@ -2,7 +2,7 @@
 
 require "system_helper"
 
-RSpec.describe "When following redirects", type: :system, skip: "Redirect tests fail in CI - browser timeout/database issue" do
+RSpec.describe "When following redirects", type: :system do
   fixtures :all
 
   let(:about_page) { Panda::CMS::Page.find_by(path: "/about") }
@@ -69,11 +69,6 @@ RSpec.describe "When following redirects", type: :system, skip: "Redirect tests 
 
     # Wait for the page to fully load after redirect
     expect(page).to have_content("About")
-
-    # Wait for the visit count to be updated (with proper retry logic)
-    expect do
-      new_redirect.reload.visits
-    end.to become(1).within(2.seconds)
 
     # The automatically created redirect should have a visit
     expect(new_redirect.reload.visits).to eq(1)

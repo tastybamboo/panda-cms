@@ -83,7 +83,7 @@ RSpec.describe "When editing a page", type: :system do
       end
     end
 
-    it "updates the page details", skip: "Flaky: JavaScript controller not initializing in CI" do
+    it "updates the page details" do
       # Check that the Page Details button exists
       expect(page).to have_button("Page Details", wait: 10)
 
@@ -393,27 +393,27 @@ RSpec.describe "When editing a page", type: :system do
       end
     end
 
-    context "file upload functionality" do
+    context "file upload functionality", skip: "File upload Stimulus controller not initializing in slideover" do
       before do
-        skip "SKIPPED: Failure needs further investigation, or feature is WIP"
         # Open the slideover to access SEO settings
         # Don't set inline display style as it overrides Tailwind's lg:flex
-        page.execute_script("
-          var slideover = document.querySelector('#slideover');
-          if (slideover) {
-            slideover.classList.remove('hidden');
-          }
-        ")
+        page.execute_script(<<~JS)
+          (function() {
+            var slideover = document.querySelector('#slideover');
+            if (slideover) { slideover.classList.remove('hidden'); }
+          })();
+        JS
         expect(page).to have_css("#slideover", visible: true, wait: 5)
       end
 
       it "shows file upload controller is connected" do
         within("#slideover") do
-          # Check that file-upload controller is connected
-          controller_connected = page.evaluate_script("
-            var container = document.querySelector('[data-controller~=\"file-upload\"]');
-            container !== null;
-          ")
+          controller_connected = page.evaluate_script(<<~JS)
+            (function() {
+              var container = document.querySelector('[data-controller~="file-upload"]');
+              return container !== null;
+            })()
+          JS
           expect(controller_connected).to be true
         end
       end
@@ -469,18 +469,14 @@ RSpec.describe "When editing a page", type: :system do
 
       it "highlights dropzone on drag over" do
         within("#slideover") do
-          dropzone_highlighted = page.evaluate_script("
-            (() => {
-              var dropzone = document.querySelector('[data-file-upload-target=\"dropzone\"]');
-
-              // Simulate dragenter event
+          dropzone_highlighted = page.evaluate_script(<<~JS)
+            (function() {
+              var dropzone = document.querySelector('[data-file-upload-target="dropzone"]');
               var dragenterEvent = new DragEvent('dragenter', { bubbles: true });
               dropzone.dispatchEvent(dragenterEvent);
-
-              // Check if highlight classes were added
               return dropzone.classList.contains('border-indigo-600');
             })()
-          ")
+          JS
 
           expect(dropzone_highlighted).to be true
         end
