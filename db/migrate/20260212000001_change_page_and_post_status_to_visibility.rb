@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class ChangePageAndPostStatusToVisibility < ActiveRecord::Migration[7.2]
+class ChangePageAndPostStatusToVisibility < ActiveRecord::Migration[8.1]
   def up
     # 1. Save current values to a temp string column
     add_column :panda_cms_pages, :status_tmp, :string
@@ -23,6 +23,8 @@ class ChangePageAndPostStatusToVisibility < ActiveRecord::Migration[7.2]
       enum_type: "panda_cms_page_status", default: "published", null: false
     add_column :panda_cms_posts, :status, :enum,
       enum_type: "panda_cms_post_status", default: "published", null: false
+    add_index :panda_cms_pages, :status
+    add_index :panda_cms_posts, :status
 
     # 5. Map old values to new values
     # active → published, draft/pending_review → published (workflow is now version-level)
@@ -74,7 +76,9 @@ class ChangePageAndPostStatusToVisibility < ActiveRecord::Migration[7.2]
     add_column :panda_cms_pages, :status, :enum,
       enum_type: "panda_cms_page_status", default: "active", null: false
     add_column :panda_cms_posts, :status, :enum,
-      enum_type: "panda_cms_post_status", default: "active", null: false
+      enum_type: "panda_cms_post_status", default: "draft", null: false
+    add_index :panda_cms_pages, :status
+    add_index :panda_cms_posts, :status
 
     # 5. Map new values back to old values
     # published → active, unlisted → active (no equivalent in old schema)
