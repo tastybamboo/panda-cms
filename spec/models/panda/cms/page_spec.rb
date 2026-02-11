@@ -46,7 +46,7 @@ RSpec.describe Panda::CMS::Page, type: :model do
     it "validates parent presence for non-root pages" do
       page = Panda::CMS::Page.new(
         title: "No Parent Page",
-        path: "/some-page",
+        path: "/nonexistent/some-page",
         panda_cms_template_id: template.id,
         parent: nil
       )
@@ -403,6 +403,83 @@ RSpec.describe Panda::CMS::Page, type: :model do
         # Existing content IDs should match one of the template blocks
         expect(existing_contents.map(&:block_id)).to include(mock_block.id)
         expect(existing_contents.size).to eq(1)
+      end
+    end
+
+    describe "#infer_parent_from_path" do
+      it "skips for root page" do
+        homepage = Panda::CMS::Page.find_by(path: "/")
+        if homepage
+          homepage.valid?
+          expect(homepage.parent_id).to be_nil
+        end
+      end
+
+      it "infers parent from path when parent_id is nil" do
+        test_root # ensure parent exists before validation
+        page = Panda::CMS::Page.new(
+          title: "Child of Callback Root",
+          path: "/callback-test/inferred-child",
+          panda_cms_template_id: test_template.id,
+          parent: nil
+        )
+        page.valid?
+        expect(page.parent).to eq(test_root)
+      end
+
+      it "corrects wrong parent_id based on path hierarchy" do
+        test_root # ensure correct parent exists before validation
+        wrong_parent = Panda::CMS::Page.find_by(path: "/")
+        page = Panda::CMS::Page.new(
+          title: "Misparented Page",
+          path: "/callback-test/misparented",
+          panda_cms_template_id: test_template.id,
+          parent: wrong_parent
+        )
+        page.valid?
+        expect(page.parent).to eq(test_root)
+      end
+
+      it "infers deeply nested parents" do
+        mid_page = Panda::CMS::Page.create!(
+          title: "Mid",
+          path: "/callback-test/mid",
+          parent: test_root,
+          template: test_template,
+          status: "active"
+        )
+
+        deep_page = Panda::CMS::Page.new(
+          title: "Deep",
+          path: "/callback-test/mid/deep",
+          panda_cms_template_id: test_template.id,
+          parent: nil
+        )
+        deep_page.valid?
+        expect(deep_page.parent).to eq(mid_page)
+      end
+
+      it "does not change correct parent" do
+        test_root # ensure parent exists before validation
+        page = Panda::CMS::Page.new(
+          title: "Correct Parent",
+          path: "/callback-test/correct",
+          panda_cms_template_id: test_template.id,
+          parent: test_root
+        )
+        page.valid?
+        expect(page.parent).to eq(test_root)
+      end
+
+      it "does not set parent when no matching page exists" do
+        page = Panda::CMS::Page.new(
+          title: "Orphan",
+          path: "/nonexistent-root/orphan",
+          panda_cms_template_id: test_template.id,
+          parent: nil
+        )
+        page.valid?
+        expect(page.parent_id).to be_nil
       end
     end
 
