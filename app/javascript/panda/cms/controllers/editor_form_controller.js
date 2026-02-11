@@ -280,10 +280,13 @@ export default class extends Controller {
       }
 
       // Destroy the editor before form submission so its document-level
-      // click handler is removed. Without this, the synthetic click below
-      // bubbles to `document`, EditorJS's `documentClicked` fires, and it
-      // tries to access toolbar DOM elements that Turbo has already removed
-      // — causing "Cannot read properties of undefined (reading 'classList')".
+      // click handler is removed. Without this, the *original* trusted click
+      // can keep bubbling after `submit()` returns, reach `document`, and
+      // trigger EditorJS's `documentClicked`, which then tries to access
+      // toolbar DOM elements that Turbo has already removed — causing
+      // "Cannot read properties of undefined (reading 'classList')". The
+      // synthetic click we dispatch below is non-trusted and ignored by
+      // `documentClicked` in the vendored EditorJS build.
       try {
         this.editor.destroy();
       } catch (e) {
