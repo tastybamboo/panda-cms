@@ -74,7 +74,7 @@ RSpec.describe Panda::CMS::FormComponent, type: :component do
     context "when the referenced form has been deleted (stale ID)" do
       before do
         block_content = panda_cms_block_contents(:about_page_contact_form)
-        block_content.update_column(:content, "\"00000000-0000-0000-0000-000000000000\"")
+        block_content.update_column(:content, "00000000-0000-0000-0000-000000000000")
       end
 
       it "renders nothing" do

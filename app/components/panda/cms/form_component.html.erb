@@ -12,12 +12,13 @@
                 class="text-sm border-gray-300 rounded-md shadow-sm focus:border-primary focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
           <option value="">-- No form selected --</option>
           <% @available_forms.each do |available_form| %>
+            <% field_count = available_form.form_fields.size %>
             <option value="<%= available_form.id %>"
                     <%= "selected" if @form_id == available_form.id.to_s %>
-                    data-field-count="<%= available_form.form_fields.count %>"
+                    data-field-count="<%= field_count %>"
                     data-status="<%= available_form.status %>">
               <%= available_form.name %>
-              (<%= available_form.form_fields.count %> fields)
+              (<%= field_count %> fields)
               <% unless available_form.accepting_submissions? %>
                 - not accepting submissions
               <% end %>

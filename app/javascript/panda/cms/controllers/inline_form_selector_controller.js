@@ -13,22 +13,30 @@ export default class extends Controller {
 
   previewForm() {
     const selectedOption = this.formSelectTarget.selectedOptions[0]
+    this.previewAreaTarget.replaceChildren()
+
     if (!selectedOption || !selectedOption.value) {
-      this.previewAreaTarget.innerHTML = `
-        <div class="text-center py-8 text-gray-400">
-          <p class="text-sm">No form selected. Choose a form from the dropdown above.</p>
-        </div>
-      `
+      const wrapper = document.createElement('div')
+      wrapper.className = 'text-center py-8 text-gray-400'
+      const msg = document.createElement('p')
+      msg.className = 'text-sm'
+      msg.textContent = 'No form selected. Choose a form from the dropdown above.'
+      wrapper.appendChild(msg)
+      this.previewAreaTarget.appendChild(wrapper)
       return
     }
 
-    const formName = selectedOption.text.trim()
-    this.previewAreaTarget.innerHTML = `
-      <div class="text-center py-8 text-gray-500">
-        <p class="text-sm font-medium">${formName}</p>
-        <p class="text-xs mt-1">Save and reload to see the full form preview.</p>
-      </div>
-    `
+    const wrapper = document.createElement('div')
+    wrapper.className = 'text-center py-8 text-gray-500'
+    const nameEl = document.createElement('p')
+    nameEl.className = 'text-sm font-medium'
+    nameEl.textContent = selectedOption.text.trim()
+    const hintEl = document.createElement('p')
+    hintEl.className = 'text-xs mt-1'
+    hintEl.textContent = 'Save and reload to see the full form preview.'
+    wrapper.appendChild(nameEl)
+    wrapper.appendChild(hintEl)
+    this.previewAreaTarget.appendChild(wrapper)
   }
 
   async saveSelection() {
@@ -44,7 +52,7 @@ export default class extends Controller {
           'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
         },
         body: JSON.stringify({
-          content: formId
+          content: formId || "{}"
         })
       })
 

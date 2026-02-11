@@ -82,9 +82,9 @@ module Panda
             concat render_form_field(field)
           end
 
-          concat content_tag(:div, class: "mt-6") {
+          concat(content_tag(:div, class: "mt-6") do
             content_tag(:button, submit_text, type: "submit", class: submit_class)
-          }
+          end)
         end
       end
 

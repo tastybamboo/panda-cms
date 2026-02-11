@@ -30,13 +30,16 @@ module Panda
         @editable_state = component_is_editable?
 
         block = find_block
-        return false if block.nil?
+        if block.nil?
+          @editable_state = false
+          return
+        end
 
         @block_content_obj = find_block_content(block)
         @form_id = @block_content_obj&.content.to_s.presence
         @block_content_id = @block_content_obj&.id
         @form = Panda::CMS::Form.find_by(id: @form_id) if @form_id
-        @available_forms = Panda::CMS::Form.order(:name) if @editable_state
+        @available_forms = Panda::CMS::Form.includes(:form_fields).order(:name) if @editable_state
       end
 
       def find_block
