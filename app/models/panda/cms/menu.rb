@@ -74,8 +74,10 @@ module Panda
 
         all_pages = ordered.to_a
         pin_ids = pinned_page_ids.map(&:to_s)
+        pin_positions = {}
+        pin_ids.each_with_index { |id, idx| pin_positions[id] = idx }
         pinned, unpinned = all_pages.partition { |p| pin_ids.include?(p.id.to_s) }
-        pinned.sort_by! { |p| pin_ids.index(p.id.to_s) }
+        pinned.sort_by! { |p| pin_positions[p.id.to_s] }
         pinned + unpinned
       end
 
