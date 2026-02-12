@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/tastybamboo/panda-core.git
-  revision: 0dcce68780e5bf713387c73de5e8224b1dfba623
+  revision: 0b8c22f3478791ecca811993b4ec84105ff5ffbd
   branch: main
   specs:
     panda-core (0.14.4)
@@ -130,7 +130,7 @@ GEM
       uri (>= 0.13.1)
     addressable (2.8.8)
       public_suffix (>= 2.0.2, < 8.0)
-    annotaterb (4.21.0)
+    annotaterb (4.22.0)
       activerecord (>= 6.0.0)
       activesupport (>= 6.0.0)
     ast (2.4.3)
