@@ -222,9 +222,11 @@ module Panda
 
       def render_content_for_display(content)
         # Handle Hash input (from content accessor which auto-parses JSON)
+        # Normalize keys to strings since empty_editor_js_content uses symbols
         if content.is_a?(Hash)
-          if valid_editor_js_content?(content)
-            render_editor_js_content(content)
+          stringified = content.deep_stringify_keys
+          if valid_editor_js_content?(stringified)
+            render_editor_js_content(stringified)
           else
             process_html_content(content.to_s)
           end
