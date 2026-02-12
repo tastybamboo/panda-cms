@@ -311,6 +311,30 @@ RSpec.describe Panda::CMS::BulkEditor, type: :model do
         expect(page.seo_title).to eq("Imported SEO Title")
         expect(page.seo_description).to eq("Imported SEO Description")
       end
+
+      it "defaults to unlisted status when status field is missing" do
+        data = JSON.parse(export_data)
+        template = Panda::CMS::Template.first
+
+        data["pages"]["/new-unlisted-page"] = {
+          "title" => "New Unlisted Page",
+          "template" => template.name,
+          "parent" => "/",
+          "page_type" => "standard",
+          "contents" => {}
+          # Note: status field intentionally omitted
+        }
+
+        result = described_class.import(data.to_json)
+
+        # Should have a warning about missing status
+        expect(result[:warning]).to include("Page '/new-unlisted-page' has no status field, defaulting to 'unlisted' for safety")
+
+        # Page should be created with unlisted status
+        new_page = Panda::CMS::Page.find_by(path: "/new-unlisted-page")
+        expect(new_page).to be_present
+        expect(new_page.status).to eq("unlisted")
+      end
     end
 
     describe "post import" do
@@ -363,6 +387,28 @@ RSpec.describe Panda::CMS::BulkEditor, type: :model do
 
         orphan_post = Panda::CMS::Post.find_by(slug: slug)
         expect(orphan_post.user).to eq(Panda::Core::User.first)
+      end
+
+      it "defaults to unlisted status when status field is missing" do
+        data = JSON.parse(export_data)
+        slug = "/#{Time.current.strftime("%Y/%m")}/new-unlisted-post"
+        data["posts"] << {
+          "slug" => slug,
+          "title" => "New Unlisted Post",
+          "user_email" => @user.email,
+          "contents" => {}
+          # Note: status field intentionally omitted
+        }
+
+        result = described_class.import(data.to_json)
+
+        # Should have a warning about missing status
+        expect(result[:warning]).to include("Post '#{slug}' has no status field, defaulting to 'unlisted' for safety")
+
+        # Post should be created with unlisted status
+        new_post = Panda::CMS::Post.find_by(slug: slug)
+        expect(new_post).to be_present
+        expect(new_post.status).to eq("unlisted")
       end
     end
 
