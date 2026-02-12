@@ -221,8 +221,16 @@ module Panda
       end
 
       def render_content_for_display(content)
-        # Try to parse as JSON if it looks like EditorJS format
-        if content.is_a?(String) && content.strip.match?(/^\{.*"blocks":\s*\[.*\].*\}$/m)
+        # Handle Hash input (from content accessor which auto-parses JSON)
+        # Normalize keys to strings since empty_editor_js_content uses symbols
+        if content.is_a?(Hash)
+          stringified = content.deep_stringify_keys
+          if valid_editor_js_content?(stringified)
+            render_editor_js_content(stringified)
+          else
+            process_html_content(content.to_s)
+          end
+        elsif content.is_a?(String) && content.strip.match?(/^\{.*"blocks":\s*\[.*\].*\}$/m)
           parsed_content = JSON.parse(content)
           if valid_editor_js_content?(parsed_content)
             render_editor_js_content(parsed_content)
@@ -230,10 +238,10 @@ module Panda
             process_html_content(content)
           end
         else
-          process_html_content(content)
+          process_html_content(content.to_s)
         end
       rescue JSON::ParserError
-        process_html_content(content)
+        process_html_content(content.to_s)
       end
 
       def render_editor_js_content(parsed_content)
