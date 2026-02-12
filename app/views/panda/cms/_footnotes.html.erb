@@ -1,0 +1,13 @@
+<details class="panda-cms-footnotes">
+  <summary>Sources/References</summary>
+  <ol>
+    <% footnotes.each do |footnote| %>
+      <li id="fn:<%= footnote[:number] %>">
+        <p>
+          <%= footnote[:content].html_safe %>
+          <a href="#fnref:<%= footnote[:number] %>" class="footnote-backref" aria-label="Back to content">↩</a>
+        </p>
+      </li>
+    <% end %>
+  </ol>
+</details>

@@ -7,3 +7,6 @@
     <% end %>
   <% end %>
 <% end %>
+<% if @footnotes&.any? %>
+  <%= render partial: "panda/cms/footnotes", locals: { footnotes: @footnotes } %>
+<% end %>
