@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/tastybamboo/panda-core.git
-  revision: 0b8c22f3478791ecca811993b4ec84105ff5ffbd
+  revision: d7913f7bcb3a83179f670b5e6c64e09eb61a5da2
   branch: main
   specs:
     panda-core (0.14.4)
@@ -18,7 +18,7 @@ GIT
 
 GIT
   remote: https://github.com/tastybamboo/panda-editor.git
-  revision: 0199ee0a53172deb8a4b6a61478a3077e14187f9
+  revision: 0cefc492c928e4d7ac42c0d8880a420dfdd1fe65
   branch: main
   specs:
     panda-editor (0.8.3)
@@ -433,7 +433,7 @@ GEM
       rspec-mocks (~> 3.13)
       rspec-support (~> 3.13)
     rspec-support (3.13.7)
-    rubocop (1.82.1)
+    rubocop (1.84.2)
       json (~> 2.3)
       language_server-protocol (~> 3.17.0.2)
       lint_roller (~> 1.1.0)
@@ -441,7 +441,7 @@ GEM
       parser (>= 3.3.0.2)
       rainbow (>= 2.2.2, < 4.0)
       regexp_parser (>= 2.9.3, < 3.0)
-      rubocop-ast (>= 1.48.0, < 2.0)
+      rubocop-ast (>= 1.49.0, < 2.0)
       ruby-progressbar (~> 1.7)
       unicode-display_width (>= 2.4.0, < 4.0)
     rubocop-ast (1.49.0)
@@ -495,10 +495,10 @@ GEM
       version_gem (>= 1.1.8, < 3)
     sqlite3 (2.9.0-arm64-darwin)
     sqlite3 (2.9.0-x86_64-linux-gnu)
-    standard (1.53.0)
+    standard (1.54.0)
       language_server-protocol (~> 3.17.0.2)
       lint_roller (~> 1.0)
-      rubocop (~> 1.82.0)
+      rubocop (~> 1.84.0)
       standard-custom (~> 1.0.0)
       standard-performance (~> 1.8)
     standard-custom (1.0.2)

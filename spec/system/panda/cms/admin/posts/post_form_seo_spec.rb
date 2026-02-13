@@ -2,7 +2,7 @@
 
 require "system_helper"
 
-RSpec.describe "Post form SEO functionality", type: :system do
+RSpec.describe "Post form SEO functionality", type: :system, editorjs: true do
   fixtures :all
 
   let(:admin) { create_admin_user }
