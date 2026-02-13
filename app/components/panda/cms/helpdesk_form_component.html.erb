@@ -1,0 +1,48 @@
+<% if @editable_state && helpdesk_available? %>
+  <div data-controller="inline-form-selector"
+       data-inline-form-selector-page-id-value="<%= Panda::CMS::Current.page.id %>"
+       data-inline-form-selector-block-content-id-value="<%= @block_content_id %>"
+       class="panda-cms-form-selector border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+    <div class="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-4 py-2 flex items-center justify-between">
+      <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Helpdesk Form Block</span>
+      <div class="flex items-center gap-2">
+        <select data-inline-form-selector-target="formSelect"
+                data-action="change->inline-form-selector#previewForm"
+                class="text-sm border-gray-300 rounded-md shadow-sm focus:border-primary focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
+          <option value="">-- No department selected --</option>
+          <% @available_departments&.each do |dept| %>
+            <option value="<%= dept.id %>" <%= "selected" if @department_id == dept.id.to_s %>>
+              <%= dept.name %>
+            </option>
+          <% end %>
+        </select>
+        <button type="button"
+                data-action="click->inline-form-selector#saveSelection"
+                class="px-3 py-1 text-sm font-medium text-white bg-primary hover:bg-primary-dark rounded-md">
+          Save
+        </button>
+      </div>
+      <div data-inline-form-selector-target="saveMessage" class="hidden"></div>
+    </div>
+    <div data-inline-form-selector-target="previewArea" class="p-4">
+      <% if @department %>
+        <div class="text-center py-4 text-gray-500">
+          <p class="text-sm font-medium">Department: <%= @department.name %></p>
+          <p class="text-xs mt-1">The helpdesk form will be shown here to logged-in visitors.</p>
+        </div>
+      <% else %>
+        <div class="text-center py-8 text-gray-400">
+          <p class="text-sm">No department selected. Choose a department from the dropdown above.</p>
+        </div>
+      <% end %>
+    </div>
+  </div>
+<% elsif @editable_state && !helpdesk_available? %>
+  <div class="border border-amber-200 bg-amber-50 rounded-lg p-4">
+    <p class="text-sm text-amber-800">
+      Helpdesk form: The panda-helpdesk gem is not installed. Add it to your Gemfile to enable helpdesk forms.
+    </p>
+  </div>
+<% elsif helpdesk_available? && @department %>
+  <%= render Panda::Helpdesk::EmbeddedFormComponent.new(department: @department, current_user: @current_user) %>
+<% end %>
