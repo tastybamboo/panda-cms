@@ -35,10 +35,7 @@ module Panda
       def prepare_content
         @editable_state = component_is_editable?
 
-        unless helpdesk_available?
-          @editable_state = false if @editable_state
-          return
-        end
+        return unless helpdesk_available?
 
         block = find_block
         if block.nil?
@@ -93,8 +90,8 @@ module Panda
       def resolve_current_user
         return nil unless helpdesk_available?
         Panda::Helpdesk.config.current_user_resolver.call(view_context.session, view_context.request)
-      rescue StandardError => e
-        Rails.logger.error("[HelpdeskFormComponent] Failed to resolve current user: #{e.class}: #{e.message}") if defined?(Rails) && Rails.respond_to?(:logger) && Rails.logger
+      rescue => e
+        Rails.logger.error("[HelpdeskFormComponent] Failed to resolve current user: #{e.class}: #{e.message}")
         nil
       end
     end
