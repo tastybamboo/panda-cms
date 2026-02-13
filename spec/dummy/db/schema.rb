@@ -10,13 +10,13 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_12_092127) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_13_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
   # Custom types defined in this database.
   # Note that some types may not work with other database engines. Be careful if changing database.
-  create_enum "panda_cms_block_kind", ["plain_text", "rich_text", "image", "video", "audio", "file", "code", "iframe", "quote", "list", "table", "form"]
+  create_enum "panda_cms_block_kind", ["plain_text", "rich_text", "image", "video", "audio", "file", "code", "iframe", "quote", "list", "table", "form", "helpdesk_form"]
   create_enum "panda_cms_menu_kind", ["static", "auto"]
   create_enum "panda_cms_menu_ordering", ["default", "alphabetical"]
   create_enum "panda_cms_og_type", ["website", "article", "profile", "video", "book"]
