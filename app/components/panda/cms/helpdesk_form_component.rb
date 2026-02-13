@@ -93,7 +93,8 @@ module Panda
       def resolve_current_user
         return nil unless helpdesk_available?
         Panda::Helpdesk.config.current_user_resolver.call(view_context.session, view_context.request)
-      rescue
+      rescue StandardError => e
+        Rails.logger.error("[HelpdeskFormComponent] Failed to resolve current user: #{e.class}: #{e.message}") if defined?(Rails) && Rails.respond_to?(:logger) && Rails.logger
         nil
       end
     end
