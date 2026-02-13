@@ -18,7 +18,7 @@ GIT
 
 GIT
   remote: https://github.com/tastybamboo/panda-editor.git
-  revision: 0cefc492c928e4d7ac42c0d8880a420dfdd1fe65
+  revision: 8be395dcea54e68aabb743ac70efbd16822c9aea
   branch: main
   specs:
     panda-editor (0.8.3)
@@ -27,7 +27,7 @@ GIT
       panda-core
       rails (>= 7.1)
       redcarpet (~> 3.6)
-      sanitize (~> 6.0)
+      sanitize (>= 6.0)
 
 PATH
   remote: .
