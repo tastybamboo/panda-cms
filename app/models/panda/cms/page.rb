@@ -146,7 +146,7 @@ module Panda
         return title unless inherit_seo
 
         # Traverse up tree to find inherited value
-        self_and_ancestors.reverse.find { |p| p.seo_title.present? }&.seo_title || title
+        self_and_ancestors.rfind { |p| p.seo_title.present? }&.seo_title || title
       end
 
       #
@@ -160,7 +160,7 @@ module Panda
         return seo_description if seo_description.present?
         return nil unless inherit_seo
 
-        self_and_ancestors.reverse.find { |p| p.seo_description.present? }&.seo_description
+        self_and_ancestors.rfind { |p| p.seo_description.present? }&.seo_description
       end
 
       #
