@@ -82,7 +82,7 @@ RSpec.describe Panda::CMS::Admin::BaseAnalyticsWidgetComponent, type: :component
       expect(component.default_attrs[:class]).to include("bg-white")
       expect(component.default_attrs[:class]).to include("rounded-2xl")
       expect(component.default_attrs[:class]).to include("border")
-      expect(component.default_attrs[:class]).to include("p-6")
+      expect(component.default_attrs[:class]).to include("shadow-sm")
     end
   end
 

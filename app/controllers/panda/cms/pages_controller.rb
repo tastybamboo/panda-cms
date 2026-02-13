@@ -17,9 +17,9 @@ module Panda
 
       def show
         page = if @overrides&.dig(:page_path_match)
-          Panda::CMS::Page.includes(:template, :block_contents).find_by(path: @overrides[:page_path_match])
+          Panda::CMS::Page.servable.includes(:template, :block_contents).find_by(path: @overrides[:page_path_match])
         else
-          Panda::CMS::Page.includes(:template, :block_contents).find_by(path: "/#{params[:path]}")
+          Panda::CMS::Page.servable.includes(:template, :block_contents).find_by(path: "/#{params[:path]}")
         end
 
         Panda::CMS::Current.page = page || Panda::CMS::Page.find_by(path: "/404")
@@ -27,7 +27,7 @@ module Panda
 
         layout = page&.template&.file_path
 
-        if page.nil? || page.status == "archived" || layout.nil?
+        if page.nil? || layout.nil?
           # Render the default Panda CMS 404 page with public layout
           render "panda/cms/pages/not_found", layout: "panda/cms/public", status: :not_found and return
         end
@@ -54,12 +54,12 @@ module Panda
 
         return unless redirect
 
-        redirect.increment!(:visits)
+        redirect.update_columns(visits: redirect.visits + 1, last_visited_at: Time.current)
 
         # Check if the destination is also a redirect
         next_redirect = Panda::CMS::Redirect.find_by(origin_path: redirect.destination_path)
         if next_redirect
-          next_redirect.increment!(:visits)
+          next_redirect.update_columns(visits: next_redirect.visits + 1, last_visited_at: Time.current)
           redirect_to next_redirect.destination_path, status: redirect.status_code and return
         end
 

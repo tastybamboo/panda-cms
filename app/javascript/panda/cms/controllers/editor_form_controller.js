@@ -1,5 +1,5 @@
 import { Controller } from "@hotwired/stimulus";
-import { EDITOR_JS_RESOURCES, EDITOR_JS_CSS } from "panda/editor/editor_js_config";
+import { EDITOR_JS_RESOURCES, EDITOR_JS_CSS, initializeEditorUndo, patchLinkAutocomplete } from "panda/editor/editor_js_config";
 import { ResourceLoader } from "panda/editor/resource_loader";
 
 // UTF-8 safe Base64 helpers — atob/btoa only handle Latin-1, corrupting multi-byte characters
@@ -19,6 +19,9 @@ export default class extends Controller {
   static targets = ["editorContainer", "hiddenField"];
   static values = {
     editorId: String,
+    linkMetadataUrl: String,
+    fileUploadUrl: String,
+    editorSearchUrl: String,
   };
 
   connect() {
@@ -43,6 +46,8 @@ export default class extends Controller {
         await ResourceLoader.loadScript(document, document.head, resource);
       }
 
+      patchLinkAutocomplete(window);
+
       await this.initializeEditor();
     } catch (error) {
       console.error("[Panda CMS] Failed to load editor resources:", error);
@@ -51,6 +56,13 @@ export default class extends Controller {
 
   async initializeEditor() {
     if (this.editor) return;
+
+    // Set endpoint URLs for EditorJS tools (link, attaches)
+    window.PANDA_CMS_EDITOR_JS_ENDPOINTS = {
+      linkMetadata: this.linkMetadataUrlValue || undefined,
+      fileUpload: this.fileUploadUrlValue || undefined,
+      editorSearch: this.editorSearchUrlValue || undefined,
+    };
 
     try {
       const holderId =
@@ -69,6 +81,8 @@ export default class extends Controller {
       // Get initial content before creating config
       const initialContent = this.getInitialContent();
       console.debug("[Panda CMS] Using initial content:", initialContent);
+
+      const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
 
       const config = {
         ...getEditorConfig(holderId, initialContent),
@@ -123,6 +137,33 @@ export default class extends Controller {
           table: {
             class: window.Table,
             inlineToolbar: true
+          },
+          linkTool: {
+            class: window.LinkTool,
+            config: {
+              endpoint: window.PANDA_CMS_EDITOR_JS_ENDPOINTS?.linkMetadata,
+              headers: {
+                'X-CSRF-Token': csrfToken
+              }
+            }
+          },
+          attaches: {
+            class: window.AttachesTool,
+            config: {
+              endpoint: window.PANDA_CMS_EDITOR_JS_ENDPOINTS?.fileUpload,
+              field: 'file',
+              buttonText: 'Select file to upload',
+              additionalRequestHeaders: {
+                'X-CSRF-Token': csrfToken
+              }
+            }
+          },
+          link: {
+            class: window.LinkAutocomplete,
+            config: {
+              endpoint: window.PANDA_CMS_EDITOR_JS_ENDPOINTS?.editorSearch,
+              queryParam: 'search'
+            }
           }
         }
       };
@@ -137,6 +178,7 @@ export default class extends Controller {
 
       // Wait for editor to be ready
       await this.editor.isReady;
+      initializeEditorUndo(this.editor, window);
       console.debug("[Panda CMS] Editor initialized successfully");
 
     } catch (error) {
@@ -220,13 +262,13 @@ export default class extends Controller {
   async submit(event) {
     // Prevent the default button click behavior temporarily
     event.preventDefault();
-    
-    const submitButton = event.target;
+
+    const submitButton = event.currentTarget;
     const form = submitButton.closest('form');
-    
+
     // Re-enable the button that was disabled by data-disable-with
     submitButton.disabled = false;
-    
+
     // Ensure editor content is saved before form submission
     if (this.editor) {
       try {
@@ -238,20 +280,35 @@ export default class extends Controller {
       } catch (error) {
         console.error("[Panda CMS] Failed to save editor content:", error);
       }
+
+      // Destroy the editor before form submission so its document-level
+      // click handler is removed. Without this, the *original* trusted click
+      // can keep bubbling after `submit()` returns, reach `document`, and
+      // trigger EditorJS's `documentClicked`, which then tries to access
+      // toolbar DOM elements that Turbo has already removed — causing
+      // "Cannot read properties of undefined (reading 'classList')". The
+      // synthetic click we dispatch below is non-trusted and ignored by
+      // `documentClicked` in the vendored EditorJS build.
+      try {
+        this.editor.destroy();
+      } catch (e) {
+        console.debug("[Panda CMS] Editor cleanup before submit (safe to ignore):", e.message);
+      }
+      this.editor = null;
     }
-    
+
     // Now trigger the normal form submission (this will let Rails/Turbo handle it properly)
     if (form) {
       // Remove our custom action to prevent infinite loop
       submitButton.removeAttribute('data-action');
-      
+
       // Create a new click event that will trigger the normal form submission
       const clickEvent = new MouseEvent('click', {
         bubbles: true,
         cancelable: true,
         view: window
       });
-      
+
       // Dispatch the click event, which will trigger normal Rails form submission
       submitButton.dispatchEvent(clickEvent);
     }

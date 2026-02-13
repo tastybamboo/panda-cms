@@ -134,9 +134,32 @@ module Panda
         else
           render_content_for_display(@content)
         end
+        @footnotes = extract_footnotes_from_content
       rescue => e
         Rails.logger.error("RichTextComponent render error: #{e.message}\nContent: #{@content.inspect}")
         @rendered_content = "<p></p>"
+      end
+
+      def extract_footnotes_from_content
+        raw = @block_content&.content
+        return nil if raw.blank?
+
+        parsed = raw.is_a?(String) ? JSON.parse(raw) : raw
+        return nil unless parsed.is_a?(Hash) && parsed["blocks"].is_a?(Array)
+
+        registry = Panda::Editor::FootnoteRegistry.new(autolink_urls: true, markdown: true)
+        parsed["blocks"].each do |block|
+          next unless block.dig("data", "footnotes").is_a?(Array)
+
+          block["data"]["footnotes"].each do |fn|
+            registry.add(id: fn["id"], content: fn["content"])
+          end
+        end
+
+        registry.any? ? registry.processed_footnotes : nil
+      rescue => e
+        Rails.logger.error("FootnoteExtraction error: #{e.message}")
+        nil
       end
 
       def process_content_for_editor(content)
@@ -198,8 +221,16 @@ module Panda
       end
 
       def render_content_for_display(content)
-        # Try to parse as JSON if it looks like EditorJS format
-        if content.is_a?(String) && content.strip.match?(/^\{.*"blocks":\s*\[.*\].*\}$/m)
+        # Handle Hash input (from content accessor which auto-parses JSON)
+        # Normalize keys to strings since empty_editor_js_content uses symbols
+        if content.is_a?(Hash)
+          stringified = content.deep_stringify_keys
+          if valid_editor_js_content?(stringified)
+            render_editor_js_content(stringified)
+          else
+            process_html_content(content.to_s)
+          end
+        elsif content.is_a?(String) && content.strip.match?(/^\{.*"blocks":\s*\[.*\].*\}$/m)
           parsed_content = JSON.parse(content)
           if valid_editor_js_content?(parsed_content)
             render_editor_js_content(parsed_content)
@@ -207,10 +238,10 @@ module Panda
             process_html_content(content)
           end
         else
-          process_html_content(content)
+          process_html_content(content.to_s)
         end
       rescue JSON::ParserError
-        process_html_content(content)
+        process_html_content(content.to_s)
       end
 
       def render_editor_js_content(parsed_content)

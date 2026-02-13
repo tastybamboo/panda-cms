@@ -368,6 +368,33 @@ user = panda_cms_users(:admin_user)
    # Should list panda-cms with JavaScript paths
    ```
 
+## Security Guidelines
+
+### Permission Checks: Deny by Default
+When adding authorization checks (via `can?`, `authorized_for?`, or similar), always default to **deny** when the authorization system is unavailable. Never return `true` as a fallback:
+
+```ruby
+# WRONG — fails open, bypasses security if can? isn't available
+return true unless view_context.respond_to?(:can?)
+
+# CORRECT — fails closed, denies access if can? isn't available
+return false unless view_context.respond_to?(:can?)
+```
+
+### Nested Resource Scoping
+When a route nests a child resource under a parent (e.g., `pages/:page_id/block_contents/:id`), always load the child **through the parent association**, not via a global `find`. This prevents cross-resource attacks where an attacker supplies a valid child ID that belongs to a different parent:
+
+```ruby
+# WRONG — allows cross-page block content manipulation
+@block_content = Panda::CMS::BlockContent.find(params[:id])
+
+# CORRECT — scoped to the parent, raises RecordNotFound for mismatches
+@block_content = @page.block_contents.find(params[:id])
+```
+
+### Raw HTML Components
+The `CodeComponent` renders raw HTML/JS by design (for widgets, analytics, etc.). Any component that uses `raw()` or `.html_safe()` must have explicit permission checks. Use the `:edit_code_blocks` permission pattern — admin users bypass all checks, non-admin users need explicit grants.
+
 ## Important Notes
 
 - The gem is in active development and not production-ready

@@ -49,11 +49,16 @@ module Panda
         # Run through the new data and compare it to the current data
         new_data["pages"].each do |path, page_data|
           if current_data["pages"][path].nil?
+            # Warn if status is missing and will be defaulted
+            if page_data["status"].nil?
+              debug[:warning] << "Page '#{path}' has no status field, defaulting to 'unlisted' for safety"
+            end
+
             begin
               page = Panda::CMS::Page.create!(
                 path: path,
                 title: page_data["title"],
-                status: page_data["status"] || "active",
+                status: page_data["status"] || "unlisted",
                 page_type: page_data["page_type"] || "standard",
                 template: Panda::CMS::Template.find_by(name: page_data["template"]),
                 parent: Panda::CMS::Page.find_by(path: page_data["parent"]),
@@ -173,11 +178,16 @@ module Panda
           end
 
           if post.nil?
+            # Warn if status is missing and will be defaulted
+            if post_data["status"].nil?
+              debug[:warning] << "Post '#{slug}' has no status field, defaulting to 'unlisted' for safety"
+            end
+
             begin
               post = Panda::CMS::Post.create!(
                 slug: slug,
                 title: post_data["title"],
-                status: post_data["status"] || "draft",
+                status: post_data["status"] || "unlisted",
                 published_at: post_data["published_at"],
                 user: user,
                 author: author,

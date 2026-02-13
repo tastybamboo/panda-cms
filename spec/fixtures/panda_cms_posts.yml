@@ -3,7 +3,7 @@
 first_post:
   title: "Test Post 1"
   slug: '/<%= Time.current.strftime("%Y/%m") %>/test-post-1'
-  status: "active"
+  status: "published"
   # User references removed - tests must set these programmatically
   published_at: <%= Time.current %>
   content: |-
@@ -33,7 +33,7 @@ first_post:
 second_post:
   title: "Test Post 2"
   slug: '/<%= Time.current.strftime("%Y/%m") %>/test-post-2'
-  status: "draft"
+  status: "hidden"
   # User references removed - tests must set these programmatically
   published_at: null
   content: |-

@@ -1,24 +1,32 @@
-<%= panda_cms_form_with model: post, url: url, method: post.persisted? ? :put : :post do |f| %>
+<%= panda_form_with model: post, url: url, method: post.persisted? ? :put : :post do |f| %>
   <%= render Panda::Core::Admin::FormErrorComponent.new(model: post) %>
 
-  <div data-controller="slug" data-slug-add-date-prefix-value="true">
-    <%= f.text_field :title,
-        data: {
-          "slug-target": "input_text"
-        },
-        "data-action": "focusout->slug#generatePath" %>
-    <%= f.text_field :slug,
-        data: {
-          "slug-target": "output_text"
-        } %>
-  </div>
-  <%= f.select :author_id, Panda::Core::User.admins.map { |u| [u.name, u.id] } %>
-  <%= f.datetime_field :published_at %>
-  <%= f.select :status, options_for_select([["Active", "active"], ["Draft", "draft"], ["Hidden", "hidden"], ["Archived", "archived"]], selected: post.status) %>
+  <%= render Panda::Core::Admin::PanelComponent.new do |panel| %>
+    <% panel.with_heading_slot { "Post Settings" } %>
+    <div class="space-y-4">
+      <div data-controller="slug" data-slug-add-date-prefix-value="true">
+        <%= f.text_field :title,
+            data: {
+              "slug-target": "input_text"
+            },
+            "data-action": "focusout->slug#generatePath" %>
+        <%= f.text_field :slug,
+            data: {
+              "slug-target": "output_text"
+            } %>
+      </div>
+      <%= f.select :author_id, Panda::Core::User.admins.map { |u| [u.name, u.id] } %>
+      <%= f.datetime_field :published_at %>
+      <%= f.select :status, options_for_select([["Published", "published"], ["Unlisted", "unlisted"], ["Hidden", "hidden"], ["Archived", "archived"]], selected: post.status) %>
+    </div>
+  <% end %>
 
   <% editor_id = "editor_#{dom_id(post, :content)}" %>
   <div data-controller="editor-form"
-       data-editor-form-editor-id-value="<%= editor_id %>">
+       data-editor-form-editor-id-value="<%= editor_id %>"
+       data-editor-form-link-metadata-url-value="<%= admin_cms_link_metadata_path %>"
+       data-editor-form-file-upload-url-value="<%= admin_cms_files_path %>"
+       data-editor-form-editor-search-url-value="<%= panda_core.admin_editor_search_path %>">
     <%= f.hidden_field :content,
         data: {
           editor_form_target: "hiddenField",
@@ -31,44 +39,46 @@
     </div>
   </div>
 
-  <%= f.section_heading "SEO Settings" %>
+  <%= render Panda::Core::Admin::PanelComponent.new do |panel| %>
+    <% panel.with_heading_slot { "SEO Settings" } %>
+    <div class="space-y-4">
+      <%= f.text_field :seo_title, { meta: "Max 70 characters. Leave blank to use post title." } %>
+      <%= f.text_area :seo_description, { rows: 3, meta: "Max 160 characters. Leave blank to use post excerpt." } %>
+      <%= f.text_field :seo_keywords, { meta: "Comma-separated keywords for search engines." } %>
+      <%= f.radio_button_group :seo_index_mode,
+          [["Visible to search engines", "visible"], ["Hidden from search engines", "invisible"]],
+          { meta: "Control how search engines index this post." } %>
+      <%= f.text_field :canonical_url, { meta: "Optional. Full URL to the canonical version of this post." } %>
+    </div>
+  <% end %>
 
-  <div class="space-y-4">
-    <%= f.text_field :seo_title, { meta: "Max 70 characters. Leave blank to use post title." } %>
-    <%= f.text_area :seo_description, { rows: 3, meta: "Max 160 characters. Leave blank to use post excerpt." } %>
-    <%= f.text_field :seo_keywords, { meta: "Comma-separated keywords for search engines." } %>
-    <%= f.radio_button_group :seo_index_mode,
-        [["Visible to search engines", "visible"], ["Hidden from search engines", "invisible"]],
-        { meta: "Control how search engines index this post." } %>
-    <%= f.text_field :canonical_url, { meta: "Optional. Full URL to the canonical version of this post." } %>
-  </div>
-
-  <%= f.section_heading "Social Sharing" %>
-
-  <div class="space-y-4">
-    <%= f.text_field :og_title, { label: "Social Media Title", meta: "Max 60 characters. Leave blank to use SEO title." } %>
-    <%= f.text_area :og_description, { label: "Social Media Description", rows: 2, meta: "Max 200 characters. Used on Facebook, LinkedIn, Twitter." } %>
-    <%= f.select :og_type,
-        options_for_select(
-          [["Website", "website"], ["Article", "article"], ["Profile", "profile"], ["Video", "video"], ["Book", "book"]],
-          selected: post.og_type
-        ),
-        { label: "Content Type" } %>
-    <%= f.file_field :og_image, {
-      label: "Social Media Image",
-      meta: "Recommended: 1200×630px (1.91:1 ratio). Used on Facebook, LinkedIn, Twitter.",
-      accept: "image/png,image/jpeg,image/jpg,image/webp",
-      with_cropper: true,
-      aspect_ratio: 1.91,
-      min_width: 1200,
-      min_height: 630
-    } %>
-    <% if f.object.present? && f.object.persisted? && f.object.og_image.attached? %>
-      <div class="mt-2">
-        <%= image_tag f.object.og_image.variant(:og_share), class: "max-w-xs rounded border border-gray-300" %>
-      </div>
-    <% end %>
-  </div>
+  <%= render Panda::Core::Admin::PanelComponent.new do |panel| %>
+    <% panel.with_heading_slot { "Social Sharing" } %>
+    <div class="space-y-4">
+      <%= f.text_field :og_title, { label: "Social Media Title", meta: "Max 60 characters. Leave blank to use SEO title." } %>
+      <%= f.text_area :og_description, { label: "Social Media Description", rows: 2, meta: "Max 200 characters. Used on Facebook, LinkedIn, Twitter." } %>
+      <%= f.select :og_type,
+          options_for_select(
+            [["Website", "website"], ["Article", "article"], ["Profile", "profile"], ["Video", "video"], ["Book", "book"]],
+            selected: post.og_type
+          ),
+          { label: "Content Type" } %>
+      <%= f.file_field :og_image, {
+        label: "Social Media Image",
+        meta: "Recommended: 1200×630px (1.91:1 ratio). Used on Facebook, LinkedIn, Twitter.",
+        accept: "image/png,image/jpeg,image/jpg,image/webp",
+        with_cropper: true,
+        aspect_ratio: 1.91,
+        min_width: 1200,
+        min_height: 630
+      } %>
+      <% if f.object.present? && f.object.persisted? && f.object.og_image.attached? %>
+        <div class="mt-2">
+          <%= image_tag f.object.og_image.variant(:og_share), class: "max-w-xs rounded border border-gray-300" %>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
 
   <%= render Panda::Core::Admin::FormFooterComponent.new(
     submit_text: f.object.persisted? ? "Update Post" : "Create Post",

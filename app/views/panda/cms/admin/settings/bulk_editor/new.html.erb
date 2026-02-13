@@ -61,8 +61,11 @@
   </div>
   <% end %>
 
-  <%= panda_cms_form_with method: :post do |form| %>
-    <%= form.text_area :site_content, value: @json_data, cols: 70, rows: 10, class: "block font-mono w-full" %>
-    <%= form.button "Update" %>
+  <%= panda_form_with method: :post do |form| %>
+    <%= render Panda::Core::Admin::PanelComponent.new do |panel| %>
+      <% panel.with_heading_slot { "Site Content" } %>
+      <%= form.text_area :site_content, value: @json_data, cols: 70, rows: 10, class: "block font-mono w-full" %>
+    <% end %>
+    <%= render Panda::Core::Admin::FormFooterComponent.new(submit_text: "Update") %>
   <% end %>
 <% end %>

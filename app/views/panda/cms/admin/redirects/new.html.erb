@@ -1,0 +1,19 @@
+<%= render Panda::Core::Admin::ContainerComponent.new do |component| %>
+  <% component.with_heading_slot(text: "Add Redirect", level: 1) %>
+
+  <%= panda_form_with model: redirect_record, url: admin_cms_redirects_path, method: :post do |f| %>
+    <%= render Panda::Core::Admin::FormErrorComponent.new(model: redirect_record) %>
+
+    <%= render Panda::Core::Admin::PanelComponent.new do |panel| %>
+      <% panel.with_heading_slot { "Redirect Settings" } %>
+
+      <div class="space-y-4">
+        <%= f.text_field :origin_path, placeholder: "/old-page" %>
+        <%= f.text_field :destination_path, placeholder: "/new-page" %>
+        <%= f.select :status_code, [["301 — Permanent", 301], ["302 — Temporary", 302]], { label: "Status Code" } %>
+      </div>
+    <% end %>
+
+    <%= render Panda::Core::Admin::FormFooterComponent.new(submit_text: "Create Redirect") %>
+  <% end %>
+<% end %>

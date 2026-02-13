@@ -1,23 +1,38 @@
 # Menus for Panda CMS
 
 main_menu:
-  name: "Main Menu"
-  kind: "static"
-  ordering: "default"
+  name: 'Main Menu'
+  kind: 'static'
+  ordering: 'default'
+  pinned_page_ids: []
+  promote_active_item: false
   created_at: 2025-01-01 00:00:00
   updated_at: 2025-01-01 00:00:00
 
 footer_menu:
-  name: "Footer Menu"
-  kind: "static"
-  ordering: "default"
+  name: 'Footer Menu'
+  kind: 'static'
+  ordering: 'default'
+  pinned_page_ids: []
+  promote_active_item: false
   created_at: 2025-01-01 00:00:00
   updated_at: 2025-01-01 00:00:00
 
 auto_menu:
-  name: "Auto Menu"
-  kind: "auto"
-  ordering: "default"
+  name: 'Auto Menu'
+  kind: 'auto'
+  ordering: 'default'
+  pinned_page_ids: []
+  promote_active_item: false
   start_page: homepage
+  created_at: 2025-01-01 00:00:00
+  updated_at: 2025-01-01 00:00:00
+
+header_menu:
+  name: 'Header Menu'
+  kind: 'static'
+  ordering: 'default'
+  pinned_page_ids: []
+  promote_active_item: false
   created_at: 2025-01-01 00:00:00
   updated_at: 2025-01-01 00:00:00

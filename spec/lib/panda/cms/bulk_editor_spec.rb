@@ -43,7 +43,7 @@ RSpec.describe Panda::CMS::BulkEditor, type: :model do
     @post1 = Panda::CMS::Post.create!(
       title: "Test Post 1",
       slug: "/#{Time.current.strftime("%Y/%m")}/test-post-1",
-      status: "active",
+      status: "published",
       user: @user,
       published_at: Time.current
     )
@@ -51,7 +51,7 @@ RSpec.describe Panda::CMS::BulkEditor, type: :model do
     @post2 = Panda::CMS::Post.create!(
       title: "Test Post 2",
       slug: "/#{Time.current.strftime("%Y/%m")}/test-post-2",
-      status: "draft",
+      status: "hidden",
       user: @user,
       published_at: nil
     )
@@ -83,7 +83,7 @@ RSpec.describe Panda::CMS::BulkEditor, type: :model do
         expect(homepage["title"]).to eq("Home")
         expect(homepage["template"]).to eq("Homepage")
         expect(homepage["parent"]).to be_nil
-        expect(homepage["status"]).to eq("active")
+        expect(homepage["status"]).to eq("published")
         expect(homepage["page_type"]).to eq("standard")
       end
 
@@ -164,16 +164,16 @@ RSpec.describe Panda::CMS::BulkEditor, type: :model do
 
         expect(post).to be_present
         expect(post["title"]).to eq("Test Post 1")
-        expect(post["status"]).to eq("active")
+        expect(post["status"]).to eq("published")
         expect(post["user_email"]).to eq(@user.email)
       end
 
-      it "exports draft posts" do
+      it "exports hidden posts" do
         data = JSON.parse(described_class.export)
         post = data["posts"].find { |p| p["slug"] == @post2.slug }
 
         expect(post).to be_present
-        expect(post["status"]).to eq("draft")
+        expect(post["status"]).to eq("hidden")
       end
 
       it "includes SEO fields for posts when present" do
@@ -257,7 +257,7 @@ RSpec.describe Panda::CMS::BulkEditor, type: :model do
           "title" => "New Page",
           "template" => template.name,
           "parent" => "/",
-          "status" => "active",
+          "status" => "published",
           "page_type" => "standard",
           "contents" => {}
         }
@@ -311,6 +311,30 @@ RSpec.describe Panda::CMS::BulkEditor, type: :model do
         expect(page.seo_title).to eq("Imported SEO Title")
         expect(page.seo_description).to eq("Imported SEO Description")
       end
+
+      it "defaults to unlisted status when status field is missing" do
+        data = JSON.parse(export_data)
+        template = Panda::CMS::Template.first
+
+        data["pages"]["/new-unlisted-page"] = {
+          "title" => "New Unlisted Page",
+          "template" => template.name,
+          "parent" => "/",
+          "page_type" => "standard",
+          "contents" => {}
+          # Note: status field intentionally omitted
+        }
+
+        result = described_class.import(data.to_json)
+
+        # Should have a warning about missing status
+        expect(result[:warning]).to include("Page '/new-unlisted-page' has no status field, defaulting to 'unlisted' for safety")
+
+        # Page should be created with unlisted status
+        new_page = Panda::CMS::Page.find_by(path: "/new-unlisted-page")
+        expect(new_page).to be_present
+        expect(new_page.status).to eq("unlisted")
+      end
     end
 
     describe "post import" do
@@ -320,7 +344,7 @@ RSpec.describe Panda::CMS::BulkEditor, type: :model do
         data["posts"] << {
           "slug" => slug,
           "title" => "New Post",
-          "status" => "draft",
+          "status" => "published",
           "user_email" => @user.email,
           "contents" => {}
         }
@@ -351,7 +375,7 @@ RSpec.describe Panda::CMS::BulkEditor, type: :model do
         data["posts"] << {
           "slug" => slug,
           "title" => "Orphan Post",
-          "status" => "draft",
+          "status" => "published",
           "user_email" => "nonexistent@example.com",
           "contents" => {}
         }
@@ -363,6 +387,28 @@ RSpec.describe Panda::CMS::BulkEditor, type: :model do
 
         orphan_post = Panda::CMS::Post.find_by(slug: slug)
         expect(orphan_post.user).to eq(Panda::Core::User.first)
+      end
+
+      it "defaults to unlisted status when status field is missing" do
+        data = JSON.parse(export_data)
+        slug = "/#{Time.current.strftime("%Y/%m")}/new-unlisted-post"
+        data["posts"] << {
+          "slug" => slug,
+          "title" => "New Unlisted Post",
+          "user_email" => @user.email,
+          "contents" => {}
+          # Note: status field intentionally omitted
+        }
+
+        result = described_class.import(data.to_json)
+
+        # Should have a warning about missing status
+        expect(result[:warning]).to include("Post '#{slug}' has no status field, defaulting to 'unlisted' for safety")
+
+        # Post should be created with unlisted status
+        new_post = Panda::CMS::Post.find_by(slug: slug)
+        expect(new_post).to be_present
+        expect(new_post.status).to eq("unlisted")
       end
     end
 

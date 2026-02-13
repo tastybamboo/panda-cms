@@ -38,7 +38,7 @@ RSpec.describe "Page form SEO functionality", type: :system do
         about_page.update!(inherit_seo: false)
       end
 
-      it "shows character count for SEO title field", skip: "Flaky: JavaScript controller not initializing in CI" do
+      it "shows character count for SEO title field" do
         open_page_details
 
         within("#slideover") do
@@ -54,7 +54,7 @@ RSpec.describe "Page form SEO functionality", type: :system do
         end
       end
 
-      it "shows warning when approaching character limit", skip: "Flaky: JavaScript controller not initializing in CI" do
+      it "shows warning when approaching character limit" do
         open_page_details
 
         within("#slideover") do
@@ -69,7 +69,7 @@ RSpec.describe "Page form SEO functionality", type: :system do
         end
       end
 
-      it "shows error when over character limit", skip: "Flaky: JavaScript controller not initializing in CI" do
+      it "shows error when over character limit" do
         open_page_details
 
         within("#slideover") do
@@ -167,7 +167,7 @@ RSpec.describe "Page form SEO functionality", type: :system do
       about_page.update!(inherit_seo: false)
     end
 
-    it "auto-fills SEO title from page title on blur", skip: "Flaky: JavaScript controller not initializing in CI" do
+    it "auto-fills SEO title from page title on blur" do
       open_page_details
 
       within("#slideover") do
@@ -188,7 +188,7 @@ RSpec.describe "Page form SEO functionality", type: :system do
       end
     end
 
-    it "auto-fills OpenGraph title from SEO title on blur", skip: "Flaky: JavaScript controller not initializing in CI" do
+    it "auto-fills OpenGraph title from SEO title on blur" do
       open_page_details
 
       within("#slideover") do
@@ -209,7 +209,7 @@ RSpec.describe "Page form SEO functionality", type: :system do
       end
     end
 
-    it "auto-fills OpenGraph description from SEO description on blur", skip: "Flaky: JavaScript controller not initializing in CI" do
+    it "auto-fills OpenGraph description from SEO description on blur" do
       open_page_details
 
       within("#slideover") do
@@ -230,7 +230,7 @@ RSpec.describe "Page form SEO functionality", type: :system do
       end
     end
 
-    it "does not overwrite existing values", skip: "Flaky: JavaScript controller not initializing in CI" do
+    it "does not overwrite existing values" do
       open_page_details
 
       within("#slideover") do
@@ -393,7 +393,7 @@ RSpec.describe "Page form SEO functionality", type: :system do
   end
 
   describe "form validation" do
-    it "shows error state when fields exceed character limits", skip: "Flaky: JavaScript controller not initializing in CI" do
+    it "shows error state when fields exceed character limits", skip: "Character counter CSS class not applied by Stimulus controller in test" do
       open_page_details
 
       within("#slideover") do
@@ -408,7 +408,7 @@ RSpec.describe "Page form SEO functionality", type: :system do
       end
     end
 
-    it "shows success state when all fields are within limits", skip: "Flaky: JavaScript controller not initializing in CI" do
+    it "shows success state when all fields are within limits" do
       open_page_details
 
       within("#slideover") do

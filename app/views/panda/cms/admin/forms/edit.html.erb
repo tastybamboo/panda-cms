@@ -3,7 +3,7 @@
     <% heading.with_button(text: "View Submissions", href: admin_cms_form_path(form), icon: "fa-solid fa-eye") %>
   <% end %>
 
-  <%= panda_cms_form_with model: form, url: admin_cms_form_path(form), method: :patch, data: { controller: "form-fields" } do |f| %>
+  <%= panda_form_with model: form, url: admin_cms_form_path(form), method: :patch, data: { controller: "form-fields" } do |f| %>
     <%= render Panda::Core::Admin::FormErrorComponent.new(model: form) %>
 
     <%= render Panda::Core::Admin::PanelComponent.new do |panel| %>

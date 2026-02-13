@@ -308,4 +308,77 @@ RSpec.describe Panda::CMS::RichTextComponent, type: :component do
       expect(result[:blocks]).to be_an(Array)
     end
   end
+
+  describe "#render_content_for_display" do
+    let(:component) { described_class.new }
+
+    context "with string-keyed Hash EditorJS content" do
+      it "renders via render_editor_js_content" do
+        content = {
+          "blocks" => [{"type" => "paragraph", "data" => {"text" => "Hello world"}}],
+          "version" => "2.28.2"
+        }
+
+        result = component.send(:render_content_for_display, content)
+        expect(result).to include("Hello world")
+        expect(result).not_to include("blocks")
+      end
+    end
+
+    context "with symbol-keyed Hash EditorJS content" do
+      it "normalizes keys and renders via render_editor_js_content" do
+        content = {
+          blocks: [{type: "paragraph", data: {text: "Symbol keys"}}],
+          version: "2.28.2"
+        }
+
+        result = component.send(:render_content_for_display, content)
+        expect(result).to include("Symbol keys")
+        expect(result).not_to include("blocks")
+      end
+    end
+
+    context "with empty_editor_js_content (symbol-keyed)" do
+      it "renders an empty paragraph" do
+        content = component.send(:empty_editor_js_content)
+
+        result = component.send(:render_content_for_display, content)
+        expect(result).to eq("<p></p>")
+      end
+    end
+
+    context "with non-EditorJS Hash" do
+      it "falls back to process_html_content" do
+        content = {"some_key" => "some_value"}
+
+        result = component.send(:render_content_for_display, content)
+        expect(result).to start_with("<p>")
+      end
+    end
+
+    context "with JSON string EditorJS content" do
+      it "parses and renders" do
+        content = '{"blocks":[{"type":"paragraph","data":{"text":"From JSON"}}],"version":"2.28.2"}'
+
+        result = component.send(:render_content_for_display, content)
+        expect(result).to include("From JSON")
+      end
+    end
+
+    context "with plain HTML string" do
+      it "returns HTML unchanged" do
+        content = "<p>Some HTML</p>"
+
+        result = component.send(:render_content_for_display, content)
+        expect(result).to eq("<p>Some HTML</p>")
+      end
+    end
+
+    context "with plain text string" do
+      it "wraps in paragraph tags" do
+        result = component.send(:render_content_for_display, "Plain text")
+        expect(result).to eq("<p>Plain text</p>")
+      end
+    end
+  end
 end
