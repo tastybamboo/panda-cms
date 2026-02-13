@@ -56,7 +56,7 @@ RSpec.shared_context "with standard pages" do
       path: "/",
       title: "Home",
       template: homepage_template,
-      status: "active"
+      status: "published"
     )
   end
 
@@ -66,7 +66,7 @@ RSpec.shared_context "with standard pages" do
       title: "About",
       template: page_template,
       parent: homepage,
-      status: "active"
+      status: "published"
     )
   end
 
@@ -76,7 +76,7 @@ RSpec.shared_context "with standard pages" do
       title: "Services",
       template: page_template,
       parent: homepage,
-      status: "active"
+      status: "published"
     )
   end
 
@@ -86,7 +86,7 @@ RSpec.shared_context "with standard pages" do
       title: "Team",
       template: page_template,
       parent: about_page,
-      status: "active"
+      status: "published"
     )
   end
 
@@ -96,7 +96,7 @@ RSpec.shared_context "with standard pages" do
       title: "Custom Page",
       template: different_page_template,
       parent: homepage,
-      status: "active"
+      status: "published"
     )
   end
 

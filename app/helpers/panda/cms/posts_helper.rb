@@ -11,7 +11,7 @@ module Panda
       def posts_months_menu
         Rails.cache.fetch("panda_cms_posts_months_menu", expires_in: 1.hour) do
           Panda::CMS::Post
-            .where(status: :active)
+            .where(status: :published)
             .select(
               Arel.sql("DATE_TRUNC('month', published_at) as month"),
               Arel.sql("COUNT(*) as post_count")

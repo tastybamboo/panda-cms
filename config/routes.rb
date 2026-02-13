@@ -11,7 +11,10 @@ Panda::CMS::Engine.routes.draw do
     namespace admin_path.delete_prefix("/").to_sym, path: "#{admin_path}/cms", as: :admin_cms, module: :admin do
       resources :files
       resources :forms
-      resources :menus
+      post "link_metadata", to: "link_metadata#create", as: :link_metadata
+      resources :menus do
+        post :toggle_pin, on: :member
+      end
       resources :pages do
         resources :block_contents, only: %i[update]
       end
@@ -30,6 +33,9 @@ Panda::CMS::Engine.routes.draw do
   end
 
   ### PUBLIC ROUTES ###
+
+  # Sitemap
+  get "sitemap", to: "sitemaps#index", as: :sitemap, defaults: {format: :xml}, constraints: {format: :xml}
 
   # Authentication routes are now handled by Panda::Core
 

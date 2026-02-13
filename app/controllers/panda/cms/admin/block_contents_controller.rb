@@ -6,6 +6,7 @@ module Panda
       class BlockContentsController < ::Panda::CMS::Admin::BaseController
         before_action :set_page, only: %i[update]
         before_action :set_block_content, only: %i[update]
+        before_action :authorize_code_block_edit, only: %i[update]
 
         # @type PATCH/PUT
         # @return
@@ -46,7 +47,13 @@ module Panda
         # @type private
         # @return Panda::CMS::BlockContent
         def set_block_content
-          @block_content = Panda::CMS::BlockContent.find(params[:id])
+          @block_content = @page.block_contents.find(params[:id])
+        end
+
+        # Require :edit_code_blocks permission for code block updates
+        def authorize_code_block_edit
+          return unless @block_content.block.code?
+          authorize!(:edit_code_blocks)
         end
 
         # Only allow a list of trusted parameters through.

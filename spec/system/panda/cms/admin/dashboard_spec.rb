@@ -24,27 +24,22 @@ RSpec.describe "Admin dashboard", type: :system do
   context "when logged in as admin" do
     it "shows the dashboard" do
       login_as_admin
-      visit "/admin/cms"
-      # Use string-based check to avoid DOM node issues
-      expect(page.html).to include("Dashboard")
+      expect(page).to have_content("Dashboard")
     end
 
     it "displays the admin navigation" do
       login_as_admin
-      visit "/admin/cms"
 
-      # Wait for Dashboard to appear, then check navigation
-      expect(page).to have_content("Dashboard", wait: 5)
+      # Wait for sidebar navigation to be fully rendered
+      expect(page).to have_css("nav", wait: 5)
 
-      # Use string-based checks to avoid DOM node issues
-      html_content = page.html
-      expect(html_content).to include("Dashboard")
-      expect(html_content).to include('href="/admin/cms/pages"')
-      expect(html_content).to include('href="/admin/cms/posts"')
-      expect(html_content).to include('href="/admin/cms/forms"')
-      expect(html_content).to include('href="/admin/cms/menus"')
-      expect(html_content).to include('href="/admin/cms/settings"')
-      expect(html_content).to include("Logout")
+      # Navigation links are in the DOM inside collapsed expandable groups
+      expect(page).to have_css('a[href="/admin/cms/pages"]', visible: :all)
+      expect(page).to have_css('a[href="/admin/cms/posts"]', visible: :all)
+      expect(page).to have_css('a[href="/admin/cms/forms"]', visible: :all)
+      expect(page).to have_css('a[href="/admin/cms/menus"]', visible: :all)
+      expect(page).to have_css('a[href="/admin/cms/settings"]', visible: :all)
+      expect(page).to have_css("#logout-link", visible: :all)
     end
 
     it "does not display icons in page headings" do
@@ -85,13 +80,9 @@ RSpec.describe "Admin dashboard", type: :system do
 
       it "renders the page views chart without errors", js: true do
         login_as_admin
-        visit "/admin/cms"
-
-        # Verify dashboard loads
-        expect(page).to have_content("Dashboard", wait: 5)
 
         # Verify chart widget is present
-        expect(page).to have_content("Page Views Over Time")
+        expect(page).to have_content("Page Views Over Time", wait: 5)
         expect(page).to have_content("Test Analytics")
 
         # Verify page loaded successfully (no 500 error)
@@ -100,7 +91,6 @@ RSpec.describe "Admin dashboard", type: :system do
 
       it "displays chart data correctly" do
         login_as_admin
-        visit "/admin/cms"
 
         expect(page).to have_content("Page Views Over Time", wait: 5)
 
@@ -121,7 +111,6 @@ RSpec.describe "Admin dashboard", type: :system do
 
       it "shows a message when no analytics data is available" do
         login_as_admin
-        visit "/admin/cms"
 
         expect(page).to have_content("Dashboard", wait: 5)
         expect(page).to have_content("No chart data available")

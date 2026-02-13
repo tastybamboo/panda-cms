@@ -17,9 +17,9 @@ module Panda
 
       def show
         page = if @overrides&.dig(:page_path_match)
-          Panda::CMS::Page.includes(:template, :block_contents).find_by(path: @overrides[:page_path_match])
+          Panda::CMS::Page.servable.includes(:template, :block_contents).find_by(path: @overrides[:page_path_match])
         else
-          Panda::CMS::Page.includes(:template, :block_contents).find_by(path: "/#{params[:path]}")
+          Panda::CMS::Page.servable.includes(:template, :block_contents).find_by(path: "/#{params[:path]}")
         end
 
         Panda::CMS::Current.page = page || Panda::CMS::Page.find_by(path: "/404")
@@ -27,7 +27,7 @@ module Panda
 
         layout = page&.template&.file_path
 
-        if page.nil? || page.status == "archived" || layout.nil?
+        if page.nil? || layout.nil?
           # Render the default Panda CMS 404 page with public layout
           render "panda/cms/pages/not_found", layout: "panda/cms/public", status: :not_found and return
         end

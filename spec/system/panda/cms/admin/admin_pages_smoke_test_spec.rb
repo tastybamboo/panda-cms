@@ -5,6 +5,7 @@ require "system_helper"
 RSpec.describe "Admin pages smoke tests", type: :system do
   # These tests ensure all admin pages can load without 500 errors
   # They're intentionally simple - just verify the page loads and doesn't crash
+  fixtures :all
 
   let!(:admin_user) { create_admin_user }
 
@@ -33,8 +34,8 @@ RSpec.describe "Admin pages smoke tests", type: :system do
       expect(page.status_code).to eq(200)
     end
 
-    context "with a test page", skip: "requires factory_bot setup" do
-      let!(:test_page) { Panda::CMS::Page.create!(title: "Test Page", path: "/test") }
+    context "with a test page" do
+      let(:test_page) { panda_cms_pages(:about_page) }
 
       it "loads page edit without errors" do
         visit "/admin/cms/pages/#{test_page.id}/edit"
@@ -57,8 +58,12 @@ RSpec.describe "Admin pages smoke tests", type: :system do
       expect(page.status_code).to eq(200)
     end
 
-    context "with a test post", skip: "requires factory_bot setup" do
-      let!(:test_post) { Panda::CMS::Post.create!(title: "Test Post") }
+    context "with a test post" do
+      let(:test_post) { panda_cms_posts(:first_post) }
+
+      before do
+        test_post.update!(user: admin_user, author: admin_user)
+      end
 
       it "loads post edit without errors" do
         visit "/admin/cms/posts/#{test_post.id}/edit"
@@ -81,8 +86,8 @@ RSpec.describe "Admin pages smoke tests", type: :system do
       expect(page.status_code).to eq(200)
     end
 
-    context "with a test form", skip: "requires factory_bot setup" do
-      let!(:test_form) { Panda::CMS::Form.create!(name: "Test Form") }
+    context "with a test form" do
+      let(:test_form) { panda_cms_forms(:contact_form) }
 
       it "loads form edit without errors" do
         visit "/admin/cms/forms/#{test_form.id}/edit"
@@ -105,8 +110,8 @@ RSpec.describe "Admin pages smoke tests", type: :system do
       expect(page.status_code).to eq(200)
     end
 
-    context "with a test menu", skip: "requires factory_bot setup" do
-      let!(:test_menu) { Panda::CMS::Menu.create!(name: "Test Menu") }
+    context "with a test menu" do
+      let(:test_menu) { panda_cms_menus(:main_menu) }
 
       it "loads menu edit without errors" do
         visit "/admin/cms/menus/#{test_menu.id}/edit"

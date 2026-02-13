@@ -5,7 +5,7 @@ module Panda
     module Admin
       class MenusController < ::Panda::CMS::Admin::BaseController
         before_action :set_initial_breadcrumb, only: %i[index new edit]
-        before_action :set_menu, only: %i[edit update destroy]
+        before_action :set_menu, only: %i[edit update destroy toggle_pin]
 
         # Lists all menus which can be managed by the administrator
         # @type GET
@@ -27,7 +27,7 @@ module Panda
           menu = Panda::CMS::Menu.new(menu_params_with_defaults)
 
           if menu.save
-            redirect_to admin_cms_menus_path, notice: "Menu was successfully created."
+            redirect_to admin_cms_menus_path, notice: "Menu was successfully created.", status: :see_other
           else
             render :new, locals: {menu: menu}, status: :unprocessable_entity
           end
@@ -42,7 +42,7 @@ module Panda
         # @type PATCH/PUT
         def update
           if @menu.update(menu_params_with_defaults)
-            redirect_to admin_cms_menus_path, notice: "Menu was successfully updated."
+            redirect_to admin_cms_menus_path, notice: "Menu was successfully updated.", status: :see_other
           else
             render :edit, status: :unprocessable_entity
           end
@@ -51,7 +51,19 @@ module Panda
         # @type DELETE
         def destroy
           @menu.destroy
-          redirect_to admin_cms_menus_path, notice: "Menu was successfully deleted."
+          redirect_to admin_cms_menus_path, notice: "Menu was successfully deleted.", status: :see_other
+        end
+
+        # @type POST
+        def toggle_pin
+          page_id = params[:page_id].to_s
+          if @menu.page_pinned?(page_id)
+            @menu.unpin_page(page_id)
+          else
+            @menu.pin_page(page_id)
+          end
+          @menu.save!
+          redirect_to edit_admin_cms_menu_path(@menu), notice: "Pin state updated.", status: :see_other
         end
 
         private
@@ -61,7 +73,7 @@ module Panda
         end
 
         def menu_params
-          params.require(:menu).permit(:name, :kind, :start_page_id, menu_items_attributes: [:id, :text, :external_url, :panda_cms_page_id, :_destroy])
+          params.require(:menu).permit(:name, :kind, :start_page_id, :promote_active_item, menu_items_attributes: [:id, :text, :external_url, :panda_cms_page_id, :_destroy])
         end
 
         def menu_params_with_defaults

@@ -47,3 +47,27 @@ external_link:
   children_count: 0
   created_at: 2025-01-01 00:00:00
   updated_at: 2025-01-01 00:00:00
+
+header_home:
+  text: "Home"
+  menu: header_menu
+  page: homepage
+  sort_order: 1
+  lft: 1
+  rgt: 2
+  depth: 0
+  children_count: 0
+  created_at: 2025-01-01 00:00:00
+  updated_at: 2025-01-01 00:00:00
+
+header_about:
+  text: "About"
+  menu: header_menu
+  page: about_page
+  sort_order: 2
+  lft: 3
+  rgt: 4
+  depth: 0
+  children_count: 0
+  created_at: 2025-01-01 00:00:00
+  updated_at: 2025-01-01 00:00:00

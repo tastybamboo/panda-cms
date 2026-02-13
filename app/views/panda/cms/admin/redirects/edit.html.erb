@@ -8,7 +8,7 @@
     ) %>
   <% end %>
 
-  <%= panda_cms_form_with model: redirect_record, url: admin_cms_redirect_path(redirect_record), method: :patch do |f| %>
+  <%= panda_form_with model: redirect_record, url: admin_cms_redirect_path(redirect_record), method: :patch do |f| %>
     <%= render Panda::Core::Admin::FormErrorComponent.new(model: redirect_record) %>
 
     <%= render Panda::Core::Admin::PanelComponent.new do |panel| %>

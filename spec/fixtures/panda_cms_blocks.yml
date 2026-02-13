@@ -50,3 +50,12 @@ content_block:
   template: different_page_template
   created_at: 2025-01-01 00:00:00
   updated_at: 2025-01-01 00:00:00
+
+# Form block for the page template
+contact_form_block:
+  name: "Contact Form"
+  key: "contact_form"
+  kind: "form"
+  template: page_template
+  created_at: 2025-01-01 00:00:00
+  updated_at: 2025-01-01 00:00:00

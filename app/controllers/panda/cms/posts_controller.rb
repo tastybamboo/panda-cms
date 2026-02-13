@@ -6,7 +6,7 @@ module Panda
       # TODO: Change from layout rendering to standard template rendering
       # inside a /panda/cms/posts/... structure in the application
       def index
-        @posts = Panda::CMS::Post.includes(:author).order(published_at: :desc)
+        @posts = Panda::CMS::Post.where(status: :published).includes(:author).order(published_at: :desc)
 
         # HTTP caching: Use the most recent post's updated_at for conditional requests
         # Returns 304 Not Modified if no posts have changed since client's last request
@@ -20,10 +20,10 @@ module Panda
         @post = if params[:year] && params[:month]
           # For date-based URLs
           slug = "/#{params[:year]}/#{params[:month]}/#{params[:slug]}"
-          Panda::CMS::Post.find_by!(slug: slug)
+          Panda::CMS::Post.servable.find_by!(slug: slug)
         else
           # For non-date URLs
-          Panda::CMS::Post.find_by!(slug: "/#{params[:slug]}")
+          Panda::CMS::Post.servable.find_by!(slug: "/#{params[:slug]}")
         end
 
         # HTTP caching: Send ETag and Last-Modified headers for individual posts
@@ -36,7 +36,7 @@ module Panda
       def by_month
         @month = Date.new(params[:year].to_i, params[:month].to_i, 1)
         @posts = Panda::CMS::Post
-          .where(status: :active)
+          .where(status: :published)
           .where("DATE_TRUNC('month', published_at) = ?", @month)
           .includes(:author)
           .ordered

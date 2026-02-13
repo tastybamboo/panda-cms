@@ -27,16 +27,26 @@ module Panda
         }
 
       scope :ordered, -> { order(published_at: :desc) }
+
+      def self.editor_search(query, limit: 5)
+        posts_prefix = Panda::CMS.config.posts[:prefix]
+        where(status: :published)
+          .where("title ILIKE :q OR slug ILIKE :q", q: "%#{sanitize_sql_like(query)}%")
+          .limit(limit)
+          .map { |p| {href: "#{posts_prefix}#{p.slug}", name: p.title, description: "Post"} }
+      end
       scope :with_user, -> { includes(:user) }
       scope :with_author, -> { includes(:author) }
 
       enum :status, {
-        active: "active",
-        draft: "draft",
-        pending_review: "pending_review",
+        published: "published",
+        unlisted: "unlisted",
         hidden: "hidden",
         archived: "archived"
       }
+
+      scope :servable, -> { where(status: [:published, :unlisted, :hidden]) }
+      scope :in_sitemap, -> { where(status: [:published, :unlisted]) }
 
       enum :seo_index_mode, {
         visible: "visible",

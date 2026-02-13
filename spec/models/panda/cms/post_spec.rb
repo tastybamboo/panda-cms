@@ -11,7 +11,7 @@ RSpec.describe Panda::CMS::Post, type: :model do
         slug: "/test-post",
         user: admin_user,
         author: admin_user,
-        status: "active"
+        status: "published"
       )
     end
 
@@ -38,6 +38,72 @@ RSpec.describe Panda::CMS::Post, type: :model do
     end
   end
 
+  describe ".editor_search" do
+    let(:admin_user) { create_admin_user }
+
+    let!(:active_post) do
+      Panda::CMS::Post.create!(
+        title: "Active Post",
+        slug: "/active-post",
+        user: admin_user,
+        author: admin_user,
+        status: "published"
+      )
+    end
+
+    let!(:draft_post) do
+      Panda::CMS::Post.create!(
+        title: "Draft Post",
+        slug: "/draft-post",
+        user: admin_user,
+        author: admin_user,
+        status: "hidden"
+      )
+    end
+
+    let!(:another_active_post) do
+      Panda::CMS::Post.create!(
+        title: "Another Active Post",
+        slug: "/another-active-post",
+        user: admin_user,
+        author: admin_user,
+        status: "published"
+      )
+    end
+
+    it "returns only active records" do
+      results = Panda::CMS::Post.editor_search("post")
+      names = results.map { |r| r[:name] }
+      expect(names).to include("Active Post")
+      expect(names).not_to include("Draft Post")
+    end
+
+    it "matches by title" do
+      results = Panda::CMS::Post.editor_search("Another Active")
+      expect(results.length).to eq(1)
+      expect(results.first[:name]).to eq("Another Active Post")
+    end
+
+    it "matches by slug" do
+      results = Panda::CMS::Post.editor_search("active-post")
+      expect(results.map { |r| r[:name] }).to include("Active Post")
+    end
+
+    it "respects limit" do
+      results = Panda::CMS::Post.editor_search("post", limit: 1)
+      expect(results.length).to eq(1)
+    end
+
+    it "returns correct hash structure" do
+      results = Panda::CMS::Post.editor_search("Active Post")
+      result = results.find { |r| r[:name] == "Active Post" }
+      expect(result).to include(:href, :name, :description)
+      expect(result[:href]).to match(/blog/)
+      expect(result[:name]).to eq("Active Post")
+      expect(result[:description]).to eq("Post")
+    end
+  end
+
   describe "SEO functionality" do
     let(:admin_user) { create_admin_user }
     let(:post) do
@@ -46,7 +112,7 @@ RSpec.describe Panda::CMS::Post, type: :model do
         slug: "/test-post",
         user: admin_user,
         author: admin_user,
-        status: "active"
+        status: "published"
       )
     end
 

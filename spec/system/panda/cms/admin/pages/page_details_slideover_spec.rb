@@ -142,8 +142,7 @@ RSpec.describe "Page Details Slideover", type: :system do
   end
 
   describe "form submission from slideover" do
-    it "saves changes when clicking the Save button in footer" do
-      skip "SKIPPED: Failure needs further investigation, or feature is WIP"
+    it "saves changes when clicking the Save button in footer", skip: "Slideover form Save not persisting SEO fields" do
       visit "/admin/cms/pages/#{about_page.id}/edit"
       open_page_details
 
@@ -163,8 +162,7 @@ RSpec.describe "Page Details Slideover", type: :system do
       expect(about_page.seo_description).to eq("Updated description")
     end
 
-    it "shows validation errors for invalid data" do
-      skip "SKIPPED: Failure needs further investigation, or feature is WIP"
+    it "shows validation errors for invalid data", skip: "Slideover form Save not triggering validation errors" do
       visit "/admin/cms/pages/#{about_page.id}/edit"
       open_page_details
 
@@ -210,8 +208,7 @@ RSpec.describe "Page Details Slideover", type: :system do
       end
     end
 
-    it "shows the current OG image if one exists" do
-      skip "SKIPPED: Failure needs further investigation, or feature is WIP"
+    it "shows the current OG image if one exists", skip: "OG image display in slideover not rendering" do
       # Attach a test image to the page
       about_page.og_image.attach(
         io: File.open(Rails.root.join("spec/fixtures/files/test_image.png")),
@@ -303,7 +300,7 @@ RSpec.describe "Page Details Slideover", type: :system do
       about_page.update!(inherit_seo: false)
     end
 
-    it "shows character count for SEO Title field", skip: "Flaky: JavaScript controller not initializing in CI" do
+    it "shows character count for SEO Title field" do
       visit "/admin/cms/pages/#{about_page.id}/edit"
 
       open_page_details
@@ -325,7 +322,7 @@ RSpec.describe "Page Details Slideover", type: :system do
       end
     end
 
-    it "shows warning when approaching SEO Title limit", skip: "Flaky: JavaScript controller not initializing in CI" do
+    it "shows warning when approaching SEO Title limit" do
       visit "/admin/cms/pages/#{about_page.id}/edit"
       open_page_details
 
@@ -342,7 +339,7 @@ RSpec.describe "Page Details Slideover", type: :system do
       end
     end
 
-    it "shows error when exceeding SEO Title limit", skip: "Flaky: JavaScript controller not initializing in CI" do
+    it "shows error when exceeding SEO Title limit" do
       visit "/admin/cms/pages/#{about_page.id}/edit"
       open_page_details
 
@@ -362,7 +359,7 @@ RSpec.describe "Page Details Slideover", type: :system do
   end
 
   describe "keyboard accessibility" do
-    it "can be opened with keyboard navigation", skip: "Flaky: JavaScript controller not initializing in CI" do
+    it "can be opened with keyboard navigation" do
       visit "/admin/cms/pages/#{about_page.id}/edit"
 
       # Focus the button and press Enter
@@ -372,7 +369,7 @@ RSpec.describe "Page Details Slideover", type: :system do
       expect(page).to have_css("#slideover", visible: true)
     end
 
-    it "can be closed with Escape key", skip: "Flaky: JavaScript controller not initializing in CI" do
+    it "can be closed with Escape key" do
       visit "/admin/cms/pages/#{about_page.id}/edit"
       open_page_details
 

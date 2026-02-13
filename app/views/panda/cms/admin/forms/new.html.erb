@@ -1,7 +1,7 @@
 <%= render Panda::Core::Admin::ContainerComponent.new do |component| %>
   <% component.with_heading_slot(text: "Add Form", level: 1) %>
 
-  <%= panda_cms_form_with model: form, url: admin_cms_forms_path, method: :post, id: "form-form" do |f| %>
+  <%= panda_form_with model: form, url: admin_cms_forms_path, method: :post, id: "form-form" do |f| %>
     <%= render Panda::Core::Admin::FormErrorComponent.new(model: form) %>
 
     <%= render Panda::Core::Admin::PanelComponent.new do |panel| %>

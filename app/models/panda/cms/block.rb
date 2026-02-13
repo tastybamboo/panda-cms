@@ -22,7 +22,9 @@ module Panda
         file: "file",
         code: "code",
         iframe: "iframe",
-        quote: "quote"
+        quote: "quote",
+        form: "form",
+        helpdesk_form: "helpdesk_form"
       }
     end
   end

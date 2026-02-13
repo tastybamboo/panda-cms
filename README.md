@@ -1,15 +1,12 @@
 # Panda CMS
 
-> [!CAUTION]
-> This application is being developed in public. It is not ready for production use. If you'd like to try it out (or help with documentation), please contact [@jfi](https://github.com/jfi) by emailing [bamboo@pandacms.io](mailto:bamboo@pandacms.io).
+## Better websites, on Rails. 🐼
 
-## Panda CMS is the CMS we always wanted. 🐼
+A modern, modular content management system built for Ruby on Rails. Simple enough for small sites, powerful enough to scale. No bloat, just the features you need.
 
-Better websites, on Rails.
+Panda CMS has been in production since March 2024 and is actively maintained by [Otaina](https://www.otaina.co.uk).
 
-[Read more about the project...](https://github.com/pandacms/.github/blob/main/profile/README.md) ✨
-
-🐼 is grown from our work at [Otaina](https://www.otaina.co.uk), a small group of freelancers. We needed something that could handle websites large and small – but where we could expand it too. We sent our first websites live in March 2024.
+**[Website](https://tastybamboo.net)** · **[Pro Features](https://tastybamboo.net/pro.html)** · **[Managed Hosting](https://tastybamboo.net/hosting.html)**
 
 ![Gem Version](https://img.shields.io/gem/v/panda-cms) ![Build Status](https://img.shields.io/github/actions/workflow/status/tastybamboo/panda-cms/ci.yml)
 ![GitHub Last Commit](https://img.shields.io/github/last-commit/tastybamboo/panda-cms) [![Ruby Code Style](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://github.com/standardrb/standard)
@@ -24,70 +21,109 @@ To create a new Rails app, run the command below, replacing `demo` with the name
 rails new demo $(curl -fsSL https://raw.githubusercontent.com/tastybamboo/generator/main/.railsrc) -m https://raw.githubusercontent.com/tastybamboo/generator/main/template.rb
 ```
 
-`cd` into your directory (e.g. `demo`), and you'll see `rails db:migrate` and `rails db:seed` have already been run for you.
+`cd` into your directory (e.g. `demo`), then run `bin/dev`. A basic website has automatically been created for you at http://localhost:3000/
 
-Then run `bin/dev`. You'll see a basic website has automatically been created for you at http://localhost:3000/
+Visit http://localhost:3000/admin and sign in with **GitHub** — it works immediately in development using shared dev credentials (no OAuth app setup needed). As the first user, you'll automatically be given an administrator account.
 
-The easiest way for you to get started is to visit http://localhost:3000/admin and login with your GitHub credentials. As the first user, you'll automatically have an administrator account created.
-
-When you're ready to configure further, you can set your own configuration in `config/initializers/panda.rb`. Make sure to configure your authentication providers and update the domain restriction!
+For production, configure your own GitHub OAuth credentials in `config/initializers/panda.rb` — see [Configuration](#configuration) below.
 
 ### Existing applications
 
-Add the following to `Gemfile`:
+Add the gem to your `Gemfile`:
 
 ```ruby
 gem "panda-cms"
 ```
 
-For initial setup, run:
+Then run:
 
 ```shell
 bundle install
 rails generate panda:cms:install
-rails panda:cms:install:migrations
+bundle install
 rails db:migrate
 rails db:seed
 ```
 
-You may want to check this does not re-run any of your existing seeds!
+The install generator will:
+- Create `config/initializers/panda.rb` (if it doesn't exist)
+- Enable GitHub OAuth and Developer Login authentication
+- Add `omniauth-github` to your Gemfile (hence the second `bundle install`)
+- Copy all required database migrations
 
-If you don't want to use GitHub to login (or are at a URL other than http://localhost:3000/), you'll need to configure authentication providers (in `config/initializers/panda.rb`), and then set your user's `admin` attribute to `true` once you've first tried to login.
+Start your server with `bin/dev` and visit `/admin`. In development, GitHub OAuth works immediately using shared dev credentials — just click **GitHub** and authorize. A **Developer Login** (name/email form) is also available as a fallback.
+
+For production, add your GitHub OAuth credentials:
+
+```shell
+rails credentials:edit
+```
+
+```yaml
+github:
+  client_id: your_client_id
+  client_secret: your_client_secret
+```
+
+The CMS engine **auto-mounts itself** — no changes to `config/routes.rb` are needed.
 
 ## Configuration
 
-All Panda configuration is managed in `config/initializers/panda.rb`. The generator creates this file with sensible defaults including Google OAuth authentication:
+All Panda configuration is managed in `config/initializers/panda.rb`. The install generator creates this file with sensible defaults:
 
 ```ruby
 # config/initializers/panda.rb
 Panda::Core.configure do |config|
   config.admin_path = "/admin"
-
-  config.login_page_title = "Panda Admin"
-  config.admin_title = "Panda Admin"
+  config.login_page_title = "Admin"
+  config.admin_title = "MyApp Admin"
 
   config.authentication_providers = {
-    google_oauth2: {
+    github: {
       enabled: true,
-      name: "Google",
-      client_id: Rails.application.credentials.dig(:google, :client_id),
-      client_secret: Rails.application.credentials.dig(:google, :client_secret),
-      options: {
-        scope: "email,profile",
-        prompt: "select_account",
-        hd: "yourdomain.com" # Restrict to specific domain
-      }
+      name: "GitHub",
+      client_id: if Rails.env.development?
+                   "Ov23liFMGyVvRrpuvyTT" # Shared Panda dev app (localhost:3000 only)
+                 else
+                   Rails.application.credentials.dig(:github, :client_id)
+                 end,
+      client_secret: if Rails.env.development?
+                       "394a7024d7dd9c0ee0c8540768331d59d9e22477"
+                     else
+                       Rails.application.credentials.dig(:github, :client_secret)
+                     end
+    },
+    developer: {
+      enabled: true,
+      name: "Developer Login"
     }
   }
 
-  # Core settings
   config.session_token_cookie = :panda_session
   config.user_class = "Panda::Core::User"
   config.user_identity_class = "Panda::Core::UserIdentity"
 end
+
+Panda::CMS.configure do |config|
+  config.require_login_to_view = false
+end
 ```
 
-**Important**: Update `hd: "yourdomain.com"` to your organization's domain to restrict admin access, or remove this line to allow any Google account.
+### Authentication providers
+
+In **development**, GitHub OAuth works out of the box using shared dev credentials that are restricted to `localhost:3000`. No OAuth app setup needed — just click "GitHub" and authorize.
+
+The **Developer** provider is also available in development as a fallback. It shows a simple form to enter a name and email.
+
+For **production**, replace the dev credentials with your own via `rails credentials:edit`. Supported providers:
+
+| Provider | Gem | Config key |
+|----------|-----|------------|
+| GitHub | `omniauth-github` | `github` |
+| Google | `omniauth-google-oauth2` | `google_oauth2` |
+| Microsoft | `omniauth-microsoft_graph` | `microsoft_graph` |
+
+Providers without valid credentials are automatically skipped at boot.
 
 See the [Configuration Documentation](docs/developers/configuration/) for detailed information on all available settings.
 
@@ -125,7 +161,7 @@ For CSS compilation (when contributing to styling), see [Panda Core Asset Compil
 
 ## Gotchas
 
-This is a non-exhuastive list (there will be many more):
+This is a non-exhaustive list (there will be many more):
 
 * To date, this has only been tested with Rails 7.1, 7.2 and 8
 * There may be conflicts if you're not using Tailwind CSS on the frontend. Please report this.
@@ -252,4 +288,4 @@ Artifacts are uploaded automatically on CI.
 
 The gem is available as open source under the terms of the [BSD-3-Clause License](https://opensource.org/licenses/bsd-3-clause).
 
-Copyright © 2024 - 2025, Otaina Limited.
+Copyright © 2024 - 2026, Otaina Limited.

@@ -18,7 +18,7 @@ RSpec.describe Panda::CMS::SEOHelper, type: :helper do
       path: "/",
       title: "Root",
       template: test_template,
-      status: "active"
+      status: "published"
     )
     page.save(validate: false)
     page

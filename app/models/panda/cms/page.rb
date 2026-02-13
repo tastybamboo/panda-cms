@@ -35,13 +35,22 @@ module Panda
 
       scope :ordered, -> { order(:lft) }
 
+      def self.editor_search(query, limit: 5)
+        where(status: :published)
+          .where("title ILIKE :q OR path ILIKE :q", q: "%#{sanitize_sql_like(query)}%")
+          .limit(limit)
+          .map { |p| {href: p.path, name: p.title, description: p.path} }
+      end
+
       enum :status, {
-        active: "active",
-        draft: "draft",
-        pending_review: "pending_review",
+        published: "published",
+        unlisted: "unlisted",
         hidden: "hidden",
         archived: "archived"
       }
+
+      scope :servable, -> { where(status: [:published, :unlisted, :hidden]) }
+      scope :in_sitemap, -> { where(status: [:published, :unlisted]) }
 
       enum :page_type, {
         standard: "standard",
@@ -78,18 +87,38 @@ module Panda
 
       # Callbacks
       before_validation :normalize_path
+      before_validation :infer_parent_from_path
       after_save :handle_after_save
       before_save :update_cached_last_updated_at
+      before_destroy :cache_ancestor_ids_for_menu_update
+      after_destroy :regenerate_auto_menus_after_destroy
 
       #
-      # Update any menus which include this page or its parent as a menu item
+      # Regenerate any auto menus whose scope includes this page.
+      # Finds menus by checking if any ancestor (or self) is the menu's start page,
+      # which is more robust than relying on existing menu_items associations
+      # (which don't exist yet for newly created pages).
       #
       # @return nil
       # @visibility public
       #
       def update_auto_menus
-        menus.find_each(&:generate_auto_menu_items)
-        menus_of_parent.find_each(&:generate_auto_menu_items)
+        unless should_update_auto_menus?
+          Rails.logger.debug { "[Panda CMS] Skipping auto menu update for page #{id} (#{path}) — no relevant changes" }
+          return
+        end
+
+        reason = auto_menu_update_reason
+        Rails.logger.info { "[Panda CMS] Updating auto menus for page #{id} (#{path}): #{reason}" }
+
+        ancestor_ids = self_and_ancestors.pluck(:id)
+        menus = Panda::CMS::Menu.where(kind: "auto", start_page_id: ancestor_ids)
+        Rails.logger.debug { "[Panda CMS] Found #{menus.count} auto menu(s) to regenerate" }
+
+        menus.find_each do |menu|
+          Rails.logger.info { "[Panda CMS] Regenerating auto menu '#{menu.name}' (id=#{menu.id})" }
+          menu.generate_auto_menu_items
+        end
       end
 
       #
@@ -129,7 +158,7 @@ module Panda
         return title unless inherit_seo
 
         # Traverse up tree to find inherited value
-        self_and_ancestors.reverse.find { |p| p.seo_title.present? }&.seo_title || title
+        self_and_ancestors.to_a.rfind { |p| p.seo_title.present? }&.seo_title || title
       end
 
       #
@@ -143,7 +172,7 @@ module Panda
         return seo_description if seo_description.present?
         return nil unless inherit_seo
 
-        self_and_ancestors.reverse.find { |p| p.seo_description.present? }&.seo_description
+        self_and_ancestors.to_a.rfind { |p| p.seo_description.present? }&.seo_description
       end
 
       #
@@ -217,6 +246,18 @@ module Panda
       def normalize_path
         return if path.blank? || path == "/"
         self.path = path.chomp("/") while path.end_with?("/") && path.length > 1
+      end
+
+      def infer_parent_from_path
+        return if path.blank? || path == "/"
+
+        expected_parent_path = File.dirname(path) # e.g. "/advice-hub/foo" => "/advice-hub"
+        return if parent&.path == expected_parent_path
+
+        expected_parent = self.class.find_by(path: expected_parent_path)
+        return unless expected_parent
+
+        self.parent = expected_parent if parent_id.nil? || parent_id != expected_parent.id
       end
 
       def character_state_for(value, limit)
@@ -299,6 +340,29 @@ module Panda
         # Only update if column exists (for backwards compatibility with older schemas)
         return unless self.class.column_names.include?("cached_last_updated_at")
         self.cached_last_updated_at = Time.current
+      end
+
+      def should_update_auto_menus?
+        previously_new_record? || saved_change_to_title? || saved_change_to_status? || saved_change_to_path?
+      end
+
+      def auto_menu_update_reason
+        reasons = []
+        reasons << "new page" if previously_new_record?
+        reasons << "title changed" if saved_change_to_title?
+        reasons << "status changed to #{status}" if saved_change_to_status?
+        reasons << "path changed" if saved_change_to_path?
+        reasons.join(", ")
+      end
+
+      def cache_ancestor_ids_for_menu_update
+        @ancestor_ids_for_menu = self_and_ancestors.pluck(:id)
+      end
+
+      def regenerate_auto_menus_after_destroy
+        return unless @ancestor_ids_for_menu
+
+        Panda::CMS::Menu.where(kind: "auto", start_page_id: @ancestor_ids_for_menu).find_each(&:generate_auto_menu_items)
       end
     end
   end
