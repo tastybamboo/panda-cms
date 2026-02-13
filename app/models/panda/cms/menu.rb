@@ -32,7 +32,7 @@ module Panda
         # NB: Transactions are not distributed across database connections
         transaction do
           menu_items.destroy_all
-          menu_item_root = menu_items.create(text: start_page.title, panda_cms_page_id: start_page.id)
+          menu_item_root = menu_items.create!(text: start_page.title, panda_cms_page_id: start_page.id)
           generate_menu_items(parent_menu_item: menu_item_root, parent_page: start_page)
         end
 
@@ -63,7 +63,7 @@ module Panda
         children = order_pages(children)
 
         children.each do |page|
-          menu_item = menu_items.create(text: page.title, panda_cms_page_id: page.id, parent: parent_menu_item)
+          menu_item = menu_items.create!(text: page.title, panda_cms_page_id: page.id, parent: parent_menu_item)
           generate_menu_items(parent_menu_item: menu_item, parent_page: page) if page.children
         end
       end

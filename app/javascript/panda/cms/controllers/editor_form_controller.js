@@ -1,5 +1,5 @@
 import { Controller } from "@hotwired/stimulus";
-import { EDITOR_JS_RESOURCES, EDITOR_JS_CSS, initializeEditorUndo } from "panda/editor/editor_js_config";
+import { EDITOR_JS_RESOURCES, EDITOR_JS_CSS, initializeEditorUndo, patchLinkAutocomplete } from "panda/editor/editor_js_config";
 import { ResourceLoader } from "panda/editor/resource_loader";
 
 // UTF-8 safe Base64 helpers — atob/btoa only handle Latin-1, corrupting multi-byte characters
@@ -45,6 +45,8 @@ export default class extends Controller {
       for (const resource of EDITOR_JS_RESOURCES.slice(1)) {
         await ResourceLoader.loadScript(document, document.head, resource);
       }
+
+      patchLinkAutocomplete(window);
 
       await this.initializeEditor();
     } catch (error) {
