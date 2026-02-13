@@ -103,10 +103,22 @@ module Panda
       # @visibility public
       #
       def update_auto_menus
-        return unless should_update_auto_menus?
+        unless should_update_auto_menus?
+          Rails.logger.debug { "[Panda CMS] Skipping auto menu update for page #{id} (#{path}) — no relevant changes" }
+          return
+        end
+
+        reason = auto_menu_update_reason
+        Rails.logger.info { "[Panda CMS] Updating auto menus for page #{id} (#{path}): #{reason}" }
 
         ancestor_ids = self_and_ancestors.pluck(:id)
-        Panda::CMS::Menu.where(kind: "auto", start_page_id: ancestor_ids).find_each(&:generate_auto_menu_items)
+        menus = Panda::CMS::Menu.where(kind: "auto", start_page_id: ancestor_ids)
+        Rails.logger.debug { "[Panda CMS] Found #{menus.count} auto menu(s) to regenerate" }
+
+        menus.find_each do |menu|
+          Rails.logger.info { "[Panda CMS] Regenerating auto menu '#{menu.name}' (id=#{menu.id})" }
+          menu.generate_auto_menu_items
+        end
       end
 
       #
@@ -146,7 +158,7 @@ module Panda
         return title unless inherit_seo
 
         # Traverse up tree to find inherited value
-        self_and_ancestors.to_a.reverse.find { |p| p.seo_title.present? }&.seo_title || title
+        self_and_ancestors.to_a.rfind { |p| p.seo_title.present? }&.seo_title || title
       end
 
       #
@@ -160,7 +172,7 @@ module Panda
         return seo_description if seo_description.present?
         return nil unless inherit_seo
 
-        self_and_ancestors.to_a.reverse.find { |p| p.seo_description.present? }&.seo_description
+        self_and_ancestors.to_a.rfind { |p| p.seo_description.present? }&.seo_description
       end
 
       #
@@ -332,6 +344,15 @@ module Panda
 
       def should_update_auto_menus?
         previously_new_record? || saved_change_to_title? || saved_change_to_status? || saved_change_to_path?
+      end
+
+      def auto_menu_update_reason
+        reasons = []
+        reasons << "new page" if previously_new_record?
+        reasons << "title changed" if saved_change_to_title?
+        reasons << "status changed to #{status}" if saved_change_to_status?
+        reasons << "path changed" if saved_change_to_path?
+        reasons.join(", ")
       end
 
       def cache_ancestor_ids_for_menu_update
