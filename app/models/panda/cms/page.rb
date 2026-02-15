@@ -89,7 +89,7 @@ module Panda
       # Callbacks
       before_validation :normalize_path
       before_validation :infer_parent_from_path
-      before_save :capture_menu_update_state
+      before_save :capture_menu_update_state, prepend: true
       after_save :handle_after_save
       before_save :update_cached_last_updated_at
       before_destroy :cache_ancestor_ids_for_menu_update
