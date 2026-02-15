@@ -89,6 +89,7 @@ module Panda
       # Callbacks
       before_validation :normalize_path
       before_validation :infer_parent_from_path
+      before_save :capture_menu_update_state
       after_save :handle_after_save
       before_save :update_cached_last_updated_at
       before_destroy :cache_ancestor_ids_for_menu_update
@@ -343,16 +344,26 @@ module Panda
         self.cached_last_updated_at = Time.current
       end
 
+      # Capture dirty-tracking state before save, because awesome_nested_set
+      # calls reload multiple times during tree restructuring which clears
+      # Rails' mutation tracker (saved_changes, previously_new_record?, etc.).
+      def capture_menu_update_state
+        @_menu_update_new_record = new_record?
+        @_menu_update_title_changed = title_changed?
+        @_menu_update_status_changed = status_changed?
+        @_menu_update_path_changed = path_changed?
+      end
+
       def should_update_auto_menus?
-        previously_new_record? || saved_change_to_title? || saved_change_to_status? || saved_change_to_path?
+        @_menu_update_new_record || @_menu_update_title_changed || @_menu_update_status_changed || @_menu_update_path_changed
       end
 
       def auto_menu_update_reason
         reasons = []
-        reasons << "new page" if previously_new_record?
-        reasons << "title changed" if saved_change_to_title?
-        reasons << "status changed to #{status}" if saved_change_to_status?
-        reasons << "path changed" if saved_change_to_path?
+        reasons << "new page" if @_menu_update_new_record
+        reasons << "title changed" if @_menu_update_title_changed
+        reasons << "status changed to #{status}" if @_menu_update_status_changed
+        reasons << "path changed" if @_menu_update_path_changed
         reasons.join(", ")
       end
 

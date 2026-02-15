@@ -31,6 +31,9 @@ module Panda
 
         # NB: Transactions are not distributed across database connections
         transaction do
+          # Reset association cache to avoid stale data when called multiple times
+          # (e.g. auto-regeneration during page save followed by manual regeneration)
+          menu_items.reset
           menu_items.destroy_all
           menu_item_root = menu_items.create!(text: start_page.title, panda_cms_page_id: start_page.id)
           generate_menu_items(parent_menu_item: menu_item_root, parent_page: start_page)
