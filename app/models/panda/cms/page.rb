@@ -50,6 +50,7 @@ module Panda
       }
 
       scope :servable, -> { where(status: [:published, :unlisted, :hidden]) }
+      scope :not_archived, -> { where.not(status: :archived) }
       scope :in_sitemap, -> { where(status: [:published, :unlisted]) }
 
       enum :page_type, {
@@ -268,8 +269,8 @@ module Panda
         # Skip validation if path is not present (other validations will catch this)
         return if path.blank?
 
-        # Find any other pages with the same path
-        other_page = self.class.where(path: path).where.not(id: id).first
+        # Find any other non-archived pages with the same path
+        other_page = self.class.where(path: path).where.not(id: id).not_archived.first
 
         return unless other_page
         # If there's another page with the same path, check if it has a different parent

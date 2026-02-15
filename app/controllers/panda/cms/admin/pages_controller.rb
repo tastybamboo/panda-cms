@@ -12,7 +12,9 @@ module Panda
         # @return ActiveRecord::Collection A list of all pages
         def index
           homepage = Panda::CMS::Page.find_by(path: "/")
-          render :index, locals: {root_page: homepage}
+          archived_count = Panda::CMS::Page.archived.count
+          show_archived = params[:show_archived] == "true"
+          render :index, locals: {root_page: homepage, archived_count: archived_count, show_archived: show_archived}
         end
 
         # Loads the add page form

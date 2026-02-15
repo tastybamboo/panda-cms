@@ -341,6 +341,100 @@ RSpec.describe Panda::CMS::Page, type: :model do
       expect(duplicate_page).not_to be_valid
       expect(duplicate_page.errors[:path]).to include("has already been taken in this section")
     end
+
+    it "allows a new page at an archived page's path" do
+      # Archive the existing team page
+      team_under_section_a.update!(status: "archived")
+
+      new_page = Panda::CMS::Page.new(
+        title: "New Team A",
+        path: "/validation-test/section-a/team",
+        parent: section_a,
+        panda_cms_template_id: test_template.id,
+        status: "published"
+      )
+
+      expect(new_page).to be_valid
+    end
+
+    it "still blocks duplicates between non-archived pages" do
+      Panda::CMS::Page.create!(
+        title: "Active Page",
+        path: "/validation-test/section-a/active",
+        parent: section_a,
+        panda_cms_template_id: test_template.id,
+        status: "published"
+      )
+
+      duplicate = Panda::CMS::Page.new(
+        title: "Duplicate Active",
+        path: "/validation-test/section-a/active",
+        parent: section_a,
+        panda_cms_template_id: test_template.id,
+        status: "unlisted"
+      )
+
+      expect(duplicate).not_to be_valid
+      expect(duplicate.errors[:path]).to include("has already been taken in this section")
+    end
+  end
+
+  describe "scopes" do
+    let(:test_template) { create_test_template("Scope Test Template", "layouts/scope_test") }
+
+    before do
+      stub_redirect_creation
+    end
+
+    let(:scope_root) do
+      page = Panda::CMS::Page.new(
+        path: "/scope-test",
+        title: "Scope Test Root",
+        template: test_template,
+        status: "published"
+      )
+      page.save(validate: false)
+      page
+    end
+
+    let!(:published_page) do
+      Panda::CMS::Page.create!(
+        title: "Published",
+        path: "/scope-test/published",
+        parent: scope_root,
+        template: test_template,
+        status: "published"
+      )
+    end
+
+    let!(:archived_page) do
+      Panda::CMS::Page.create!(
+        title: "Archived",
+        path: "/scope-test/archived",
+        parent: scope_root,
+        template: test_template,
+        status: "archived"
+      )
+    end
+
+    let!(:hidden_page) do
+      Panda::CMS::Page.create!(
+        title: "Hidden",
+        path: "/scope-test/hidden",
+        parent: scope_root,
+        template: test_template,
+        status: "hidden"
+      )
+    end
+
+    describe ".not_archived" do
+      it "excludes archived pages" do
+        results = Panda::CMS::Page.not_archived
+        expect(results).to include(published_page)
+        expect(results).to include(hidden_page)
+        expect(results).not_to include(archived_page)
+      end
+    end
   end
 
   describe "callbacks" do
