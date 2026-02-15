@@ -4,10 +4,11 @@
   <% end %>
 
   <% if root_page %>
+    <% page_rows = show_archived ? root_page.self_and_descendants : root_page.self_and_descendants.not_archived %>
     <div data-controller="tree" data-tree-target="container" style="opacity: 0; transition: opacity 0.2s;">
-      <%= render Panda::Core::Admin::TableComponent.new(term: "page", rows: root_page.self_and_descendants) do |table| %>
+      <%= render Panda::Core::Admin::TableComponent.new(term: "page", rows: page_rows) do |table| %>
         <% table.column("Name") do |page| %>
-          <div class="flex flex-col" data-tree-target="row" data-page-id="<%= page.id %>" data-level="<%= page.level %>" data-parent-id="<%= page.parent_id %>">
+          <div class="flex flex-col <%= "opacity-50" if page.archived? %>" data-tree-target="row" data-page-id="<%= page.id %>" data-level="<%= page.level %>" data-parent-id="<%= page.parent_id %>">
             <%# Add indentation for nested levels %>
             <% indent_class = case page.level
                when 0 then ""
@@ -41,7 +42,12 @@
                 <% end %>
               </div>
               <div class="flex flex-col">
-                <%= link_to page.title, edit_admin_cms_page_path(page), class: "font-medium hover:text-primary" %>
+                <div class="flex items-center gap-2">
+                  <%= link_to page.title, edit_admin_cms_page_path(page), class: "font-medium hover:text-primary" %>
+                  <% if page.archived? %>
+                    <span class="inline-flex items-center rounded-md bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">Archived</span>
+                  <% end %>
+                </div>
                 <div class="text-xs text-black/60 mt-0.5">
                   <%= page.path %>
                 </div>
@@ -53,6 +59,16 @@
         <% table.column("Last Updated", width: "18%") { |page| render Panda::Core::Admin::UserActivityComponent.new(at: page.last_updated_at) } %>
       <% end %>
     </div>
+
+    <% if archived_count > 0 %>
+      <div class="px-6 pb-4">
+        <% if show_archived %>
+          <%= link_to "Hide archived pages", admin_cms_pages_path, class: "text-sm text-gray-500 hover:text-gray-700" %>
+        <% else %>
+          <%= link_to "Show #{archived_count} archived #{"page".pluralize(archived_count)}", admin_cms_pages_path(show_archived: "true"), class: "text-sm text-gray-500 hover:text-gray-700" %>
+        <% end %>
+      </div>
+    <% end %>
   <% else %>
     <div class="p-6">
       <%= render Panda::Core::Admin::CalloutComponent.new(
