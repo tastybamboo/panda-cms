@@ -95,12 +95,15 @@ module Panda
         # Skip if path contains parameter placeholder
         return true if submenu_item.page&.path&.include?(":")
 
-        # Skip if page is nil or Current.page is nil
-        return true if submenu_item&.page.nil? || Panda::CMS::Current.page.nil?
+        # Always skip items without an associated page
+        return true if submenu_item&.page.nil?
 
         # When show_all_items is enabled, skip depth-based filtering
         # (used by mobile menus that need the full tree for JS-driven collapsing)
         return false if @show_all_items
+
+        # From here on, we rely on Current.page being present for depth-based logic
+        return true if Panda::CMS::Current.page.nil?
 
         # Skip if we're on the top menu item and level > 1
         return true if Panda::CMS::Current.page == @menu_item.page && level > 1
