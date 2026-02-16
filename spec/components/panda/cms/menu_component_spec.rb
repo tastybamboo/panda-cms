@@ -47,6 +47,16 @@ RSpec.describe Panda::CMS::MenuComponent, type: :component do
       component = described_class.new(name: "Main Menu", page_menu_styles: page_menu_styles)
       expect(component.page_menu_styles).to eq(page_menu_styles)
     end
+
+    it "defaults page_menu_show_all_items to false" do
+      component = described_class.new(name: "Main Menu")
+      expect(component.page_menu_show_all_items).to be false
+    end
+
+    it "accepts page_menu_show_all_items parameter" do
+      component = described_class.new(name: "Main Menu", page_menu_show_all_items: true)
+      expect(component.page_menu_show_all_items).to be true
+    end
   end
 
   describe "#processed_menu_items" do

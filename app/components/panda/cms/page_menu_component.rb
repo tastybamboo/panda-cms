@@ -7,14 +7,16 @@ module Panda
     # @param start_depth [Integer] The depth level to start the menu from
     # @param styles [Hash] CSS classes for styling menu elements
     # @param show_heading [Boolean] Whether to show the top-level heading
+    # @param show_all_items [Boolean] When true, disables depth-based filtering so all descendants are shown
     class PageMenuComponent < Panda::Core::Base
-      attr_reader :page, :start_depth, :styles, :show_heading
+      attr_reader :page, :start_depth, :styles, :show_heading, :show_all_items
 
-      def initialize(page:, start_depth:, styles: {}, show_heading: true, **attrs)
+      def initialize(page:, start_depth:, styles: {}, show_heading: true, show_all_items: false, **attrs)
         @page = page
         @start_depth = start_depth
         @styles = styles.freeze
         @show_heading = show_heading
+        @show_all_items = show_all_items
         super(**attrs)
       end
 
@@ -90,14 +92,21 @@ module Panda
       end
 
       def should_skip_item?(submenu_item, level)
-        # Skip if we're on the top menu item and level > 1
-        return true if Panda::CMS::Current.page == @menu_item.page && level > 1
-
         # Skip if path contains parameter placeholder
         return true if submenu_item.page&.path&.include?(":")
 
-        # Skip if page is nil or Current.page is nil
-        return true if submenu_item&.page.nil? || Panda::CMS::Current.page.nil?
+        # Always skip items without an associated page
+        return true if submenu_item&.page.nil?
+
+        # When show_all_items is enabled, skip depth-based filtering
+        # (used by mobile menus that need the full tree for JS-driven collapsing)
+        return false if @show_all_items
+
+        # From here on, we rely on Current.page being present for depth-based logic
+        return true if Panda::CMS::Current.page.nil?
+
+        # Skip if we're on the top menu item and level > 1
+        return true if Panda::CMS::Current.page == @menu_item.page && level > 1
 
         # Skip if submenu page is deeper than current page and not an ancestor
         submenu_item.page.depth.to_i > Panda::CMS::Current.page.depth.to_i &&

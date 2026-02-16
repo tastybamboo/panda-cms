@@ -9,16 +9,18 @@ module Panda
     # @param overrides [Hash] Menu item overrides - supports :hidden_items array to hide specific menu items by text
     # @param render_page_menu [Boolean] Whether to render sub-page menus
     # @param page_menu_styles [Hash] Styles for the page menu component
+    # @param page_menu_show_all_items [Boolean] When true, page menus show all descendants (disables depth filtering)
     class MenuComponent < Panda::Core::Base
-      attr_reader :name, :current_path, :styles, :overrides, :render_page_menu, :page_menu_styles
+      attr_reader :name, :current_path, :styles, :overrides, :render_page_menu, :page_menu_styles, :page_menu_show_all_items
 
-      def initialize(name:, current_path: "", styles: {}, overrides: {}, render_page_menu: false, page_menu_styles: {}, **attrs)
+      def initialize(name:, current_path: "", styles: {}, overrides: {}, render_page_menu: false, page_menu_styles: {}, page_menu_show_all_items: false, **attrs)
         @name = name
         @current_path = current_path
         @styles = styles.freeze
         @overrides = overrides.freeze
         @render_page_menu = render_page_menu
         @page_menu_styles = page_menu_styles.freeze
+        @page_menu_show_all_items = page_menu_show_all_items
         super(**attrs)
       end
 
