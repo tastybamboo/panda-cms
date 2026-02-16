@@ -1,26 +1,33 @@
 <div class="nested-form-wrapper rounded-2xl border border-gray-200 bg-white mb-4"
      data-controller="collapsible-item"
+     data-sortable-list-target="item"
      data-collapsible-item-expanded-value="<%= form.object.new_record? %>"
      data-new-record="<%= form.object.new_record? %>">
-  <%# Header (always visible, clickable) %>
-  <div class="flex items-center justify-between px-4 py-3 cursor-pointer"
-       data-action="click->collapsible-item#toggle">
-    <div class="flex items-center gap-2">
-      <span class="cursor-grab text-gray-400">::</span>
+  <%# Header (always visible) %>
+  <div class="flex items-center px-4 py-3">
+    <%# Drag handle (separate from toggle) %>
+    <div class="flex items-center justify-center pr-3 cursor-grab text-gray-400 hover:text-gray-600"
+         data-sortable-handle>
+      <i class="fa-solid fa-grip-vertical"></i>
+    </div>
+
+    <%# Toggle area %>
+    <div class="flex-1 flex items-center justify-between cursor-pointer"
+         data-action="click->collapsible-item#toggle">
       <span class="text-sm font-medium text-gray-700"
             data-collapsible-item-target="summary"
             data-placeholder="New item">
         <%= form.object.text.presence || "New item" %>
       </span>
-    </div>
-    <div class="flex items-center gap-3">
-      <button type="button"
-              class="text-xs text-red-500 hover:text-red-700"
-              data-action="click->nested-form#remove click:stop->collapsible-item#noop">
-        <i class="fa-solid fa-trash mr-1"></i> Remove
-      </button>
-      <i class="fa-solid fa-chevron-down text-xs text-gray-400 transition-transform duration-200"
-         data-collapsible-item-target="icon"></i>
+      <div class="flex items-center gap-3">
+        <button type="button"
+                class="text-xs text-red-500 hover:text-red-700"
+                data-action="click->nested-form#remove click:stop->collapsible-item#noop">
+          <i class="fa-solid fa-trash mr-1"></i> Remove
+        </button>
+        <i class="fa-solid fa-chevron-down text-xs text-gray-400 transition-transform duration-200"
+           data-collapsible-item-target="icon"></i>
+      </div>
     </div>
   </div>
 
@@ -28,6 +35,7 @@
   <div class="overflow-hidden transition-all duration-200 ease-out"
        data-collapsible-item-target="body">
     <div class="px-4 pb-4 space-y-4">
+      <%= form.hidden_field :position %>
       <%= form.text_field :text, label: "Menu Item Text", data: { action: "input->collapsible-item#updateSummary" } %>
       <%= form.collection_select :panda_cms_page_id, Panda::CMS::Page.order(:title), :id, :title, { include_blank: "Select a page (optional)", label: "Page" }, { class: "mt-1" } %>
       <%= form.text_field :external_url, label: "External URL (optional)" %>
