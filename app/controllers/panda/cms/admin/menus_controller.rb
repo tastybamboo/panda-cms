@@ -27,6 +27,7 @@ module Panda
           menu = Panda::CMS::Menu.new(menu_params_with_defaults)
 
           if menu.save
+            reorder_menu_items(menu)
             redirect_to admin_cms_menus_path, notice: "Menu was successfully created.", status: :see_other
           else
             render :new, locals: {menu: menu}, status: :unprocessable_entity
@@ -42,6 +43,7 @@ module Panda
         # @type PATCH/PUT
         def update
           if @menu.update(menu_params_with_defaults)
+            reorder_menu_items(@menu)
             redirect_to admin_cms_menus_path, notice: "Menu was successfully updated.", status: :see_other
           else
             render :edit, status: :unprocessable_entity
@@ -73,7 +75,7 @@ module Panda
         end
 
         def menu_params
-          params.require(:menu).permit(:name, :kind, :start_page_id, :promote_active_item, menu_items_attributes: [:id, :text, :external_url, :panda_cms_page_id, :_destroy])
+          params.require(:menu).permit(:name, :kind, :start_page_id, :promote_active_item, menu_items_attributes: [:id, :text, :external_url, :panda_cms_page_id, :position, :_destroy])
         end
 
         def menu_params_with_defaults
@@ -82,6 +84,39 @@ module Panda
 
           permitted[:start_page_id] = permitted[:start_page_id].presence || Panda::CMS::Page.find_by(path: "/")&.id
           permitted
+        end
+
+        def reorder_menu_items(menu)
+          attrs = params.dig(:menu, :menu_items_attributes)
+          return unless attrs.present?
+
+          items_with_positions = attrs.values
+            .reject { |a| a[:_destroy] == "1" }
+            .select { |a| a[:position].present? }
+            .sort_by { |a| a[:position].to_i }
+
+          return if items_with_positions.size < 2
+
+          menu.menu_items.reload
+
+          ordered_items = items_with_positions.filter_map do |a|
+            if a[:id].present?
+              menu.menu_items.find { |item| item.id == a[:id] }
+            else
+              menu.menu_items.find { |item| item.text == a[:text] }
+            end
+          end
+
+          return if ordered_items.size < 2
+
+          # Skip if already in correct order
+          current_ids = menu.menu_items.order(:lft).map(&:id)
+          desired_ids = ordered_items.map(&:id)
+          return if current_ids == desired_ids
+
+          ordered_items.each_cons(2) do |left_item, right_item|
+            right_item.reload.move_to_right_of(left_item.reload)
+          end
         end
 
         def set_initial_breadcrumb

@@ -21,16 +21,16 @@
     <div data-menu-form-target="menuItemsSection">
       <%= render Panda::Core::Admin::PanelComponent.new do |panel| %>
         <% panel.with_heading_slot { "Menu Items" } %>
-        <div data-controller="nested-form" data-nested-form-wrapper-selector-value=".nested-form-wrapper">
+        <div data-controller="nested-form sortable-list" data-nested-form-wrapper-selector-value=".nested-form-wrapper">
           <template data-nested-form-target="template">
             <%= f.fields_for :menu_items, Panda::CMS::MenuItem.new, child_index: "NEW_RECORD" do |item_form| %>
               <%= render "menu_item_fields", form: item_form %>
             <% end %>
           </template>
 
-          <div class="space-y-4"></div>
-
-          <div data-nested-form-target="target"></div>
+          <div class="space-y-4">
+            <div data-nested-form-target="target"></div>
+          </div>
 
           <div class="mt-4">
             <%= render Panda::Core::Admin::ButtonComponent.new(text: "Add Menu Item", action: :add, link: "#", size: :small, data: { action: "click->nested-form#add" }) %>
