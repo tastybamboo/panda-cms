@@ -89,7 +89,9 @@ module Panda
       # Callbacks
       before_validation :normalize_path
       before_validation :infer_parent_from_path
+      before_save :capture_menu_update_state, prepend: true
       after_save :handle_after_save
+      after_commit :update_auto_menus_after_commit, on: [:create, :update]
       before_save :update_cached_last_updated_at
       before_destroy :cache_ancestor_ids_for_menu_update
       after_destroy :regenerate_auto_menus_after_destroy
@@ -288,7 +290,6 @@ module Panda
       def handle_after_save
         generate_content_blocks
         update_existing_menu_items
-        update_auto_menus
         create_redirect_if_path_changed
       end
 
@@ -343,17 +344,36 @@ module Panda
         self.cached_last_updated_at = Time.current
       end
 
+      # Capture dirty-tracking state before save, because awesome_nested_set
+      # calls reload multiple times during tree restructuring which clears
+      # Rails' mutation tracker (saved_changes, previously_new_record?, etc.).
+      def capture_menu_update_state
+        @_menu_update_new_record = new_record?
+        @_menu_update_title_changed = will_save_change_to_title?
+        @_menu_update_status_changed = will_save_change_to_status?
+        @_menu_update_path_changed = will_save_change_to_path?
+      end
+
       def should_update_auto_menus?
-        previously_new_record? || saved_change_to_title? || saved_change_to_status? || saved_change_to_path?
+        !!(@_menu_update_new_record || @_menu_update_title_changed || @_menu_update_status_changed || @_menu_update_path_changed)
       end
 
       def auto_menu_update_reason
         reasons = []
-        reasons << "new page" if previously_new_record?
-        reasons << "title changed" if saved_change_to_title?
-        reasons << "status changed to #{status}" if saved_change_to_status?
-        reasons << "path changed" if saved_change_to_path?
+        reasons << "new page" if @_menu_update_new_record
+        reasons << "title changed" if @_menu_update_title_changed
+        reasons << "status changed to #{status}" if @_menu_update_status_changed
+        reasons << "path changed" if @_menu_update_path_changed
         reasons.join(", ")
+      end
+
+      # Run auto menu updates after the transaction commits so that:
+      # 1. Menu regeneration errors cannot roll back the page save
+      # 2. The page tree is fully committed before menu queries run
+      def update_auto_menus_after_commit
+        update_auto_menus
+      rescue => e
+        Rails.logger.error { "[Panda CMS] Error updating auto menus for page #{id} (#{path}): #{e.message}" }
       end
 
       def cache_ancestor_ids_for_menu_update
