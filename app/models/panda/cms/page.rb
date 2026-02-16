@@ -349,13 +349,13 @@ module Panda
       # Rails' mutation tracker (saved_changes, previously_new_record?, etc.).
       def capture_menu_update_state
         @_menu_update_new_record = new_record?
-        @_menu_update_title_changed = title_changed?
-        @_menu_update_status_changed = status_changed?
-        @_menu_update_path_changed = path_changed?
+        @_menu_update_title_changed = will_save_change_to_title?
+        @_menu_update_status_changed = will_save_change_to_status?
+        @_menu_update_path_changed = will_save_change_to_path?
       end
 
       def should_update_auto_menus?
-        @_menu_update_new_record || @_menu_update_title_changed || @_menu_update_status_changed || @_menu_update_path_changed
+        !!(@_menu_update_new_record || @_menu_update_title_changed || @_menu_update_status_changed || @_menu_update_path_changed)
       end
 
       def auto_menu_update_reason
