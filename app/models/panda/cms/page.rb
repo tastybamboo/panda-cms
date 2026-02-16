@@ -91,6 +91,7 @@ module Panda
       before_validation :infer_parent_from_path
       before_save :capture_menu_update_state, prepend: true
       after_save :handle_after_save
+      after_commit :update_auto_menus_after_commit, on: [:create, :update]
       before_save :update_cached_last_updated_at
       before_destroy :cache_ancestor_ids_for_menu_update
       after_destroy :regenerate_auto_menus_after_destroy
@@ -289,7 +290,6 @@ module Panda
       def handle_after_save
         generate_content_blocks
         update_existing_menu_items
-        update_auto_menus
         create_redirect_if_path_changed
       end
 
@@ -365,6 +365,15 @@ module Panda
         reasons << "status changed to #{status}" if @_menu_update_status_changed
         reasons << "path changed" if @_menu_update_path_changed
         reasons.join(", ")
+      end
+
+      # Run auto menu updates after the transaction commits so that:
+      # 1. Menu regeneration errors cannot roll back the page save
+      # 2. The page tree is fully committed before menu queries run
+      def update_auto_menus_after_commit
+        update_auto_menus
+      rescue => e
+        Rails.logger.error { "[Panda CMS] Error updating auto menus for page #{id} (#{path}): #{e.message}" }
       end
 
       def cache_ancestor_ids_for_menu_update
