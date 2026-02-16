@@ -18,7 +18,7 @@ GIT
 
 GIT
   remote: https://github.com/tastybamboo/panda-editor.git
-  revision: 457fcbc9a402dfea0c1015c66409ff7681efe326
+  revision: 89161b50071c89e3375cd0b0e8ebea0ac4883e2e
   branch: main
   specs:
     panda-editor (0.8.3)
@@ -151,7 +151,7 @@ GEM
       parser (>= 2.4)
       smart_properties
     bigdecimal (4.0.1)
-    binding_of_caller (1.0.1)
+    binding_of_caller (2.0.0)
       debug_inspector (>= 1.2.0)
     brakeman (8.0.2)
       racc
@@ -351,7 +351,7 @@ GEM
     puma (7.2.0)
       nio4r (~> 2.0)
     racc (1.8.1)
-    rack (3.2.4)
+    rack (3.2.5)
     rack-protection (4.2.1)
       base64 (>= 0.1.0)
       logger (>= 1.6.0)
