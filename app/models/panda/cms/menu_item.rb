@@ -7,6 +7,8 @@ module Panda
     class MenuItem < ApplicationRecord
       acts_as_nested_set scope: [:panda_cms_menu_id], counter_cache: :children_count
 
+      attr_accessor :position
+
       self.implicit_order_column = "lft"
       self.table_name = "panda_cms_menu_items"
 
