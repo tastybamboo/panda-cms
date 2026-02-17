@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/tastybamboo/panda-core.git
-  revision: 25f5ea66e7543e65f32c19558499f0f04494882a
+  revision: 9d53e93f65e304bc72ede1aa095eebccc908bf35
   branch: main
   specs:
     panda-core (0.14.4)
@@ -18,7 +18,7 @@ GIT
 
 GIT
   remote: https://github.com/tastybamboo/panda-editor.git
-  revision: 89161b50071c89e3375cd0b0e8ebea0ac4883e2e
+  revision: 731711e90126b5914087111bac743383be7ea6b9
   branch: main
   specs:
     panda-editor (0.8.3)
@@ -292,9 +292,9 @@ GEM
     net-smtp (0.5.1)
       net-protocol
     nio4r (2.7.5)
-    nokogiri (1.19.0-arm64-darwin)
+    nokogiri (1.19.1-arm64-darwin)
       racc (~> 1.4)
-    nokogiri (1.19.0-x86_64-linux-gnu)
+    nokogiri (1.19.1-x86_64-linux-gnu)
       racc (~> 1.4)
     oauth2 (2.0.18)
       faraday (>= 0.17.3, < 4.0)
@@ -330,7 +330,7 @@ GEM
     parallel (1.27.0)
     parallel_tests (5.6.0)
       parallel
-    parser (3.3.10.1)
+    parser (3.3.10.2)
       ast (~> 2.4.1)
       racc
     pg (1.6.3)
@@ -424,7 +424,7 @@ GEM
     rspec-mocks (3.13.7)
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.13.0)
-    rspec-rails (8.0.2)
+    rspec-rails (8.0.3)
       actionpack (>= 7.2)
       activesupport (>= 7.2)
       railties (>= 7.2)
