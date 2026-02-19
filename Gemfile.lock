@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/tastybamboo/panda-core.git
-  revision: 75e58d27d89b8dcdf2b414249affd64bea177130
+  revision: 13d13742c114732f12a80e53070c1ebe68c8e8d0
   branch: main
   specs:
     panda-core (0.14.4)
@@ -553,7 +553,7 @@ GEM
     yard-activerecord (0.0.17)
       activesupport
       yard (>= 0.8.3)
-    zeitwerk (2.7.4)
+    zeitwerk (2.7.5)
 
 PLATFORMS
   arm64-darwin
