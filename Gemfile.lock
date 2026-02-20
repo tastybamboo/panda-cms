@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/tastybamboo/panda-core.git
-  revision: 13d13742c114732f12a80e53070c1ebe68c8e8d0
+  revision: 8f7b806fa6c79b3824170ed0b67de30f8a1e72e5
   branch: main
   specs:
     panda-core (0.14.4)
@@ -457,7 +457,7 @@ GEM
       rack (>= 1.1)
       rubocop (>= 1.75.0, < 2.0)
       rubocop-ast (>= 1.44.0, < 2.0)
-    ruby-lsp (0.26.6)
+    ruby-lsp (0.26.7)
       language_server-protocol (~> 3.17.0)
       prism (>= 1.2, < 2.0)
       rbs (>= 3, < 5)
@@ -518,9 +518,8 @@ GEM
     tailwindcss-rails (4.4.0)
       railties (>= 7.0.0)
       tailwindcss-ruby (~> 4.0)
-    tailwindcss-ruby (4.1.18)
-    tailwindcss-ruby (4.1.18-arm64-darwin)
-    tailwindcss-ruby (4.1.18-x86_64-linux-gnu)
+    tailwindcss-ruby (4.2.0-arm64-darwin)
+    tailwindcss-ruby (4.2.0-x86_64-linux-gnu)
     thor (1.5.0)
     timeout (0.6.0)
     tsort (0.2.0)
