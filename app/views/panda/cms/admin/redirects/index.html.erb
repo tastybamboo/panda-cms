@@ -4,9 +4,13 @@
   <% end %>
 
   <%= render Panda::Core::Admin::TableComponent.new(term: "redirect", rows: redirects, icon: "fa-solid fa-arrow-right") do |table| %>
-    <% table.column("Origin Path") { |r| block_link_to r.origin_path, edit_admin_cms_redirect_path(r) } %>
-    <% table.column("Destination Path") { |r| r.destination_path } %>
-    <% table.column("Status Code") do |r| %>
+    <% table.column("Redirect") do |r| %>
+      <div class="whitespace-normal">
+        <div class="mb-1"><span class="inline-block w-10 text-gray-400 text-xs font-medium uppercase">From</span> <%= block_link_to r.origin_path, edit_admin_cms_redirect_path(r) %></div>
+        <div><span class="inline-block w-10 text-gray-400 text-xs font-medium uppercase">To</span> <span class="text-gray-500"><%= highlight_destination_diff(r.origin_path, r.destination_path) %></span></div>
+      </div>
+    <% end %>
+    <% table.column("Status", width: "140px") do |r| %>
       <% status_text, status_symbol = case r.status_code
                                      when 301, 308
                                        ["Permanent", :active]
@@ -17,6 +21,6 @@
                                      end %>
       <%= render Panda::Core::Admin::TagComponent.new(status: status_symbol, text: "#{r.status_code} — #{status_text}") %>
     <% end %>
-    <% table.column("Visits") { |r| r.visits.to_s } %>
+    <% table.column("Visits", width: "80px") { |r| r.visits.to_s } %>
   <% end %>
 <% end %>
