@@ -31,7 +31,8 @@ module Panda
             []
           end
 
-          render :show, locals: {form: @form, submissions: submissions, fields: fields}
+          display_fields = fields.first(3)
+          render :show, locals: {form: @form, submissions: submissions, fields: fields, display_fields: display_fields}
         end
 
         # New form

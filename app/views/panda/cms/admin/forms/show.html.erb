@@ -3,22 +3,39 @@
     <% heading.with_button(text: "Edit Form", href: edit_admin_cms_form_path(form), icon: "fa-solid fa-pen") %>
   <% end %>
 
-  <%= render Panda::Core::Admin::TableComponent.new(term: "submission", rows: submissions) do |table| %>
-    <% fields.each do |field, title, field_type| %>
-      <% table.column(title) do |submission| %>
-        <% value = submission.data[field] %>
-        <% if field_type == "signature" && value.present? && value.start_with?("data:image") %>
-          <img src="<%= value %>" alt="Signature" style="max-width: 200px; max-height: 80px; border: 1px solid #e5e7eb;">
-        <% elsif field == "email" || field == "email_address" %>
-          <a href="mailto:<%= value %>" class="border-b border-gray-500 hover:text-gray-900"><%= value %></a>
-        <% else %>
-          <%= simple_format(value) %>
+  <% if submissions.any? %>
+    <%= render Panda::Core::Admin::TableComponent.new(term: "submission", rows: submissions) do |table| %>
+      <% display_fields.each_with_index do |field_info, index| %>
+        <% field, title, field_type = field_info %>
+        <% table.column(title) do |submission| %>
+          <% value = submission.data[field] %>
+          <% if index == 0 %>
+            <%= link_to admin_cms_form_submission_path(form, submission), class: "block-link" do %>
+              <% if field_type == "signature" && value.present? && value.start_with?("data:image") %>
+                <img src="<%= value %>" alt="Signature" style="max-width: 200px; max-height: 80px; border: 1px solid #e5e7eb;">
+              <% else %>
+                <%= truncate(value.to_s, length: 80) %>
+              <% end %>
+            <% end %>
+          <% else %>
+            <% if field_type == "signature" && value.present? && value.start_with?("data:image") %>
+              <img src="<%= value %>" alt="Signature" style="max-width: 200px; max-height: 80px; border: 1px solid #e5e7eb;">
+            <% else %>
+              <%= truncate(value.to_s, length: 80) %>
+            <% end %>
+          <% end %>
         <% end %>
       <% end %>
-    <% end %>
 
-    <% table.column("Submitted") do |submission| %>
-      <%= time_ago_in_words(submission.created_at) %> ago
+      <% table.column("Submitted") do |submission| %>
+        <%= time_ago_in_words(submission.created_at) %> ago
+      <% end %>
     <% end %>
+  <% else %>
+    <%= render Panda::Core::Admin::EmptyStateComponent.new(
+      icon: "fa-solid fa-inbox",
+      title: "No submissions yet",
+      description: "Submissions will appear here once the form receives responses."
+    ) %>
   <% end %>
 <% end %>

@@ -1,0 +1,61 @@
+<%= render Panda::Core::Admin::ContainerComponent.new do |component| %>
+  <% component.with_heading_slot(text: "Submission Details", level: 1) do |heading| %>
+    <% heading.with_button(text: "Back to Submissions", href: admin_cms_form_path(form), icon: "arrow-left") %>
+  <% end %>
+
+  <!-- Form Fields -->
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+      <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 tracking-wider"><%= form.name %></h3>
+    </div>
+    <dl class="divide-y divide-gray-200 dark:divide-gray-700">
+      <% fields.each do |field, label, field_type| %>
+        <div class="px-6 py-4 sm:grid sm:grid-cols-3 sm:gap-4">
+          <dt class="text-sm font-medium text-gray-500 dark:text-gray-400"><%= label %></dt>
+          <dd class="mt-1 text-sm text-gray-900 dark:text-white sm:col-span-2 sm:mt-0">
+            <% value = submission.data[field] %>
+            <% if value.blank? %>
+              <span class="text-gray-400 dark:text-gray-500 italic">Not provided</span>
+            <% elsif field_type == "signature" && value.start_with?("data:image") %>
+              <img src="<%= value %>" alt="Signature" style="max-width: 400px; max-height: 120px; border: 1px solid #e5e7eb;">
+            <% elsif field_type == "email" || field == "email" || field == "email_address" %>
+              <a href="mailto:<%= value %>" class="text-primary-600 hover:text-primary-700 dark:text-primary-400"><%= value %></a>
+            <% elsif field_type == "url" %>
+              <a href="<%= value %>" target="_blank" rel="noopener noreferrer" class="text-primary-600 hover:text-primary-700 dark:text-primary-400"><%= value %></a>
+            <% else %>
+              <%= simple_format(value.to_s) %>
+            <% end %>
+          </dd>
+        </div>
+      <% end %>
+    </dl>
+  </div>
+
+  <!-- Metadata -->
+  <div class="mt-6 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+      <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 tracking-wider">Submission Metadata</h3>
+    </div>
+    <dl class="divide-y divide-gray-200 dark:divide-gray-700">
+      <div class="px-6 py-4 sm:grid sm:grid-cols-3 sm:gap-4">
+        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Submitted</dt>
+        <dd class="mt-1 text-sm text-gray-900 dark:text-white sm:col-span-2 sm:mt-0">
+          <%= l(submission.created_at, format: :long) %>
+          (<%= time_ago_in_words(submission.created_at) %> ago)
+        </dd>
+      </div>
+      <% if submission.ip_address.present? %>
+        <div class="px-6 py-4 sm:grid sm:grid-cols-3 sm:gap-4">
+          <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">IP Address</dt>
+          <dd class="mt-1 text-sm text-gray-900 dark:text-white sm:col-span-2 sm:mt-0"><%= submission.ip_address %></dd>
+        </div>
+      <% end %>
+      <% if submission.user_agent.present? %>
+        <div class="px-6 py-4 sm:grid sm:grid-cols-3 sm:gap-4">
+          <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">User Agent</dt>
+          <dd class="mt-1 text-sm text-gray-900 dark:text-white sm:col-span-2 sm:mt-0 break-all"><%= submission.user_agent %></dd>
+        </div>
+      <% end %>
+    </dl>
+  </div>
+<% end %>

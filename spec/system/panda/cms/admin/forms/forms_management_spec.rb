@@ -203,6 +203,135 @@ RSpec.describe "Forms Management", type: :system do
     end
   end
 
+  describe "submission detail page" do
+    let!(:submission) do
+      contact_form.form_submissions.create!(
+        data: {"name" => "Alice Smith", "email" => "alice@example.com", "message" => "Hello, I have a question about your services."},
+        ip_address: "192.168.1.50",
+        user_agent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)"
+      )
+    end
+
+    it "navigates to submission detail by clicking a row" do
+      visit "/admin/cms/forms/#{contact_form.id}"
+
+      expect(page).to have_content("Alice Smith", wait: 10)
+      click_link "Alice Smith"
+
+      expect(page).to have_content("Submission Details", wait: 10)
+      expect(page).to have_content("Alice Smith")
+      expect(page).to have_content("alice@example.com")
+      expect(page).to have_content("Hello, I have a question about your services.")
+    end
+
+    it "shows all fields on the detail page" do
+      visit "/admin/cms/forms/#{contact_form.id}/submissions/#{submission.id}"
+
+      expect(page).to have_content("Your Name", wait: 10)
+      expect(page).to have_content("Alice Smith")
+      expect(page).to have_content("Email Address")
+      expect(page).to have_content("alice@example.com")
+      expect(page).to have_content("Message")
+      expect(page).to have_content("Hello, I have a question about your services.")
+    end
+
+    it "shows metadata on the detail page" do
+      visit "/admin/cms/forms/#{contact_form.id}/submissions/#{submission.id}"
+
+      expect(page).to have_content("Submission Metadata", wait: 10)
+      expect(page).to have_content("192.168.1.50")
+      expect(page).to have_content("Mozilla/5.0")
+    end
+
+    it "shows breadcrumb navigation" do
+      visit "/admin/cms/forms/#{contact_form.id}/submissions/#{submission.id}"
+
+      expect(page).to have_css("nav[aria-label='Breadcrumb']", wait: 10)
+      expect(page).to have_link("Forms")
+      expect(page).to have_link(contact_form.name)
+      expect(page).to have_content("Submission")
+    end
+
+    it "has a back to submissions button" do
+      visit "/admin/cms/forms/#{contact_form.id}/submissions/#{submission.id}"
+
+      expect(page).to have_link("Back To Submissions", wait: 10)
+      click_link "Back To Submissions"
+
+      expect(page).to have_content("#{contact_form.name} Submissions", wait: 10)
+    end
+
+    it "shows not provided for blank values" do
+      # Build submission without validation to test blank value display
+      submission_with_blanks = contact_form.form_submissions.build(
+        data: {"name" => "Bob", "email" => "bob@example.com", "message" => ""}
+      )
+      submission_with_blanks.save!(validate: false)
+
+      visit "/admin/cms/forms/#{contact_form.id}/submissions/#{submission_with_blanks.id}"
+
+      expect(page).to have_content("Not provided", wait: 10)
+    end
+  end
+
+  describe "column limiting with many fields" do
+    let!(:many_fields_form) do
+      form = Panda::CMS::Form.create!(name: "Detailed Survey", status: "active")
+      %w[name email phone company role].each_with_index do |field_name, i|
+        form.form_fields.create!(
+          name: field_name,
+          label: field_name.titleize,
+          field_type: (field_name == "email") ? "email" : "text",
+          position: i + 1,
+          active: true
+        )
+      end
+      form
+    end
+
+    let!(:survey_submission) do
+      many_fields_form.form_submissions.create!(
+        data: {
+          "name" => "Test User",
+          "email" => "test@example.com",
+          "phone" => "555-1234",
+          "company" => "Acme Corp",
+          "role" => "Developer"
+        }
+      )
+    end
+
+    it "only shows first 3 field columns plus Submitted in the table" do
+      visit "/admin/cms/forms/#{many_fields_form.id}"
+
+      # Should show first 3 fields as column headers
+      expect(page).to have_content("Name", wait: 10)
+      expect(page).to have_content("Email")
+      expect(page).to have_content("Phone")
+      expect(page).to have_content("Submitted")
+
+      # Should NOT show the 4th and 5th fields as column headers
+      header_group = page.find(".table-header-group")
+      expect(header_group).not_to have_content("Company")
+      expect(header_group).not_to have_content("Role")
+    end
+
+    it "shows all fields on the detail page" do
+      visit "/admin/cms/forms/#{many_fields_form.id}/submissions/#{survey_submission.id}"
+
+      expect(page).to have_content("Name", wait: 10)
+      expect(page).to have_content("Test User")
+      expect(page).to have_content("Email")
+      expect(page).to have_content("test@example.com")
+      expect(page).to have_content("Phone")
+      expect(page).to have_content("555-1234")
+      expect(page).to have_content("Company")
+      expect(page).to have_content("Acme Corp")
+      expect(page).to have_content("Role")
+      expect(page).to have_content("Developer")
+    end
+  end
+
   describe "deleting forms" do
     it "has delete links for each form" do
       visit "/admin/cms/forms"

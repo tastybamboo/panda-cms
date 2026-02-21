@@ -10,7 +10,9 @@ Panda::CMS::Engine.routes.draw do
 
     namespace admin_path.delete_prefix("/").to_sym, path: "#{admin_path}/cms", as: :admin_cms, module: :admin do
       resources :files
-      resources :forms
+      resources :forms do
+        resources :form_submissions, only: [:show], as: :submissions, path: "submissions"
+      end
       post "link_metadata", to: "link_metadata#create", as: :link_metadata
       resources :menus do
         post :toggle_pin, on: :member
