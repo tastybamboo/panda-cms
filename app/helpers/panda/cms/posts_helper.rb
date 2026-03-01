@@ -13,13 +13,13 @@ module Panda
           Panda::CMS::Post
             .where(status: :published)
             .select(
-              Arel.sql("DATE_TRUNC('month', published_at) as month"),
+              Arel.sql("DATE_TRUNC('month', published_at) as month_date"),
               Arel.sql("COUNT(*) as post_count")
             )
             .group(Arel.sql("DATE_TRUNC('month', published_at)"))
             .order(Arel.sql("DATE_TRUNC('month', published_at) DESC"))
             .map do |result|
-              date = result.month
+              date = result.month_date
               {
                 year: date.strftime("%Y"),
                 month: date.strftime("%m"),
