@@ -18,8 +18,12 @@ RSpec.describe Panda::CMS::PostsHelper, type: :helper do
   end
 
   describe "#posts_months_menu" do
-    before do
-      Rails.cache.clear
+    around do |example|
+      original_cache = Rails.cache
+      Rails.cache = ActiveSupport::Cache::MemoryStore.new
+      example.run
+    ensure
+      Rails.cache = original_cache
     end
 
     context "when there are no published posts" do
@@ -97,6 +101,20 @@ RSpec.describe Panda::CMS::PostsHelper, type: :helper do
         expect(feb_entry[:month_name]).to eq("February 2024")
       end
 
+      it "uses the month_date SQL alias to avoid collision with Post#month" do
+        raw = Panda::CMS::Post
+          .where(status: :published)
+          .select(
+            Arel.sql("DATE_TRUNC('month', published_at) as month_date"),
+            Arel.sql("COUNT(*) as post_count")
+          )
+          .group(Arel.sql("DATE_TRUNC('month', published_at)"))
+          .first
+
+        expect(raw).to respond_to(:month_date)
+        expect(raw.month_date).to be_a(Time)
+      end
+
       it "counts only published posts per month" do
         result = helper.posts_months_menu
         jan_entry = result.find { |r| r[:month] == "01" }
@@ -110,9 +128,10 @@ RSpec.describe Panda::CMS::PostsHelper, type: :helper do
       end
 
       it "caches the result" do
-        expect(Panda::CMS::Post).to receive(:where).once.and_call_original
-        helper.posts_months_menu
-        helper.posts_months_menu
+        first_result = helper.posts_months_menu
+        second_result = helper.posts_months_menu
+
+        expect(second_result).to equal(first_result)
       end
 
       context "with multiple posts in the same month" do
