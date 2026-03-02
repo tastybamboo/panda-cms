@@ -45,7 +45,7 @@ Panda CMS is a Rails engine that provides content management functionality for R
 - **Gemfile reference**: Use `gem "panda-core", github: "tastybamboo/panda-core", branch: "main"`
 - **Local development override**: Use `bundle config local.panda-core /absolute/path/to/panda-core`
   - To remove: `bundle config --delete local.panda-core`
-  - Current setting: Already configured to use `/Users/james/Projects/panda/core`
+  - Example setting: `bundle config local.panda-core /path/to/panda/core`
 - **Important**: The GitHub reference in Gemfile ensures CI can build without local paths
 
 ## Development Commands
