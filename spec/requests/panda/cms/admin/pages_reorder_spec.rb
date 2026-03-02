@@ -67,6 +67,50 @@ RSpec.describe "Admin Pages - Reorder", type: :request do
       expect(JSON.parse(response.body)["error"]).to eq("Invalid position")
     end
 
+    it "rejects reordering an archived page" do
+      about_page.update!(status: :archived)
+
+      post "/admin/cms/pages/#{about_page.id}/reorder", params: {
+        target_id: services_page.id,
+        position: "before"
+      }, as: :json
+
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(JSON.parse(response.body)["error"]).to eq("Cannot reorder archived pages")
+    end
+
+    it "rejects reordering when target is an archived page" do
+      services_page.update!(status: :archived)
+
+      post "/admin/cms/pages/#{about_page.id}/reorder", params: {
+        target_id: services_page.id,
+        position: "before"
+      }, as: :json
+
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(JSON.parse(response.body)["error"]).to eq("Cannot reorder archived pages")
+    end
+
+    it "rejects reordering the root page" do
+      post "/admin/cms/pages/#{homepage.id}/reorder", params: {
+        target_id: about_page.id,
+        position: "before"
+      }, as: :json
+
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(JSON.parse(response.body)["error"]).to eq("Cannot reorder root page")
+    end
+
+    it "rejects reordering when target is the root page" do
+      post "/admin/cms/pages/#{about_page.id}/reorder", params: {
+        target_id: homepage.id,
+        position: "before"
+      }, as: :json
+
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(JSON.parse(response.body)["error"]).to eq("Cannot reorder root page")
+    end
+
     it "regenerates auto menus after reordering" do
       auto_menu = panda_cms_menus(:auto_menu)
       expect(auto_menu.start_page).to eq(homepage)
