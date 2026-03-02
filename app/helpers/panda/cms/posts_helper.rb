@@ -8,6 +8,14 @@ module Panda
         CGI.unescape(post.slug)
       end
 
+      def post_show_path(post)
+        if post.year && post.month
+          post_with_date_path(post.route_params)
+        else
+          post_path(slug: post.to_param)
+        end
+      end
+
       def posts_months_menu
         Rails.cache.fetch("panda_cms_posts_months_menu", expires_in: 1.hour) do
           Panda::CMS::Post
