@@ -7,7 +7,7 @@ RSpec.describe Panda::CMS::PostsHelper, type: :helper do
 
   describe "#post_show_path" do
     before do
-      helper.class.include Panda::CMS::Engine.routes.url_helpers
+      helper.extend Panda::CMS::Engine.routes.url_helpers
     end
 
     it "returns date-based path for posts with year and month in slug" do

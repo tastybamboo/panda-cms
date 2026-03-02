@@ -12,7 +12,7 @@ module Panda
         if post.year && post.month
           post_with_date_path(post.route_params)
         else
-          post_path(slug: post.to_param)
+          post_path(post.route_params)
         end
       end
 
