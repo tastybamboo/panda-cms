@@ -105,12 +105,14 @@ module Panda
         # From here on, we rely on Current.page being present for depth-based logic
         return true if Panda::CMS::Current.page.nil?
 
-        # Skip if we're on the top menu item and level > 1
-        return true if Panda::CMS::Current.page == @menu_item.page && level > 1
+        # Only show items whose parent page is on the ancestry path of the current page.
+        # This expands only the active branch: children of the current page and its ancestors
+        # are shown, while children of non-ancestor siblings remain collapsed.
+        !current_page_ancestor_ids.include?(submenu_item.page.parent_id)
+      end
 
-        # Skip if submenu page is deeper than current page and not an ancestor
-        submenu_item.page.depth.to_i > Panda::CMS::Current.page.depth.to_i &&
-          !submenu_item.page.is_descendant_of?(Panda::CMS::Current.page)
+      def current_page_ancestor_ids
+        @current_page_ancestor_ids ||= Panda::CMS::Current.page.self_and_ancestors.pluck(:id).to_set
       end
 
       def menu_item_class(submenu_item)
