@@ -96,6 +96,70 @@ RSpec.describe "Admin Menus - Reordering", type: :request do
     end
   end
 
+  describe "PATCH /admin/cms/menus/:id - ordering change" do
+    it "applies alphabetical ordering to static menu items" do
+      # Original order: Home, About, Services
+      patch "/admin/cms/menus/#{main_menu.id}", params: {
+        menu: {
+          name: main_menu.name,
+          kind: main_menu.kind,
+          ordering: "alphabetical",
+          menu_items_attributes: {
+            "0" => {id: home_item.id, text: "Home", panda_cms_page_id: home_item.panda_cms_page_id, position: "0"},
+            "1" => {id: about_item.id, text: "About", panda_cms_page_id: about_item.panda_cms_page_id, position: "1"},
+            "2" => {id: services_item.id, text: "Services", panda_cms_page_id: services_item.panda_cms_page_id, position: "2"}
+          }
+        }
+      }
+
+      expect(response).to redirect_to("/admin/cms/menus")
+
+      reordered = main_menu.menu_items.reload.order(:lft).pluck(:text)
+      expect(reordered).to eq(["About", "Home", "Services"])
+    end
+
+    it "applies reverse alphabetical ordering to static menu items" do
+      patch "/admin/cms/menus/#{main_menu.id}", params: {
+        menu: {
+          name: main_menu.name,
+          kind: main_menu.kind,
+          ordering: "reverse_alphabetical",
+          menu_items_attributes: {
+            "0" => {id: home_item.id, text: "Home", panda_cms_page_id: home_item.panda_cms_page_id, position: "0"},
+            "1" => {id: about_item.id, text: "About", panda_cms_page_id: about_item.panda_cms_page_id, position: "1"},
+            "2" => {id: services_item.id, text: "Services", panda_cms_page_id: services_item.panda_cms_page_id, position: "2"}
+          }
+        }
+      }
+
+      expect(response).to redirect_to("/admin/cms/menus")
+
+      reordered = main_menu.menu_items.reload.order(:lft).pluck(:text)
+      expect(reordered).to eq(["Services", "Home", "About"])
+    end
+
+    it "uses manual reordering when ordering is default" do
+      # Submit with positions reordered: Services, Home, About
+      patch "/admin/cms/menus/#{main_menu.id}", params: {
+        menu: {
+          name: main_menu.name,
+          kind: main_menu.kind,
+          ordering: "default",
+          menu_items_attributes: {
+            "0" => {id: services_item.id, text: "Services", panda_cms_page_id: services_item.panda_cms_page_id, position: "0"},
+            "1" => {id: home_item.id, text: "Home", panda_cms_page_id: home_item.panda_cms_page_id, position: "1"},
+            "2" => {id: about_item.id, text: "About", panda_cms_page_id: about_item.panda_cms_page_id, position: "2"}
+          }
+        }
+      }
+
+      expect(response).to redirect_to("/admin/cms/menus")
+
+      reordered = main_menu.menu_items.reload.order(:lft).pluck(:text)
+      expect(reordered).to eq(["Services", "Home", "About"])
+    end
+  end
+
   describe "POST /admin/cms/menus - create with reordering" do
     it "creates a menu and reorders items by position" do
       homepage = panda_cms_pages(:homepage)

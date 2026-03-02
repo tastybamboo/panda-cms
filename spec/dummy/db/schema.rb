@@ -18,7 +18,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_26_000001) do
   # Note that some types may not work with other database engines. Be careful if changing database.
   create_enum "panda_cms_block_kind", ["plain_text", "rich_text", "image", "video", "audio", "file", "code", "iframe", "quote", "list", "table", "form", "helpdesk_form"]
   create_enum "panda_cms_menu_kind", ["static", "auto"]
-  create_enum "panda_cms_menu_ordering", ["default", "alphabetical"]
+  create_enum "panda_cms_menu_ordering", ["default", "alphabetical", "page_order", "reverse_alphabetical"]
   create_enum "panda_cms_og_type", ["website", "article", "profile", "video", "book"]
   create_enum "panda_cms_page_status", ["published", "unlisted", "hidden", "archived", "pending_review"]
   create_enum "panda_cms_post_status", ["published", "unlisted", "hidden", "archived", "pending_review"]

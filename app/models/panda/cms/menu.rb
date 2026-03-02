@@ -23,7 +23,7 @@ module Panda
 
       validates :name, presence: true, uniqueness: {case_sensitive: false}
       validates :kind, presence: true, inclusion: {in: %w[static auto]}
-      validates :ordering, inclusion: {in: %w[default alphabetical]}
+      validates :ordering, inclusion: {in: %w[default alphabetical reverse_alphabetical page_order]}
       validate :validate_start_page
 
       def generate_auto_menu_items
@@ -43,6 +43,29 @@ module Panda
         # Uses update_column to avoid re-triggering after_save callbacks.
         update_column(:updated_at, Time.current)
         clear_menu_cache
+      end
+
+      def apply_ordering_to_static_items!
+        return if kind != "static" || ordering == "default"
+
+        items = menu_items.reload.to_a
+        return if items.size < 2
+
+        sorted = case ordering
+        when "alphabetical"
+          items.sort_by { |item| item.text.downcase }
+        when "reverse_alphabetical"
+          items.sort_by { |item| item.text.downcase }.reverse
+        when "page_order"
+          # Items with pages sort by page tree position (lft); items without pages go to the end
+          items.sort_by { |item| item.page&.lft || Float::INFINITY }
+        else
+          return
+        end
+
+        sorted.each_cons(2) do |left_item, right_item|
+          right_item.reload.move_to_right_of(left_item.reload)
+        end
       end
 
       def page_pinned?(page_id)
@@ -75,6 +98,10 @@ module Panda
         ordered = case ordering
         when "alphabetical"
           pages.reorder(:title)
+        when "reverse_alphabetical"
+          pages.reorder(title: :desc)
+        when "page_order"
+          pages # Page order uses nested set order (lft), same as default
         else
           pages # Default uses nested set order (lft)
         end

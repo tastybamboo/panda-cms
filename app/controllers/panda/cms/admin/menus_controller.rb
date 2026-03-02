@@ -43,7 +43,11 @@ module Panda
         # @type PATCH/PUT
         def update
           if @menu.update(menu_params_with_defaults)
-            reorder_menu_items(@menu)
+            if @menu.ordering == "default"
+              reorder_menu_items(@menu)
+            else
+              @menu.apply_ordering_to_static_items!
+            end
             redirect_to admin_cms_menus_path, notice: "Menu was successfully updated.", status: :see_other
           else
             render :edit, status: :unprocessable_entity
@@ -75,7 +79,7 @@ module Panda
         end
 
         def menu_params
-          params.require(:menu).permit(:name, :kind, :start_page_id, :promote_active_item, menu_items_attributes: [:id, :text, :external_url, :panda_cms_page_id, :position, :_destroy])
+          params.require(:menu).permit(:name, :kind, :start_page_id, :promote_active_item, :ordering, menu_items_attributes: [:id, :text, :external_url, :panda_cms_page_id, :position, :_destroy])
         end
 
         def menu_params_with_defaults
