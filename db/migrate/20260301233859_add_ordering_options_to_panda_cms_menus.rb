@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class AddOrderingOptionsToPandaCmsMenus < ActiveRecord::Migration[7.1]
+class AddOrderingOptionsToPandaCmsMenus < ActiveRecord::Migration[8.1]
   disable_ddl_transaction!
 
   def up

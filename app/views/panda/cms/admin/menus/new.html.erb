@@ -33,7 +33,7 @@
     <div data-menu-form-target="menuItemsSection">
       <%= render Panda::Core::Admin::PanelComponent.new do |panel| %>
         <% panel.with_heading_slot { "Menu Items" } %>
-        <div data-controller="nested-form sortable-list" data-nested-form-wrapper-selector-value=".nested-form-wrapper">
+        <div data-controller="nested-form sortable-list" data-nested-form-wrapper-selector-value=".nested-form-wrapper" data-menu-form-target="dragHandles">
           <template data-nested-form-target="template">
             <%= f.fields_for :menu_items, Panda::CMS::MenuItem.new, child_index: "NEW_RECORD" do |item_form| %>
               <%= render "menu_item_fields", form: item_form %>
