@@ -282,13 +282,11 @@ export default class extends Controller {
       }
 
       // Destroy the editor before form submission so its document-level
-      // click handler is removed. Without this, the *original* trusted click
+      // click handler is removed. Without this, the original trusted click
       // can keep bubbling after `submit()` returns, reach `document`, and
       // trigger EditorJS's `documentClicked`, which then tries to access
       // toolbar DOM elements that Turbo has already removed — causing
-      // "Cannot read properties of undefined (reading 'classList')". The
-      // synthetic click we dispatch below is non-trusted and ignored by
-      // `documentClicked` in the vendored EditorJS build.
+      // "Cannot read properties of undefined (reading 'classList')".
       try {
         this.editor.destroy();
       } catch (e) {
@@ -297,20 +295,13 @@ export default class extends Controller {
       this.editor = null;
     }
 
-    // Now trigger the normal form submission (this will let Rails/Turbo handle it properly)
+    // Submit the form directly via requestSubmit, which fires Turbo's
+    // submit handlers and honours data-disable-with on the button.
+    // We must NOT dispatch a synthetic click because Stimulus's
+    // MutationObserver processes attribute removals asynchronously,
+    // so removing data-action doesn't unbind in time to prevent recursion.
     if (form) {
-      // Remove our custom action to prevent infinite loop
-      submitButton.removeAttribute('data-action');
-
-      // Create a new click event that will trigger the normal form submission
-      const clickEvent = new MouseEvent('click', {
-        bubbles: true,
-        cancelable: true,
-        view: window
-      });
-
-      // Dispatch the click event, which will trigger normal Rails form submission
-      submitButton.dispatchEvent(clickEvent);
+      form.requestSubmit(submitButton);
     }
   }
 

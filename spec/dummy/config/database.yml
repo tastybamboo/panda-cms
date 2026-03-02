@@ -24,6 +24,6 @@ test:
   encoding: unicode
   host: localhost
   username: postgres
-  password:
+  password: postgres
   database: panda_cms_dummy_test
   pool: 5
