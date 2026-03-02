@@ -6,7 +6,7 @@
   <% if submissions.any? %>
     <%= render Panda::Core::Admin::TableComponent.new(term: "submission", rows: submissions) do |table| %>
       <% display_fields.each_with_index do |field_info, index| %>
-        <% field, title, field_type = field_info %>
+        <% field, title, field_type, _display_on_summary = field_info %>
         <% table.column(title) do |submission| %>
           <% value = submission.data[field] %>
           <% if index == 0 %>

@@ -332,6 +332,60 @@ RSpec.describe "Forms Management", type: :system do
     end
   end
 
+  describe "display_on_summary field selection" do
+    let!(:summary_form) do
+      form = Panda::CMS::Form.create!(name: "Summary Test Form", status: "active")
+      %w[name email phone company role].each_with_index do |field_name, i|
+        form.form_fields.create!(
+          name: field_name,
+          label: field_name.titleize,
+          field_type: (field_name == "email") ? "email" : "text",
+          position: i + 1,
+          active: true,
+          display_on_summary: %w[email role].include?(field_name)
+        )
+      end
+      form
+    end
+
+    let!(:summary_submission) do
+      summary_form.form_submissions.create!(
+        data: {
+          "name" => "Test User",
+          "email" => "test@example.com",
+          "phone" => "555-1234",
+          "company" => "Acme Corp",
+          "role" => "Developer"
+        }
+      )
+    end
+
+    it "only shows fields marked display_on_summary as column headers" do
+      visit "/admin/cms/forms/#{summary_form.id}"
+
+      header_group = page.find(".table-header-group", wait: 10)
+      expect(header_group).to have_content("Email")
+      expect(header_group).to have_content("Role")
+
+      expect(header_group).not_to have_content("Name")
+      expect(header_group).not_to have_content("Phone")
+      expect(header_group).not_to have_content("Company")
+    end
+
+    it "shows values for marked fields in submission rows" do
+      visit "/admin/cms/forms/#{summary_form.id}"
+
+      expect(page).to have_content("test@example.com", wait: 10)
+      expect(page).to have_content("Developer")
+    end
+
+    it "shows Show on summary checkbox in form field editor" do
+      visit "/admin/cms/forms/#{summary_form.id}/edit"
+
+      expect(page).to have_field("Show on summary", wait: 10)
+    end
+  end
+
   describe "deleting forms" do
     it "has delete links for each form" do
       visit "/admin/cms/forms"
