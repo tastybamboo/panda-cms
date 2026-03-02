@@ -6,6 +6,8 @@ module Panda
   module CMS
     module Admin
       class PostsController < ::Panda::CMS::Admin::BaseController
+        helper Panda::CMS::PostsHelper
+
         before_action :set_initial_breadcrumb, only: %i[index edit new create update]
 
         # Get all posts

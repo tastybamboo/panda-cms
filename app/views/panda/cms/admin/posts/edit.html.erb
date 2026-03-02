@@ -3,7 +3,7 @@
     <% if post.respond_to?(:content_versions) %>
       <% heading.with_button(action: :secondary, text: "Version History", href: admin_cms_post_versions_path(post), icon: "clock-rotate-left") %>
     <% end %>
-    <% heading.with_button(action: :view, text: "View Post", href: post_path(post.admin_param)) %>
+    <% heading.with_button(action: :view, text: "View Post", href: post_show_path(post)) %>
   <% end %>
 
   <%= render "form", post: post, url: admin_cms_post_path(post.admin_param), method: :patch %>

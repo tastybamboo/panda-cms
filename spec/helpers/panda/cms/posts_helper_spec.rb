@@ -5,6 +5,24 @@ require "rails_helper"
 RSpec.describe Panda::CMS::PostsHelper, type: :helper do
   let(:admin_user) { create_admin_user }
 
+  describe "#post_show_path" do
+    before do
+      helper.extend Panda::CMS::Engine.routes.url_helpers
+    end
+
+    it "returns date-based path for posts with year and month in slug" do
+      post = Panda::CMS::Post.new(slug: "/2024/01/hello-world")
+      prefix = Panda::CMS.config.posts[:prefix]
+      expect(helper.post_show_path(post)).to eq("/#{prefix}/2024/01/hello-world")
+    end
+
+    it "returns simple path for posts without date segments" do
+      post = Panda::CMS::Post.new(slug: "/hello-world")
+      prefix = Panda::CMS.config.posts[:prefix]
+      expect(helper.post_show_path(post)).to eq("/#{prefix}/hello-world")
+    end
+  end
+
   describe "#display_post_path" do
     it "unescapes the post slug for display" do
       post = Panda::CMS::Post.new(slug: "/2024/01/hello-world")
