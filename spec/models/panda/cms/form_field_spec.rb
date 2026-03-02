@@ -245,5 +245,10 @@ RSpec.describe Panda::CMS::FormField, type: :model do
       field = described_class.create!(form: form, name: "test", label: "Test", field_type: "text")
       expect(field.active).to be true
     end
+
+    it "defaults display_on_summary to false" do
+      field = described_class.create!(form: form, name: "test", label: "Test", field_type: "text")
+      expect(field.display_on_summary).to be false
+    end
   end
 end
