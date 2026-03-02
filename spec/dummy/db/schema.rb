@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_13_000001) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_26_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -18,7 +18,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_13_000001) do
   # Note that some types may not work with other database engines. Be careful if changing database.
   create_enum "panda_cms_block_kind", ["plain_text", "rich_text", "image", "video", "audio", "file", "code", "iframe", "quote", "list", "table", "form", "helpdesk_form"]
   create_enum "panda_cms_menu_kind", ["static", "auto"]
-  create_enum "panda_cms_menu_ordering", ["default", "alphabetical"]
+  create_enum "panda_cms_menu_ordering", ["default", "alphabetical", "page_order", "reverse_alphabetical"]
   create_enum "panda_cms_og_type", ["website", "article", "profile", "video", "book"]
   create_enum "panda_cms_page_status", ["published", "unlisted", "hidden", "archived", "pending_review"]
   create_enum "panda_cms_post_status", ["published", "unlisted", "hidden", "archived", "pending_review"]
@@ -100,6 +100,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_13_000001) do
   create_table "panda_cms_form_fields", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.boolean "active", default: true
     t.datetime "created_at", null: false
+    t.boolean "display_on_summary", default: false, null: false
     t.string "field_type", null: false
     t.uuid "form_id", null: false
     t.text "hint"

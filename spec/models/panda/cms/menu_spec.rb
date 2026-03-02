@@ -82,6 +82,16 @@ RSpec.describe Panda::CMS::Menu, type: :model do
         expect(menu).to be_valid
       end
 
+      it "is valid with 'reverse_alphabetical' ordering" do
+        menu = Panda::CMS::Menu.new(name: "Test Menu", kind: "static", ordering: "reverse_alphabetical")
+        expect(menu).to be_valid
+      end
+
+      it "is valid with 'page_order' ordering" do
+        menu = Panda::CMS::Menu.new(name: "Test Menu", kind: "static", ordering: "page_order")
+        expect(menu).to be_valid
+      end
+
       it "is invalid with unknown ordering" do
         menu = Panda::CMS::Menu.new(name: "Test Menu", kind: "static", ordering: "invalid")
         expect(menu).not_to be_valid
@@ -420,6 +430,56 @@ RSpec.describe Panda::CMS::Menu, type: :model do
         expect(titles.first).to eq("Gamma")
         expect(menu.reload.pinned_page_ids).to eq([page_c.id.to_s])
       end
+    end
+  end
+
+  describe "#apply_ordering_to_static_items!" do
+    it "does nothing for auto menus" do
+      expect { auto_menu.apply_ordering_to_static_items! }.not_to change { auto_menu.menu_items.reload.order(:lft).pluck(:text) }
+    end
+
+    it "does nothing when ordering is default" do
+      static_menu.update_column(:ordering, "default")
+      expect { static_menu.apply_ordering_to_static_items! }.not_to change { static_menu.menu_items.reload.order(:lft).pluck(:text) }
+    end
+
+    context "alphabetical ordering" do
+      it "sorts menu items alphabetically by text" do
+        # Main menu items: Home(lft:1), About(lft:3), Services(lft:5)
+        static_menu.update_column(:ordering, "alphabetical")
+        static_menu.apply_ordering_to_static_items!
+
+        ordered = static_menu.menu_items.reload.order(:lft).pluck(:text)
+        expect(ordered).to eq(["About", "Home", "Services"])
+      end
+    end
+
+    context "reverse_alphabetical ordering" do
+      it "sorts menu items reverse-alphabetically by text" do
+        static_menu.update_column(:ordering, "reverse_alphabetical")
+        static_menu.apply_ordering_to_static_items!
+
+        ordered = static_menu.menu_items.reload.order(:lft).pluck(:text)
+        expect(ordered).to eq(["Services", "Home", "About"])
+      end
+    end
+
+    context "page_order ordering" do
+      it "sorts menu items by their page's lft position" do
+        # Pages: Homepage(lft:1), About(lft:2), Services(lft:6)
+        # Menu items: Home->Homepage, About->About page, Services->Services page
+        static_menu.update_column(:ordering, "page_order")
+        static_menu.apply_ordering_to_static_items!
+
+        ordered = static_menu.menu_items.reload.order(:lft).pluck(:text)
+        expect(ordered).to eq(["Home", "About", "Services"])
+      end
+    end
+
+    it "handles menus with fewer than 2 items" do
+      menu = panda_cms_menus(:footer_menu) # has 1 item (external_link)
+      menu.update_column(:ordering, "alphabetical")
+      expect { menu.apply_ordering_to_static_items! }.not_to raise_error
     end
   end
 

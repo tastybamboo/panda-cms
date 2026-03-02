@@ -19,6 +19,7 @@ Panda::CMS::Engine.routes.draw do
       end
       resources :pages do
         resources :block_contents, only: %i[update]
+        post :reorder, on: :member
       end
       resources :posts
       resources :redirects, except: :show

@@ -15,13 +15,27 @@
         </div>
 
         <%= f.check_box :promote_active_item, label: "Promote active item to top" %>
+
+        <% if @menu.kind == "static" %>
+          <div data-menu-form-target="orderingField">
+            <%= f.select :ordering,
+              options_for_select([
+                ["Default (Manual Order)", "default"],
+                ["A-Z", "alphabetical"],
+                ["Z-A", "reverse_alphabetical"],
+                ["Page Order", "page_order"]
+              ], selected: @menu.ordering),
+              {},
+              { "data-action": "change->menu-form#orderingChanged" } %>
+          </div>
+        <% end %>
       </div>
     <% end %>
 
     <% if @menu.kind == "static" %>
       <%= render Panda::Core::Admin::PanelComponent.new do |panel| %>
         <% panel.with_heading_slot { "Menu Items" } %>
-        <div data-controller="nested-form sortable-list" data-nested-form-wrapper-selector-value=".nested-form-wrapper">
+        <div data-controller="nested-form sortable-list" data-nested-form-wrapper-selector-value=".nested-form-wrapper" data-menu-form-target="dragHandles">
           <template data-nested-form-target="template">
             <%= f.fields_for :menu_items, Panda::CMS::MenuItem.new, child_index: "NEW_RECORD" do |item_form| %>
               <%= render "menu_item_fields", form: item_form %>

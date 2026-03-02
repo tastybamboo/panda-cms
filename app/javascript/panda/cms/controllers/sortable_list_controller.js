@@ -39,7 +39,8 @@ export default class extends Controller {
     const handle = item.querySelector("[data-sortable-handle]")
     if (!handle) return
 
-    const onMouseDown = () => {
+    const onMouseDown = (e) => {
+      e.stopPropagation()
       item.setAttribute("draggable", "true")
       document.addEventListener("mouseup", () => {
         if (!this.dragItem) item.removeAttribute("draggable")
