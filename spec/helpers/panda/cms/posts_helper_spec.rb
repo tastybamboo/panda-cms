@@ -109,6 +109,7 @@ RSpec.describe Panda::CMS::PostsHelper, type: :helper do
             Arel.sql("COUNT(*) as post_count")
           )
           .group(Arel.sql("DATE_TRUNC('month', published_at)"))
+          .reorder(Arel.sql("DATE_TRUNC('month', published_at) DESC"))
           .first
 
         expect(raw).to respond_to(:month_date)
@@ -131,7 +132,8 @@ RSpec.describe Panda::CMS::PostsHelper, type: :helper do
         first_result = helper.posts_months_menu
         second_result = helper.posts_months_menu
 
-        expect(second_result).to equal(first_result)
+        expect(second_result).to eq(first_result)
+        expect(Rails.cache.exist?("panda_cms_posts_months_menu")).to be true
       end
 
       context "with multiple posts in the same month" do
