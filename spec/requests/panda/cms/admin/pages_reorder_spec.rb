@@ -71,12 +71,17 @@ RSpec.describe "Admin Pages - Reorder", type: :request do
       auto_menu = panda_cms_menus(:auto_menu)
       expect(auto_menu.start_page).to eq(homepage)
 
+      original_updated_at = auto_menu.updated_at
+
       post "/admin/cms/pages/#{services_page.id}/reorder", params: {
         target_id: about_page.id,
         position: "before"
       }, as: :json
 
       expect(response).to have_http_status(:ok)
+
+      auto_menu.reload
+      expect(auto_menu.updated_at).to be > original_updated_at
     end
   end
 end

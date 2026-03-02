@@ -7,15 +7,10 @@ export default class extends Controller {
   connect() {
     this.dragItem = null
     this.dropIndicator = null
-    this.setupDragEvents()
   }
 
   disconnect() {
     this.removeDropIndicator()
-  }
-
-  setupDragEvents() {
-    this.rowTargets.forEach(row => this.setupRowDrag(row))
   }
 
   rowTargetConnected(row) {
@@ -104,14 +99,7 @@ export default class extends Controller {
 
     this.removeDropIndicator()
 
-    // Move in DOM immediately for visual feedback
-    if (position === "before") {
-      targetTableRow.parentNode.insertBefore(this.dragTableRow, targetTableRow)
-    } else {
-      targetTableRow.parentNode.insertBefore(this.dragTableRow, targetTableRow.nextSibling)
-    }
-
-    // Send to server
+    // Send to server, then reload to reflect correct tree order (including descendants)
     const csrfToken = document.querySelector("meta[name='csrf-token']")?.content
     fetch(url, {
       method: "POST",
@@ -121,11 +109,8 @@ export default class extends Controller {
         "Accept": "application/json"
       },
       body: JSON.stringify({ target_id: targetId, position: position })
-    }).then(response => {
-      if (!response.ok) {
-        // Reload to restore correct order on failure
-        window.location.reload()
-      }
+    }).then(() => {
+      window.location.reload()
     }).catch(() => {
       window.location.reload()
     })

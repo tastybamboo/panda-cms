@@ -48,7 +48,7 @@ module Panda
       def apply_ordering_to_static_items!
         return if kind != "static" || ordering == "default"
 
-        items = menu_items.reload.to_a
+        items = menu_items.includes(:page).reload.to_a
         return if items.size < 2
 
         sorted = case ordering

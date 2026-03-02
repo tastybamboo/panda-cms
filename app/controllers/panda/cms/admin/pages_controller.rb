@@ -69,6 +69,14 @@ module Panda
         def reorder
           target = Panda::CMS::Page.find(params[:target_id])
 
+          if page.archived? || target.archived?
+            return render json: {error: "Cannot reorder archived pages"}, status: :unprocessable_entity
+          end
+
+          if page.depth == 0 || target.depth == 0
+            return render json: {error: "Cannot reorder root page"}, status: :unprocessable_entity
+          end
+
           unless page.parent_id == target.parent_id
             return render json: {error: "Can only reorder siblings"}, status: :unprocessable_entity
           end
