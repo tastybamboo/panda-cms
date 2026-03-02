@@ -10,7 +10,7 @@ For comprehensive developer documentation, see the `docs/` directory which conta
 
 Panda CMS is a Rails engine that provides content management functionality for Rails applications. It's built as a gem and follows the Rails Engine architecture pattern.
 
-**Important**: This project depends on `panda-core` gem which is located at `../core` in development. The Gemfile uses a local path reference for development and testing.
+**Important**: This project depends on the `panda-core` gem. The Gemfile references `panda-core` from GitHub, and for local monorepo development the source lives at `../core` and is typically wired in via `bundle config local.panda-core` (see the "Panda-Core Gem Dependency" section below).
 
 ## Architecture
 
