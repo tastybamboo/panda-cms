@@ -5,10 +5,10 @@
 
   <% if root_page %>
     <% page_rows = show_archived ? root_page.self_and_descendants : root_page.self_and_descendants.not_archived %>
-    <div data-controller="tree" data-tree-target="container" style="opacity: 0; transition: opacity 0.2s;">
+    <div data-controller="tree sortable-tree" data-tree-target="container" data-sortable-tree-reorder-url-value="<%= reorder_admin_cms_page_path("__PAGE_ID__") %>" style="opacity: 0; transition: opacity 0.2s;">
       <%= render Panda::Core::Admin::TableComponent.new(term: "page", rows: page_rows) do |table| %>
         <% table.column("Name") do |page| %>
-          <div class="flex flex-col <%= "opacity-50" if page.archived? %>" data-tree-target="row" data-page-id="<%= page.id %>" data-level="<%= page.level %>" data-parent-id="<%= page.parent_id %>">
+          <div class="flex flex-col <%= "opacity-50" if page.archived? %>" data-tree-target="row" data-sortable-tree-target="row" data-page-id="<%= page.id %>" data-level="<%= page.level %>" data-parent-id="<%= page.parent_id %>">
             <%# Add indentation for nested levels %>
             <% indent_class = case page.level
                when 0 then ""
@@ -20,6 +20,14 @@
                else "pl-28"
                end %>
             <div class="flex items-center gap-2 <%= indent_class %>">
+              <% if page.level > 0 && !page.archived? %>
+                <div class="flex items-center justify-center cursor-grab text-gray-300 hover:text-gray-500"
+                     data-sortable-tree-handle>
+                  <i class="fa-solid fa-grip-vertical text-xs"></i>
+                </div>
+              <% else %>
+                <div class="w-4"></div>
+              <% end %>
               <%# Chevron/icon section - all use w-4 for consistent spacing %>
               <div class="w-4 flex items-center justify-center">
                 <% if page.children_count > 0 %>

@@ -15,6 +15,18 @@
         </div>
 
         <%= f.check_box :promote_active_item, label: "Promote active item to top" %>
+
+        <div data-menu-form-target="orderingField">
+          <%= f.select :ordering,
+            options_for_select([
+              ["Default (Manual Order)", "default"],
+              ["A-Z", "alphabetical"],
+              ["Z-A", "reverse_alphabetical"],
+              ["Page Order", "page_order"]
+            ], selected: menu.ordering || "default"),
+            {},
+            { "data-action": "change->menu-form#orderingChanged" } %>
+        </div>
       </div>
     <% end %>
 

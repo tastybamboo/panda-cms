@@ -1,7 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["startPageField", "menuItemsSection"]
+  static targets = ["startPageField", "menuItemsSection", "orderingField", "dragHandles"]
 
   connect() {
     console.log("Menu form controller connected")
@@ -12,6 +12,10 @@ export default class extends Controller {
   kindChanged(event) {
     console.log("[menu-form] kindChanged called", event)
     this.updateFieldsVisibility()
+  }
+
+  orderingChanged() {
+    this.updateDragHandleVisibility()
   }
 
   updateFieldsVisibility() {
@@ -28,7 +32,7 @@ export default class extends Controller {
     console.log("[menu-form] selectedKind:", selectedKind)
 
     if (selectedKind === "auto") {
-      // Show start page field, hide menu items section
+      // Show start page field, hide menu items section and ordering
       console.log("[menu-form] AUTO - Showing start page field")
       if (this.hasStartPageFieldTarget) {
         console.log("[menu-form] Removing hidden from start page field")
@@ -39,8 +43,11 @@ export default class extends Controller {
       if (this.hasMenuItemsSectionTarget) {
         this.menuItemsSectionTarget.classList.add("hidden")
       }
+      if (this.hasOrderingFieldTarget) {
+        this.orderingFieldTarget.classList.add("hidden")
+      }
     } else {
-      // Hide start page field, show menu items section
+      // Hide start page field, show menu items section and ordering
       console.log("[menu-form] STATIC - Hiding start page field")
       if (this.hasStartPageFieldTarget) {
         this.startPageFieldTarget.classList.add("hidden")
@@ -48,6 +55,23 @@ export default class extends Controller {
       if (this.hasMenuItemsSectionTarget) {
         this.menuItemsSectionTarget.classList.remove("hidden")
       }
+      if (this.hasOrderingFieldTarget) {
+        this.orderingFieldTarget.classList.remove("hidden")
+      }
     }
+
+    this.updateDragHandleVisibility()
+  }
+
+  updateDragHandleVisibility() {
+    if (!this.hasDragHandlesTarget) return
+
+    const orderingSelect = this.element.querySelector('select[name*="[ordering]"]')
+    const ordering = orderingSelect ? orderingSelect.value : "default"
+
+    const handles = this.dragHandlesTarget.querySelectorAll("[data-sortable-handle]")
+    handles.forEach(handle => {
+      handle.style.display = ordering === "default" ? "" : "none"
+    })
   }
 }

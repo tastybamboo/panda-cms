@@ -64,6 +64,31 @@ module Panda
           end
         end
 
+        # Reorder a page relative to a sibling
+        # @type POST
+        def reorder
+          target = Panda::CMS::Page.find(params[:target_id])
+
+          unless page.parent_id == target.parent_id
+            return render json: {error: "Can only reorder siblings"}, status: :unprocessable_entity
+          end
+
+          case params[:position]
+          when "before"
+            page.move_to_left_of(target)
+          when "after"
+            page.move_to_right_of(target)
+          else
+            return render json: {error: "Invalid position"}, status: :unprocessable_entity
+          end
+
+          # Regenerate auto menus that include these pages
+          ancestor_ids = page.self_and_ancestors.pluck(:id)
+          Panda::CMS::Menu.where(kind: "auto", start_page_id: ancestor_ids).find_each(&:generate_auto_menu_items)
+
+          render json: {success: true}
+        end
+
         # @type PATCH/PUT
         # @return
         def update
