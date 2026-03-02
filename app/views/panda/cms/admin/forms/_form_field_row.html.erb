@@ -50,6 +50,7 @@
       <div class="mt-4 flex items-center gap-6">
         <%= form.check_box :required %>
         <%= form.check_box :active %>
+        <%= form.check_box :display_on_summary, label: "Show on summary" %>
       </div>
 
       <div class="mt-4 <%= form.object.has_options? ? '' : 'hidden' %>" data-form-fields-target="optionsSection">

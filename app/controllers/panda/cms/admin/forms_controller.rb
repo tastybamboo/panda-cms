@@ -22,16 +22,18 @@ module Panda
           submissions = @form.form_submissions.order(created_at: :desc)
 
           # Use form field definitions if available, otherwise infer from submissions
-          # Fields are triples: [name, label, field_type]
+          # Fields are tuples: [name, label, field_type, display_on_summary]
           fields = if @form.form_fields.any?
-            @form.form_fields.active.ordered.map { |f| [f.name, f.label, f.field_type] }
+            @form.form_fields.active.ordered.map { |f| [f.name, f.label, f.field_type, f.display_on_summary] }
           elsif submissions.any?
-            submissions.last.data.keys.reverse.map { |field| [field, field.titleize, "text"] }
+            submissions.last.data.keys.reverse.map { |field| [field, field.titleize, "text", true] }
           else
             []
           end
 
-          display_fields = fields.first(3)
+          # Use fields marked for summary display; fall back to first 3 if none are marked
+          summary_fields = fields.select { |f| f[3] }
+          display_fields = summary_fields.any? ? summary_fields : fields.first(3)
           render :show, locals: {form: @form, submissions: submissions, fields: fields, display_fields: display_fields}
         end
 
@@ -104,7 +106,7 @@ module Panda
             :success_message,
             form_fields_attributes: [
               :id, :name, :label, :field_type, :placeholder, :hint,
-              :required, :position, :active, :options, :validations, :_destroy
+              :required, :position, :active, :display_on_summary, :options, :validations, :_destroy
             ]
           )
         end
