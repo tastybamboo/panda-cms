@@ -51,6 +51,13 @@ RSpec.describe Panda::CMS::Admin::PostsHelper, type: :helper do
         parsed = JSON.parse(result)
         expect(parsed["blocks"]).to eq([])
       end
+
+      it "returns base64 encoded empty blocks structure by default" do
+        result = helper.editor_content_for(post)
+        decoded = Base64.strict_decode64(result)
+        parsed = JSON.parse(decoded)
+        expect(parsed["blocks"]).to eq([])
+      end
     end
 
     context "with preserved content (JSON string)" do
@@ -66,6 +73,13 @@ RSpec.describe Panda::CMS::Admin::PostsHelper, type: :helper do
       it "uses preserved content over post content" do
         result = helper.editor_content_for(post, preserved, encode: false)
         parsed = JSON.parse(result)
+        expect(parsed["blocks"].first["type"]).to eq("header")
+      end
+
+      it "returns base64 encoded preserved content by default" do
+        result = helper.editor_content_for(post, preserved)
+        decoded = Base64.strict_decode64(result)
+        parsed = JSON.parse(decoded)
         expect(parsed["blocks"].first["type"]).to eq("header")
       end
     end
