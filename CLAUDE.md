@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code when working with code in this repository.
 
-**Parent:** See `~/Projects/panda/CLAUDE.md` for monorepo-wide rules (CSS compilation, JS architecture, API security, ViewComponent requirements, PR readiness checker).
+**Parent:** See the monorepo-wide [CLAUDE.md](../CLAUDE.md) for rules on CSS compilation, JS architecture, API security, ViewComponent requirements, and the PR readiness checker.
 
 For comprehensive developer documentation, see the `docs/` directory which contains detailed guides on testing, configuration, deployment, and development practices.
 
