@@ -4,7 +4,7 @@ module Panda
   module CMS
     module Admin
       module PostsHelper
-        def editor_content_for(post, preserved_content = nil)
+        def editor_content_for(post, preserved_content = nil, encode: true)
           content = preserved_content || post.content
 
           # Return empty structure if no content
@@ -21,8 +21,9 @@ module Panda
             {blocks: []}.to_json
           end
 
-          # Base64 encode the JSON content
-          Base64.strict_encode64(json_content)
+          # Base64 encode for data-initial-content attribute (default),
+          # or return raw JSON for the hidden field value
+          encode ? Base64.strict_encode64(json_content) : json_content
         end
 
         private
