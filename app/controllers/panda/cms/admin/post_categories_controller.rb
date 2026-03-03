@@ -8,7 +8,11 @@ module Panda
         before_action :set_post_category, only: %i[edit update destroy]
 
         def index
-          post_categories = Panda::CMS::PostCategory.ordered
+          post_categories = Panda::CMS::PostCategory
+            .left_joins(:posts)
+            .select("panda_cms_post_categories.*, COUNT(panda_cms_posts.id) AS posts_count")
+            .group("panda_cms_post_categories.id")
+            .ordered
           render :index, locals: {post_categories: post_categories}
         end
 

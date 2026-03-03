@@ -103,7 +103,7 @@ module Panda
           post ||= Panda::CMS::Post.new(
             status: "published",
             published_at: Time.zone.now,
-            post_category: Panda::CMS::PostCategory.find_by(slug: "general")
+            post_category: Panda::CMS::PostCategory.find_or_create_by!(slug: "general") { |c| c.name = "General" }
           )
 
           {

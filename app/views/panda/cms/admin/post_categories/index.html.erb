@@ -8,6 +8,6 @@
       <%= link_to category.name, edit_admin_cms_post_category_path(category), class: "block h-full w-full" %>
     <% end %>
     <% table.column("Slug") { |category| category.slug } %>
-    <% table.column("Posts", width: "80px") { |category| category.posts.size } %>
+    <% table.column("Posts", width: "80px") { |category| category.posts_count } %>
   <% end %>
 <% end %>
