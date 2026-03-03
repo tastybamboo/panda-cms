@@ -34,8 +34,6 @@ module Dummy
     config.time_zone = "Europe/London"
     # config.eager_load_paths << Rails.root.join("extras")
 
-    config.active_support.to_time_preserves_timezone = :zone
-
     config.generators do |g|
       g.system_tests = nil
       g.test_framework :rspec, fixture: true

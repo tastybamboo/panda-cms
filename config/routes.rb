@@ -31,6 +31,9 @@ Panda::CMS::Engine.routes.draw do
       namespace :settings, as: :settings do
         get "bulk_editor", to: "bulk_editor#new"
         post "bulk_editor", to: "bulk_editor#create"
+
+        get "social_sharing", to: "social_sharing#index", as: :social_sharing
+        patch "social_sharing/:id", to: "social_sharing#update", as: :social_sharing_network
       end
     end
   end

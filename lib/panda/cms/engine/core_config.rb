@@ -69,6 +69,7 @@ module Panda
                   icon: "fa-solid fa-gear",
                   children: [
                     {label: "Users", path: "#{config.admin_path}/users"},
+                    {label: "Social Sharing", path: "#{config.admin_path}/cms/settings/social_sharing"},
                     {label: "System Status", path: "#{config.admin_path}/cms/settings"}
                   ]
                 }

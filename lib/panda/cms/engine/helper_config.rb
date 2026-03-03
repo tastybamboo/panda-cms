@@ -13,6 +13,7 @@ module Panda
             ApplicationController.helper(::ApplicationHelper)
             ApplicationController.helper(Panda::CMS::AssetHelper)
             ApplicationController.helper(Panda::CMS::AnalyticsHelper)
+            ApplicationController.helper(Panda::CMS::SocialSharingHelper)
           end
         end
       end
