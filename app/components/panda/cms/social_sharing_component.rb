@@ -13,19 +13,14 @@ module Panda
         super()
       end
 
-      def before_render
-        @networks = Rails.cache.fetch("panda_cms:social_sharing:enabled_networks", expires_in: 1.minute) do
-          Panda::CMS::SocialSharingNetwork.enabled.to_a
-        end
-      end
-
       def render?
-        before_render if @networks.nil?
-        @networks.any?
+        networks.any?
       end
 
       def networks
-        @networks || []
+        @networks ||= Rails.cache.fetch("panda_cms:social_sharing:enabled_networks", expires_in: 1.minute) do
+          Panda::CMS::SocialSharingNetwork.enabled.to_a
+        end
       end
     end
   end

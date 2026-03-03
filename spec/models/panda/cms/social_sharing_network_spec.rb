@@ -178,7 +178,7 @@ RSpec.describe Panda::CMS::SocialSharingNetwork, type: :model do
           title: "Test & <Script>",
           url: "https://example.com"
         )
-        expect(result).to include("Test%20%26%20%3CScript%3E")
+        expect(result).to include(ERB::Util.url_encode("Test & <Script>"))
       end
 
       it "returns nil for copy_link" do
@@ -194,7 +194,7 @@ RSpec.describe Panda::CMS::SocialSharingNetwork, type: :model do
           url: "https://example.com/post"
         )
         expect(result).to start_with("mailto:?subject=")
-        expect(result).to include("My%20Post")
+        expect(result).to include(ERB::Util.url_encode("My Post"))
       end
     end
   end

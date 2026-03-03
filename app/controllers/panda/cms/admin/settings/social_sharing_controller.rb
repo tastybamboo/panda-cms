@@ -15,6 +15,7 @@ module Panda
           def update
             network = Panda::CMS::SocialSharingNetwork.find(params[:id])
             network.update!(enabled: !network.enabled)
+            Rails.cache.delete("panda_cms:social_sharing:enabled_networks")
 
             status = network.enabled? ? "enabled" : "disabled"
             redirect_to admin_cms_settings_social_sharing_path,
@@ -29,9 +30,11 @@ module Panda
           end
 
           def helper_detected?
-            view_paths = Rails.root.join("app", "views").to_s
-            Dir.glob("#{view_paths}/**/*.erb").any? { |f| File.read(f).include?("panda_social_sharing") }
-          rescue
+            Rails.cache.fetch("panda_cms:social_sharing:helper_detected", expires_in: 12.hours) do
+              view_paths = Rails.root.join("app", "views").to_s
+              Dir.glob("#{view_paths}/**/*.erb").any? { |f| File.read(f).include?("panda_social_sharing") }
+            end
+          rescue StandardError
             false
           end
         end
