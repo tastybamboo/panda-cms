@@ -3,6 +3,8 @@
 module Panda
   module CMS
     class PostsController < ApplicationController
+      before_action :set_default_ivars
+
       # TODO: Change from layout rendering to standard template rendering
       # inside a /panda/cms/posts/... structure in the application
       def index
@@ -47,6 +49,15 @@ module Panda
         fresh_when(etag: [@posts.to_a, @month], last_modified: latest_month_timestamp, public: true)
 
         render inline: "", layout: Panda::CMS.config.posts[:layouts][:by_month]
+      end
+
+      private
+
+      # Host app layouts may reference @page and @overrides (e.g. shared header
+      # partials). StrictIvars requires them to be set before first access.
+      def set_default_ivars
+        @page = nil
+        @overrides = {}
       end
     end
   end

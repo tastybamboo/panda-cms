@@ -1,0 +1,30 @@
+<nav aria-label="<%= label %>">
+  <h3 class="<%= heading_class %>"><%= label %></h3>
+  <div class="flex items-center gap-2 flex-wrap">
+    <% networks.each do |network| %>
+      <% if network.copy_link? %>
+        <button
+          type="button"
+          data-controller="clipboard"
+          data-clipboard-secret-value="<%= url %>"
+          data-action="click->clipboard#copy"
+          data-clipboard-target="copyButton"
+          class="inline-flex items-center gap-2 rounded-full pl-3 pr-4 py-2 text-white text-sm font-medium transition-opacity hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400 cursor-pointer"
+          style="background-color: <%= network.color %>;">
+          <i class="<%= network.icon %>" data-clipboard-target="copyIcon"></i>
+          <span data-clipboard-target="copyText"><%= network.display_name %></span>
+        </button>
+      <% else %>
+        <a
+          href="<%= network.build_share_url(title: title, url: url) %>"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex items-center gap-2 rounded-full pl-3 pr-4 py-2 text-white text-sm font-medium transition-opacity hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400"
+          style="background-color: <%= network.color %>;">
+          <i class="<%= network.icon %>"></i>
+          <span><%= network.display_name %></span>
+        </a>
+      <% end %>
+    <% end %>
+  </div>
+</nav>

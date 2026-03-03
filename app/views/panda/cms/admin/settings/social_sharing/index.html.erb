@@ -1,0 +1,86 @@
+<%= render Panda::Core::Admin::ContainerComponent.new do |component| %>
+  <% component.with_heading_slot(text: "Social Sharing", level: 1) %>
+
+  <% unless @helper_detected %>
+    <%= render Panda::Core::Admin::PanelComponent.new do |panel| %>
+      <% panel.with_body_slot do %>
+        <div class="flex items-start gap-3 p-4 bg-amber-50 border border-amber-200 rounded-xl">
+          <i class="fa-solid fa-triangle-exclamation text-amber-500 mt-0.5"></i>
+          <div>
+            <p class="text-sm font-medium text-amber-800">Social sharing helper not detected in your views</p>
+            <p class="text-xs text-amber-700 mt-1">
+              Add the helper shown below to your post layout to display sharing buttons.
+              Without this, networks can be configured here but no buttons will appear on the site.
+            </p>
+          </div>
+        </div>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <%= render Panda::Core::Admin::PanelComponent.new do |panel| %>
+    <% panel.with_heading_slot do %>
+      <i class="fa-solid fa-code mr-2"></i> Setup
+    <% end %>
+    <% panel.with_body_slot do %>
+      <p class="text-sm text-gray-600 mb-3">
+        To display social sharing buttons on your site, add the following helper to your post layout or any view:
+      </p>
+      <pre class="bg-gray-900 text-emerald-200 rounded-xl p-4 text-sm font-mono overflow-x-auto">&lt;%= panda_social_sharing(title: @post.title, url: request.base_url + post_path(@post)) %&gt;</pre>
+      <p class="text-xs text-gray-500 mt-2">
+        This helper renders sharing buttons for all enabled networks below. It automatically hides itself when no networks are enabled.
+      </p>
+    <% end %>
+  <% end %>
+
+  <%= render Panda::Core::Admin::PanelComponent.new do |panel| %>
+    <% panel.with_heading_slot do %>
+      <i class="fa-solid fa-share-nodes mr-2"></i> Networks
+    <% end %>
+    <% panel.with_body_slot do %>
+      <% if @networks.any? %>
+        <div class="divide-y divide-gray-100">
+          <% @networks.each do |network| %>
+            <div class="flex items-center justify-between py-3 px-1">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full flex items-center justify-center" style="background-color: <%= network.color %>;">
+                  <i class="<%= network.icon %> text-white text-sm"></i>
+                </div>
+                <div>
+                  <span class="block text-sm font-medium text-gray-900"><%= network.display_name %></span>
+                  <span class="block text-xs text-gray-500"><%= network.key %></span>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-3">
+                <% if network.enabled? %>
+                  <span class="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
+                    <i class="fa-solid fa-check mr-1"></i> Enabled
+                  </span>
+                <% else %>
+                  <span class="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">
+                    <i class="fa-solid fa-xmark mr-1"></i> Disabled
+                  </span>
+                <% end %>
+
+                <%= button_to admin_cms_settings_social_sharing_network_path(network), method: :patch, class: "inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition #{network.enabled? ? 'text-red-600 hover:text-red-700 hover:bg-red-50' : 'text-green-600 hover:text-green-700 hover:bg-green-50'}" do %>
+                  <% if network.enabled? %>
+                    <i class="fa-solid fa-toggle-on"></i> Disable
+                  <% else %>
+                    <i class="fa-solid fa-toggle-off"></i> Enable
+                  <% end %>
+                <% end %>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <%= render Panda::Core::Admin::EmptyStateComponent.new(
+          icon: "fa-solid fa-share-nodes",
+          title: "No social networks registered",
+          description: "Social sharing networks are registered automatically during application initialization."
+        ) %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>
