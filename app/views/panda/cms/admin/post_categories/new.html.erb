@@ -1,0 +1,22 @@
+<%= render Panda::Core::Admin::ContainerComponent.new do |component| %>
+  <% component.with_heading_slot(text: "Add Category", level: 1) %>
+
+  <%= panda_form_with model: post_category, url: admin_cms_post_categories_path, method: :post do |f| %>
+    <%= render Panda::Core::Admin::FormErrorComponent.new(model: post_category) %>
+
+    <%= render Panda::Core::Admin::PanelComponent.new do |panel| %>
+      <% panel.with_heading_slot { "Category Settings" } %>
+
+      <div class="space-y-4" data-controller="slug">
+        <%= f.text_field :name,
+            data: { "slug-target": "input_text" },
+            "data-action": "focusout->slug#generatePath" %>
+        <%= f.text_field :slug,
+            data: { "slug-target": "output_text" } %>
+        <%= f.text_area :description, rows: 3 %>
+      </div>
+    <% end %>
+
+    <%= render Panda::Core::Admin::FormFooterComponent.new(submit_text: "Create Category") %>
+  <% end %>
+<% end %>

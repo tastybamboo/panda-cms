@@ -1,0 +1,13 @@
+<%= render Panda::Core::Admin::ContainerComponent.new do |component| %>
+  <% component.with_heading_slot(text: "Post Categories", level: 1) do |heading| %>
+    <% heading.with_button(action: :add, text: "Add Category", href: new_admin_cms_post_category_path) %>
+  <% end %>
+
+  <%= render Panda::Core::Admin::TableComponent.new(term: "category", rows: post_categories, icon: "fa-solid fa-folder") do |table| %>
+    <% table.column("Name") do |category| %>
+      <%= link_to category.name, edit_admin_cms_post_category_path(category), class: "block h-full w-full" %>
+    <% end %>
+    <% table.column("Slug") { |category| category.slug } %>
+    <% table.column("Posts", width: "80px") { |category| category.posts_count } %>
+  <% end %>
+<% end %>

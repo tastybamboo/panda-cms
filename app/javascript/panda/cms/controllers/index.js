@@ -35,7 +35,8 @@ const cmsControllers = [
   ["datetime", "/panda/cms/controllers/datetime_controller.js"],
   ["editor-form", "/panda/cms/controllers/editor_form_controller.js"],
   ["editor-iframe", "/panda/cms/controllers/editor_iframe_controller.js"],
-  ["signature-pad", "/panda/cms/controllers/signature_pad_controller.js"]
+  ["signature-pad", "/panda/cms/controllers/signature_pad_controller.js"],
+  ["category-select", "/panda/cms/controllers/category_select_controller.js"]
 ]
 
 // Load all controllers with error handling

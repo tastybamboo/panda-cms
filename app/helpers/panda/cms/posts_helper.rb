@@ -16,6 +16,10 @@ module Panda
         end
       end
 
+      def post_category_url(category)
+        "#{Panda::CMS.config.posts[:prefix]}/category/#{category.slug}"
+      end
+
       def posts_months_menu
         Rails.cache.fetch("panda_cms_posts_months_menu", expires_in: 1.hour) do
           Panda::CMS::Post

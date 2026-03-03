@@ -41,12 +41,14 @@ RSpec.describe Panda::CMS::SEOHelper, type: :helper do
   end
 
   let(:admin_user) { create_admin_user }
+  let(:general_category) { Panda::CMS::PostCategory.find_or_create_by!(name: "General", slug: "general") }
   let(:test_post) do
     Panda::CMS::Post.create!(
       title: "Test Post",
       slug: "/test-post",
       user: admin_user,
       author: admin_user,
+      post_category: general_category,
       seo_title: "Post SEO Title",
       seo_description: "Post SEO description",
       og_title: "Post OG Title"

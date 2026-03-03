@@ -22,6 +22,7 @@ Panda::CMS::Engine.routes.draw do
         post :reorder, on: :member
       end
       resources :posts
+      resources :post_categories
       resources :redirects, except: :show
 
       get "settings", to: "settings#index"
@@ -75,6 +76,15 @@ Panda::CMS::Engine.routes.draw do
       as: :post,
       constraints: {
         slug: %r{[^/]+},
+        format: /html|json|xml/
+      }
+
+    # Route for category archive
+    get "#{Panda::CMS.config.posts[:prefix]}/category/:category_slug",
+      to: "posts#by_category",
+      as: :posts_by_category,
+      constraints: {
+        category_slug: /[a-z0-9-]+/,
         format: /html|json|xml/
       }
 

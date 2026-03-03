@@ -618,9 +618,10 @@ module Panda
           post.published_at = (data[:status] == "published") ? data[:slug_date] : nil
           post.seo_description = data[:seo_description]
 
-          # Assign demo user as author
+          # Assign demo user as author and default category
           post.user = @users[:admin] unless post.user_id
           post.author = @users[:admin] unless post.author_id
+          post.post_category ||= Panda::CMS::PostCategory.find_or_create_by!(name: "General") { |c| c.slug = "general" }
 
           post.save!
 

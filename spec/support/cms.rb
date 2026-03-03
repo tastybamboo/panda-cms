@@ -17,6 +17,7 @@ module PandaCmsFixtures
   def self.get_class_name(fixture_set_name)
     case fixture_set_name
       # panda_core_users fixtures are not supported - users must be created programmatically
+    when "panda_cms_post_categories" then "Panda::CMS::PostCategory"
     when "panda_cms_posts" then "Panda::CMS::Post"
     when "panda_cms_pages" then "Panda::CMS::Page"
     when "panda_cms_templates" then "Panda::CMS::Template"
