@@ -29,6 +29,7 @@ module Panda
                 content_children = [
                   {label: "Pages", path: "#{config.admin_path}/cms/pages"},
                   {label: "Posts", path: "#{config.admin_path}/cms/posts"},
+                  {label: "Post Categories", path: "#{config.admin_path}/cms/post_categories"},
                   {label: "Files", path: "#{config.admin_path}/cms/files"}
                 ]
 

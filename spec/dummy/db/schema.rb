@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_01_233859) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_03_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -221,6 +221,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_01_233859) do
     t.index ["workflow_status"], name: "index_panda_cms_pages_on_workflow_status"
   end
 
+  create_table "panda_cms_post_categories", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.text "description"
+    t.string "name", null: false
+    t.string "slug", null: false
+    t.datetime "updated_at", null: false
+    t.index ["name"], name: "index_panda_cms_post_categories_on_name", unique: true
+    t.index ["slug"], name: "index_panda_cms_post_categories_on_slug", unique: true
+  end
+
   create_table "panda_cms_posts", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "author_id"
     t.text "cached_content"
@@ -232,6 +242,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_01_233859) do
     t.text "og_description"
     t.string "og_title"
     t.enum "og_type", default: "article", null: false, enum_type: "panda_cms_og_type"
+    t.uuid "post_category_id", null: false
     t.datetime "published_at"
     t.text "seo_description"
     t.enum "seo_index_mode", default: "visible", null: false, enum_type: "panda_cms_seo_index_mode"
@@ -245,6 +256,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_01_233859) do
     t.string "workflow_status", default: "draft"
     t.index ["author_id"], name: "index_panda_cms_posts_on_author_id"
     t.index ["last_contributed_at"], name: "index_panda_cms_posts_on_last_contributed_at"
+    t.index ["post_category_id"], name: "index_panda_cms_posts_on_post_category_id"
     t.index ["slug"], name: "index_panda_cms_posts_on_slug", unique: true
     t.index ["status"], name: "index_panda_cms_posts_on_status"
     t.index ["user_id"], name: "index_panda_cms_posts_on_user_id"
@@ -508,6 +520,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_01_233859) do
     t.index ["origin_path"], name: "index_panda_cms_redirects_on_origin_path"
   end
 
+  create_table "panda_cms_social_sharing_networks", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.boolean "enabled", default: false, null: false
+    t.string "key", null: false
+    t.integer "position", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.index ["key"], name: "index_panda_cms_social_sharing_networks_on_key", unique: true
+    t.index ["position"], name: "index_panda_cms_social_sharing_networks_on_position"
+  end
+
   create_table "panda_cms_templates", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "file_path"
@@ -649,6 +671,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_01_233859) do
   add_foreign_key "panda_cms_menus", "panda_cms_pages", column: "start_page_id"
   add_foreign_key "panda_cms_pages", "panda_cms_pages", column: "parent_id"
   add_foreign_key "panda_cms_pages", "panda_cms_templates"
+  add_foreign_key "panda_cms_posts", "panda_cms_post_categories", column: "post_category_id"
   add_foreign_key "panda_cms_posts", "panda_core_users", column: "author_id"
   add_foreign_key "panda_cms_posts", "panda_core_users", column: "user_id"
   add_foreign_key "panda_cms_pro_broken_links", "panda_cms_pro_link_checks", column: "link_check_id"

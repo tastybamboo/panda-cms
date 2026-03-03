@@ -9,12 +9,15 @@ RSpec.describe "Editing a post", type: :system do
     @regular = create_regular_user
 
     # Create post programmatically
+    @general_category = Panda::CMS::PostCategory.find_or_create_by!(name: "General", slug: "general")
+
     @post = Panda::CMS::Post.create!(
       title: "Test Post 1",
       slug: "/#{Time.current.strftime("%Y/%m")}/test-post-1",
       status: "published",
       user: @admin,
       author: @admin,
+      post_category: @general_category,
       published_at: Time.current,
       content: {
         "time" => Time.current.to_i * 1000,

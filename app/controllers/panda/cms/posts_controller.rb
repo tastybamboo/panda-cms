@@ -6,7 +6,8 @@ module Panda
       # TODO: Change from layout rendering to standard template rendering
       # inside a /panda/cms/posts/... structure in the application
       def index
-        @posts = Panda::CMS::Post.where(status: :published).includes(:author).order(published_at: :desc)
+        @posts = Panda::CMS::Post.where(status: :published).includes(:author, :post_category).order(published_at: :desc)
+        @post_categories = Panda::CMS::PostCategory.ordered
 
         # HTTP caching: Use the most recent post's updated_at for conditional requests
         # Returns 304 Not Modified if no posts have changed since client's last request
@@ -31,6 +32,20 @@ module Panda
         fresh_when(@post, last_modified: @post.updated_at, public: true)
 
         render inline: "", layout: Panda::CMS.config.posts[:layouts][:show]
+      end
+
+      def by_category
+        @post_category = Panda::CMS::PostCategory.find_by!(slug: params[:category_slug])
+        @posts = Panda::CMS::Post
+          .where(status: :published)
+          .where(post_category: @post_category)
+          .includes(:author, :post_category)
+          .ordered
+
+        latest_timestamp = @posts.maximum(:updated_at) || Time.current
+        fresh_when(etag: [@posts.to_a, @post_category], last_modified: latest_timestamp, public: true)
+
+        render inline: "", layout: Panda::CMS.config.posts[:layouts][:index]
       end
 
       def by_month

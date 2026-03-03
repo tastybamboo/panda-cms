@@ -184,6 +184,11 @@ module Panda
             end
 
             begin
+              category = if post_data["post_category_slug"].present?
+                Panda::CMS::PostCategory.find_by(slug: post_data["post_category_slug"])
+              end
+              category ||= Panda::CMS::PostCategory.find_or_create_by!(name: "General") { |c| c.slug = "general" }
+
               post = Panda::CMS::Post.create!(
                 slug: slug,
                 title: post_data["title"],
@@ -191,6 +196,7 @@ module Panda
                 published_at: post_data["published_at"],
                 user: user,
                 author: author,
+                post_category: category,
                 content: post_data["content"] || "",
                 cached_content: post_data["cached_content"] || "",
                 # SEO fields
@@ -374,6 +380,7 @@ module Panda
             "published_at" => post.published_at&.iso8601,
             "user_email" => post.user&.email,
             "author_email" => post.author&.email,
+            "post_category_slug" => post.post_category&.slug,
             "content" => post.content,
             "cached_content" => post.cached_content
           }

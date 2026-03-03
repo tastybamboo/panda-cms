@@ -9,12 +9,13 @@ module Panda
         helper Panda::CMS::PostsHelper
 
         before_action :set_initial_breadcrumb, only: %i[index edit new create update]
+        before_action :handle_new_category, only: %i[create update]
 
         # Get all posts
         # @type GET
         # @return ActiveRecord::Collection A list of all posts
         def index
-          posts = Panda::CMS::Post.with_author.ordered
+          posts = Panda::CMS::Post.with_author.with_category.ordered
           render :index, locals: {posts: posts}
         end
 
@@ -101,7 +102,8 @@ module Panda
 
           post ||= Panda::CMS::Post.new(
             status: "published",
-            published_at: Time.zone.now
+            published_at: Time.zone.now,
+            post_category: Panda::CMS::PostCategory.find_by(slug: "general")
           )
 
           {
@@ -121,10 +123,19 @@ module Panda
             :status,
             :published_at,
             :author_id,
+            :post_category_id,
             :content,
             :seo_title, :seo_description, :seo_keywords, :seo_index_mode, :canonical_url,
             :og_title, :og_description, :og_type, :og_image
           )
+        end
+
+        def handle_new_category
+          new_name = params.dig(:post, :new_category_name)
+          return if new_name.blank?
+
+          category = Panda::CMS::PostCategory.find_or_create_by!(name: new_name.strip)
+          params[:post][:post_category_id] = category.id
         end
 
         def parse_content(content)

@@ -18,6 +18,24 @@
       <%= f.select :author_id, Panda::Core::User.admins.map { |u| [u.name, u.id] } %>
       <%= f.datetime_split_field :published_at %>
       <%= f.select :status, options_for_select([["Published", "published"], ["Unlisted", "unlisted"], ["Hidden", "hidden"], ["Archived", "archived"]], selected: post.status) %>
+
+      <div data-controller="category-select">
+        <%= f.select :post_category_id,
+            Panda::CMS::PostCategory.ordered.map { |c| [c.name, c.id] },
+            { label: "Category" },
+            data: { "category-select-target": "select" } %>
+        <button type="button"
+                class="mt-1 text-sm text-primary-600 hover:text-primary-800"
+                data-category-select-target="toggleButton"
+                data-action="click->category-select#toggleNewCategory">+ Add new category</button>
+        <div class="hidden mt-2" data-category-select-target="newCategoryFields">
+          <%= text_field_tag "post[new_category_name]", nil,
+              placeholder: "New category name",
+              autocomplete: "off",
+              class: "block w-full h-11 rounded-xl border border-gray-300 px-4 text-sm focus:border-primary-500 focus:ring-primary-500",
+              data: { "category-select-target": "newCategoryInput" } %>
+        </div>
+      </div>
     </div>
   <% end %>
 

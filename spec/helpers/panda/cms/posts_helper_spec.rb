@@ -51,12 +51,15 @@ RSpec.describe Panda::CMS::PostsHelper, type: :helper do
     end
 
     context "when there are published posts" do
+      let(:general_category) { Panda::CMS::PostCategory.find_or_create_by!(name: "General", slug: "general") }
+
       let!(:post_jan) do
         Panda::CMS::Post.create!(
           title: "January Post",
           slug: "/2024/01/january-post",
           user: admin_user,
           author: admin_user,
+          post_category: general_category,
           status: "published",
           published_at: Time.zone.parse("2024-01-15 12:00:00")
         )
@@ -68,6 +71,7 @@ RSpec.describe Panda::CMS::PostsHelper, type: :helper do
           slug: "/2024/02/february-post",
           user: admin_user,
           author: admin_user,
+          post_category: general_category,
           status: "published",
           published_at: Time.zone.parse("2024-02-20 12:00:00")
         )
@@ -79,6 +83,7 @@ RSpec.describe Panda::CMS::PostsHelper, type: :helper do
           slug: "/draft-post",
           user: admin_user,
           author: admin_user,
+          post_category: general_category,
           status: "hidden"
         )
       end
@@ -161,6 +166,7 @@ RSpec.describe Panda::CMS::PostsHelper, type: :helper do
             slug: "/2024/01/another-january-post",
             user: admin_user,
             author: admin_user,
+            post_category: general_category,
             status: "published",
             published_at: Time.zone.parse("2024-01-25 12:00:00")
           )

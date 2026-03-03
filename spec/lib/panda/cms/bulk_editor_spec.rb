@@ -40,11 +40,14 @@ RSpec.describe Panda::CMS::BulkEditor, type: :model do
     Panda::CMS::Post.delete_all
 
     # Create posts with user reference
+    @general_category = Panda::CMS::PostCategory.find_or_create_by!(name: "General", slug: "general")
+
     @post1 = Panda::CMS::Post.create!(
       title: "Test Post 1",
       slug: "/#{Time.current.strftime("%Y/%m")}/test-post-1",
       status: "published",
       user: @user,
+      post_category: @general_category,
       published_at: Time.current
     )
 
@@ -53,6 +56,7 @@ RSpec.describe Panda::CMS::BulkEditor, type: :model do
       slug: "/#{Time.current.strftime("%Y/%m")}/test-post-2",
       status: "hidden",
       user: @user,
+      post_category: @general_category,
       published_at: nil
     )
   end
@@ -579,6 +583,7 @@ RSpec.describe Panda::CMS::BulkEditor, type: :model do
       column_mappings = {
         "user_id" => "user_email",
         "author_id" => "author_email",
+        "post_category_id" => "post_category_slug",
         "og_image" => "og_image_url"
       }
 

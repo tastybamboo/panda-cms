@@ -3,6 +3,80 @@
 require "rails_helper"
 
 RSpec.describe Panda::CMS::Post, type: :model do
+  describe "associations" do
+    let(:admin_user) { create_admin_user }
+    let(:category) { Panda::CMS::PostCategory.create!(name: "Assoc Test", slug: "assoc-test") }
+
+    it "belongs to a post_category" do
+      post = Panda::CMS::Post.create!(
+        title: "Category Post",
+        slug: "/category-post",
+        user: admin_user,
+        author: admin_user,
+        post_category: category,
+        status: "published"
+      )
+      expect(post.post_category).to be_a(Panda::CMS::PostCategory)
+      expect(post.post_category).to eq(category)
+    end
+  end
+
+  describe ".by_category" do
+    let(:admin_user) { create_admin_user }
+    let(:general) { Panda::CMS::PostCategory.create!(name: "By Cat General", slug: "by-cat-general") }
+    let(:news) { Panda::CMS::PostCategory.create!(name: "By Cat News", slug: "by-cat-news") }
+
+    let!(:general_post) do
+      Panda::CMS::Post.create!(
+        title: "General Post",
+        slug: "/general-post",
+        user: admin_user,
+        author: admin_user,
+        post_category: general,
+        status: "published"
+      )
+    end
+
+    let!(:news_post) do
+      Panda::CMS::Post.create!(
+        title: "News Post",
+        slug: "/news-post",
+        user: admin_user,
+        author: admin_user,
+        post_category: news,
+        status: "published"
+      )
+    end
+
+    it "filters posts by category" do
+      results = Panda::CMS::Post.by_category(general)
+      expect(results).to include(general_post)
+      expect(results).not_to include(news_post)
+    end
+  end
+
+  describe ".with_category" do
+    let(:admin_user) { create_admin_user }
+    let(:category) { Panda::CMS::PostCategory.create!(name: "Eager Test", slug: "eager-test") }
+
+    let!(:post) do
+      Panda::CMS::Post.create!(
+        title: "Eager Post",
+        slug: "/eager-post",
+        user: admin_user,
+        author: admin_user,
+        post_category: category,
+        status: "published"
+      )
+    end
+
+    it "eager loads the post_category association" do
+      posts = Panda::CMS::Post.with_category.to_a
+      loaded_post = posts.find { |p| p.id == post.id }
+      expect(loaded_post.association(:post_category)).to be_loaded
+    end
+  end
+
   describe "editor content", :editorjs do
     let(:admin_user) { create_admin_user }
     let(:post) do
@@ -11,6 +85,7 @@ RSpec.describe Panda::CMS::Post, type: :model do
         slug: "/test-post",
         user: admin_user,
         author: admin_user,
+        post_category: panda_cms_post_categories(:general),
         status: "published"
       )
     end
@@ -47,6 +122,7 @@ RSpec.describe Panda::CMS::Post, type: :model do
         slug: "/active-post",
         user: admin_user,
         author: admin_user,
+        post_category: panda_cms_post_categories(:general),
         status: "published"
       )
     end
@@ -57,6 +133,7 @@ RSpec.describe Panda::CMS::Post, type: :model do
         slug: "/draft-post",
         user: admin_user,
         author: admin_user,
+        post_category: panda_cms_post_categories(:general),
         status: "hidden"
       )
     end
@@ -67,6 +144,7 @@ RSpec.describe Panda::CMS::Post, type: :model do
         slug: "/another-active-post",
         user: admin_user,
         author: admin_user,
+        post_category: panda_cms_post_categories(:general),
         status: "published"
       )
     end
@@ -112,6 +190,7 @@ RSpec.describe Panda::CMS::Post, type: :model do
         slug: "/test-post",
         user: admin_user,
         author: admin_user,
+        post_category: panda_cms_post_categories(:general),
         status: "published"
       )
     end

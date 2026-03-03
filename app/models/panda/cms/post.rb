@@ -14,6 +14,7 @@ module Panda
 
       belongs_to :user, class_name: "Panda::Core::User"
       belongs_to :author, class_name: "Panda::Core::User", optional: true
+      belongs_to :post_category, class_name: "Panda::CMS::PostCategory"
       has_many :block_contents, as: :blockable, dependent: :destroy
       has_many :blocks, through: :block_contents
 
@@ -37,6 +38,8 @@ module Panda
       end
       scope :with_user, -> { includes(:user) }
       scope :with_author, -> { includes(:author) }
+      scope :with_category, -> { includes(:post_category) }
+      scope :by_category, ->(category) { where(post_category: category) }
 
       enum :status, {
         published: "published",

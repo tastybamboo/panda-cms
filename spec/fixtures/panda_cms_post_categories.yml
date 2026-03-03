@@ -1,0 +1,11 @@
+general:
+  name: "General"
+  slug: "general"
+  created_at: <%= Time.current %>
+  updated_at: <%= Time.current %>
+
+news:
+  name: "News"
+  slug: "news"
+  created_at: <%= Time.current %>
+  updated_at: <%= Time.current %>
