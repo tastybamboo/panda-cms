@@ -43,19 +43,23 @@
         page_form_page_id_value: page.id,
         page_form_ai_generation_url_value: ai_generation_url
       } do |f| %>
-        <%= f.text_field :title, { data: { page_form_target: "pageTitle" } } %>
-        <%= f.text_field :template, value: template.name, readonly: true %>
-        <%= f.select :status, options_for_select([["Published", "published"], ["Unlisted", "unlisted"], ["Hidden", "hidden"], ["Archived", "archived"]], selected: page.status) %>
-        <% if page.page_type.in?(["system", "posts"]) %>
-          <%= f.text_field :page_type, value: page.page_type.humanize, readonly: true %>
-        <% else %>
-          <%= f.select :page_type, options_for_select([["Standard", "standard"], ["Hidden", "hidden"], ["Code", "code"]], selected: page.page_type) %>
+        <%= render Panda::Core::Admin::PanelComponent.new do |panel| %>
+          <% panel.with_heading_slot { "Page Details" } %>
+          <div class="space-y-4">
+            <%= f.text_field :title, { data: { page_form_target: "pageTitle" } } %>
+            <%= f.text_field :template, value: template.name, readonly: true %>
+            <%= f.select :status, options_for_select([["Published", "published"], ["Unlisted", "unlisted"], ["Hidden", "hidden"], ["Archived", "archived"]], selected: page.status) %>
+            <% if page.page_type.in?(["system", "posts"]) %>
+              <%= f.text_field :page_type, value: page.page_type.humanize, readonly: true %>
+            <% else %>
+              <%= f.select :page_type, options_for_select([["Standard", "standard"], ["Hidden", "hidden"], ["Code", "code"]], selected: page.page_type) %>
+            <% end %>
+          </div>
         <% end %>
 
-        <%# SEO Settings %>
-        <div class="mt-2">
-          <h3 class="font-medium text-gray-900 dark:text-gray-100">SEO Settings</h3>
-          <div class="mt-3 space-y-4">
+        <%= render Panda::Core::Admin::PanelComponent.new do |panel| %>
+          <% panel.with_heading_slot { "SEO Settings" } %>
+          <div class="space-y-4">
             <% if defined?(Panda::CMS::Pro) && ai_generation_url.present? %>
               <div class="mb-4">
                 <%= render Panda::Core::Admin::ButtonComponent.new(
@@ -106,12 +110,11 @@
               data: { page_form_target: "canonicalUrl" }
             } %>
           </div>
-        </div>
+        <% end %>
 
-        <%# Social Sharing %>
-        <div class="mt-2">
-          <h3 class="font-medium text-gray-900 dark:text-gray-100">Social Sharing</h3>
-          <div class="mt-3 space-y-4">
+        <%= render Panda::Core::Admin::PanelComponent.new do |panel| %>
+          <% panel.with_heading_slot { "Social Sharing" } %>
+          <div class="space-y-4">
             <%= f.text_field :og_title, {
               label: "Social Media Title",
               meta: "Max 60 characters. Leave blank to use SEO title.",
@@ -147,7 +150,7 @@
               </div>
             <% end %>
           </div>
-        </div>
+        <% end %>
 
         <%= render Panda::Core::Admin::FormFooterComponent.new(submit_text: "Save") %>
       <% end %>
