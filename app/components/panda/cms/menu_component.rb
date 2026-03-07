@@ -49,7 +49,9 @@ module Panda
         end
 
         # Re-preload :page associations lost during Marshal deserialization from cache
-        ActiveRecord::Associations::Preloader.new(records: menu_items, associations: :page).call
+        # Conditionally include :page_menu so PageMenuComponent doesn't trigger N+1 for each menu item
+        associations = @render_page_menu ? { page: :page_menu } : :page
+        ActiveRecord::Associations::Preloader.new(records: menu_items, associations: associations).call
 
         # Filter menu items based on overrides
         filtered_menu_items = if @overrides[:hidden_items].present?
