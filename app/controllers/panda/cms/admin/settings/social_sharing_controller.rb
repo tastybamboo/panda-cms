@@ -34,7 +34,7 @@ module Panda
               view_paths = Rails.root.join("app", "views").to_s
               Dir.glob("#{view_paths}/**/*.erb").any? { |f| File.read(f).include?("panda_social_sharing") }
             end
-          rescue StandardError
+          rescue
             false
           end
         end
