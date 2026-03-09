@@ -60,7 +60,7 @@ module Panda
                   label: "Tools",
                   icon: "fa-solid fa-wrench",
                   children: [
-                    {label: "Import/Export", path: "#{config.admin_path}/cms/tools/import-export"}
+                    {label: "Import/Export", path: "#{config.admin_path}/cms/tools/import-export", permission: :manage_settings}
                   ]
                 }
 
@@ -68,8 +68,9 @@ module Panda
                 items << {
                   label: "Settings",
                   icon: "fa-solid fa-gear",
+                  permission: :manage_settings,
                   children: [
-                    {label: "Users", path: "#{config.admin_path}/users"},
+                    {label: "Users", path: "#{config.admin_path}/users", permission: :manage_users},
                     {label: "Social Sharing", path: "#{config.admin_path}/cms/settings/social_sharing"},
                     {label: "System Status", path: "#{config.admin_path}/cms/settings"}
                   ]
