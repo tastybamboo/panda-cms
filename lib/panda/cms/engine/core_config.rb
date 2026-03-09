@@ -29,7 +29,6 @@ module Panda
                 content_children = [
                   {label: "Pages", path: "#{config.admin_path}/cms/pages"},
                   {label: "Posts", path: "#{config.admin_path}/cms/posts"},
-                  {label: "Post Categories", path: "#{config.admin_path}/cms/post_categories"},
                   {label: "Files", path: "#{config.admin_path}/cms/files"}
                 ]
 
@@ -70,6 +69,7 @@ module Panda
                   icon: "fa-solid fa-gear",
                   children: [
                     {label: "Users", path: "#{config.admin_path}/users"},
+                    {label: "Post Categories", path: "#{config.admin_path}/cms/post_categories"},
                     {label: "Social Sharing", path: "#{config.admin_path}/cms/settings/social_sharing"},
                     {label: "System Status", path: "#{config.admin_path}/cms/settings"}
                   ]
