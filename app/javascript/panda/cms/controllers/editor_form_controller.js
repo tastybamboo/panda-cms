@@ -138,6 +138,20 @@ export default class extends Controller {
             class: window.Table,
             inlineToolbar: true
           },
+          image: {
+            class: window.ImageTool,
+            inlineToolbar: true,
+            config: {
+              endpoints: {
+                byFile: window.PANDA_CMS_EDITOR_JS_ENDPOINTS?.fileUpload
+              },
+              field: 'image',
+              types: 'image/*',
+              additionalRequestHeaders: {
+                'X-CSRF-Token': csrfToken
+              }
+            }
+          },
           linkTool: {
             class: window.LinkTool,
             config: {
