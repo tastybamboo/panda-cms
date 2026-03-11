@@ -1,14 +1,16 @@
 ---
 assert_lefthook_installed: true
 colors: true
+post-commit:
+  jobs:
+    - name: auto-bundle-update
+      run: bash bin/bundle-auto-update
 pre-commit:
   jobs:
     - name: brakeman
       run: brakeman --no-pager --no-progress --quiet
     - name: bundle-audit
       run: bundle exec bundle-audit update && bundle exec bundle-audit check
-    - name: bundle-outdated
-      run: bundle outdated --strict
     - name: erblint
       run: bundle exec erb_lint app/views --lint-all
     - name: standardrb
