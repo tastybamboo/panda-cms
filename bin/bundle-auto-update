@@ -1,0 +1,63 @@
+#!/usr/bin/env bash
+#
+# bundle-auto-update — post-commit hook script
+#
+# After a commit completes, checks for outdated gems and creates
+# a follow-up commit with `bundle update --all` if needed.
+#
+# Designed to be called from lefthook post-commit.
+# Always exits 0 — post-commit hooks should never fail the commit.
+
+set -euo pipefail
+
+# ── Guard: recursion ─────────────────────────────────────────────
+if [[ "${BUNDLE_AUTO_UPDATE_RUNNING:-}" == "1" ]]; then
+  exit 0
+fi
+export BUNDLE_AUTO_UPDATE_RUNNING=1
+
+# ── Trap: always exit 0 ─────────────────────────────────────────
+cleanup() { exit 0; }
+trap cleanup EXIT ERR INT TERM
+
+# ── Guard: not a Ruby project ───────────────────────────────────
+if [[ ! -f Gemfile ]]; then
+  exit 0
+fi
+
+# ── Guard: Gemfile.lock not tracked by git ──────────────────────
+if ! git ls-files --error-unmatch Gemfile.lock &>/dev/null; then
+  exit 0
+fi
+
+# ── Guard: rebase or merge in progress ──────────────────────────
+git_dir="$(git rev-parse --git-dir 2>/dev/null)"
+if [[ -d "${git_dir}/rebase-merge" ]] || [[ -d "${git_dir}/rebase-apply" ]] || [[ -f "${git_dir}/MERGE_HEAD" ]]; then
+  exit 0
+fi
+
+# ── Guard: Gemfile.lock has unstaged changes ────────────────────
+if ! git diff --quiet -- Gemfile.lock 2>/dev/null; then
+  exit 0
+fi
+
+# ── Check for outdated gems ─────────────────────────────────────
+echo "🔍 Checking for outdated gems..."
+if bundle outdated --parseable 2>/dev/null | grep -q .; then
+  echo "📦 Outdated gems found — running bundle update --all..."
+  bundle update --all
+
+  # Only commit if Gemfile.lock actually changed
+  if ! git diff --quiet -- Gemfile.lock 2>/dev/null; then
+    git add Gemfile.lock
+    LEFTHOOK=0 git commit -m "$(cat <<'EOF'
+chore: bundle update (auto-update outdated gems)
+EOF
+)"
+    echo "✅ Auto-update commit created."
+  else
+    echo "✅ Gemfile.lock unchanged after update — nothing to commit."
+  fi
+else
+  echo "✅ All gems up to date."
+fi
