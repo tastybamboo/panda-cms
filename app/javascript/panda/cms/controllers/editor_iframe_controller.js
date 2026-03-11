@@ -369,7 +369,7 @@ export default class extends Controller {
         'header': 'Header',
         'nested-list': 'NestedList',
         'quote': 'Quote',
-        'simple-image': 'SimpleImage',
+        'image': 'ImageTool',
         'table': 'Table',
         'embed': 'Embed',
         'link': 'LinkTool',

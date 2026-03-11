@@ -280,7 +280,7 @@ module Panda
             "editable-initialized": "false",
             "editable-version": "2.28.2",
             "editable-autosave": "false",
-            "editable-tools": '{"paragraph":true,"header":true,"list":true,"quote":true,"table":true}',
+            "editable-tools": '{"paragraph":true,"header":true,"list":true,"quote":true,"table":true,"image":true}',
             "editable-kind": "rich_text",
             "editable-block-content-id": @block_content_id,
             "editable-page-id": Current.page.id,
