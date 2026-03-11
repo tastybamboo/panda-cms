@@ -7,14 +7,18 @@ module Panda
     # Requires panda-helpdesk gem to be installed; degrades gracefully if not present.
     # @param key [Symbol] The key to use for the helpdesk form component
     # @param editable [Boolean] If the component is editable or not (defaults to true)
+    # @param sign_in_message [String, nil] Custom HTML sign-in message for unauthenticated users
+    # @param return_to [String, nil] URL to redirect to after form submission
     class HelpdeskFormComponent < Panda::Core::Base
       KIND = "helpdesk_form"
 
-      attr_reader :key, :editable
+      attr_reader :key, :editable, :sign_in_message, :return_to
 
-      def initialize(key:, editable: true, **attrs)
+      def initialize(key:, editable: true, sign_in_message: nil, return_to: nil, **attrs)
         @key = key
         @editable = editable
+        @sign_in_message = sign_in_message
+        @return_to = return_to
         super(**attrs)
       end
 

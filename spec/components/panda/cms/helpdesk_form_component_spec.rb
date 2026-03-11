@@ -19,6 +19,26 @@ RSpec.describe Panda::CMS::HelpdeskFormComponent, type: :component do
       component = described_class.new(key: :helpdesk_form)
       expect(component.editable).to be true
     end
+
+    it "accepts sign_in_message parameter" do
+      component = described_class.new(key: :helpdesk_form, sign_in_message: "Please sign in")
+      expect(component.sign_in_message).to eq("Please sign in")
+    end
+
+    it "accepts return_to parameter" do
+      component = described_class.new(key: :helpdesk_form, return_to: "/thank-you")
+      expect(component.return_to).to eq("/thank-you")
+    end
+
+    it "defaults sign_in_message to nil" do
+      component = described_class.new(key: :helpdesk_form)
+      expect(component.sign_in_message).to be_nil
+    end
+
+    it "defaults return_to to nil" do
+      component = described_class.new(key: :helpdesk_form)
+      expect(component.return_to).to be_nil
+    end
   end
 
   describe "#should_cache?" do

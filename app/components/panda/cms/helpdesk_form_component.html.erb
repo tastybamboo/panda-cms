@@ -44,5 +44,5 @@
     </p>
   </div>
 <% elsif helpdesk_available? && @department %>
-  <%= render Panda::Helpdesk::EmbeddedFormComponent.new(department: @department, current_user: @current_user) %>
+  <%= render Panda::Helpdesk::EmbeddedFormComponent.new(department: @department, current_user: @current_user, sign_in_message: @sign_in_message, return_to: @return_to) %>
 <% end %>
