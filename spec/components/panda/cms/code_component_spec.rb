@@ -52,5 +52,29 @@ RSpec.describe Panda::CMS::CodeComponent, type: :component do
       output = render_inline(component)
       expect(output.to_html).to include("<p>Test HTML</p>")
     end
+
+    context "when content is EditorJS JSON" do
+      before do
+        editorjs_json = {
+          "time" => 1773316550000,
+          "blocks" => [
+            {"data" => {"text" => "Hello world"}, "type" => "paragraph"}
+          ],
+          "version" => "2.28.2"
+        }.to_json
+
+        @block_content.update_columns(
+          content: editorjs_json,
+          cached_content: "<p>Hello world</p>"
+        )
+      end
+
+      it "renders cached_content instead of raw JSON" do
+        component = described_class.new(key: :test_code, editable: false)
+        output = render_inline(component)
+        expect(output.to_html).to include("<p>Hello world</p>")
+        expect(output.to_html).not_to include("blocks")
+      end
+    end
   end
 end

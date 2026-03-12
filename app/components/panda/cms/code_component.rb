@@ -36,7 +36,13 @@ module Panda
         return false if block.nil?
 
         @block_content_obj = find_block_content(block)
-        @code_content = @block_content_obj&.content.to_s
+        content = @block_content_obj&.content
+        # If content is EditorJS data (Hash), use the pre-rendered cached_content instead
+        @code_content = if content.is_a?(Hash)
+          @block_content_obj&.cached_content.to_s
+        else
+          content.to_s
+        end
         @block_content_id = @block_content_obj&.id
       end
 
