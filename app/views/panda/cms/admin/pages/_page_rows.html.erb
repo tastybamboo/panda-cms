@@ -1,5 +1,5 @@
 <% pages.each do |page| %>
-  <div class="table-row odd:bg-white even:bg-gray-50/60 hover:bg-gray-100 cursor-pointer" data-page-id="<%= page.id %>">
+  <div class="table-row odd:bg-white even:bg-gray-50/60 hover:bg-gray-100" data-page-id="<%= page.id %>">
     <div class="table-cell px-4 py-3 text-sm align-middle break-words border-b border-gray-200/70 text-gray-600">
       <div class="flex flex-col <%= "opacity-50" if page.archived? %>" data-tree-target="row" data-sortable-tree-target="row" data-page-id="<%= page.id %>" data-level="<%= page.level %>" data-parent-id="<%= page.parent_id %>">
         <% indent_class = case page.level

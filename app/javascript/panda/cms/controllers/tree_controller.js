@@ -5,7 +5,7 @@ export default class extends Controller {
   static values = {
     collapsed: { type: Array, default: [] },
     childrenUrl: { type: String, default: "" },
-    showArchived: { type: String, default: "false" }
+    showArchived: { type: Boolean, default: false }
   }
 
   connect() {

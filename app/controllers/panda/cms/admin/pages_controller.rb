@@ -31,7 +31,7 @@ module Panda
           parent = Panda::CMS::Page.find(params[:id])
           kids = parent.children.order(:lft)
           kids = kids.not_archived unless params[:show_archived] == "true"
-          render partial: "page_rows", locals: {pages: kids, show_archived: params[:show_archived] == "true"}
+          render partial: "page_rows", locals: {pages: kids}
         end
 
         # Loads the add page form
