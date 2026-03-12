@@ -1,9 +1,9 @@
 GIT
   remote: https://github.com/tastybamboo/panda-core.git
-  revision: b8ebdb97d06d47e1b0389c9514a478899754d2ec
+  revision: a54223095c3338a9e43df0abef16fc619958178c
   branch: main
   specs:
-    panda-core (0.14.4)
+    panda-core (1.0.0)
       csv
       image_processing (~> 1.2)
       importmap-rails
@@ -20,7 +20,7 @@ GIT
 
 GIT
   remote: https://github.com/tastybamboo/panda-editor.git
-  revision: 8d943fd71fed0ce4735370944c6acdaf89728423
+  revision: efa44443af5199b2a7048fca5b9ad10edfd8468f
   branch: main
   specs:
     panda-editor (0.8.3)
@@ -56,7 +56,7 @@ PATH
 GEM
   remote: https://rubygems.org/
   specs:
-    action_text-trix (2.1.16)
+    action_text-trix (2.1.17)
       railties
     actioncable (8.1.1)
       actionpack (= 8.1.1)
@@ -461,7 +461,7 @@ GEM
       rack (>= 1.1)
       rubocop (>= 1.75.0, < 2.0)
       rubocop-ast (>= 1.44.0, < 2.0)
-    ruby-lsp (0.26.7)
+    ruby-lsp (0.26.8)
       language_server-protocol (~> 3.17.0)
       prism (>= 1.2, < 2.0)
       rbs (>= 3, < 5)
