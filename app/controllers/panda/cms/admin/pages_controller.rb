@@ -7,14 +7,31 @@ module Panda
         before_action :set_initial_breadcrumb, only: %i[index edit new create update]
         # Authentication is automatically enforced by AdminController
 
-        # Lists all pages which can be managed by the administrator
+        # Lists top-level pages (homepage + direct children) for the admin tree.
+        # Deeper levels are loaded on-demand via the `children` action.
         # @type GET
-        # @return ActiveRecord::Collection A list of all pages
         def index
           homepage = Panda::CMS::Page.find_by(path: "/")
           archived_count = Panda::CMS::Page.archived.count
           show_archived = params[:show_archived] == "true"
-          render :index, locals: {root_page: homepage, archived_count: archived_count, show_archived: show_archived}
+
+          if homepage
+            top_level = [homepage] + homepage.children.order(:lft).to_a
+            top_level = top_level.reject(&:archived?) unless show_archived
+          else
+            top_level = []
+          end
+
+          render :index, locals: {root_page: homepage, top_level_pages: top_level, archived_count: archived_count, show_archived: show_archived}
+        end
+
+        # Returns child page rows as HTML for lazy-loading the page tree.
+        # @type GET
+        def children
+          parent = Panda::CMS::Page.find(params[:id])
+          kids = parent.children.order(:lft)
+          kids = kids.not_archived unless params[:show_archived] == "true"
+          render partial: "page_rows", locals: {pages: kids, show_archived: params[:show_archived] == "true"}
         end
 
         # Loads the add page form

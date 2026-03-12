@@ -4,68 +4,26 @@
   <% end %>
 
   <% if root_page %>
-    <% page_rows = show_archived ? root_page.self_and_descendants : root_page.self_and_descendants.not_archived %>
-    <div data-controller="tree sortable-tree" data-tree-target="container" data-sortable-tree-reorder-url-value="<%= reorder_admin_cms_page_path("__PAGE_ID__") %>" style="opacity: 0; transition: opacity 0.2s;">
-      <%= render Panda::Core::Admin::TableComponent.new(term: "page", rows: page_rows) do |table| %>
-        <% table.column("Name") do |page| %>
-          <div class="flex flex-col <%= "opacity-50" if page.archived? %>" data-tree-target="row" data-sortable-tree-target="row" data-page-id="<%= page.id %>" data-level="<%= page.level %>" data-parent-id="<%= page.parent_id %>">
-            <%# Add indentation for nested levels %>
-            <% indent_class = case page.level
-               when 0 then ""
-               when 1 then "pl-6"
-               when 2 then "pl-12"
-               when 3 then "pl-16"
-               when 4 then "pl-20"
-               when 5 then "pl-24"
-               else "pl-28"
-               end %>
-            <div class="flex items-center gap-2 <%= indent_class %>">
-              <% if page.level > 0 && !page.archived? %>
-                <div class="flex items-center justify-center cursor-grab text-gray-300 hover:text-gray-500"
-                     data-sortable-tree-handle>
-                  <i class="fa-solid fa-grip-vertical text-xs"></i>
-                </div>
-              <% else %>
-                <div class="w-4"></div>
-              <% end %>
-              <%# Chevron/icon section - all use w-4 for consistent spacing %>
-              <div class="w-4 flex items-center justify-center">
-                <% if page.children_count > 0 %>
-                  <% if page.level > 0 %>
-                    <%# Non-root pages with children: show chevron button %>
-                    <button type="button"
-                            class="text-xs text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary rounded cursor-pointer"
-                            data-tree-target="toggle"
-                            data-action="click->tree#toggle"
-                            data-page-id="<%= page.id %>">
-                      <i class="fa-solid fa-chevron-right"></i>
-                    </button>
-                  <% else %>
-                    <%# Root page (Home): show folder icon %>
-                    <i class="fa-solid fa-folder text-gray-500"></i>
-                  <% end %>
-                <% else %>
-                  <%# Leaf pages: show file icon %>
-                  <i class="fa-solid fa-file text-gray-400"></i>
-                <% end %>
-              </div>
-              <div class="flex flex-col">
-                <div class="flex items-center gap-2">
-                  <%= link_to page.title, edit_admin_cms_page_path(page), class: "font-medium hover:text-primary" %>
-                  <% if page.archived? %>
-                    <span class="inline-flex items-center rounded-md bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">Archived</span>
-                  <% end %>
-                </div>
-                <div class="text-xs text-black/60 mt-0.5">
-                  <%= page.path %>
-                </div>
-              </div>
+    <div data-controller="tree sortable-tree"
+         data-tree-target="container"
+         data-tree-children-url-value="<%= children_admin_cms_page_path("__ID__") %>"
+         data-tree-show-archived-value="<%= show_archived %>"
+         data-sortable-tree-reorder-url-value="<%= reorder_admin_cms_page_path("__PAGE_ID__") %>"
+         style="opacity: 0; transition: opacity 0.2s;">
+      <div class="mb-12 w-full overflow-x-auto rounded-2xl border border-gray-200 bg-white">
+        <div class="table w-full" style="table-layout: fixed;">
+          <div class="table-header-group">
+            <div class="table-row text-sm font-medium text-gray-500 truncate bg-gray-50 border-b border-gray-200">
+              <div class="table-cell sticky top-0 z-10 px-4 py-3 align-middle">Name</div>
+              <div class="table-cell sticky top-0 z-10 px-4 py-3 align-middle" style="width: 12%;">Type</div>
+              <div class="table-cell sticky top-0 z-10 px-4 py-3 align-middle" style="width: 18%;">Last Updated</div>
             </div>
           </div>
-        <% end %>
-        <% table.column("Type", width: "12%") { |page| render Panda::Core::Admin::TagComponent.new(page_type: page.page_type.to_sym) } %>
-        <% table.column("Last Updated", width: "18%") { |page| render Panda::Core::Admin::UserActivityComponent.new(at: page.last_updated_at) } %>
-      <% end %>
+          <div class="table-row-group" data-tree-target="body">
+            <%= render partial: "page_rows", locals: { pages: top_level_pages, show_archived: show_archived } %>
+          </div>
+        </div>
+      </div>
     </div>
 
     <% if archived_count > 0 %>

@@ -1,0 +1,61 @@
+<% pages.each do |page| %>
+  <div class="table-row odd:bg-white even:bg-gray-50/60 hover:bg-gray-100 cursor-pointer" data-page-id="<%= page.id %>">
+    <div class="table-cell px-4 py-3 text-sm align-middle break-words border-b border-gray-200/70 text-gray-600">
+      <div class="flex flex-col <%= "opacity-50" if page.archived? %>" data-tree-target="row" data-sortable-tree-target="row" data-page-id="<%= page.id %>" data-level="<%= page.level %>" data-parent-id="<%= page.parent_id %>">
+        <% indent_class = case page.level
+           when 0 then ""
+           when 1 then "pl-6"
+           when 2 then "pl-12"
+           when 3 then "pl-16"
+           when 4 then "pl-20"
+           when 5 then "pl-24"
+           else "pl-28"
+           end %>
+        <div class="flex items-center gap-2 <%= indent_class %>">
+          <% if page.level > 0 && !page.archived? %>
+            <div class="flex items-center justify-center cursor-grab text-gray-300 hover:text-gray-500"
+                 data-sortable-tree-handle>
+              <i class="fa-solid fa-grip-vertical text-xs"></i>
+            </div>
+          <% else %>
+            <div class="w-4"></div>
+          <% end %>
+          <div class="w-4 flex items-center justify-center">
+            <% if page.children_count > 0 %>
+              <% if page.level > 0 %>
+                <button type="button"
+                        class="text-xs text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary rounded cursor-pointer"
+                        data-tree-target="toggle"
+                        data-action="click->tree#toggle"
+                        data-page-id="<%= page.id %>">
+                  <i class="fa-solid fa-chevron-right"></i>
+                </button>
+              <% else %>
+                <i class="fa-solid fa-folder text-gray-500"></i>
+              <% end %>
+            <% else %>
+              <i class="fa-solid fa-file text-gray-400"></i>
+            <% end %>
+          </div>
+          <div class="flex flex-col">
+            <div class="flex items-center gap-2">
+              <%= link_to page.title, edit_admin_cms_page_path(page), class: "font-medium hover:text-primary" %>
+              <% if page.archived? %>
+                <span class="inline-flex items-center rounded-md bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">Archived</span>
+              <% end %>
+            </div>
+            <div class="text-xs text-black/60 mt-0.5">
+              <%= page.path %>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="table-cell px-4 py-3 text-sm align-middle break-words border-b border-gray-200/70 text-gray-600">
+      <%= render Panda::Core::Admin::TagComponent.new(page_type: page.page_type.to_sym) %>
+    </div>
+    <div class="table-cell px-4 py-3 text-sm align-middle break-words border-b border-gray-200/70 text-gray-600">
+      <%= render Panda::Core::Admin::UserActivityComponent.new(at: page.last_updated_at) %>
+    </div>
+  </div>
+<% end %>

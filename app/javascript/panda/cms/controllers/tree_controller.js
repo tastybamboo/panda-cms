@@ -1,33 +1,30 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["row", "toggle", "container"]
+  static targets = ["row", "toggle", "container", "body"]
   static values = {
-    collapsed: { type: Array, default: [] }
+    collapsed: { type: Array, default: [] },
+    childrenUrl: { type: String, default: "" },
+    showArchived: { type: String, default: "false" }
   }
 
   connect() {
-    const hasStoredState = localStorage.getItem('panda-cms-pages-collapsed')
+    // Mark homepage row as children-loaded (level 1 pages are pre-rendered)
+    this.rowTargets.forEach(row => {
+      if (parseInt(row.dataset.level) === 0) {
+        row.dataset.childrenLoaded = "true"
+      }
+    })
 
-    if (hasStoredState) {
-      this.loadCollapsedState()
-    } else {
-      this.initializeTree()
-    }
-  }
-
-  // Helper to get the actual table row element from our target div
-  getTableRow(rowTarget) {
-    return rowTarget.closest('.table-row')
+    // All level 1 pages start collapsed by default
+    this.initializeTree()
   }
 
   initializeTree() {
-    // Collapse all level 1 pages (direct children of Home) by default
     this.rowTargets.forEach(row => {
       const level = parseInt(row.dataset.level)
       const pageId = row.dataset.pageId
 
-      // If it's a level 1 page with children, mark it as collapsed
       if (level === 1) {
         const hasChildren = row.querySelector('[data-tree-target="toggle"]')
         if (hasChildren) {
@@ -35,19 +32,14 @@ export default class extends Controller {
           this.updateToggleIcon(pageId, true)
         }
       }
-
-      // Hide everything below level 1 (level > 1)
-      if (level > 1) {
-        const tableRow = this.getTableRow(row)
-        if (tableRow) tableRow.style.display = 'none'
-      }
     })
 
-    // Save the initial collapsed state
-    this.saveCollapsedState()
-
-    // Fade in the tree after initialization
     this.showTree()
+  }
+
+  // Helper to get the actual table row element from our target div
+  getTableRow(rowTarget) {
+    return rowTarget.closest('.table-row')
   }
 
   toggle(event) {
@@ -57,46 +49,93 @@ export default class extends Controller {
     const level = parseInt(row.dataset.level)
 
     if (this.isCollapsed(pageId)) {
-      this.expand(pageId, level)
+      this.expand(pageId, level, row)
     } else {
       this.collapse(pageId, level)
     }
-
-    this.saveCollapsedState()
   }
 
   collapse(pageId, level) {
-    // Add to collapsed set
     if (!this.collapsedValue.includes(pageId)) {
       this.collapsedValue = [...this.collapsedValue, pageId]
     }
 
-    // Hide all descendant rows
+    // Hide all descendant rows currently in the DOM
     const descendants = this.getDescendantRows(pageId, level)
     descendants.forEach(row => {
       const tableRow = this.getTableRow(row)
-      if (tableRow) {
-        tableRow.style.display = 'none'
-      }
+      if (tableRow) tableRow.style.display = 'none'
     })
 
-    // Update toggle icon
     this.updateToggleIcon(pageId, true)
   }
 
-  expand(pageId, level) {
-    // Remove from collapsed set
+  async expand(pageId, level, row) {
     this.collapsedValue = this.collapsedValue.filter(id => id !== pageId)
-
-    // Show direct children only (they will handle their own children)
-    const directChildren = this.getDirectChildRows(pageId, level)
-    directChildren.forEach(row => {
-      const tableRow = this.getTableRow(row)
-      if (tableRow) tableRow.style.display = ''
-    })
-
-    // Update toggle icon
     this.updateToggleIcon(pageId, false)
+
+    if (row.dataset.childrenLoaded === "true") {
+      // Children already in DOM — just show direct children
+      const directChildren = this.getDirectChildRows(pageId, level)
+      directChildren.forEach(childRow => {
+        const tableRow = this.getTableRow(childRow)
+        if (tableRow) tableRow.style.display = ''
+      })
+    } else {
+      // Fetch children from server
+      await this.loadChildren(pageId, row)
+    }
+  }
+
+  async loadChildren(pageId, row) {
+    if (!this.childrenUrlValue) return
+
+    const url = this.childrenUrlValue.replace("__ID__", pageId)
+    const separator = url.includes("?") ? "&" : "?"
+    const fullUrl = `${url}${separator}show_archived=${this.showArchivedValue}`
+
+    // Show loading spinner
+    const toggle = row.querySelector('[data-tree-target="toggle"]')
+    let originalIcon
+    if (toggle) {
+      originalIcon = toggle.innerHTML
+      toggle.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-xs"></i>'
+    }
+
+    try {
+      const response = await fetch(fullUrl, {
+        headers: {
+          "Accept": "text/html",
+          "X-Requested-With": "XMLHttpRequest"
+        }
+      })
+
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+
+      const html = await response.text()
+
+      // Insert the rows after the parent's table-row
+      const parentTableRow = this.getTableRow(row)
+      if (parentTableRow && html.trim()) {
+        parentTableRow.insertAdjacentHTML('afterend', html)
+      }
+
+      row.dataset.childrenLoaded = "true"
+
+      // Re-register Stimulus targets by dispatching an event
+      // (Stimulus auto-detects new targets in the DOM)
+    } catch (error) {
+      console.error("Failed to load children:", error)
+      // Restore collapsed state on error
+      if (!this.collapsedValue.includes(pageId)) {
+        this.collapsedValue = [...this.collapsedValue, pageId]
+      }
+    } finally {
+      // Restore icon
+      if (toggle && originalIcon) {
+        this.updateToggleIcon(pageId, this.isCollapsed(pageId))
+      }
+    }
   }
 
   getDescendantRows(pageId, parentLevel) {
@@ -141,74 +180,18 @@ export default class extends Controller {
     const icon = toggle.querySelector('i')
     if (icon) {
       if (collapsed) {
-        icon.classList.remove('fa-chevron-down')
+        icon.classList.remove('fa-chevron-down', 'fa-spinner', 'fa-spin')
         icon.classList.add('fa-chevron-right')
       } else {
-        icon.classList.remove('fa-chevron-right')
+        icon.classList.remove('fa-chevron-right', 'fa-spinner', 'fa-spin')
         icon.classList.add('fa-chevron-down')
       }
     }
   }
 
-  loadCollapsedState() {
-    try {
-      const stored = localStorage.getItem('panda-cms-pages-collapsed')
-      if (stored) {
-        this.collapsedValue = JSON.parse(stored)
-
-        // First, show all pages at level 1 (direct children of Home)
-        this.rowTargets.forEach(row => {
-          const level = parseInt(row.dataset.level)
-          if (level === 1) {
-            const tableRow = this.getTableRow(row)
-            if (tableRow) tableRow.style.display = ''
-          }
-        })
-
-        // Then apply collapsed state - hiding descendants of collapsed items
-        this.collapsedValue.forEach(pageId => {
-          const row = this.rowTargets.find(r => r.dataset.pageId === pageId)
-          if (row) {
-            const level = parseInt(row.dataset.level)
-            this.collapse(pageId, level)
-          }
-        })
-
-        // For level 1 items NOT in collapsed list, show their children
-        this.rowTargets.forEach(row => {
-          const level = parseInt(row.dataset.level)
-          const pageId = row.dataset.pageId
-          const hasToggle = row.querySelector('[data-tree-target="toggle"]')
-
-          if (level === 1 && hasToggle && !this.isCollapsed(pageId)) {
-            // This level 1 item is expanded, show its direct children
-            this.getDirectChildRows(pageId, level).forEach(childRow => {
-              const tableRow = this.getTableRow(childRow)
-              if (tableRow) tableRow.style.display = ''
-            })
-          }
-        })
-
-        // Fade in the tree after loading state
-        this.showTree()
-      }
-    } catch (e) {
-      console.error('Error loading collapsed state:', e)
-    }
-  }
-
   showTree() {
-    // Fade in the container
     if (this.hasContainerTarget) {
       this.containerTarget.style.opacity = '1'
-    }
-  }
-
-  saveCollapsedState() {
-    try {
-      localStorage.setItem('panda-cms-pages-collapsed', JSON.stringify(this.collapsedValue))
-    } catch (e) {
-      console.error('Error saving collapsed state:', e)
     }
   }
 }

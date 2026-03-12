@@ -20,6 +20,7 @@ Panda::CMS::Engine.routes.draw do
       resources :pages do
         resources :block_contents, only: %i[update]
         post :reorder, on: :member
+        get :children, on: :member
       end
       resources :posts
       resources :post_categories
