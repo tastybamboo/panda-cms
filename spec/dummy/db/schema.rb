@@ -10,26 +10,6 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-# DEBUG: trace duplicate migration error
-module AssumeDebug
-  def assume_migrated_upto_version(version)
-    ctx = pool.migration_context
-    $stderr.puts "[DEBUG] assume_migrated_upto_version(#{version})"
-    $stderr.puts "[DEBUG] migrations_paths = #{ctx.migrations_paths.inspect}"
-    $stderr.puts "[DEBUG] PWD = #{Dir.pwd}"
-    versions = ctx.migrations.map(&:version)
-    dupes = versions.select { |v| versions.count(v) > 1 }.uniq
-    $stderr.puts "[DEBUG] Total: #{versions.size}, Dupes: #{dupes.inspect}"
-    if dupes.any?
-      ctx.migrations.select { |m| dupes.include?(m.version) }.each do |m|
-        $stderr.puts "[DEBUG]   #{m.version} #{m.name} #{m.filename}"
-      end
-    end
-    super
-  end
-end
-ActiveRecord::ConnectionAdapters::AbstractAdapter.prepend(AssumeDebug)
-
 ActiveRecord::Schema[8.1].define(version: 2026_03_12_113254) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
