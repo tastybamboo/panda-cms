@@ -14,9 +14,12 @@ module Panda
         # HTTP caching: Use the most recent post's updated_at for conditional requests
         # Returns 304 Not Modified if no posts have changed since client's last request
         latest_post_timestamp = @posts.maximum(:updated_at) || Time.current
-        fresh_when(etag: [@posts.count, latest_post_timestamp], last_modified: latest_post_timestamp, public: true)
+        return unless stale?(etag: [@posts.count, latest_post_timestamp], last_modified: latest_post_timestamp, public: true)
 
-        render inline: "", layout: Panda::CMS.config.posts[:layouts][:index]
+        respond_to do |format|
+          format.html { render inline: "", layout: Panda::CMS.config.posts[:layouts][:index] }
+          format.atom { @posts = @posts.limit(20) }
+        end
       end
 
       def show
