@@ -16,7 +16,10 @@ module Panda
         latest_post_timestamp = @posts.maximum(:updated_at) || Time.current
         fresh_when(etag: [@posts.count, latest_post_timestamp], last_modified: latest_post_timestamp, public: true)
 
-        render inline: "", layout: Panda::CMS.config.posts[:layouts][:index]
+        respond_to do |format|
+          format.html { render inline: "", layout: Panda::CMS.config.posts[:layouts][:index] }
+          format.atom
+        end
       end
 
       def show
