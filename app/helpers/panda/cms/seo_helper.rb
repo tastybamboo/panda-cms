@@ -29,7 +29,7 @@ module Panda
 
         # Open Graph image
         if resource.og_image.attached?
-          og_image_url = url_for(resource.og_image.variant(:og_share))
+          og_image_url = rails_representation_url(resource.og_image.variant(:og_share))
           tags << tag.meta(property: "og:image", content: og_image_url)
           tags << tag.meta(property: "og:image:width", content: "1200")
           tags << tag.meta(property: "og:image:height", content: "630")
@@ -42,7 +42,7 @@ module Panda
 
         # Twitter image (same as OG)
         if resource.og_image.attached?
-          tags << tag.meta(name: "twitter:image", content: url_for(resource.og_image.variant(:og_share)))
+          tags << tag.meta(name: "twitter:image", content: rails_representation_url(resource.og_image.variant(:og_share)))
         end
 
         safe_join(tags, "\n")

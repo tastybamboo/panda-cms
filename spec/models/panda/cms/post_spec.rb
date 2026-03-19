@@ -257,6 +257,38 @@ RSpec.describe Panda::CMS::Post, type: :model do
       end
     end
 
+    describe "#excerpt" do
+      it "extracts text from paragraph blocks" do
+        post.content = {
+          "blocks" => [
+            {"type" => "paragraph", "data" => {"text" => "Hello world"}},
+            {"type" => "paragraph", "data" => {"text" => "Second paragraph"}}
+          ]
+        }
+        expect(post.excerpt(200)).to include("Hello world")
+        expect(post.excerpt(200)).to include("Second paragraph")
+      end
+
+      it "handles blocks with missing data or text keys" do
+        post.content = {
+          "blocks" => [
+            {"type" => "paragraph", "data" => {"text" => "Valid block"}},
+            {"type" => "paragraph", "data" => {}},
+            {"type" => "paragraph"},
+            {"type" => "paragraph", "data" => {"text" => "Another valid block"}}
+          ]
+        }
+        expect { post.excerpt }.not_to raise_error
+        expect(post.excerpt(200)).to include("Valid block")
+        expect(post.excerpt(200)).to include("Another valid block")
+      end
+
+      it "returns empty string when content is blank" do
+        post.content = nil
+        expect(post.excerpt).to eq("")
+      end
+    end
+
     describe "#effective_og_title" do
       it "returns og_title when present" do
         post.og_title = "Custom OG Title"
