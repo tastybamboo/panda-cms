@@ -147,7 +147,7 @@ RSpec.describe Panda::CMS::SEOHelper, type: :helper do
         allow(test_page).to receive_message_chain(:og_image, :variant).and_return(
           double(url: "https://example.com/image.jpg")
         )
-        allow(helper).to receive(:url_for).and_return("https://example.com/image.jpg")
+        allow(helper).to receive(:rails_representation_url).and_return("https://example.com/image.jpg")
 
         result = helper.render_seo_meta_tags(test_page)
         expect(result).to include('property="og:image"')
