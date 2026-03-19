@@ -116,7 +116,8 @@ module Panda
         text = if content.is_a?(Hash) && content["blocks"]
           content["blocks"]
             .select { |block| block["type"] == "paragraph" }
-            .map { |block| block["data"]["text"] }
+            .map { |block| block.dig("data", "text") }
+            .compact
             .join(" ")
         else
           content.to_s
