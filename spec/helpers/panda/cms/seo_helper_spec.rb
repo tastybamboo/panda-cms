@@ -141,15 +141,16 @@ RSpec.describe Panda::CMS::SEOHelper, type: :helper do
     end
 
     context "with og_image attached" do
-      it "renders og:image tags with dimensions" do
-        # Mock the og_image attachment and variant processing chain
-        blob_double = double(signed_id: "signed_id", filename: "image.jpg")
-        variation_double = double(key: "variant_key")
-        processed_double = double(blob: blob_double, variation: variation_double)
-        variant_double = double(processed: processed_double)
+      let(:blob_double) { double(signed_id: "signed_id", filename: "image.jpg") }
+      let(:variation_double) { double(key: "variant_key") }
+      let(:variant_double) { double(blob: blob_double, variation: variation_double) }
 
+      before do
         allow(test_page).to receive_message_chain(:og_image, :attached?).and_return(true)
         allow(test_page).to receive_message_chain(:og_image, :variant).and_return(variant_double)
+      end
+
+      it "renders og:image tags with dimensions" do
         allow(helper).to receive(:rails_blob_representation_proxy_url).and_return("https://example.com/image.jpg")
 
         result = helper.render_seo_meta_tags(test_page)
@@ -160,6 +161,17 @@ RSpec.describe Panda::CMS::SEOHelper, type: :helper do
         expect(result).to include('property="og:image:height"')
         expect(result).to include("630")
         expect(result).to include('name="twitter:image"')
+      end
+
+      it "gracefully skips image tags when URL generation fails" do
+        allow(helper).to receive(:rails_blob_representation_proxy_url)
+          .and_raise(ActionController::UrlGenerationError.new("missing keys"))
+        allow(Rails.logger).to receive(:warn)
+
+        result = helper.render_seo_meta_tags(test_page)
+        expect(result).not_to include('property="og:image"')
+        expect(result).not_to include('name="twitter:image"')
+        expect(Rails.logger).to have_received(:warn).with(/Failed to generate variant URL/).at_least(:once)
       end
     end
   end

@@ -68,25 +68,18 @@ module Panda
 
       private
 
-      #
-      # Generates the full canonical URL for a resource
-      #
-      # @param resource [Panda::CMS::Page, Panda::CMS::Post] The page or post
-      # @return [String] Full canonical URL
-      # @visibility private
-      #
-      # Generates a URL for an ActiveStorage variant.
+      # Generates a URL for an ActiveStorage variant, compatible with both Rails 7.x and 8.1+.
       # In Rails 8.1+, url_for(variant) broke because VariantWithRecord dropped to_model,
       # and rails_representation_url was renamed to rails_blob_representation_proxy_url.
-      # This method handles both Rails 7.x and 8.1+ APIs.
+      # Avoids eager processing — uses variant.blob and variant.variation directly so the
+      # variant is only processed lazily when the representation URL is requested by a client.
       def variant_representation_url(variant)
         if respond_to?(:rails_blob_representation_proxy_url)
           # Rails 8.1+
-          processed = variant.processed
           rails_blob_representation_proxy_url(
-            processed.blob.signed_id,
-            processed.variation.key,
-            processed.blob.filename
+            variant.blob.signed_id,
+            variant.variation.key,
+            variant.blob.filename
           )
         else
           # Rails 7.x
@@ -97,6 +90,13 @@ module Panda
         nil
       end
 
+      #
+      # Generates the full canonical URL for a resource
+      #
+      # @param resource [Panda::CMS::Page, Panda::CMS::Post] The page or post
+      # @return [String] Full canonical URL
+      # @visibility private
+      #
       def canonical_url_for(resource)
         # If canonical_url is a full URL, use it as-is
         return resource.canonical_url if resource.canonical_url&.match?(%r{\Ahttps?://})
