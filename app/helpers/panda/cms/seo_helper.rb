@@ -75,15 +75,23 @@ module Panda
       # @return [String] Full canonical URL
       # @visibility private
       #
-      # Generates a URL for an ActiveStorage variant, handling Rails 8.1+ API changes
-      # where url_for no longer works with VariantWithRecord (missing to_model).
+      # Generates a URL for an ActiveStorage variant.
+      # In Rails 8.1+, url_for(variant) broke because VariantWithRecord dropped to_model,
+      # and rails_representation_url was renamed to rails_blob_representation_proxy_url.
+      # This method handles both Rails 7.x and 8.1+ APIs.
       def variant_representation_url(variant)
-        processed = variant.processed
-        rails_blob_representation_proxy_url(
-          processed.blob.signed_id,
-          processed.variation.key,
-          processed.blob.filename
-        )
+        if respond_to?(:rails_blob_representation_proxy_url)
+          # Rails 8.1+
+          processed = variant.processed
+          rails_blob_representation_proxy_url(
+            processed.blob.signed_id,
+            processed.variation.key,
+            processed.blob.filename
+          )
+        else
+          # Rails 7.x
+          url_for(variant)
+        end
       rescue NoMethodError, ActionController::UrlGenerationError => e
         Rails.logger.warn "[Panda CMS] Failed to generate variant URL: #{e.message}"
         nil
