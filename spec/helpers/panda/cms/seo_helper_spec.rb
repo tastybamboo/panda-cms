@@ -142,12 +142,15 @@ RSpec.describe Panda::CMS::SEOHelper, type: :helper do
 
     context "with og_image attached" do
       it "renders og:image tags with dimensions" do
-        # Mock the og_image attachment
+        # Mock the og_image attachment and variant processing chain
+        blob_double = double(signed_id: "signed_id", filename: "image.jpg")
+        variation_double = double(key: "variant_key")
+        processed_double = double(blob: blob_double, variation: variation_double)
+        variant_double = double(processed: processed_double)
+
         allow(test_page).to receive_message_chain(:og_image, :attached?).and_return(true)
-        allow(test_page).to receive_message_chain(:og_image, :variant).and_return(
-          double(url: "https://example.com/image.jpg")
-        )
-        allow(helper).to receive(:rails_representation_url).and_return("https://example.com/image.jpg")
+        allow(test_page).to receive_message_chain(:og_image, :variant).and_return(variant_double)
+        allow(helper).to receive(:rails_blob_representation_proxy_url).and_return("https://example.com/image.jpg")
 
         result = helper.render_seo_meta_tags(test_page)
         expect(result).to include('property="og:image"')

@@ -29,10 +29,12 @@ module Panda
 
         # Open Graph image
         if resource.og_image.attached?
-          og_image_url = rails_representation_url(resource.og_image.variant(:og_share))
-          tags << tag.meta(property: "og:image", content: og_image_url)
-          tags << tag.meta(property: "og:image:width", content: "1200")
-          tags << tag.meta(property: "og:image:height", content: "630")
+          og_image_url = variant_representation_url(resource.og_image.variant(:og_share))
+          if og_image_url
+            tags << tag.meta(property: "og:image", content: og_image_url)
+            tags << tag.meta(property: "og:image:width", content: "1200")
+            tags << tag.meta(property: "og:image:height", content: "630")
+          end
         end
 
         # Twitter Card tags (with fallback to OG)
@@ -42,7 +44,8 @@ module Panda
 
         # Twitter image (same as OG)
         if resource.og_image.attached?
-          tags << tag.meta(name: "twitter:image", content: rails_representation_url(resource.og_image.variant(:og_share)))
+          twitter_url = variant_representation_url(resource.og_image.variant(:og_share))
+          tags << tag.meta(name: "twitter:image", content: twitter_url) if twitter_url
         end
 
         safe_join(tags, "\n")
@@ -72,6 +75,20 @@ module Panda
       # @return [String] Full canonical URL
       # @visibility private
       #
+      # Generates a URL for an ActiveStorage variant, handling Rails 8.1+ API changes
+      # where url_for no longer works with VariantWithRecord (missing to_model).
+      def variant_representation_url(variant)
+        processed = variant.processed
+        rails_blob_representation_proxy_url(
+          processed.blob.signed_id,
+          processed.variation.key,
+          processed.blob.filename
+        )
+      rescue NoMethodError, ActionController::UrlGenerationError => e
+        Rails.logger.warn "[Panda CMS] Failed to generate variant URL: #{e.message}"
+        nil
+      end
+
       def canonical_url_for(resource)
         # If canonical_url is a full URL, use it as-is
         return resource.canonical_url if resource.canonical_url&.match?(%r{\Ahttps?://})
