@@ -27,9 +27,11 @@ module Panda
         tags << tag.meta(property: "og:type", content: resource.og_type)
         tags << tag.meta(property: "og:url", content: canonical_url_for(resource))
 
+        # Image URL for OG and Twitter (compute once)
+        og_image_url = variant_representation_url(resource.og_image.variant(:og_share)) if resource.og_image.attached?
+
         # Open Graph image
-        if resource.og_image.attached?
-          og_image_url = rails_representation_url(resource.og_image.variant(:og_share))
+        if og_image_url
           tags << tag.meta(property: "og:image", content: og_image_url)
           tags << tag.meta(property: "og:image:width", content: "1200")
           tags << tag.meta(property: "og:image:height", content: "630")
@@ -39,11 +41,7 @@ module Panda
         tags << tag.meta(name: "twitter:card", content: "summary_large_image")
         tags << tag.meta(name: "twitter:title", content: resource.effective_og_title)
         tags << tag.meta(name: "twitter:description", content: resource.effective_og_description) if resource.effective_og_description.present?
-
-        # Twitter image (same as OG)
-        if resource.og_image.attached?
-          tags << tag.meta(name: "twitter:image", content: rails_representation_url(resource.og_image.variant(:og_share)))
-        end
+        tags << tag.meta(name: "twitter:image", content: og_image_url) if og_image_url
 
         safe_join(tags, "\n")
       end
@@ -64,6 +62,28 @@ module Panda
       end
 
       private
+
+      # Generates a URL for an ActiveStorage variant, compatible with both Rails 7.x and 8.1+.
+      # In Rails 8.1+, url_for(variant) broke because VariantWithRecord dropped to_model,
+      # and rails_representation_url was renamed to rails_blob_representation_proxy_url.
+      # Avoids eager processing — uses variant.blob and variant.variation directly so the
+      # variant is only processed lazily when the representation URL is requested by a client.
+      def variant_representation_url(variant)
+        if respond_to?(:rails_blob_representation_proxy_url)
+          # Rails 8.1+
+          rails_blob_representation_proxy_url(
+            variant.blob.signed_id,
+            variant.variation.key,
+            variant.blob.filename
+          )
+        else
+          # Rails 7.x
+          url_for(variant)
+        end
+      rescue NoMethodError, ActionController::UrlGenerationError => e
+        Rails.logger.warn "[Panda CMS] Failed to generate variant URL: #{e.message}"
+        nil
+      end
 
       #
       # Generates the full canonical URL for a resource
