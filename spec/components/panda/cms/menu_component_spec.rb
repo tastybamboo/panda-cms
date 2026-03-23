@@ -141,19 +141,19 @@ RSpec.describe Panda::CMS::MenuComponent, type: :component do
       expect(about_item.css_classes).to include("active")
     end
 
-    it "uses starts_with matching for non-root paths" do
+    it "uses starts_with matching when no same-depth sibling has a more specific match" do
       component = described_class.new(
         name: "Main Menu",
         current_path: "/about/team",
-        styles: {default: "link", active: "active", inactive: "inactive"}
+        styles: {default: "link", active: "font-bold", inactive: "text-gray"}
       )
       component.before_render
 
       about_item = component.processed_menu_items.find { |i| i.text == "About" }
-      expect(about_item.css_classes).to include("active")
+      expect(about_item.css_classes).to eq("link font-bold")
     end
 
-    it "only marks the most specific menu item as active when parent and child both exist" do
+    it "prefers the more specific match when two same-depth items both match" do
       component = described_class.new(
         name: "Main Menu",
         current_path: "/support-us/donate",
@@ -167,7 +167,7 @@ RSpec.describe Panda::CMS::MenuComponent, type: :component do
       expect(support_item.css_classes).to eq("link text-gray")
     end
 
-    it "marks parent as active when on parent path even if child exists" do
+    it "marks parent as active on exact match even when child exists at same depth" do
       component = described_class.new(
         name: "Main Menu",
         current_path: "/support-us",

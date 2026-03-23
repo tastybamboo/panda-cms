@@ -54,9 +54,9 @@ support_link:
   page: support_page
   sort_order: 4
   lft: 7
-  rgt: 10
+  rgt: 8
   depth: 0
-  children_count: 1
+  children_count: 0
   created_at: 2025-01-01 00:00:00
   updated_at: 2025-01-01 00:00:00
 
@@ -65,9 +65,9 @@ donate_link:
   menu: main_menu
   page: donate_page
   sort_order: 5
-  lft: 8
-  rgt: 9
-  depth: 1
+  lft: 9
+  rgt: 10
+  depth: 0
   children_count: 0
   created_at: 2025-01-01 00:00:00
   updated_at: 2025-01-01 00:00:00

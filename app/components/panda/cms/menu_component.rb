@@ -60,7 +60,9 @@ module Panda
           menu_items
         end
 
-        @all_resolved_links = filtered_menu_items.filter_map(&:resolved_link)
+        @menu_items_by_depth = filtered_menu_items.group_by(&:depth).transform_values do |items|
+          items.filter_map(&:resolved_link)
+        end
 
         @processed_menu_items = filtered_menu_items.map do |menu_item|
           add_css_classes_to_item(menu_item)
@@ -85,14 +87,17 @@ module Panda
         return true if @current_path == link_path
 
         if link_path != "/" && @current_path.starts_with?(link_path)
-          !more_specific_match_exists?(link_path)
+          !more_specific_match_at_same_depth?(menu_item)
         else
           false
         end
       end
 
-      def more_specific_match_exists?(link_path)
-        @all_resolved_links.any? do |other_link|
+      def more_specific_match_at_same_depth?(menu_item)
+        siblings = @menu_items_by_depth[menu_item.depth] || []
+        link_path = menu_item.resolved_link
+
+        siblings.any? do |other_link|
           other_link.length > link_path.length && @current_path.starts_with?(other_link)
         end
       end
