@@ -27,26 +27,21 @@ module Panda
         tags << tag.meta(property: "og:type", content: resource.og_type)
         tags << tag.meta(property: "og:url", content: canonical_url_for(resource))
 
+        # Image URL for OG and Twitter (compute once)
+        og_image_url = variant_representation_url(resource.og_image.variant(:og_share)) if resource.og_image.attached?
+
         # Open Graph image
-        if resource.og_image.attached?
-          og_image_url = variant_representation_url(resource.og_image.variant(:og_share))
-          if og_image_url
-            tags << tag.meta(property: "og:image", content: og_image_url)
-            tags << tag.meta(property: "og:image:width", content: "1200")
-            tags << tag.meta(property: "og:image:height", content: "630")
-          end
+        if og_image_url
+          tags << tag.meta(property: "og:image", content: og_image_url)
+          tags << tag.meta(property: "og:image:width", content: "1200")
+          tags << tag.meta(property: "og:image:height", content: "630")
         end
 
         # Twitter Card tags (with fallback to OG)
         tags << tag.meta(name: "twitter:card", content: "summary_large_image")
         tags << tag.meta(name: "twitter:title", content: resource.effective_og_title)
         tags << tag.meta(name: "twitter:description", content: resource.effective_og_description) if resource.effective_og_description.present?
-
-        # Twitter image (same as OG)
-        if resource.og_image.attached?
-          twitter_url = variant_representation_url(resource.og_image.variant(:og_share))
-          tags << tag.meta(name: "twitter:image", content: twitter_url) if twitter_url
-        end
+        tags << tag.meta(name: "twitter:image", content: og_image_url) if og_image_url
 
         safe_join(tags, "\n")
       end
