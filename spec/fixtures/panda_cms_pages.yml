@@ -6,7 +6,7 @@ homepage:
   template: homepage_template
   status: "published"
   lft: 1
-  rgt: 10
+  rgt: 14
   depth: 0
   created_at: 2025-01-01 00:00:00
   updated_at: 2025-01-01 00:00:00
@@ -47,14 +47,38 @@ services_page:
   created_at: 2025-01-01 00:00:00
   updated_at: 2025-01-01 00:00:00
 
+support_page:
+  title: "Support Us"
+  path: "/support-us"
+  template: page_template
+  parent: homepage
+  status: "published"
+  lft: 8
+  rgt: 11
+  depth: 1
+  created_at: 2025-01-01 00:00:00
+  updated_at: 2025-01-01 00:00:00
+
+donate_page:
+  title: "Donate"
+  path: "/support-us/donate"
+  template: page_template
+  parent: support_page
+  status: "published"
+  lft: 9
+  rgt: 10
+  depth: 2
+  created_at: 2025-01-01 00:00:00
+  updated_at: 2025-01-01 00:00:00
+
 custom_page:
   title: "Custom Page"
   path: "/custom-page"
   template: different_page_template
   parent: homepage
   status: "published"
-  lft: 8
-  rgt: 9
+  lft: 12
+  rgt: 13
   depth: 1
   created_at: 2025-01-01 00:00:00
   updated_at: 2025-01-01 00:00:00

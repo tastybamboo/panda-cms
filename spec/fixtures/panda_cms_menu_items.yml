@@ -48,6 +48,30 @@ external_link:
   created_at: 2025-01-01 00:00:00
   updated_at: 2025-01-01 00:00:00
 
+support_link:
+  text: "Support Us"
+  menu: main_menu
+  page: support_page
+  sort_order: 4
+  lft: 7
+  rgt: 8
+  depth: 0
+  children_count: 0
+  created_at: 2025-01-01 00:00:00
+  updated_at: 2025-01-01 00:00:00
+
+donate_link:
+  text: "Donate"
+  menu: main_menu
+  page: donate_page
+  sort_order: 5
+  lft: 9
+  rgt: 10
+  depth: 0
+  children_count: 0
+  created_at: 2025-01-01 00:00:00
+  updated_at: 2025-01-01 00:00:00
+
 header_home:
   text: "Home"
   menu: header_menu

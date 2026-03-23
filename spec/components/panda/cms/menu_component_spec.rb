@@ -69,7 +69,7 @@ RSpec.describe Panda::CMS::MenuComponent, type: :component do
     it "returns menu items when menu exists" do
       component = described_class.new(name: "Main Menu")
       component.before_render
-      expect(component.processed_menu_items.length).to eq(3)
+      expect(component.processed_menu_items.length).to eq(5)
     end
 
     it "adds css_classes method to each menu item" do
@@ -93,7 +93,7 @@ RSpec.describe Panda::CMS::MenuComponent, type: :component do
       component.before_render
 
       menu_item_texts = component.processed_menu_items.map(&:text)
-      expect(menu_item_texts).to contain_exactly("Home", "About")
+      expect(menu_item_texts).to contain_exactly("Home", "About", "Support Us", "Donate")
       expect(menu_item_texts).not_to include("Services")
     end
 
@@ -101,7 +101,7 @@ RSpec.describe Panda::CMS::MenuComponent, type: :component do
       component = described_class.new(name: "Main Menu")
       component.before_render
 
-      expect(component.processed_menu_items.length).to eq(3)
+      expect(component.processed_menu_items.length).to eq(5)
     end
 
     it "handles multiple hidden items" do
@@ -112,7 +112,7 @@ RSpec.describe Panda::CMS::MenuComponent, type: :component do
       component.before_render
 
       menu_item_texts = component.processed_menu_items.map(&:text)
-      expect(menu_item_texts).to contain_exactly("Home")
+      expect(menu_item_texts).to contain_exactly("Home", "Support Us", "Donate")
     end
   end
 
@@ -141,16 +141,44 @@ RSpec.describe Panda::CMS::MenuComponent, type: :component do
       expect(about_item.css_classes).to include("active")
     end
 
-    it "uses starts_with matching for non-root paths" do
+    it "uses starts_with matching when no same-depth sibling has a more specific match" do
       component = described_class.new(
         name: "Main Menu",
         current_path: "/about/team",
-        styles: {default: "link", active: "active", inactive: "inactive"}
+        styles: {default: "link", active: "font-bold", inactive: "text-gray"}
       )
       component.before_render
 
       about_item = component.processed_menu_items.find { |i| i.text == "About" }
-      expect(about_item.css_classes).to include("active")
+      expect(about_item.css_classes).to eq("link font-bold")
+    end
+
+    it "prefers the more specific match when two same-depth items both match" do
+      component = described_class.new(
+        name: "Main Menu",
+        current_path: "/support-us/donate",
+        styles: {default: "link", active: "font-bold", inactive: "text-gray"}
+      )
+      component.before_render
+
+      support_item = component.processed_menu_items.find { |i| i.text == "Support Us" }
+      donate_item = component.processed_menu_items.find { |i| i.text == "Donate" }
+      expect(donate_item.css_classes).to eq("link font-bold")
+      expect(support_item.css_classes).to eq("link text-gray")
+    end
+
+    it "marks parent as active on exact match even when child exists at same depth" do
+      component = described_class.new(
+        name: "Main Menu",
+        current_path: "/support-us",
+        styles: {default: "link", active: "font-bold", inactive: "text-gray"}
+      )
+      component.before_render
+
+      support_item = component.processed_menu_items.find { |i| i.text == "Support Us" }
+      donate_item = component.processed_menu_items.find { |i| i.text == "Donate" }
+      expect(support_item.css_classes).to eq("link font-bold")
+      expect(donate_item.css_classes).to eq("link text-gray")
     end
 
     it "marks non-matching links as inactive" do
@@ -236,6 +264,8 @@ RSpec.describe Panda::CMS::MenuComponent, type: :component do
       expect(page).to have_link("Home")
       expect(page).to have_link("About")
       expect(page).to have_link("Services")
+      expect(page).to have_link("Support Us")
+      expect(page).to have_link("Donate")
     end
 
     it "renders menu items as links" do
@@ -244,6 +274,8 @@ RSpec.describe Panda::CMS::MenuComponent, type: :component do
       expect(page).to have_link("Home", href: "/")
       expect(page).to have_link("About", href: "/about")
       expect(page).to have_link("Services", href: "/services")
+      expect(page).to have_link("Support Us", href: "/support-us")
+      expect(page).to have_link("Donate", href: "/support-us/donate")
     end
 
     it "renders nothing when menu doesn't exist" do
