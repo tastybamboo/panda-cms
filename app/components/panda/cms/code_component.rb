@@ -39,7 +39,12 @@ module Panda
         content = @block_content_obj&.content
         # If content is EditorJS data (Hash), use the pre-rendered cached_content instead
         @code_content = if content.is_a?(Hash)
-          @block_content_obj&.cached_content.to_s
+          cached = @block_content_obj&.cached_content
+          if cached.is_a?(Hash) && cached.key?("html")
+            cached["html"].to_s
+          else
+            cached.to_s
+          end
         else
           content.to_s
         end
