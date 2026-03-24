@@ -146,7 +146,7 @@
             } %>
             <% if page.og_image.attached? %>
               <div class="mt-2">
-                <%= image_tag page.og_image.variant(:og_share), class: "max-w-xs rounded-xl border border-gray-200" %>
+                <%= image_tag url_for(page.og_image.variant(:og_share)), class: "max-w-xs rounded-xl border border-gray-200" %>
               </div>
             <% end %>
           </div>
