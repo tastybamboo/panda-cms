@@ -51,7 +51,7 @@ module Panda
         end
 
         @block_content_obj = find_block_content(block)
-        @department_id = @block_content_obj&.content.to_s.presence
+        @department_id = normalize_block_content_id(@block_content_obj&.content)
         @block_content_id = @block_content_obj&.id
         @department = Panda::Helpdesk::Department.find_by(id: @department_id) if @department_id
         @available_departments = Panda::Helpdesk::Department.active.order(:name) if @editable_state

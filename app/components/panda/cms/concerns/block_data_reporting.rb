@@ -9,6 +9,15 @@ module Panda
       module BlockDataReporting
         private
 
+        # Normalize block content IDs: treat "{}" (the JSONB empty-object default
+        # stored by the inline selector when nothing is selected) as nil.
+        def normalize_block_content_id(raw)
+          value = raw.to_s.strip
+          return nil if value.blank? || value == "{}"
+          return nil unless value.match?(/\A[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\z/i)
+          value
+        end
+
         def report_missing_data(detail)
           return if @editable_state
 

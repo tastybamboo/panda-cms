@@ -39,7 +39,7 @@ module Panda
         end
 
         @block_content_obj = find_block_content(block)
-        @form_id = @block_content_obj&.content.to_s.presence
+        @form_id = normalize_block_content_id(@block_content_obj&.content)
         @block_content_id = @block_content_obj&.id
         @form = Panda::CMS::Form.find_by(id: @form_id) if @form_id
         @available_forms = Panda::CMS::Form.includes(:form_fields).order(:name) if @editable_state
