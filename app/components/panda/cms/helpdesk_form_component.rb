@@ -43,6 +43,7 @@ module Panda
 
         block = find_block
         if block.nil?
+          report_missing_data("Block not found (kind: #{KIND}, key: #{@key}, template: #{Current.page&.panda_cms_template_id})")
           @editable_state = false
           return
         end
@@ -52,7 +53,13 @@ module Panda
         @block_content_id = @block_content_obj&.id
         @department = Panda::Helpdesk::Department.find_by(id: @department_id) if @department_id
         @available_departments = Panda::Helpdesk::Department.active.order(:name) if @editable_state
-        @current_user = resolve_current_user unless @editable_state
+
+        unless @editable_state
+          report_missing_data("BlockContent missing for block #{block.id} on page #{Current.page&.id}") unless @block_content_obj
+          report_missing_data("BlockContent has no department ID (content: #{@block_content_obj&.content.inspect})") if @block_content_obj && @department_id.blank?
+          report_missing_data("Department not found for ID #{@department_id}") if @department_id.present? && @department.nil?
+          @current_user = resolve_current_user
+        end
       end
 
       def find_block
@@ -97,6 +104,20 @@ module Panda
       rescue => e
         Rails.logger.error("[HelpdeskFormComponent] Failed to resolve current user: #{e.class}: #{e.message}")
         nil
+      end
+
+      def report_missing_data(detail)
+        return if @editable_state
+
+        message = "[HelpdeskFormComponent] #{detail} (page: #{Current.page&.path})"
+        error = Panda::CMS::MissingBlockDataError.new(message)
+        Rails.error.report(error, handled: true, severity: :error, context: {
+          component: self.class.name,
+          key: @key,
+          page_path: Current.page&.path,
+          page_id: Current.page&.id,
+          template_id: Current.page&.panda_cms_template_id
+        })
       end
     end
   end
