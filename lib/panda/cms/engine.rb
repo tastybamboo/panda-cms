@@ -89,6 +89,7 @@ module Panda
     end
 
     class MissingBlockError < StandardError; end
+    class MissingBlockDataError < StandardError; end
     class BlockError < StandardError; end
   end
 end
