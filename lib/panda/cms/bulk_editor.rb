@@ -330,7 +330,7 @@ module Panda
 
         # Pages — populate metadata for every page so pages without
         # block_contents are still fully represented in the export.
-        Panda::CMS::Page.includes(:template).order("lft ASC").each do |page|
+        Panda::CMS::Page.includes(:template, :parent, og_image_attachment: :blob).order("lft ASC").each do |page|
           item = data["pages"][page.path] ||= {}
           item["id"] = page.id
           item["path"] = page.path
