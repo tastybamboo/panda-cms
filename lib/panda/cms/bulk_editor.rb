@@ -328,9 +328,30 @@ module Panda
           "settings" => {}
         }
 
-        # Pages
-        Panda::CMS::Page.includes(:template).order("lft ASC").each do |page|
-          data["pages"][page.path] ||= {}
+        # Pages — populate metadata for every page so pages without
+        # block_contents are still fully represented in the export.
+        Panda::CMS::Page.includes(:template, :parent, og_image_attachment: :blob).order("lft ASC").each do |page|
+          item = data["pages"][page.path] ||= {}
+          item["id"] = page.id
+          item["path"] = page.path
+          item["title"] = page.title
+          item["template"] = page.template.name
+          item["parent"] = page.parent&.path
+          item["status"] = page.status
+          item["page_type"] = page.page_type
+          item["seo_title"] = page.seo_title if page.seo_title.present?
+          item["seo_description"] = page.seo_description if page.seo_description.present?
+          item["seo_keywords"] = page.seo_keywords if page.seo_keywords.present?
+          item["seo_index_mode"] = page.seo_index_mode
+          item["canonical_url"] = page.canonical_url if page.canonical_url.present?
+          item["og_type"] = page.og_type
+          item["og_title"] = page.og_title if page.og_title.present?
+          item["og_description"] = page.og_description if page.og_description.present?
+          item["og_image_url"] = active_storage_url(page.og_image) if page.og_image.attached?
+          item["contributor_count"] = page.contributor_count if page.respond_to?(:contributor_count)
+          item["workflow_status"] = page.workflow_status if page.respond_to?(:workflow_status)
+          item["inherit_seo"] = page.inherit_seo if page.respond_to?(:inherit_seo)
+          item["contents"] ||= {}
         end
 
         # TODO: Eventually set the position of the block in the template, and then order from there rather than the name?

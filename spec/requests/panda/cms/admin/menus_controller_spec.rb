@@ -10,6 +10,8 @@ RSpec.describe "Admin Menus - Reordering", type: :request do
   let(:home_item) { panda_cms_menu_items(:home_link) }
   let(:about_item) { panda_cms_menu_items(:about_link) }
   let(:services_item) { panda_cms_menu_items(:services_link) }
+  let(:support_item) { panda_cms_menu_items(:support_link) }
+  let(:donate_item) { panda_cms_menu_items(:donate_link) }
 
   before do
     post "/admin/test_sessions", params: {user_id: admin_user.id}
@@ -17,8 +19,8 @@ RSpec.describe "Admin Menus - Reordering", type: :request do
 
   describe "PATCH /admin/cms/menus/:id - reordering" do
     it "reorders existing menu items based on position params" do
-      # Original order: Home(lft:1), About(lft:3), Services(lft:5)
-      # Desired order: Services, Home, About
+      # Original order: Home(lft:1), About(lft:3), Services(lft:5), Support Us(lft:7), Donate(lft:9)
+      # Desired order: Services, Home, About, Support Us, Donate
       patch "/admin/cms/menus/#{main_menu.id}", params: {
         menu: {
           name: main_menu.name,
@@ -26,7 +28,9 @@ RSpec.describe "Admin Menus - Reordering", type: :request do
           menu_items_attributes: {
             "0" => {id: services_item.id, text: "Services", panda_cms_page_id: services_item.panda_cms_page_id, position: "0"},
             "1" => {id: home_item.id, text: "Home", panda_cms_page_id: home_item.panda_cms_page_id, position: "1"},
-            "2" => {id: about_item.id, text: "About", panda_cms_page_id: about_item.panda_cms_page_id, position: "2"}
+            "2" => {id: about_item.id, text: "About", panda_cms_page_id: about_item.panda_cms_page_id, position: "2"},
+            "3" => {id: support_item.id, text: "Support Us", panda_cms_page_id: support_item.panda_cms_page_id, position: "3"},
+            "4" => {id: donate_item.id, text: "Donate", panda_cms_page_id: donate_item.panda_cms_page_id, position: "4"}
           }
         }
       }
@@ -34,11 +38,11 @@ RSpec.describe "Admin Menus - Reordering", type: :request do
       expect(response).to redirect_to("/admin/cms/menus")
 
       reordered = main_menu.menu_items.reload.order(:lft).pluck(:text)
-      expect(reordered).to eq(["Services", "Home", "About"])
+      expect(reordered).to eq(["Services", "Home", "About", "Support Us", "Donate"])
     end
 
     it "preserves order when positions match current order" do
-      # Submit in the same order as current: Home, About, Services
+      # Submit in the same order as current: Home, About, Services, Support Us, Donate
       patch "/admin/cms/menus/#{main_menu.id}", params: {
         menu: {
           name: main_menu.name,
@@ -46,7 +50,9 @@ RSpec.describe "Admin Menus - Reordering", type: :request do
           menu_items_attributes: {
             "0" => {id: home_item.id, text: "Home", panda_cms_page_id: home_item.panda_cms_page_id, position: "0"},
             "1" => {id: about_item.id, text: "About", panda_cms_page_id: about_item.panda_cms_page_id, position: "1"},
-            "2" => {id: services_item.id, text: "Services", panda_cms_page_id: services_item.panda_cms_page_id, position: "2"}
+            "2" => {id: services_item.id, text: "Services", panda_cms_page_id: services_item.panda_cms_page_id, position: "2"},
+            "3" => {id: support_item.id, text: "Support Us", panda_cms_page_id: support_item.panda_cms_page_id, position: "3"},
+            "4" => {id: donate_item.id, text: "Donate", panda_cms_page_id: donate_item.panda_cms_page_id, position: "4"}
           }
         }
       }
@@ -54,11 +60,11 @@ RSpec.describe "Admin Menus - Reordering", type: :request do
       expect(response).to redirect_to("/admin/cms/menus")
 
       reordered = main_menu.menu_items.reload.order(:lft).pluck(:text)
-      expect(reordered).to eq(["Home", "About", "Services"])
+      expect(reordered).to eq(["Home", "About", "Services", "Support Us", "Donate"])
     end
 
     it "handles reorder with a destroyed item" do
-      # Destroy About, reorder: Services, Home
+      # Destroy About, reorder: Services, Home, Support Us, Donate
       patch "/admin/cms/menus/#{main_menu.id}", params: {
         menu: {
           name: main_menu.name,
@@ -66,7 +72,9 @@ RSpec.describe "Admin Menus - Reordering", type: :request do
           menu_items_attributes: {
             "0" => {id: services_item.id, text: "Services", panda_cms_page_id: services_item.panda_cms_page_id, position: "0"},
             "1" => {id: home_item.id, text: "Home", panda_cms_page_id: home_item.panda_cms_page_id, position: "1"},
-            "2" => {id: about_item.id, text: "About", panda_cms_page_id: about_item.panda_cms_page_id, _destroy: "1"}
+            "2" => {id: about_item.id, text: "About", panda_cms_page_id: about_item.panda_cms_page_id, _destroy: "1"},
+            "3" => {id: support_item.id, text: "Support Us", panda_cms_page_id: support_item.panda_cms_page_id, position: "2"},
+            "4" => {id: donate_item.id, text: "Donate", panda_cms_page_id: donate_item.panda_cms_page_id, position: "3"}
           }
         }
       }
@@ -74,7 +82,7 @@ RSpec.describe "Admin Menus - Reordering", type: :request do
       expect(response).to redirect_to("/admin/cms/menus")
 
       reordered = main_menu.menu_items.reload.order(:lft).pluck(:text)
-      expect(reordered).to eq(["Services", "Home"])
+      expect(reordered).to eq(["Services", "Home", "Support Us", "Donate"])
     end
 
     it "skips reorder when no position params are present" do
@@ -92,13 +100,13 @@ RSpec.describe "Admin Menus - Reordering", type: :request do
       expect(response).to redirect_to("/admin/cms/menus")
 
       reordered = main_menu.menu_items.reload.order(:lft).pluck(:text)
-      expect(reordered).to eq(["Home", "About", "Services"])
+      expect(reordered).to eq(["Home", "About", "Services", "Support Us", "Donate"])
     end
   end
 
   describe "PATCH /admin/cms/menus/:id - ordering change" do
     it "applies alphabetical ordering to static menu items" do
-      # Original order: Home, About, Services
+      # Original order: Home, About, Services, Support Us, Donate
       patch "/admin/cms/menus/#{main_menu.id}", params: {
         menu: {
           name: main_menu.name,
@@ -107,7 +115,9 @@ RSpec.describe "Admin Menus - Reordering", type: :request do
           menu_items_attributes: {
             "0" => {id: home_item.id, text: "Home", panda_cms_page_id: home_item.panda_cms_page_id, position: "0"},
             "1" => {id: about_item.id, text: "About", panda_cms_page_id: about_item.panda_cms_page_id, position: "1"},
-            "2" => {id: services_item.id, text: "Services", panda_cms_page_id: services_item.panda_cms_page_id, position: "2"}
+            "2" => {id: services_item.id, text: "Services", panda_cms_page_id: services_item.panda_cms_page_id, position: "2"},
+            "3" => {id: support_item.id, text: "Support Us", panda_cms_page_id: support_item.panda_cms_page_id, position: "3"},
+            "4" => {id: donate_item.id, text: "Donate", panda_cms_page_id: donate_item.panda_cms_page_id, position: "4"}
           }
         }
       }
@@ -115,7 +125,7 @@ RSpec.describe "Admin Menus - Reordering", type: :request do
       expect(response).to redirect_to("/admin/cms/menus")
 
       reordered = main_menu.menu_items.reload.order(:lft).pluck(:text)
-      expect(reordered).to eq(["About", "Home", "Services"])
+      expect(reordered).to eq(["About", "Donate", "Home", "Services", "Support Us"])
     end
 
     it "applies reverse alphabetical ordering to static menu items" do
@@ -127,7 +137,9 @@ RSpec.describe "Admin Menus - Reordering", type: :request do
           menu_items_attributes: {
             "0" => {id: home_item.id, text: "Home", panda_cms_page_id: home_item.panda_cms_page_id, position: "0"},
             "1" => {id: about_item.id, text: "About", panda_cms_page_id: about_item.panda_cms_page_id, position: "1"},
-            "2" => {id: services_item.id, text: "Services", panda_cms_page_id: services_item.panda_cms_page_id, position: "2"}
+            "2" => {id: services_item.id, text: "Services", panda_cms_page_id: services_item.panda_cms_page_id, position: "2"},
+            "3" => {id: support_item.id, text: "Support Us", panda_cms_page_id: support_item.panda_cms_page_id, position: "3"},
+            "4" => {id: donate_item.id, text: "Donate", panda_cms_page_id: donate_item.panda_cms_page_id, position: "4"}
           }
         }
       }
@@ -135,11 +147,11 @@ RSpec.describe "Admin Menus - Reordering", type: :request do
       expect(response).to redirect_to("/admin/cms/menus")
 
       reordered = main_menu.menu_items.reload.order(:lft).pluck(:text)
-      expect(reordered).to eq(["Services", "Home", "About"])
+      expect(reordered).to eq(["Support Us", "Services", "Home", "Donate", "About"])
     end
 
     it "uses manual reordering when ordering is default" do
-      # Submit with positions reordered: Services, Home, About
+      # Submit with positions reordered: Services, Home, About, Support Us, Donate
       patch "/admin/cms/menus/#{main_menu.id}", params: {
         menu: {
           name: main_menu.name,
@@ -148,7 +160,9 @@ RSpec.describe "Admin Menus - Reordering", type: :request do
           menu_items_attributes: {
             "0" => {id: services_item.id, text: "Services", panda_cms_page_id: services_item.panda_cms_page_id, position: "0"},
             "1" => {id: home_item.id, text: "Home", panda_cms_page_id: home_item.panda_cms_page_id, position: "1"},
-            "2" => {id: about_item.id, text: "About", panda_cms_page_id: about_item.panda_cms_page_id, position: "2"}
+            "2" => {id: about_item.id, text: "About", panda_cms_page_id: about_item.panda_cms_page_id, position: "2"},
+            "3" => {id: support_item.id, text: "Support Us", panda_cms_page_id: support_item.panda_cms_page_id, position: "3"},
+            "4" => {id: donate_item.id, text: "Donate", panda_cms_page_id: donate_item.panda_cms_page_id, position: "4"}
           }
         }
       }
@@ -156,7 +170,7 @@ RSpec.describe "Admin Menus - Reordering", type: :request do
       expect(response).to redirect_to("/admin/cms/menus")
 
       reordered = main_menu.menu_items.reload.order(:lft).pluck(:text)
-      expect(reordered).to eq(["Services", "Home", "About"])
+      expect(reordered).to eq(["Services", "Home", "About", "Support Us", "Donate"])
     end
   end
 
