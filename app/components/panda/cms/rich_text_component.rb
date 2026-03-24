@@ -96,14 +96,32 @@ module Panda
         end
 
         @block_content_id = @block_content.id
-        # For editing, use content (EditorJS JSON) directly
-        # For display, prefer cached_content (pre-rendered HTML) for speed
-        raw_content = if @editable_state
-          @block_content.content
+
+        if @editable_state
+          # For editing, use raw EditorJS JSON
+          @content = @block_content.content.presence || empty_editor_js_content
+          @precomputed_footnotes = nil
         else
-          @block_content.cached_content || @block_content.content
+          load_display_content
         end
-        @content = raw_content.presence || empty_editor_js_content
+      end
+
+      def load_display_content
+        cached = @block_content.cached_content
+
+        if cached.is_a?(Hash) && cached.key?("html")
+          # New structured format: pre-rendered HTML + pre-computed footnotes
+          @content = cached["html"].presence || "<p></p>"
+          @precomputed_footnotes = cached["footnotes"]&.map(&:symbolize_keys)
+        elsif cached.present?
+          # Legacy format: plain HTML string in cached_content
+          @content = cached
+          @precomputed_footnotes = nil
+        else
+          # No cached content, fall back to raw EditorJS JSON
+          @content = @block_content.content.presence || empty_editor_js_content
+          @precomputed_footnotes = nil
+        end
       end
 
       def prepare_content
@@ -129,12 +147,19 @@ module Panda
       end
 
       def prepare_display_content
-        @rendered_content = if @content.blank? || @content == "{}"
-          "<p></p>"
+        if @precomputed_footnotes
+          # Content is pre-rendered HTML from cached_content, footnotes are pre-computed
+          @rendered_content = @content.presence || "<p></p>"
+          @footnotes = @precomputed_footnotes.presence
         else
-          render_content_for_display(@content)
+          # Legacy path: render from EditorJS JSON and extract footnotes
+          @rendered_content = if @content.blank? || @content == "{}"
+            "<p></p>"
+          else
+            render_content_for_display(@content)
+          end
+          @footnotes = extract_footnotes_from_content
         end
-        @footnotes = extract_footnotes_from_content
       rescue => e
         Rails.logger.error("RichTextComponent render error: #{e.message}\nContent: #{@content.inspect}")
         @rendered_content = "<p></p>"

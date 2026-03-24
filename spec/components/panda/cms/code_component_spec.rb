@@ -76,5 +76,29 @@ RSpec.describe Panda::CMS::CodeComponent, type: :component do
         expect(output.to_html).not_to include("blocks")
       end
     end
+
+    context "when cached_content is structured Hash format" do
+      before do
+        editorjs_json = {
+          "time" => 1773316550000,
+          "blocks" => [
+            {"data" => {"text" => "Structured content"}, "type" => "paragraph"}
+          ],
+          "version" => "2.28.2"
+        }.to_json
+
+        @block_content.update_columns(
+          content: editorjs_json,
+          cached_content: {"html" => "<p>Structured content</p>", "footnotes" => []}
+        )
+      end
+
+      it "extracts HTML from structured cached_content" do
+        component = described_class.new(key: :test_code, editable: false)
+        output = render_inline(component)
+        expect(output.to_html).to include("<p>Structured content</p>")
+        expect(output.to_html).not_to include("footnotes")
+      end
+    end
   end
 end
