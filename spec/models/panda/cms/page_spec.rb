@@ -307,8 +307,7 @@ RSpec.describe Panda::CMS::Page, type: :model do
       )
     end
 
-    it "allows same slug in different parent contexts" do
-      # Should allow team page under section B
+    it "allows same slug in different parent contexts (different full path)" do
       team_under_section_b = Panda::CMS::Page.new(
         title: "Team B",
         path: "/validation-test/section-b/team",
@@ -321,7 +320,6 @@ RSpec.describe Panda::CMS::Page, type: :model do
     end
 
     it "prevents duplicate paths in same parent context" do
-      # Create an existing page first
       Panda::CMS::Page.create!(
         title: "Existing",
         path: "/validation-test/section-a/existing",
@@ -339,11 +337,23 @@ RSpec.describe Panda::CMS::Page, type: :model do
       )
 
       expect(duplicate_page).not_to be_valid
-      expect(duplicate_page.errors[:path]).to include("has already been taken in this section")
+      expect(duplicate_page.errors[:path]).to include("has already been taken")
+    end
+
+    it "prevents duplicate paths even with different parents" do
+      duplicate_page = Panda::CMS::Page.new(
+        title: "Team Duplicate",
+        path: "/validation-test/section-a/team",
+        parent: section_b,
+        panda_cms_template_id: test_template.id,
+        status: "published"
+      )
+
+      expect(duplicate_page).not_to be_valid
+      expect(duplicate_page.errors[:path]).to include("has already been taken")
     end
 
     it "allows a new page at an archived page's path" do
-      # Archive the existing team page
       team_under_section_a.update!(status: "archived")
 
       new_page = Panda::CMS::Page.new(
@@ -375,7 +385,7 @@ RSpec.describe Panda::CMS::Page, type: :model do
       )
 
       expect(duplicate).not_to be_valid
-      expect(duplicate.errors[:path]).to include("has already been taken in this section")
+      expect(duplicate.errors[:path]).to include("has already been taken")
     end
   end
 
