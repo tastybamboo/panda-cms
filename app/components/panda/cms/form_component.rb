@@ -7,6 +7,8 @@ module Panda
     # @param key [Symbol] The key to use for the form component
     # @param editable [Boolean] If the form is editable or not (defaults to true)
     class FormComponent < Panda::Core::Base
+      include Concerns::BlockDataReporting
+
       KIND = "form"
 
       attr_reader :key, :editable
@@ -31,15 +33,22 @@ module Panda
 
         block = find_block
         if block.nil?
+          report_missing_data("Block not found (kind: #{KIND}, key: #{@key}, template: #{Current.page&.panda_cms_template_id})")
           @editable_state = false
           return
         end
 
         @block_content_obj = find_block_content(block)
-        @form_id = @block_content_obj&.content.to_s.presence
+        @form_id = normalize_block_content_id(@block_content_obj&.content)
         @block_content_id = @block_content_obj&.id
         @form = Panda::CMS::Form.find_by(id: @form_id) if @form_id
         @available_forms = Panda::CMS::Form.includes(:form_fields).order(:name) if @editable_state
+
+        unless @editable_state
+          report_missing_data("BlockContent missing for block #{block.id} on page #{Current.page&.id}") unless @block_content_obj
+          report_missing_data("BlockContent has no form ID (content: #{@block_content_obj&.content.inspect})") if @block_content_obj && @form_id.blank?
+          report_missing_data("Form not found for ID #{@form_id}") if @form_id.present? && @form.nil?
+        end
       end
 
       def find_block
