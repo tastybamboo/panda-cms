@@ -309,6 +309,82 @@ RSpec.describe Panda::CMS::RichTextComponent, type: :component do
     end
   end
 
+  describe "#load_display_content with structured cached_content" do
+    let(:component) { described_class.new(key: :test_content, editable: false) }
+    let(:test_block) do
+      Panda::CMS::Block.find_or_create_by!(
+        kind: "rich_text",
+        key: :test_content,
+        panda_cms_template_id: template.id
+      ) do |b|
+        b.name = "Test Content Block"
+      end
+    end
+
+    before do
+      @block_content = Panda::CMS::BlockContent.find_or_create_by!(
+        block: test_block,
+        page: page
+      )
+    end
+
+    after { @block_content&.destroy }
+
+    context "when cached_content is structured Hash with footnotes" do
+      before do
+        @block_content.update_columns(
+          content: {"blocks" => [{"type" => "paragraph", "data" => {"text" => "Test"}}], "version" => "2.28.2"},
+          cached_content: {
+            "html" => "<p>Pre-rendered content</p>",
+            "footnotes" => [
+              {"number" => 1, "id" => "fn-abc", "content" => "Source: example.com"}
+            ]
+          }
+        )
+      end
+
+      it "uses pre-rendered HTML without JSON parsing" do
+        output = render_inline(component)
+        expect(output.to_html).to include("Pre-rendered content")
+      end
+
+      it "renders pre-computed footnotes" do
+        output = render_inline(component)
+        expect(output.to_html).to include("Sources/References")
+        expect(output.to_html).to include("Source: example.com")
+      end
+    end
+
+    context "when cached_content is structured Hash without footnotes" do
+      before do
+        @block_content.update_columns(
+          content: {"blocks" => [{"type" => "paragraph", "data" => {"text" => "No footnotes"}}], "version" => "2.28.2"},
+          cached_content: {"html" => "<p>No footnotes here</p>", "footnotes" => []}
+        )
+      end
+
+      it "renders HTML without footnotes section" do
+        output = render_inline(component)
+        expect(output.to_html).to include("No footnotes here")
+        expect(output.to_html).not_to include("Sources/References")
+      end
+    end
+
+    context "when cached_content is legacy plain string" do
+      before do
+        @block_content.update_columns(
+          content: {"blocks" => [{"type" => "paragraph", "data" => {"text" => "Legacy"}}], "version" => "2.28.2"},
+          cached_content: "<p>Legacy cached HTML</p>"
+        )
+      end
+
+      it "falls back to rendering the string as HTML" do
+        output = render_inline(component)
+        expect(output.to_html).to include("Legacy cached HTML")
+      end
+    end
+  end
+
   describe "#render_content_for_display" do
     let(:component) { described_class.new }
 
