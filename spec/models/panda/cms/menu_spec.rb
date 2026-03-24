@@ -11,7 +11,7 @@ RSpec.describe Panda::CMS::Menu, type: :model do
 
   describe "associations" do
     it "has many menu items ordered by lft" do
-      expect(static_menu.menu_items.count).to eq(3)
+      expect(static_menu.menu_items.count).to eq(5)
       expect(static_menu.menu_items.first).to eq(panda_cms_menu_items(:home_link))
     end
 
@@ -445,12 +445,12 @@ RSpec.describe Panda::CMS::Menu, type: :model do
 
     context "alphabetical ordering" do
       it "sorts menu items alphabetically by text" do
-        # Main menu items: Home(lft:1), About(lft:3), Services(lft:5)
+        # Main menu items: Home(lft:1), About(lft:3), Services(lft:5), Support Us(lft:7), Donate(lft:9)
         static_menu.update_column(:ordering, "alphabetical")
         static_menu.apply_ordering_to_static_items!
 
         ordered = static_menu.menu_items.reload.order(:lft).pluck(:text)
-        expect(ordered).to eq(["About", "Home", "Services"])
+        expect(ordered).to eq(["About", "Donate", "Home", "Services", "Support Us"])
       end
     end
 
@@ -460,19 +460,19 @@ RSpec.describe Panda::CMS::Menu, type: :model do
         static_menu.apply_ordering_to_static_items!
 
         ordered = static_menu.menu_items.reload.order(:lft).pluck(:text)
-        expect(ordered).to eq(["Services", "Home", "About"])
+        expect(ordered).to eq(["Support Us", "Services", "Home", "Donate", "About"])
       end
     end
 
     context "page_order ordering" do
       it "sorts menu items by their page's lft position" do
-        # Pages: Homepage(lft:1), About(lft:2), Services(lft:6)
-        # Menu items: Home->Homepage, About->About page, Services->Services page
+        # Pages: Homepage(lft:1), About(lft:2), Services(lft:6), Support Us(lft:8), Donate(lft:9)
+        # Menu items: Home->Homepage, About->About page, Services->Services page, Support Us->Support page, Donate->Donate page
         static_menu.update_column(:ordering, "page_order")
         static_menu.apply_ordering_to_static_items!
 
         ordered = static_menu.menu_items.reload.order(:lft).pluck(:text)
-        expect(ordered).to eq(["Home", "About", "Services"])
+        expect(ordered).to eq(["Home", "About", "Services", "Support Us", "Donate"])
       end
     end
 
@@ -497,7 +497,7 @@ RSpec.describe Panda::CMS::Menu, type: :model do
     end
 
     it "has associated menu items" do
-      expect(static_menu.menu_items.count).to eq(3)
+      expect(static_menu.menu_items.count).to eq(5)
       expect(panda_cms_menu_items(:home_link).menu).to eq(static_menu)
     end
   end

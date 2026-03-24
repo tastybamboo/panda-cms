@@ -98,7 +98,6 @@ RSpec.describe "When adding a page", type: :system do
           click_button "Create Page"
         end
         expect(page).not_to have_content("URL has already been taken")
-        expect(page).not_to have_content("URL has already been taken in this section")
 
         wait_for_iframe_load("editablePageFrame")
         within_frame "editablePageFrame" do
