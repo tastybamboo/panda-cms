@@ -69,6 +69,14 @@ RSpec.describe Panda::CMS::FormComponent, type: :component do
         expect(output.css("form")).to be_empty
         expect(output.text.strip).to eq("")
       end
+
+      it "reports missing form ID to Rails.error" do
+        expect(Rails.error).to receive(:report).with(
+          an_instance_of(Panda::CMS::MissingBlockDataError),
+          hash_including(handled: true, severity: :error)
+        )
+        render_inline(described_class.new(key: :contact_form, editable: false))
+      end
     end
 
     context "when the referenced form has been deleted (stale ID)" do
@@ -82,6 +90,14 @@ RSpec.describe Panda::CMS::FormComponent, type: :component do
         output = render_inline(component)
         expect(output.css("form")).to be_empty
         expect(output.text.strip).to eq("")
+      end
+
+      it "reports missing form to Rails.error" do
+        expect(Rails.error).to receive(:report).with(
+          an_instance_of(Panda::CMS::MissingBlockDataError),
+          hash_including(handled: true, severity: :error)
+        )
+        render_inline(described_class.new(key: :contact_form, editable: false))
       end
     end
 
@@ -104,6 +120,14 @@ RSpec.describe Panda::CMS::FormComponent, type: :component do
         output = render_inline(component)
         expect(output.css("form")).to be_empty
         expect(output.text.strip).to eq("")
+      end
+
+      it "reports missing block data to Rails.error" do
+        expect(Rails.error).to receive(:report).with(
+          an_instance_of(Panda::CMS::MissingBlockDataError),
+          hash_including(handled: true, severity: :error, context: hash_including(:component, :key, :page_path))
+        )
+        render_inline(described_class.new(key: :nonexistent_form, editable: false))
       end
     end
   end
