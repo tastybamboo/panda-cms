@@ -302,7 +302,7 @@ module Panda
 
         @pages[:donate] = create_page(
           path: "/donate",
-          title: "Donate",
+          title: "Make a Donation",
           template: @templates[:sanctuary_page],
           parent: @pages[:home],
           seo_description: "Support The Panda Sanctuary with a donation. Help us protect pandas for future generations."
