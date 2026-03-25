@@ -1,5 +1,5 @@
 import { Controller } from "@hotwired/stimulus";
-import { getEditorResources, EDITOR_JS_CSS, initializeEditorUndo, patchLinkAutocomplete } from "panda/editor/editor_js_config";
+import { EDITOR_JS_RESOURCES, EDITOR_JS_CSS, initializeEditorUndo, patchLinkAutocomplete } from "panda/editor/editor_js_config";
 import { ResourceLoader } from "panda/editor/resource_loader";
 
 // UTF-8 safe Base64 helpers — atob/btoa only handle Latin-1, corrupting multi-byte characters
@@ -22,7 +22,6 @@ export default class extends Controller {
     linkMetadataUrl: String,
     fileUploadUrl: String,
     editorSearchUrl: String,
-    toolsConfig: String,
   };
 
   connect() {
@@ -35,28 +34,15 @@ export default class extends Controller {
 
   async loadEditorResources() {
     try {
-      // Parse and set tools config from Ruby before loading resources
-      if (this.toolsConfigValue) {
-        try {
-          window.PANDA_EDITOR_TOOLS_CONFIG = JSON.parse(this.toolsConfigValue);
-        } catch (e) {
-          console.warn('[Panda CMS] Failed to parse tools config:', e);
-        }
-      }
-
-      // Get resources filtered by tools config
-      const toolsConfig = window.PANDA_EDITOR_TOOLS_CONFIG || null;
-      const resources = getEditorResources(toolsConfig);
-
       // First load EditorJS core
-      const editorCore = resources[0];
+      const editorCore = EDITOR_JS_RESOURCES[0];
       await ResourceLoader.loadScript(document, document.head, editorCore);
 
       // Load CSS
       await ResourceLoader.embedCSS(document, document.head, EDITOR_JS_CSS);
 
       // Then load all tools sequentially
-      for (const resource of resources.slice(1)) {
+      for (const resource of EDITOR_JS_RESOURCES.slice(1)) {
         await ResourceLoader.loadScript(document, document.head, resource);
       }
 
@@ -78,12 +64,11 @@ export default class extends Controller {
       editorSearch: this.editorSearchUrlValue || undefined,
     };
 
-    let holderDiv;
     try {
       const holderId =
         this.editorIdValue + "_holder" ||
         `editor-${Math.random().toString(36).substring(2, 9)}`;
-      holderDiv = document.createElement("div");
+      let holderDiv = document.createElement("div");
       holderDiv.id = holderId;
       holderDiv.className = "codex-editor";
       this.editorContainerTarget.innerHTML = "";
@@ -97,7 +82,8 @@ export default class extends Controller {
       const initialContent = this.getInitialContent();
       console.debug("[Panda CMS] Using initial content:", initialContent);
 
-      // Use getEditorConfig for tool definitions (respects PANDA_EDITOR_TOOLS_CONFIG)
+      const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+
       const config = {
         ...getEditorConfig(holderId, initialContent),
         holder: holderId,
@@ -126,6 +112,73 @@ export default class extends Controller {
           this.enableSubmitButton();
           // Dispatch an event when editor is ready
           this.editorContainerTarget.dispatchEvent(new CustomEvent("editor:ready"));
+        },
+        tools: {
+          paragraph: {
+            class: window.Paragraph,
+            inlineToolbar: true
+          },
+          header: {
+            class: window.Header,
+            inlineToolbar: true
+          },
+          list: {
+            class: window.NestedList,
+            inlineToolbar: true,
+            config: {
+              defaultStyle: 'unordered',
+              enableLineBreaks: true
+            }
+          },
+          quote: {
+            class: window.Quote,
+            inlineToolbar: true
+          },
+          table: {
+            class: window.Table,
+            inlineToolbar: true
+          },
+          image: {
+            class: window.ImageTool,
+            inlineToolbar: true,
+            config: {
+              endpoints: {
+                byFile: window.PANDA_CMS_EDITOR_JS_ENDPOINTS?.fileUpload
+              },
+              field: 'image',
+              types: 'image/*',
+              additionalRequestHeaders: {
+                'X-CSRF-Token': csrfToken
+              }
+            }
+          },
+          linkTool: {
+            class: window.LinkTool,
+            config: {
+              endpoint: window.PANDA_CMS_EDITOR_JS_ENDPOINTS?.linkMetadata,
+              headers: {
+                'X-CSRF-Token': csrfToken
+              }
+            }
+          },
+          attaches: {
+            class: window.AttachesTool,
+            config: {
+              endpoint: window.PANDA_CMS_EDITOR_JS_ENDPOINTS?.fileUpload,
+              field: 'file',
+              buttonText: 'Select file to upload',
+              additionalRequestHeaders: {
+                'X-CSRF-Token': csrfToken
+              }
+            }
+          },
+          link: {
+            class: window.LinkAutocomplete,
+            config: {
+              endpoint: window.PANDA_CMS_EDITOR_JS_ENDPOINTS?.editorSearch,
+              queryParam: 'search'
+            }
+          }
         }
       };
 

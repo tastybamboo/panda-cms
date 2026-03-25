@@ -45,9 +45,8 @@
   <div data-controller="editor-form"
        data-editor-form-editor-id-value="<%= editor_id %>"
        data-editor-form-link-metadata-url-value="<%= admin_cms_link_metadata_path %>"
-       data-editor-form-file-upload-url-value="<%= panda_core.admin_files_path %>"
-       data-editor-form-editor-search-url-value="<%= panda_core.admin_editor_search_path %>"
-       data-editor-form-tools-config-value="<%= panda_editor_tools_config_json %>">
+       data-editor-form-file-upload-url-value="<%= admin_cms_files_path %>"
+       data-editor-form-editor-search-url-value="<%= panda_core.admin_editor_search_path %>">
     <%= f.hidden_field :content,
         value: editor_content_for(post, local_assigns[:preserved_content], encode: false),
         data: {

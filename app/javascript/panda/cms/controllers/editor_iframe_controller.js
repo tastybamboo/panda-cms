@@ -1,7 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 import { PlainTextEditor } from "panda/editor/plain_text_editor"
 import { EditorJSInitializer } from "panda/editor/editor_js_initializer"
-import { getEditorResources, EDITOR_JS_CSS } from "panda/editor/editor_js_config"
+import { EDITOR_JS_RESOURCES, EDITOR_JS_CSS } from "panda/editor/editor_js_config"
 import { ResourceLoader } from "panda/editor/resource_loader"
 
 // UTF-8 safe Base64 helpers — atob/btoa only handle Latin-1, corrupting multi-byte characters
@@ -25,8 +25,7 @@ export default class extends Controller {
     assets: String,
     linkMetadataUrl: String,
     fileUploadUrl: String,
-    editorSearchUrl: String,
-    toolsConfig: String
+    editorSearchUrl: String
   }
 
   connect() {
@@ -269,15 +268,6 @@ export default class extends Controller {
       }
       // Pass CSRF token from parent document to iframe window for EditorJS tool requests
       iframeWindow.PANDA_CMS_CSRF_TOKEN = parent.document.querySelector('meta[name="csrf-token"]')?.content
-
-      // Pass tools config from Ruby to JavaScript
-      if (this.toolsConfigValue) {
-        try {
-          iframeWindow.PANDA_EDITOR_TOOLS_CONFIG = JSON.parse(this.toolsConfigValue)
-        } catch (e) {
-          console.warn('[Panda CMS] Failed to parse tools config:', e)
-        }
-      }
     }
 
     // Get all editable elements
@@ -315,13 +305,8 @@ export default class extends Controller {
   async loadEditorResources() {
     console.debug("[Panda CMS] Loading editor resources in iframe...")
     try {
-      // Get resources filtered by tools config
-      const iframeWindow = this.frameDocument.defaultView || this.frame.contentWindow
-      const toolsConfig = iframeWindow?.PANDA_EDITOR_TOOLS_CONFIG || null
-      const resources = getEditorResources(toolsConfig)
-
       // First load core EditorJS
-      await ResourceLoader.loadScript(this.frameDocument, this.frameDocument.head, resources[0])
+      await ResourceLoader.loadScript(this.frameDocument, this.frameDocument.head, EDITOR_JS_RESOURCES[0])
 
       // Wait for EditorJS to be available with increased timeout
       let timeout = 10000 // 10 seconds
@@ -343,7 +328,7 @@ export default class extends Controller {
       await ResourceLoader.embedCSS(this.frameDocument, this.frameDocument.head, EDITOR_JS_CSS)
 
       // Then load all tools sequentially
-      for (const resource of resources.slice(1)) {
+      for (const resource of EDITOR_JS_RESOURCES.slice(1)) {
         await ResourceLoader.loadScript(this.frameDocument, this.frameDocument.head, resource)
       }
 
