@@ -94,7 +94,7 @@
         } %>
         <% if f.object.present? && f.object.persisted? && f.object.og_image.attached? %>
           <div class="mt-2">
-            <%= image_tag url_for(f.object.og_image.variant(:og_share)), class: "max-w-xs rounded border border-gray-300" %>
+            <%= image_tag variant_representation_url(f.object.og_image.variant(:og_share)), class: "max-w-xs rounded border border-gray-300" %>
           </div>
         <% end %>
       </div>
