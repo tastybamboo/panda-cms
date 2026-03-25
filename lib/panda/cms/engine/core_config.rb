@@ -29,7 +29,7 @@ module Panda
                 content_children = [
                   {label: "Pages", path: "#{config.admin_path}/cms/pages"},
                   {label: "Posts", path: "#{config.admin_path}/cms/posts"},
-                  {label: "Files", path: "#{config.admin_path}/cms/files"}
+                  {label: "Files", path: "#{config.admin_path}/files"}
                 ]
 
                 # Add Collections if enabled
