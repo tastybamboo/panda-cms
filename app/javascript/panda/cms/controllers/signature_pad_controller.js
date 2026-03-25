@@ -10,7 +10,7 @@ export default class extends Controller {
 
   async connect() {
     try {
-      const { default: SignaturePad } = await import("https://esm.sh/signature_pad@5.0.4")
+      const { default: SignaturePad } = await import("/panda/cms/vendor/signature_pad@5.1.3.js")
 
       this.pad = new SignaturePad(this.canvasTarget, {
         penColor: this.penColorValue,

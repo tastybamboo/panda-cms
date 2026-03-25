@@ -137,7 +137,7 @@ RSpec.describe "Admin pages smoke tests", type: :system do
 
   describe "Files management" do
     it "loads files index without errors" do
-      visit "/admin/cms/files"
+      visit "/admin/files"
       expect(page).to have_css("h1")
       expect(page.status_code).to eq(200)
     end
