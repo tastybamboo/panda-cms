@@ -36,6 +36,8 @@ export default class extends Controller {
   async loadEditorResources() {
     try {
       // Parse and set tools config from Ruby before loading resources
+      // Always clear previous config to avoid stale values across Turbo navigations
+      window.PANDA_EDITOR_TOOLS_CONFIG = null;
       if (this.toolsConfigValue) {
         try {
           window.PANDA_EDITOR_TOOLS_CONFIG = JSON.parse(this.toolsConfigValue);
@@ -80,9 +82,7 @@ export default class extends Controller {
 
     let holderDiv;
     try {
-      const holderId =
-        this.editorIdValue + "_holder" ||
-        `editor-${Math.random().toString(36).substring(2, 9)}`;
+      const holderId = this.editorIdValue + "_holder";
       holderDiv = document.createElement("div");
       holderDiv.id = holderId;
       holderDiv.className = "codex-editor";
