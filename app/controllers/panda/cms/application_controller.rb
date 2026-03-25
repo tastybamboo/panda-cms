@@ -33,7 +33,13 @@ module Panda
         Panda::Core::Current.user_agent = request.user_agent
         Panda::Core::Current.ip_address = request.ip
         Panda::Core::Current.root = request.base_url
-        Panda::Core::Current.user ||= Panda::Core::User.find_by(id: session[Panda::Core::ADMIN_SESSION_KEY]) if session[Panda::Core::ADMIN_SESSION_KEY]
+
+        # Only resolve admin user when in editing context (embed_id = admin iframe).
+        # Accessing session on public page requests causes Rails to force
+        # Cache-Control: private, preventing CDN caching.
+        if params[:embed_id].present? || request.path.start_with?(Panda::Core.config.admin_path)
+          Panda::Core::Current.user ||= Panda::Core::User.find_by(id: session[Panda::Core::ADMIN_SESSION_KEY]) if session[Panda::Core::ADMIN_SESSION_KEY]
+        end
 
         # Set CMS current attributes (inherits from Core so has access to all Core attributes)
         Panda::CMS::Current.request_id = request.uuid
