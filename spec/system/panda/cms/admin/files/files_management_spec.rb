@@ -11,7 +11,7 @@ RSpec.describe "Admin Files Management", type: :system do
 
   describe "Files index page" do
     it "displays the files gallery" do
-      visit "/admin/cms/files"
+      visit "/admin/files"
 
       expect(page).to have_content("Files")
       # Verify the FileGalleryComponent is rendered (not just instantiated)
@@ -19,7 +19,7 @@ RSpec.describe "Admin Files Management", type: :system do
     end
 
     it "shows file upload area" do
-      visit "/admin/cms/files"
+      visit "/admin/files"
 
       expect(page).to have_content("Files")
       # The file gallery should have upload functionality
@@ -47,7 +47,7 @@ RSpec.describe "Admin Files Management", type: :system do
     end
 
     it "loads server-rendered file details when clicking a file" do
-      visit "/admin/cms/files"
+      visit "/admin/files"
 
       # Find and click the file in the gallery
       file_button = find("[data-file-id='#{test_file.id}']", wait: 5)
@@ -65,7 +65,7 @@ RSpec.describe "Admin Files Management", type: :system do
     end
 
     it "persists edits to filename, category, and description", skip: "Turbo Stream response not refreshing slideover after save" do
-      visit "/admin/cms/files"
+      visit "/admin/files"
 
       # Select the file and wait for slideover to load
       find("[data-file-id='#{test_file.id}']", wait: 5).click
@@ -94,7 +94,7 @@ RSpec.describe "Admin Files Management", type: :system do
     end
 
     it "updates slideover content after successful save", skip: "Turbo Stream response not refreshing slideover after save" do
-      visit "/admin/cms/files"
+      visit "/admin/files"
 
       find("[data-file-id='#{test_file.id}']", wait: 5).click
       expect(page).to have_field("blob[filename]", wait: 5)
@@ -108,7 +108,7 @@ RSpec.describe "Admin Files Management", type: :system do
     end
 
     it "shows delete confirmation and removes file" do
-      visit "/admin/cms/files"
+      visit "/admin/files"
 
       find("[data-file-id='#{test_file.id}']", wait: 5).click
 
@@ -138,7 +138,7 @@ RSpec.describe "Admin Files Management", type: :system do
     end
 
     it "opens upload slideover with drag-and-drop" do
-      visit "/admin/cms/files"
+      visit "/admin/files"
 
       # Click Upload button
       click_button "Upload", wait: 5
@@ -150,7 +150,7 @@ RSpec.describe "Admin Files Management", type: :system do
     end
 
     it "requires category for upload with HTML5 validation" do
-      visit "/admin/cms/files"
+      visit "/admin/files"
 
       click_button "Upload", wait: 5
 
@@ -168,7 +168,7 @@ RSpec.describe "Admin Files Management", type: :system do
     end
 
     it "shows server-side validation error when category is missing" do
-      visit "/admin/cms/files"
+      visit "/admin/files"
 
       click_button "Upload", wait: 5
 
@@ -188,7 +188,7 @@ RSpec.describe "Admin Files Management", type: :system do
     end
 
     it "uploads file and shows it in gallery" do
-      visit "/admin/cms/files"
+      visit "/admin/files"
 
       click_button "Upload", wait: 5
 

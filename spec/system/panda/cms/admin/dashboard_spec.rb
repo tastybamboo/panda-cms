@@ -45,7 +45,7 @@ RSpec.describe "Admin dashboard", type: :system do
     it "does not display icons in page headings" do
       login_as_admin
 
-      %w[/admin/cms/pages /admin/cms/posts /admin/cms/forms /admin/cms/files /admin/cms/menus /admin/cms/settings].each do |path|
+      %w[/admin/cms/pages /admin/cms/posts /admin/cms/forms /admin/files /admin/cms/menus /admin/cms/settings].each do |path|
         visit path
         expect(page).to have_css("h1", wait: 5)
         expect(page).to have_no_css("h1 i", wait: 0), "Expected no icon in h1 heading on #{path}"

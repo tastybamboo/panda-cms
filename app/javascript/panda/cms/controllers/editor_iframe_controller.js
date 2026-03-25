@@ -271,6 +271,8 @@ export default class extends Controller {
       iframeWindow.PANDA_CMS_CSRF_TOKEN = parent.document.querySelector('meta[name="csrf-token"]')?.content
 
       // Pass tools config from Ruby to JavaScript
+      // Always clear previous config to avoid stale values across Turbo navigations
+      iframeWindow.PANDA_EDITOR_TOOLS_CONFIG = null
       if (this.toolsConfigValue) {
         try {
           iframeWindow.PANDA_EDITOR_TOOLS_CONFIG = JSON.parse(this.toolsConfigValue)
