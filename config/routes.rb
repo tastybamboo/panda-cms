@@ -9,7 +9,6 @@ Panda::CMS::Engine.routes.draw do
     get "#{admin_path}/cms", to: "admin/dashboard#show", as: :admin_cms_dashboard
 
     namespace admin_path.delete_prefix("/").to_sym, path: "#{admin_path}/cms", as: :admin_cms, module: :admin do
-      resources :files
       resources :forms do
         resources :form_submissions, only: [:show], as: :submissions, path: "submissions"
       end

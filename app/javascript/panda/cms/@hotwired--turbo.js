@@ -1,88 +1,3525 @@
-// @hotwired/turbo@8.0.12 downloaded from https://ga.jspm.io/npm:@hotwired/turbo@8.0.12/dist/turbo.es2017-esm.js
+// @hotwired/turbo@8.0.23 vendored from npm
+/*!
+Turbo 8.0.23
+Copyright © 2026 37signals LLC
+ */
+const FrameLoadingStyle = {
+  eager: "eager",
+  lazy: "lazy"
+};
 
-(function(e){typeof e.requestSubmit!="function"&&(e.requestSubmit=function(e){if(e){validateSubmitter(e,this);e.click()}else{e=document.createElement("input");e.type="submit";e.hidden=true;this.appendChild(e);e.click();this.removeChild(e)}});function validateSubmitter(e,t){e instanceof HTMLElement||raise(TypeError,"parameter 1 is not of type 'HTMLElement'");e.type=="submit"||raise(TypeError,"The specified element is not a submit button");e.form==t||raise(DOMException,"The specified element is not owned by this form element","NotFoundError")}function raise(e,t,r){throw new e("Failed to execute 'requestSubmit' on 'HTMLFormElement': "+t+".",r)}})(HTMLFormElement.prototype);const e=new WeakMap;function findSubmitterFromClickTarget(e){const t=e instanceof Element?e:e instanceof Node?e.parentElement:null;const r=t?t.closest("input, button"):null;return r?.type=="submit"?r:null}function clickCaptured(t){const r=findSubmitterFromClickTarget(t.target);r&&r.form&&e.set(r.form,r)}(function(){if("submitter"in Event.prototype)return;let t=window.Event.prototype;if("SubmitEvent"in window){const e=window.SubmitEvent.prototype;if(!/Apple Computer/.test(navigator.vendor)||"submitter"in e)return;t=e}addEventListener("click",clickCaptured,true);Object.defineProperty(t,"submitter",{get(){if(this.type=="submit"&&this.target instanceof HTMLFormElement)return e.get(this.target)}})})();const t={eager:"eager",lazy:"lazy"};class FrameElement extends HTMLElement{static delegateConstructor=void 0;loaded=Promise.resolve();static get observedAttributes(){return["disabled","loading","src"]}constructor(){super();this.delegate=new FrameElement.delegateConstructor(this)}connectedCallback(){this.delegate.connect()}disconnectedCallback(){this.delegate.disconnect()}reload(){return this.delegate.sourceURLReloaded()}attributeChangedCallback(e){e=="loading"?this.delegate.loadingStyleChanged():e=="src"?this.delegate.sourceURLChanged():e=="disabled"&&this.delegate.disabledChanged()}get src(){return this.getAttribute("src")}set src(e){e?this.setAttribute("src",e):this.removeAttribute("src")}get refresh(){return this.getAttribute("refresh")}set refresh(e){e?this.setAttribute("refresh",e):this.removeAttribute("refresh")}get shouldReloadWithMorph(){return this.src&&this.refresh==="morph"}get loading(){return frameLoadingStyleFromString(this.getAttribute("loading")||"")}set loading(e){e?this.setAttribute("loading",e):this.removeAttribute("loading")}get disabled(){return this.hasAttribute("disabled")}set disabled(e){e?this.setAttribute("disabled",""):this.removeAttribute("disabled")}get autoscroll(){return this.hasAttribute("autoscroll")}set autoscroll(e){e?this.setAttribute("autoscroll",""):this.removeAttribute("autoscroll")}get complete(){return!this.delegate.isLoading}get isActive(){return this.ownerDocument===document&&!this.isPreview}get isPreview(){return this.ownerDocument?.documentElement?.hasAttribute("data-turbo-preview")}}function frameLoadingStyleFromString(e){switch(e.toLowerCase()){case"lazy":return t.lazy;default:return t.eager}}const r={enabled:true,progressBarDelay:500,unvisitableExtensions:new Set([".7z",".aac",".apk",".avi",".bmp",".bz2",".css",".csv",".deb",".dmg",".doc",".docx",".exe",".gif",".gz",".heic",".heif",".ico",".iso",".jpeg",".jpg",".js",".json",".m4a",".mkv",".mov",".mp3",".mp4",".mpeg",".mpg",".msi",".ogg",".ogv",".pdf",".pkg",".png",".ppt",".pptx",".rar",".rtf",".svg",".tar",".tif",".tiff",".txt",".wav",".webm",".webp",".wma",".wmv",".xls",".xlsx",".xml",".zip"])};function activateScriptElement(e){if(e.getAttribute("data-turbo-eval")=="false")return e;{const t=document.createElement("script");const r=getCspNonce();r&&(t.nonce=r);t.textContent=e.textContent;t.async=false;copyElementAttributes(t,e);return t}}function copyElementAttributes(e,t){for(const{name:r,value:s}of t.attributes)e.setAttribute(r,s)}function createDocumentFragment(e){const t=document.createElement("template");t.innerHTML=e;return t.content}function dispatch(e,{target:t,cancelable:r,detail:s}={}){const i=new CustomEvent(e,{cancelable:r,bubbles:true,composed:true,detail:s});t&&t.isConnected?t.dispatchEvent(i):document.documentElement.dispatchEvent(i);return i}function cancelEvent(e){e.preventDefault();e.stopImmediatePropagation()}function nextRepaint(){return document.visibilityState==="hidden"?nextEventLoopTick():nextAnimationFrame()}function nextAnimationFrame(){return new Promise((e=>requestAnimationFrame((()=>e()))))}function nextEventLoopTick(){return new Promise((e=>setTimeout((()=>e()),0)))}function nextMicrotask(){return Promise.resolve()}function parseHTMLDocument(e=""){return(new DOMParser).parseFromString(e,"text/html")}function unindent(e,...t){const r=interpolate(e,t).replace(/^\n/,"").split("\n");const s=r[0].match(/^\s+/);const i=s?s[0].length:0;return r.map((e=>e.slice(i))).join("\n")}function interpolate(e,t){return e.reduce(((e,r,s)=>{const i=t[s]==void 0?"":t[s];return e+r+i}),"")}function uuid(){return Array.from({length:36}).map(((e,t)=>t==8||t==13||t==18||t==23?"-":t==14?"4":t==19?(Math.floor(Math.random()*4)+8).toString(16):Math.floor(Math.random()*15).toString(16))).join("")}function getAttribute(e,...t){for(const r of t.map((t=>t?.getAttribute(e))))if(typeof r=="string")return r;return null}function hasAttribute(e,...t){return t.some((t=>t&&t.hasAttribute(e)))}function markAsBusy(...e){for(const t of e){t.localName=="turbo-frame"&&t.setAttribute("busy","");t.setAttribute("aria-busy","true")}}function clearBusyState(...e){for(const t of e){t.localName=="turbo-frame"&&t.removeAttribute("busy");t.removeAttribute("aria-busy")}}function waitForLoad(e,t=2e3){return new Promise((r=>{const onComplete=()=>{e.removeEventListener("error",onComplete);e.removeEventListener("load",onComplete);r()};e.addEventListener("load",onComplete,{once:true});e.addEventListener("error",onComplete,{once:true});setTimeout(r,t)}))}function getHistoryMethodForAction(e){switch(e){case"replace":return history.replaceState;case"advance":case"restore":return history.pushState}}function isAction(e){return e=="advance"||e=="replace"||e=="restore"}function getVisitAction(...e){const t=getAttribute("data-turbo-action",...e);return isAction(t)?t:null}function getMetaElement(e){return document.querySelector(`meta[name="${e}"]`)}function getMetaContent(e){const t=getMetaElement(e);return t&&t.content}function getCspNonce(){const e=getMetaElement("csp-nonce");if(e){const{nonce:t,content:r}=e;return t==""?r:t}}function setMetaContent(e,t){let r=getMetaElement(e);if(!r){r=document.createElement("meta");r.setAttribute("name",e);document.head.appendChild(r)}r.setAttribute("content",t);return r}function findClosestRecursively(e,t){if(e instanceof Element)return e.closest(t)||findClosestRecursively(e.assignedSlot||e.getRootNode()?.host,t)}function elementIsFocusable(e){const t="[inert], :disabled, [hidden], details:not([open]), dialog:not([open])";return!!e&&e.closest(t)==null&&typeof e.focus=="function"}function queryAutofocusableElement(e){return Array.from(e.querySelectorAll("[autofocus]")).find(elementIsFocusable)}async function around(e,t){const r=t();e();await nextAnimationFrame();const s=t();return[r,s]}function doesNotTargetIFrame(e){if(e==="_blank")return false;if(e){for(const t of document.getElementsByName(e))if(t instanceof HTMLIFrameElement)return false;return true}return true}function findLinkFromClickTarget(e){return findClosestRecursively(e,"a[href]:not([target^=_]):not([download])")}function getLocationForLink(e){return expandURL(e.getAttribute("href")||"")}function debounce(e,t){let r=null;return(...s)=>{const callback=()=>e.apply(this,s);clearTimeout(r);r=setTimeout(callback,t)}}const s={"aria-disabled":{beforeSubmit:e=>{e.setAttribute("aria-disabled","true");e.addEventListener("click",cancelEvent)},afterSubmit:e=>{e.removeAttribute("aria-disabled");e.removeEventListener("click",cancelEvent)}},disabled:{beforeSubmit:e=>e.disabled=true,afterSubmit:e=>e.disabled=false}};class Config{#e=null;constructor(e){Object.assign(this,e)}get submitter(){return this.#e}set submitter(e){this.#e=s[e]||e}}const i=new Config({mode:"on",submitter:"disabled"});const n={drive:r,forms:i};function expandURL(e){return new URL(e.toString(),document.baseURI)}function getAnchor(e){let t;return e.hash?e.hash.slice(1):(t=e.href.match(/#(.*)$/))?t[1]:void 0}function getAction$1(e,t){const r=t?.getAttribute("formaction")||e.getAttribute("action")||e.action;return expandURL(r)}function getExtension(e){return(getLastPathComponent(e).match(/\.[^.]*$/)||[])[0]||""}function isPrefixedBy(e,t){const r=getPrefix(t);return e.href===expandURL(r).href||e.href.startsWith(r)}function locationIsVisitable(e,t){return isPrefixedBy(e,t)&&!n.drive.unvisitableExtensions.has(getExtension(e))}function getRequestURL(e){const t=getAnchor(e);return t!=null?e.href.slice(0,-(t.length+1)):e.href}function toCacheKey(e){return getRequestURL(e)}function urlsAreEqual(e,t){return expandURL(e).href==expandURL(t).href}function getPathComponents(e){return e.pathname.split("/").slice(1)}function getLastPathComponent(e){return getPathComponents(e).slice(-1)[0]}function getPrefix(e){return addTrailingSlash(e.origin+e.pathname)}function addTrailingSlash(e){return e.endsWith("/")?e:e+"/"}class FetchResponse{constructor(e){this.response=e}get succeeded(){return this.response.ok}get failed(){return!this.succeeded}get clientError(){return this.statusCode>=400&&this.statusCode<=499}get serverError(){return this.statusCode>=500&&this.statusCode<=599}get redirected(){return this.response.redirected}get location(){return expandURL(this.response.url)}get isHTML(){return this.contentType&&this.contentType.match(/^(?:text\/([^\s;,]+\b)?html|application\/xhtml\+xml)\b/)}get statusCode(){return this.response.status}get contentType(){return this.header("Content-Type")}get responseText(){return this.response.clone().text()}get responseHTML(){return this.isHTML?this.response.clone().text():Promise.resolve(void 0)}header(e){return this.response.headers.get(e)}}class LimitedSet extends Set{constructor(e){super();this.maxSize=e}add(e){if(this.size>=this.maxSize){const e=this.values();const t=e.next().value;this.delete(t)}super.add(e)}}const o=new LimitedSet(20);const a=window.fetch;function fetchWithTurboHeaders(e,t={}){const r=new Headers(t.headers||{});const s=uuid();o.add(s);r.append("X-Turbo-Request-Id",s);return a(e,{...t,headers:r})}function fetchMethodFromString(e){switch(e.toLowerCase()){case"get":return c.get;case"post":return c.post;case"put":return c.put;case"patch":return c.patch;case"delete":return c.delete}}const c={get:"get",post:"post",put:"put",patch:"patch",delete:"delete"};function fetchEnctypeFromString(e){switch(e.toLowerCase()){case l.multipart:return l.multipart;case l.plain:return l.plain;default:return l.urlEncoded}}const l={urlEncoded:"application/x-www-form-urlencoded",multipart:"multipart/form-data",plain:"text/plain"};class FetchRequest{abortController=new AbortController;#t=e=>{};constructor(e,t,r,s=new URLSearchParams,i=null,n=l.urlEncoded){const[o,a]=buildResourceAndBody(expandURL(r),t,s,n);this.delegate=e;this.url=o;this.target=i;this.fetchOptions={credentials:"same-origin",redirect:"follow",method:t.toUpperCase(),headers:{...this.defaultHeaders},body:a,signal:this.abortSignal,referrer:this.delegate.referrer?.href};this.enctype=n}get method(){return this.fetchOptions.method}set method(e){const t=this.isSafe?this.url.searchParams:this.fetchOptions.body||new FormData;const r=fetchMethodFromString(e)||c.get;this.url.search="";const[s,i]=buildResourceAndBody(this.url,r,t,this.enctype);this.url=s;this.fetchOptions.body=i;this.fetchOptions.method=r.toUpperCase()}get headers(){return this.fetchOptions.headers}set headers(e){this.fetchOptions.headers=e}get body(){return this.isSafe?this.url.searchParams:this.fetchOptions.body}set body(e){this.fetchOptions.body=e}get location(){return this.url}get params(){return this.url.searchParams}get entries(){return this.body?Array.from(this.body.entries()):[]}cancel(){this.abortController.abort()}async perform(){const{fetchOptions:e}=this;this.delegate.prepareRequest(this);const t=await this.#r(e);try{this.delegate.requestStarted(this);t.detail.fetchRequest?this.response=t.detail.fetchRequest.response:this.response=fetchWithTurboHeaders(this.url.href,e);const r=await this.response;return await this.receive(r)}catch(e){if(e.name!=="AbortError"){this.#s(e)&&this.delegate.requestErrored(this,e);throw e}}finally{this.delegate.requestFinished(this)}}async receive(e){const t=new FetchResponse(e);const r=dispatch("turbo:before-fetch-response",{cancelable:true,detail:{fetchResponse:t},target:this.target});r.defaultPrevented?this.delegate.requestPreventedHandlingResponse(this,t):t.succeeded?this.delegate.requestSucceededWithResponse(this,t):this.delegate.requestFailedWithResponse(this,t);return t}get defaultHeaders(){return{Accept:"text/html, application/xhtml+xml"}}get isSafe(){return isSafe(this.method)}get abortSignal(){return this.abortController.signal}acceptResponseType(e){this.headers.Accept=[e,this.headers.Accept].join(", ")}async#r(e){const t=new Promise((e=>this.#t=e));const r=dispatch("turbo:before-fetch-request",{cancelable:true,detail:{fetchOptions:e,url:this.url,resume:this.#t},target:this.target});this.url=r.detail.url;r.defaultPrevented&&await t;return r}#s(e){const t=dispatch("turbo:fetch-request-error",{target:this.target,cancelable:true,detail:{request:this,error:e}});return!t.defaultPrevented}}function isSafe(e){return fetchMethodFromString(e)==c.get}function buildResourceAndBody(e,t,r,s){const i=Array.from(r).length>0?new URLSearchParams(entriesExcludingFiles(r)):e.searchParams;return isSafe(t)?[mergeIntoURLSearchParams(e,i),null]:s==l.urlEncoded?[e,i]:[e,r]}function entriesExcludingFiles(e){const t=[];for(const[r,s]of e)s instanceof File||t.push([r,s]);return t}function mergeIntoURLSearchParams(e,t){const r=new URLSearchParams(entriesExcludingFiles(t));e.search=r.toString();return e}class AppearanceObserver{started=false;constructor(e,t){this.delegate=e;this.element=t;this.intersectionObserver=new IntersectionObserver(this.intersect)}start(){if(!this.started){this.started=true;this.intersectionObserver.observe(this.element)}}stop(){if(this.started){this.started=false;this.intersectionObserver.unobserve(this.element)}}intersect=e=>{const t=e.slice(-1)[0];t?.isIntersecting&&this.delegate.elementAppearedInViewport(this.element)}}class StreamMessage{static contentType="text/vnd.turbo-stream.html";static wrap(e){return typeof e=="string"?new this(createDocumentFragment(e)):e}constructor(e){this.fragment=importStreamElements(e)}}function importStreamElements(e){for(const t of e.querySelectorAll("turbo-stream")){const e=document.importNode(t,true);for(const t of e.templateElement.content.querySelectorAll("script"))t.replaceWith(activateScriptElement(t));t.replaceWith(e)}return e}const h=100;class PrefetchCache{#i=null;#n=null;get(e){if(this.#n&&this.#n.url===e&&this.#n.expire>Date.now())return this.#n.request}setLater(e,t,r){this.clear();this.#i=setTimeout((()=>{t.perform();this.set(e,t,r);this.#i=null}),h)}set(e,t,r){this.#n={url:e,request:t,expire:new Date((new Date).getTime()+r)}}clear(){this.#i&&clearTimeout(this.#i);this.#n=null}}const d=1e4;const u=new PrefetchCache;const m={initialized:"initialized",requesting:"requesting",waiting:"waiting",receiving:"receiving",stopping:"stopping",stopped:"stopped"};class FormSubmission{state=m.initialized;static confirmMethod(e){return Promise.resolve(confirm(e))}constructor(e,t,r,s=false){const i=getMethod(t,r);const n=getAction(getFormAction(t,r),i);const o=buildFormData(t,r);const a=getEnctype(t,r);this.delegate=e;this.formElement=t;this.submitter=r;this.fetchRequest=new FetchRequest(this,i,n,o,t,a);this.mustRedirect=s}get method(){return this.fetchRequest.method}set method(e){this.fetchRequest.method=e}get action(){return this.fetchRequest.url.toString()}set action(e){this.fetchRequest.url=expandURL(e)}get body(){return this.fetchRequest.body}get enctype(){return this.fetchRequest.enctype}get isSafe(){return this.fetchRequest.isSafe}get location(){return this.fetchRequest.url}async start(){const{initialized:e,requesting:t}=m;const r=getAttribute("data-turbo-confirm",this.submitter,this.formElement);if(typeof r==="string"){const e=typeof n.forms.confirm==="function"?n.forms.confirm:FormSubmission.confirmMethod;const t=await e(r,this.formElement,this.submitter);if(!t)return}if(this.state==e){this.state=t;return this.fetchRequest.perform()}}stop(){const{stopping:e,stopped:t}=m;if(this.state!=e&&this.state!=t){this.state=e;this.fetchRequest.cancel();return true}}prepareRequest(e){if(!e.isSafe){const t=getCookieValue(getMetaContent("csrf-param"))||getMetaContent("csrf-token");t&&(e.headers["X-CSRF-Token"]=t)}this.requestAcceptsTurboStreamResponse(e)&&e.acceptResponseType(StreamMessage.contentType)}requestStarted(e){this.state=m.waiting;this.submitter&&n.forms.submitter.beforeSubmit(this.submitter);this.setSubmitsWith();markAsBusy(this.formElement);dispatch("turbo:submit-start",{target:this.formElement,detail:{formSubmission:this}});this.delegate.formSubmissionStarted(this)}requestPreventedHandlingResponse(e,t){u.clear();this.result={success:t.succeeded,fetchResponse:t}}requestSucceededWithResponse(e,t){if(t.clientError||t.serverError)this.delegate.formSubmissionFailedWithResponse(this,t);else{u.clear();if(this.requestMustRedirect(e)&&responseSucceededWithoutRedirect(t)){const e=new Error("Form responses must redirect to another location");this.delegate.formSubmissionErrored(this,e)}else{this.state=m.receiving;this.result={success:true,fetchResponse:t};this.delegate.formSubmissionSucceededWithResponse(this,t)}}}requestFailedWithResponse(e,t){this.result={success:false,fetchResponse:t};this.delegate.formSubmissionFailedWithResponse(this,t)}requestErrored(e,t){this.result={success:false,error:t};this.delegate.formSubmissionErrored(this,t)}requestFinished(e){this.state=m.stopped;this.submitter&&n.forms.submitter.afterSubmit(this.submitter);this.resetSubmitterText();clearBusyState(this.formElement);dispatch("turbo:submit-end",{target:this.formElement,detail:{formSubmission:this,...this.result}});this.delegate.formSubmissionFinished(this)}setSubmitsWith(){if(this.submitter&&this.submitsWith)if(this.submitter.matches("button")){this.originalSubmitText=this.submitter.innerHTML;this.submitter.innerHTML=this.submitsWith}else if(this.submitter.matches("input")){const e=this.submitter;this.originalSubmitText=e.value;e.value=this.submitsWith}}resetSubmitterText(){if(this.submitter&&this.originalSubmitText)if(this.submitter.matches("button"))this.submitter.innerHTML=this.originalSubmitText;else if(this.submitter.matches("input")){const e=this.submitter;e.value=this.originalSubmitText}}requestMustRedirect(e){return!e.isSafe&&this.mustRedirect}requestAcceptsTurboStreamResponse(e){return!e.isSafe||hasAttribute("data-turbo-stream",this.submitter,this.formElement)}get submitsWith(){return this.submitter?.getAttribute("data-turbo-submits-with")}}function buildFormData(e,t){const r=new FormData(e);const s=t?.getAttribute("name");const i=t?.getAttribute("value");s&&r.append(s,i||"");return r}function getCookieValue(e){if(e!=null){const t=document.cookie?document.cookie.split("; "):[];const r=t.find((t=>t.startsWith(e)));if(r){const e=r.split("=").slice(1).join("=");return e?decodeURIComponent(e):void 0}}}function responseSucceededWithoutRedirect(e){return e.statusCode==200&&!e.redirected}function getFormAction(e,t){const r=typeof e.action==="string"?e.action:null;return t?.hasAttribute("formaction")?t.getAttribute("formaction")||"":e.getAttribute("action")||r||""}function getAction(e,t){const r=expandURL(e);isSafe(t)&&(r.search="");return r}function getMethod(e,t){const r=t?.getAttribute("formmethod")||e.getAttribute("method")||"";return fetchMethodFromString(r.toLowerCase())||c.get}function getEnctype(e,t){return fetchEnctypeFromString(t?.getAttribute("formenctype")||e.enctype)}class Snapshot{constructor(e){this.element=e}get activeElement(){return this.element.ownerDocument.activeElement}get children(){return[...this.element.children]}hasAnchor(e){return this.getElementForAnchor(e)!=null}getElementForAnchor(e){return e?this.element.querySelector(`[id='${e}'], a[name='${e}']`):null}get isConnected(){return this.element.isConnected}get firstAutofocusableElement(){return queryAutofocusableElement(this.element)}get permanentElements(){return queryPermanentElementsAll(this.element)}getPermanentElementById(e){return getPermanentElementById(this.element,e)}getPermanentElementMapForSnapshot(e){const t={};for(const r of this.permanentElements){const{id:s}=r;const i=e.getPermanentElementById(s);i&&(t[s]=[r,i])}return t}}function getPermanentElementById(e,t){return e.querySelector(`#${t}[data-turbo-permanent]`)}function queryPermanentElementsAll(e){return e.querySelectorAll("[id][data-turbo-permanent]")}class FormSubmitObserver{started=false;constructor(e,t){this.delegate=e;this.eventTarget=t}start(){if(!this.started){this.eventTarget.addEventListener("submit",this.submitCaptured,true);this.started=true}}stop(){if(this.started){this.eventTarget.removeEventListener("submit",this.submitCaptured,true);this.started=false}}submitCaptured=()=>{this.eventTarget.removeEventListener("submit",this.submitBubbled,false);this.eventTarget.addEventListener("submit",this.submitBubbled,false)};submitBubbled=e=>{if(!e.defaultPrevented){const t=e.target instanceof HTMLFormElement?e.target:void 0;const r=e.submitter||void 0;if(t&&submissionDoesNotDismissDialog(t,r)&&submissionDoesNotTargetIFrame(t,r)&&this.delegate.willSubmitForm(t,r)){e.preventDefault();e.stopImmediatePropagation();this.delegate.formSubmitted(t,r)}}}}function submissionDoesNotDismissDialog(e,t){const r=t?.getAttribute("formmethod")||e.getAttribute("method");return r!="dialog"}function submissionDoesNotTargetIFrame(e,t){const r=t?.getAttribute("formtarget")||e.getAttribute("target");return doesNotTargetIFrame(r)}class View{#o=e=>{};#a=e=>{};constructor(e,t){this.delegate=e;this.element=t}scrollToAnchor(e){const t=this.snapshot.getElementForAnchor(e);if(t){this.scrollToElement(t);this.focusElement(t)}else this.scrollToPosition({x:0,y:0})}scrollToAnchorFromLocation(e){this.scrollToAnchor(getAnchor(e))}scrollToElement(e){e.scrollIntoView()}focusElement(e){if(e instanceof HTMLElement)if(e.hasAttribute("tabindex"))e.focus();else{e.setAttribute("tabindex","-1");e.focus();e.removeAttribute("tabindex")}}scrollToPosition({x:e,y:t}){this.scrollRoot.scrollTo(e,t)}scrollToTop(){this.scrollToPosition({x:0,y:0})}get scrollRoot(){return window}async render(e){const{isPreview:t,shouldRender:r,willRender:s,newSnapshot:i}=e;const n=s;if(r)try{this.renderPromise=new Promise((e=>this.#o=e));this.renderer=e;await this.prepareToRenderSnapshot(e);const r=new Promise((e=>this.#a=e));const s={resume:this.#a,render:this.renderer.renderElement,renderMethod:this.renderer.renderMethod};const n=this.delegate.allowsImmediateRender(i,s);n||await r;await this.renderSnapshot(e);this.delegate.viewRenderedSnapshot(i,t,this.renderer.renderMethod);this.delegate.preloadOnLoadLinksForView(this.element);this.finishRenderingSnapshot(e)}finally{delete this.renderer;this.#o(void 0);delete this.renderPromise}else n&&this.invalidate(e.reloadReason)}invalidate(e){this.delegate.viewInvalidated(e)}async prepareToRenderSnapshot(e){this.markAsPreview(e.isPreview);await e.prepareToRender()}markAsPreview(e){e?this.element.setAttribute("data-turbo-preview",""):this.element.removeAttribute("data-turbo-preview")}markVisitDirection(e){this.element.setAttribute("data-turbo-visit-direction",e)}unmarkVisitDirection(){this.element.removeAttribute("data-turbo-visit-direction")}async renderSnapshot(e){await e.render()}finishRenderingSnapshot(e){e.finishRendering()}}class FrameView extends View{missing(){this.element.innerHTML='<strong class="turbo-frame-error">Content missing</strong>'}get snapshot(){return new Snapshot(this.element)}}class LinkInterceptor{constructor(e,t){this.delegate=e;this.element=t}start(){this.element.addEventListener("click",this.clickBubbled);document.addEventListener("turbo:click",this.linkClicked);document.addEventListener("turbo:before-visit",this.willVisit)}stop(){this.element.removeEventListener("click",this.clickBubbled);document.removeEventListener("turbo:click",this.linkClicked);document.removeEventListener("turbo:before-visit",this.willVisit)}clickBubbled=e=>{this.clickEventIsSignificant(e)?this.clickEvent=e:delete this.clickEvent};linkClicked=e=>{if(this.clickEvent&&this.clickEventIsSignificant(e)&&this.delegate.shouldInterceptLinkClick(e.target,e.detail.url,e.detail.originalEvent)){this.clickEvent.preventDefault();e.preventDefault();this.delegate.linkClickIntercepted(e.target,e.detail.url,e.detail.originalEvent)}delete this.clickEvent};willVisit=e=>{delete this.clickEvent};clickEventIsSignificant(e){const t=e.composed?e.target?.parentElement:e.target;const r=findLinkFromClickTarget(t)||t;return r instanceof Element&&r.closest("turbo-frame, html")==this.element}}class LinkClickObserver{started=false;constructor(e,t){this.delegate=e;this.eventTarget=t}start(){if(!this.started){this.eventTarget.addEventListener("click",this.clickCaptured,true);this.started=true}}stop(){if(this.started){this.eventTarget.removeEventListener("click",this.clickCaptured,true);this.started=false}}clickCaptured=()=>{this.eventTarget.removeEventListener("click",this.clickBubbled,false);this.eventTarget.addEventListener("click",this.clickBubbled,false)};clickBubbled=e=>{if(e instanceof MouseEvent&&this.clickEventIsSignificant(e)){const t=e.composedPath&&e.composedPath()[0]||e.target;const r=findLinkFromClickTarget(t);if(r&&doesNotTargetIFrame(r.target)){const t=getLocationForLink(r);if(this.delegate.willFollowLinkToLocation(r,t,e)){e.preventDefault();this.delegate.followedLinkToLocation(r,t)}}}};clickEventIsSignificant(e){return!(e.target&&e.target.isContentEditable||e.defaultPrevented||e.which>1||e.altKey||e.ctrlKey||e.metaKey||e.shiftKey)}}class FormLinkClickObserver{constructor(e,t){this.delegate=e;this.linkInterceptor=new LinkClickObserver(this,t)}start(){this.linkInterceptor.start()}stop(){this.linkInterceptor.stop()}canPrefetchRequestToLocation(e,t){return false}prefetchAndCacheRequestToLocation(e,t){}willFollowLinkToLocation(e,t,r){return this.delegate.willSubmitFormLinkToLocation(e,t,r)&&(e.hasAttribute("data-turbo-method")||e.hasAttribute("data-turbo-stream"))}followedLinkToLocation(e,t){const r=document.createElement("form");const s="hidden";for(const[e,i]of t.searchParams)r.append(Object.assign(document.createElement("input"),{type:s,name:e,value:i}));const i=Object.assign(t,{search:""});r.setAttribute("data-turbo","true");r.setAttribute("action",i.href);r.setAttribute("hidden","");const n=e.getAttribute("data-turbo-method");n&&r.setAttribute("method",n);const o=e.getAttribute("data-turbo-frame");o&&r.setAttribute("data-turbo-frame",o);const a=getVisitAction(e);a&&r.setAttribute("data-turbo-action",a);const c=e.getAttribute("data-turbo-confirm");c&&r.setAttribute("data-turbo-confirm",c);const l=e.hasAttribute("data-turbo-stream");l&&r.setAttribute("data-turbo-stream","");this.delegate.submittedFormLinkToLocation(e,t,r);document.body.appendChild(r);r.addEventListener("turbo:submit-end",(()=>r.remove()),{once:true});requestAnimationFrame((()=>r.requestSubmit()))}}class Bardo{static async preservingPermanentElements(e,t,r){const s=new this(e,t);s.enter();await r();s.leave()}constructor(e,t){this.delegate=e;this.permanentElementMap=t}enter(){for(const e in this.permanentElementMap){const[t,r]=this.permanentElementMap[e];this.delegate.enteringBardo(t,r);this.replaceNewPermanentElementWithPlaceholder(r)}}leave(){for(const e in this.permanentElementMap){const[t]=this.permanentElementMap[e];this.replaceCurrentPermanentElementWithClone(t);this.replacePlaceholderWithPermanentElement(t);this.delegate.leavingBardo(t)}}replaceNewPermanentElementWithPlaceholder(e){const t=createPlaceholderForPermanentElement(e);e.replaceWith(t)}replaceCurrentPermanentElementWithClone(e){const t=e.cloneNode(true);e.replaceWith(t)}replacePlaceholderWithPermanentElement(e){const t=this.getPlaceholderById(e.id);t?.replaceWith(e)}getPlaceholderById(e){return this.placeholders.find((t=>t.content==e))}get placeholders(){return[...document.querySelectorAll("meta[name=turbo-permanent-placeholder][content]")]}}function createPlaceholderForPermanentElement(e){const t=document.createElement("meta");t.setAttribute("name","turbo-permanent-placeholder");t.setAttribute("content",e.id);return t}class Renderer{#c=null;static renderElement(e,t){}constructor(e,t,r,s=true){this.currentSnapshot=e;this.newSnapshot=t;this.isPreview=r;this.willRender=s;this.renderElement=this.constructor.renderElement;this.promise=new Promise(((e,t)=>this.resolvingFunctions={resolve:e,reject:t}))}get shouldRender(){return true}get shouldAutofocus(){return true}get reloadReason(){}prepareToRender(){}render(){}finishRendering(){if(this.resolvingFunctions){this.resolvingFunctions.resolve();delete this.resolvingFunctions}}async preservingPermanentElements(e){await Bardo.preservingPermanentElements(this,this.permanentElementMap,e)}focusFirstAutofocusableElement(){if(this.shouldAutofocus){const e=this.connectedSnapshot.firstAutofocusableElement;e&&e.focus()}}enteringBardo(e){this.#c||e.contains(this.currentSnapshot.activeElement)&&(this.#c=this.currentSnapshot.activeElement)}leavingBardo(e){if(e.contains(this.#c)&&this.#c instanceof HTMLElement){this.#c.focus();this.#c=null}}get connectedSnapshot(){return this.newSnapshot.isConnected?this.newSnapshot:this.currentSnapshot}get currentElement(){return this.currentSnapshot.element}get newElement(){return this.newSnapshot.element}get permanentElementMap(){return this.currentSnapshot.getPermanentElementMapForSnapshot(this.newSnapshot)}get renderMethod(){return"replace"}}class FrameRenderer extends Renderer{static renderElement(e,t){const r=document.createRange();r.selectNodeContents(e);r.deleteContents();const s=t;const i=s.ownerDocument?.createRange();if(i){i.selectNodeContents(s);e.appendChild(i.extractContents())}}constructor(e,t,r,s,i,n=true){super(t,r,s,i,n);this.delegate=e}get shouldRender(){return true}async render(){await nextRepaint();this.preservingPermanentElements((()=>{this.loadFrameElement()}));this.scrollFrameIntoView();await nextRepaint();this.focusFirstAutofocusableElement();await nextRepaint();this.activateScriptElements()}loadFrameElement(){this.delegate.willRenderFrame(this.currentElement,this.newElement);this.renderElement(this.currentElement,this.newElement)}scrollFrameIntoView(){if(this.currentElement.autoscroll||this.newElement.autoscroll){const e=this.currentElement.firstElementChild;const t=readScrollLogicalPosition(this.currentElement.getAttribute("data-autoscroll-block"),"end");const r=readScrollBehavior(this.currentElement.getAttribute("data-autoscroll-behavior"),"auto");if(e){e.scrollIntoView({block:t,behavior:r});return true}}return false}activateScriptElements(){for(const e of this.newScriptElements){const t=activateScriptElement(e);e.replaceWith(t)}}get newScriptElements(){return this.currentElement.querySelectorAll("script")}}function readScrollLogicalPosition(e,t){return e=="end"||e=="start"||e=="center"||e=="nearest"?e:t}function readScrollBehavior(e,t){return e=="auto"||e=="smooth"?e:t}var p=function(){let e=new Set;let t={morphStyle:"outerHTML",callbacks:{beforeNodeAdded:noOp,afterNodeAdded:noOp,beforeNodeMorphed:noOp,afterNodeMorphed:noOp,beforeNodeRemoved:noOp,afterNodeRemoved:noOp,beforeAttributeUpdated:noOp},head:{style:"merge",shouldPreserve:function(e){return e.getAttribute("im-preserve")==="true"},shouldReAppend:function(e){return e.getAttribute("im-re-append")==="true"},shouldRemove:noOp,afterHeadMorphed:noOp}};function morph(e,t,r={}){e instanceof Document&&(e=e.documentElement);typeof t==="string"&&(t=parseContent(t));let s=normalizeContent(t);let i=createMorphContext(e,s,r);return morphNormalizedContent(e,s,i)}function morphNormalizedContent(e,t,r){if(r.head.block){let s=e.querySelector("head");let i=t.querySelector("head");if(s&&i){let n=handleHeadElement(i,s,r);Promise.all(n).then((function(){morphNormalizedContent(e,t,Object.assign(r,{head:{block:false,ignore:true}}))}));return}}if(r.morphStyle==="innerHTML"){morphChildren(t,e,r);return e.children}if(r.morphStyle==="outerHTML"||r.morphStyle==null){let s=findBestNodeMatch(t,e,r);let i=s?.previousSibling;let n=s?.nextSibling;let o=morphOldNodeTo(e,s,r);return s?insertSiblings(i,o,n):[]}throw"Do not understand how to morph style "+r.morphStyle}
 /**
-         * @param possibleActiveElement
-         * @param ctx
-         * @returns {boolean}
-         */function ignoreValueOfActiveElement(e,t){return t.ignoreActiveValue&&e===document.activeElement&&e!==document.body}
+ * Contains a fragment of HTML which is updated based on navigation within
+ * it (e.g. via links or form submissions).
+ *
+ * @customElement turbo-frame
+ * @example
+ *   <turbo-frame id="messages">
+ *     <a href="/messages/expanded">
+ *       Show all expanded messages in this frame.
+ *     </a>
+ *
+ *     <form action="/messages">
+ *       Show response from this form within this frame.
+ *     </form>
+ *   </turbo-frame>
+ */
+class FrameElement extends HTMLElement {
+  static delegateConstructor = undefined
+
+  loaded = Promise.resolve()
+
+  static get observedAttributes() {
+    return ["disabled", "loading", "src"]
+  }
+
+  constructor() {
+    super();
+    this.delegate = new FrameElement.delegateConstructor(this);
+  }
+
+  connectedCallback() {
+    this.delegate.connect();
+  }
+
+  disconnectedCallback() {
+    this.delegate.disconnect();
+  }
+
+  reload() {
+    return this.delegate.sourceURLReloaded()
+  }
+
+  attributeChangedCallback(name) {
+    if (name == "loading") {
+      this.delegate.loadingStyleChanged();
+    } else if (name == "src") {
+      this.delegate.sourceURLChanged();
+    } else if (name == "disabled") {
+      this.delegate.disabledChanged();
+    }
+  }
+
+  /**
+   * Gets the URL to lazily load source HTML from
+   */
+  get src() {
+    return this.getAttribute("src")
+  }
+
+  /**
+   * Sets the URL to lazily load source HTML from
+   */
+  set src(value) {
+    if (value) {
+      this.setAttribute("src", value);
+    } else {
+      this.removeAttribute("src");
+    }
+  }
+
+  /**
+   * Gets the refresh mode for the frame.
+   */
+  get refresh() {
+    return this.getAttribute("refresh")
+  }
+
+  /**
+   * Sets the refresh mode for the frame.
+   */
+  set refresh(value) {
+    if (value) {
+      this.setAttribute("refresh", value);
+    } else {
+      this.removeAttribute("refresh");
+    }
+  }
+
+  get shouldReloadWithMorph() {
+    return this.src && this.refresh === "morph"
+  }
+
+  /**
+   * Determines if the element is loading
+   */
+  get loading() {
+    return frameLoadingStyleFromString(this.getAttribute("loading") || "")
+  }
+
+  /**
+   * Sets the value of if the element is loading
+   */
+  set loading(value) {
+    if (value) {
+      this.setAttribute("loading", value);
+    } else {
+      this.removeAttribute("loading");
+    }
+  }
+
+  /**
+   * Gets the disabled state of the frame.
+   *
+   * If disabled, no requests will be intercepted by the frame.
+   */
+  get disabled() {
+    return this.hasAttribute("disabled")
+  }
+
+  /**
+   * Sets the disabled state of the frame.
+   *
+   * If disabled, no requests will be intercepted by the frame.
+   */
+  set disabled(value) {
+    if (value) {
+      this.setAttribute("disabled", "");
+    } else {
+      this.removeAttribute("disabled");
+    }
+  }
+
+  /**
+   * Gets the autoscroll state of the frame.
+   *
+   * If true, the frame will be scrolled into view automatically on update.
+   */
+  get autoscroll() {
+    return this.hasAttribute("autoscroll")
+  }
+
+  /**
+   * Sets the autoscroll state of the frame.
+   *
+   * If true, the frame will be scrolled into view automatically on update.
+   */
+  set autoscroll(value) {
+    if (value) {
+      this.setAttribute("autoscroll", "");
+    } else {
+      this.removeAttribute("autoscroll");
+    }
+  }
+
+  /**
+   * Determines if the element has finished loading
+   */
+  get complete() {
+    return !this.delegate.isLoading
+  }
+
+  /**
+   * Gets the active state of the frame.
+   *
+   * If inactive, source changes will not be observed.
+   */
+  get isActive() {
+    return this.ownerDocument === document && !this.isPreview
+  }
+
+  /**
+   * Sets the active state of the frame.
+   *
+   * If inactive, source changes will not be observed.
+   */
+  get isPreview() {
+    return this.ownerDocument?.documentElement?.hasAttribute("data-turbo-preview")
+  }
+}
+
+function frameLoadingStyleFromString(style) {
+  switch (style.toLowerCase()) {
+    case "lazy":
+      return FrameLoadingStyle.lazy
+    default:
+      return FrameLoadingStyle.eager
+  }
+}
+
+const drive = {
+  enabled: true,
+  progressBarDelay: 500,
+  unvisitableExtensions: new Set(
+    [
+      ".7z", ".aac", ".apk", ".avi", ".bmp", ".bz2", ".css", ".csv", ".deb", ".dmg", ".doc",
+      ".docx", ".exe", ".gif", ".gz", ".heic", ".heif", ".ico", ".iso", ".jpeg", ".jpg",
+      ".js", ".json", ".m4a", ".mkv", ".mov", ".mp3", ".mp4", ".mpeg", ".mpg", ".msi",
+      ".ogg", ".ogv", ".pdf", ".pkg", ".png", ".ppt", ".pptx", ".rar", ".rtf",
+      ".svg", ".tar", ".tif", ".tiff", ".txt", ".wav", ".webm", ".webp", ".wma", ".wmv",
+      ".xls", ".xlsx", ".xml", ".zip"
+    ]
+  )
+};
+
+function activateScriptElement(element) {
+  if (element.getAttribute("data-turbo-eval") == "false") {
+    return element
+  } else {
+    const createdScriptElement = document.createElement("script");
+    const cspNonce = getCspNonce();
+    if (cspNonce) {
+      createdScriptElement.nonce = cspNonce;
+    }
+    createdScriptElement.textContent = element.textContent;
+    createdScriptElement.async = false;
+    copyElementAttributes(createdScriptElement, element);
+    return createdScriptElement
+  }
+}
+
+function copyElementAttributes(destinationElement, sourceElement) {
+  for (const { name, value } of sourceElement.attributes) {
+    destinationElement.setAttribute(name, value);
+  }
+}
+
+function createDocumentFragment(html) {
+  const template = document.createElement("template");
+  template.innerHTML = html;
+  return template.content
+}
+
+function dispatch(eventName, { target, cancelable, detail } = {}) {
+  const event = new CustomEvent(eventName, {
+    cancelable,
+    bubbles: true,
+    composed: true,
+    detail
+  });
+
+  if (target && target.isConnected) {
+    target.dispatchEvent(event);
+  } else {
+    document.documentElement.dispatchEvent(event);
+  }
+
+  return event
+}
+
+function cancelEvent(event) {
+  event.preventDefault();
+  event.stopImmediatePropagation();
+}
+
+function nextRepaint() {
+  if (document.visibilityState === "hidden") {
+    return nextEventLoopTick()
+  } else {
+    return nextAnimationFrame()
+  }
+}
+
+function nextAnimationFrame() {
+  return new Promise((resolve) => requestAnimationFrame(() => resolve()))
+}
+
+function nextEventLoopTick() {
+  return new Promise((resolve) => setTimeout(() => resolve(), 0))
+}
+
+function parseHTMLDocument(html = "") {
+  return new DOMParser().parseFromString(html, "text/html")
+}
+
+function unindent(strings, ...values) {
+  const lines = interpolate(strings, values).replace(/^\n/, "").split("\n");
+  const match = lines[0].match(/^\s+/);
+  const indent = match ? match[0].length : 0;
+  return lines.map((line) => line.slice(indent)).join("\n")
+}
+
+function interpolate(strings, values) {
+  return strings.reduce((result, string, i) => {
+    const value = values[i] == undefined ? "" : values[i];
+    return result + string + value
+  }, "")
+}
+
+function uuid() {
+  return Array.from({ length: 36 })
+    .map((_, i) => {
+      if (i == 8 || i == 13 || i == 18 || i == 23) {
+        return "-"
+      } else if (i == 14) {
+        return "4"
+      } else if (i == 19) {
+        return (Math.floor(Math.random() * 4) + 8).toString(16)
+      } else {
+        return Math.floor(Math.random() * 16).toString(16)
+      }
+    })
+    .join("")
+}
+
+function getAttribute(attributeName, ...elements) {
+  for (const value of elements.map((element) => element?.getAttribute(attributeName))) {
+    if (typeof value == "string") return value
+  }
+
+  return null
+}
+
+function hasAttribute(attributeName, ...elements) {
+  return elements.some((element) => element && element.hasAttribute(attributeName))
+}
+
+function markAsBusy(...elements) {
+  for (const element of elements) {
+    if (element.localName == "turbo-frame") {
+      element.setAttribute("busy", "");
+    }
+    element.setAttribute("aria-busy", "true");
+  }
+}
+
+function clearBusyState(...elements) {
+  for (const element of elements) {
+    if (element.localName == "turbo-frame") {
+      element.removeAttribute("busy");
+    }
+
+    element.removeAttribute("aria-busy");
+  }
+}
+
+function waitForLoad(element, timeoutInMilliseconds = 2000) {
+  return new Promise((resolve) => {
+    const onComplete = () => {
+      element.removeEventListener("error", onComplete);
+      element.removeEventListener("load", onComplete);
+      resolve();
+    };
+
+    element.addEventListener("load", onComplete, { once: true });
+    element.addEventListener("error", onComplete, { once: true });
+    setTimeout(resolve, timeoutInMilliseconds);
+  })
+}
+
+function getHistoryMethodForAction(action) {
+  switch (action) {
+    case "replace":
+      return history.replaceState
+    case "advance":
+    case "restore":
+      return history.pushState
+  }
+}
+
+function isAction(action) {
+  return action == "advance" || action == "replace" || action == "restore"
+}
+
+function getVisitAction(...elements) {
+  const action = getAttribute("data-turbo-action", ...elements);
+
+  return isAction(action) ? action : null
+}
+
+function getMetaElement(name) {
+  return document.querySelector(`meta[name="${name}"]`)
+}
+
+function getMetaContent(name) {
+  const element = getMetaElement(name);
+  return element && element.content
+}
+
+function getCspNonce() {
+  const element = getMetaElement("csp-nonce");
+
+  if (element) {
+    const { nonce, content } = element;
+    return nonce == "" ? content : nonce
+  }
+}
+
+function setMetaContent(name, content) {
+  let element = getMetaElement(name);
+
+  if (!element) {
+    element = document.createElement("meta");
+    element.setAttribute("name", name);
+
+    document.head.appendChild(element);
+  }
+
+  element.setAttribute("content", content);
+
+  return element
+}
+
+function findClosestRecursively(element, selector) {
+  if (element instanceof Element) {
+    return (
+      element.closest(selector) || findClosestRecursively(element.assignedSlot || element.getRootNode()?.host, selector)
+    )
+  }
+}
+
+function elementIsFocusable(element) {
+  const inertDisabledOrHidden = "[inert], :disabled, [hidden], details:not([open]), dialog:not([open])";
+
+  return !!element && element.closest(inertDisabledOrHidden) == null && typeof element.focus == "function"
+}
+
+function queryAutofocusableElement(elementOrDocumentFragment) {
+  return Array.from(elementOrDocumentFragment.querySelectorAll("[autofocus]")).find(elementIsFocusable)
+}
+
+async function around(callback, reader) {
+  const before = reader();
+
+  callback();
+
+  await nextAnimationFrame();
+
+  const after = reader();
+
+  return [before, after]
+}
+
+function doesNotTargetIFrame(name) {
+  if (name === "_blank") {
+    return false
+  } else if (name) {
+    for (const element of document.getElementsByName(name)) {
+      if (element instanceof HTMLIFrameElement) return false
+    }
+
+    return true
+  } else {
+    return true
+  }
+}
+
+function findLinkFromClickTarget(target) {
+  const link = findClosestRecursively(target, "a[href], a[xlink\\:href]");
+
+  if (!link) return null
+  if (link.href.startsWith("#")) return null
+  if (link.hasAttribute("download")) return null
+
+  const linkTarget = link.getAttribute("target");
+  if (linkTarget && linkTarget !== "_self") return null
+
+  return link
+}
+
+function debounce(fn, delay) {
+  let timeoutId = null;
+
+  return (...args) => {
+    const callback = () => fn.apply(this, args);
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(callback, delay);
+  }
+}
+
+const submitter = {
+  "aria-disabled": {
+    beforeSubmit: submitter => {
+      submitter.setAttribute("aria-disabled", "true");
+      submitter.addEventListener("click", cancelEvent);
+    },
+
+    afterSubmit: submitter => {
+      submitter.removeAttribute("aria-disabled");
+      submitter.removeEventListener("click", cancelEvent);
+    }
+  },
+
+  "disabled": {
+    beforeSubmit: submitter => submitter.disabled = true,
+    afterSubmit: submitter => submitter.disabled = false
+  }
+};
+
+class Config {
+  #submitter = null
+
+  constructor(config) {
+    Object.assign(this, config);
+  }
+
+  get submitter() {
+    return this.#submitter
+  }
+
+  set submitter(value) {
+    this.#submitter = submitter[value] || value;
+  }
+}
+
+const forms = new Config({
+  mode: "on",
+  submitter: "disabled"
+});
+
+const config = {
+  drive,
+  forms
+};
+
+function expandURL(locatable) {
+  return new URL(locatable.toString(), document.baseURI)
+}
+
+function getAnchor(url) {
+  let anchorMatch;
+  if (url.hash) {
+    return url.hash.slice(1)
+    // eslint-disable-next-line no-cond-assign
+  } else if ((anchorMatch = url.href.match(/#(.*)$/))) {
+    return anchorMatch[1]
+  }
+}
+
+function getAction$1(form, submitter) {
+  const action = submitter?.getAttribute("formaction") || form.getAttribute("action") || form.action;
+
+  return expandURL(action)
+}
+
+function getExtension(url) {
+  return (getLastPathComponent(url).match(/\.[^.]*$/) || [])[0] || ""
+}
+
+function isPrefixedBy(baseURL, url) {
+  const prefix = addTrailingSlash(url.origin + url.pathname);
+  return addTrailingSlash(baseURL.href) === prefix || baseURL.href.startsWith(prefix)
+}
+
+function locationIsVisitable(location, rootLocation) {
+  return isPrefixedBy(location, rootLocation) && !config.drive.unvisitableExtensions.has(getExtension(location))
+}
+
+function getLocationForLink(link) {
+  return expandURL(link.getAttribute("href") || "")
+}
+
+function getRequestURL(url) {
+  const anchor = getAnchor(url);
+  return anchor != null ? url.href.slice(0, -(anchor.length + 1)) : url.href
+}
+
+function toCacheKey(url) {
+  return getRequestURL(url)
+}
+
+function urlsAreEqual(left, right) {
+  return expandURL(left).href == expandURL(right).href
+}
+
+function getPathComponents(url) {
+  return url.pathname.split("/").slice(1)
+}
+
+function getLastPathComponent(url) {
+  return getPathComponents(url).slice(-1)[0]
+}
+
+function addTrailingSlash(value) {
+  return value.endsWith("/") ? value : value + "/"
+}
+
+class FetchResponse {
+  constructor(response) {
+    this.response = response;
+  }
+
+  get succeeded() {
+    return this.response.ok
+  }
+
+  get failed() {
+    return !this.succeeded
+  }
+
+  get clientError() {
+    return this.statusCode >= 400 && this.statusCode <= 499
+  }
+
+  get serverError() {
+    return this.statusCode >= 500 && this.statusCode <= 599
+  }
+
+  get redirected() {
+    return this.response.redirected
+  }
+
+  get location() {
+    return expandURL(this.response.url)
+  }
+
+  get isHTML() {
+    return this.contentType && this.contentType.match(/^(?:text\/([^\s;,]+\b)?html|application\/xhtml\+xml)\b/)
+  }
+
+  get statusCode() {
+    return this.response.status
+  }
+
+  get contentType() {
+    return this.header("Content-Type")
+  }
+
+  get responseText() {
+    return this.response.clone().text()
+  }
+
+  get responseHTML() {
+    if (this.isHTML) {
+      return this.response.clone().text()
+    } else {
+      return Promise.resolve(undefined)
+    }
+  }
+
+  header(name) {
+    return this.response.headers.get(name)
+  }
+}
+
+class LimitedSet extends Set {
+  constructor(maxSize) {
+    super();
+    this.maxSize = maxSize;
+  }
+
+  add(value) {
+    if (this.size >= this.maxSize) {
+      const iterator = this.values();
+      const oldestValue = iterator.next().value;
+      this.delete(oldestValue);
+    }
+    super.add(value);
+  }
+}
+
+const recentRequests = new LimitedSet(20);
+
+function fetchWithTurboHeaders(url, options = {}) {
+  const modifiedHeaders = new Headers(options.headers || {});
+  const requestUID = uuid();
+  recentRequests.add(requestUID);
+  modifiedHeaders.append("X-Turbo-Request-Id", requestUID);
+
+  return window.fetch(url, {
+    ...options,
+    headers: modifiedHeaders
+  })
+}
+
+function fetchMethodFromString(method) {
+  switch (method.toLowerCase()) {
+    case "get":
+      return FetchMethod.get
+    case "post":
+      return FetchMethod.post
+    case "put":
+      return FetchMethod.put
+    case "patch":
+      return FetchMethod.patch
+    case "delete":
+      return FetchMethod.delete
+  }
+}
+
+const FetchMethod = {
+  get: "get",
+  post: "post",
+  put: "put",
+  patch: "patch",
+  delete: "delete"
+};
+
+function fetchEnctypeFromString(encoding) {
+  switch (encoding.toLowerCase()) {
+    case FetchEnctype.multipart:
+      return FetchEnctype.multipart
+    case FetchEnctype.plain:
+      return FetchEnctype.plain
+    default:
+      return FetchEnctype.urlEncoded
+  }
+}
+
+const FetchEnctype = {
+  urlEncoded: "application/x-www-form-urlencoded",
+  multipart: "multipart/form-data",
+  plain: "text/plain"
+};
+
+class FetchRequest {
+  abortController = new AbortController()
+  #resolveRequestPromise = (_value) => {}
+
+  constructor(delegate, method, location, requestBody = new URLSearchParams(), target = null, enctype = FetchEnctype.urlEncoded) {
+    const [url, body] = buildResourceAndBody(expandURL(location), method, requestBody, enctype);
+
+    this.delegate = delegate;
+    this.url = url;
+    this.target = target;
+    this.fetchOptions = {
+      credentials: "same-origin",
+      redirect: "follow",
+      method: method.toUpperCase(),
+      headers: { ...this.defaultHeaders },
+      body: body,
+      signal: this.abortSignal,
+      referrer: this.delegate.referrer?.href
+    };
+    this.enctype = enctype;
+  }
+
+  get method() {
+    return this.fetchOptions.method
+  }
+
+  set method(value) {
+    const fetchBody = this.isSafe ? this.url.searchParams : this.fetchOptions.body || new FormData();
+    const fetchMethod = fetchMethodFromString(value) || FetchMethod.get;
+
+    this.url.search = "";
+
+    const [url, body] = buildResourceAndBody(this.url, fetchMethod, fetchBody, this.enctype);
+
+    this.url = url;
+    this.fetchOptions.body = body;
+    this.fetchOptions.method = fetchMethod.toUpperCase();
+  }
+
+  get headers() {
+    return this.fetchOptions.headers
+  }
+
+  set headers(value) {
+    this.fetchOptions.headers = value;
+  }
+
+  get body() {
+    if (this.isSafe) {
+      return this.url.searchParams
+    } else {
+      return this.fetchOptions.body
+    }
+  }
+
+  set body(value) {
+    this.fetchOptions.body = value;
+  }
+
+  get location() {
+    return this.url
+  }
+
+  get params() {
+    return this.url.searchParams
+  }
+
+  get entries() {
+    return this.body ? Array.from(this.body.entries()) : []
+  }
+
+  cancel() {
+    this.abortController.abort();
+  }
+
+  async perform() {
+    const { fetchOptions } = this;
+    this.delegate.prepareRequest(this);
+    const event = await this.#allowRequestToBeIntercepted(fetchOptions);
+    try {
+      this.delegate.requestStarted(this);
+
+      if (event.detail.fetchRequest) {
+        this.response = event.detail.fetchRequest.response;
+      } else {
+        this.response = fetchWithTurboHeaders(this.url.href, fetchOptions);
+      }
+
+      const response = await this.response;
+      return await this.receive(response)
+    } catch (error) {
+      if (error.name !== "AbortError") {
+        if (this.#willDelegateErrorHandling(error)) {
+          this.delegate.requestErrored(this, error);
+        }
+        throw error
+      }
+    } finally {
+      this.delegate.requestFinished(this);
+    }
+  }
+
+  async receive(response) {
+    const fetchResponse = new FetchResponse(response);
+    const event = dispatch("turbo:before-fetch-response", {
+      cancelable: true,
+      detail: { fetchResponse },
+      target: this.target
+    });
+    if (event.defaultPrevented) {
+      this.delegate.requestPreventedHandlingResponse(this, fetchResponse);
+    } else if (fetchResponse.succeeded) {
+      this.delegate.requestSucceededWithResponse(this, fetchResponse);
+    } else {
+      this.delegate.requestFailedWithResponse(this, fetchResponse);
+    }
+    return fetchResponse
+  }
+
+  get defaultHeaders() {
+    return {
+      Accept: "text/html, application/xhtml+xml"
+    }
+  }
+
+  get isSafe() {
+    return isSafe(this.method)
+  }
+
+  get abortSignal() {
+    return this.abortController.signal
+  }
+
+  acceptResponseType(mimeType) {
+    this.headers["Accept"] = [mimeType, this.headers["Accept"]].join(", ");
+  }
+
+  async #allowRequestToBeIntercepted(fetchOptions) {
+    const requestInterception = new Promise((resolve) => (this.#resolveRequestPromise = resolve));
+    const event = dispatch("turbo:before-fetch-request", {
+      cancelable: true,
+      detail: {
+        fetchOptions,
+        url: this.url,
+        resume: this.#resolveRequestPromise
+      },
+      target: this.target
+    });
+    this.url = event.detail.url;
+    if (event.defaultPrevented) await requestInterception;
+
+    return event
+  }
+
+  #willDelegateErrorHandling(error) {
+    const event = dispatch("turbo:fetch-request-error", {
+      target: this.target,
+      cancelable: true,
+      detail: { request: this, error: error }
+    });
+
+    return !event.defaultPrevented
+  }
+}
+
+function isSafe(fetchMethod) {
+  return fetchMethodFromString(fetchMethod) == FetchMethod.get
+}
+
+function buildResourceAndBody(resource, method, requestBody, enctype) {
+  const searchParams =
+    Array.from(requestBody).length > 0 ? new URLSearchParams(entriesExcludingFiles(requestBody)) : resource.searchParams;
+
+  if (isSafe(method)) {
+    return [mergeIntoURLSearchParams(resource, searchParams), null]
+  } else if (enctype == FetchEnctype.urlEncoded) {
+    return [resource, searchParams]
+  } else {
+    return [resource, requestBody]
+  }
+}
+
+function entriesExcludingFiles(requestBody) {
+  const entries = [];
+
+  for (const [name, value] of requestBody) {
+    if (value instanceof File) continue
+    else entries.push([name, value]);
+  }
+
+  return entries
+}
+
+function mergeIntoURLSearchParams(url, requestBody) {
+  const searchParams = new URLSearchParams(entriesExcludingFiles(requestBody));
+
+  url.search = searchParams.toString();
+
+  return url
+}
+
+class AppearanceObserver {
+  started = false
+
+  constructor(delegate, element) {
+    this.delegate = delegate;
+    this.element = element;
+    this.intersectionObserver = new IntersectionObserver(this.intersect);
+  }
+
+  start() {
+    if (!this.started) {
+      this.started = true;
+      this.intersectionObserver.observe(this.element);
+    }
+  }
+
+  stop() {
+    if (this.started) {
+      this.started = false;
+      this.intersectionObserver.unobserve(this.element);
+    }
+  }
+
+  intersect = (entries) => {
+    const lastEntry = entries.slice(-1)[0];
+    if (lastEntry?.isIntersecting) {
+      this.delegate.elementAppearedInViewport(this.element);
+    }
+  }
+}
+
+class StreamMessage {
+  static contentType = "text/vnd.turbo-stream.html"
+
+  static wrap(message) {
+    if (typeof message == "string") {
+      return new this(createDocumentFragment(message))
+    } else {
+      return message
+    }
+  }
+
+  constructor(fragment) {
+    this.fragment = importStreamElements(fragment);
+  }
+}
+
+function importStreamElements(fragment) {
+  for (const element of fragment.querySelectorAll("turbo-stream")) {
+    const streamElement = document.importNode(element, true);
+
+    for (const inertScriptElement of streamElement.templateElement.content.querySelectorAll("script")) {
+      inertScriptElement.replaceWith(activateScriptElement(inertScriptElement));
+    }
+
+    element.replaceWith(streamElement);
+  }
+
+  return fragment
+}
+
+const identity = key => key;
+
+class LRUCache {
+  keys = []
+  entries = {}
+  #toCacheKey
+
+  constructor(size, toCacheKey = identity) {
+    this.size = size;
+    this.#toCacheKey = toCacheKey;
+  }
+
+  has(key) {
+    return this.#toCacheKey(key) in this.entries
+  }
+
+  get(key) {
+    if (this.has(key)) {
+      const entry = this.read(key);
+      this.touch(key);
+      return entry
+    }
+  }
+
+  put(key, entry) {
+    this.write(key, entry);
+    this.touch(key);
+    return entry
+  }
+
+  clear() {
+    for (const key of Object.keys(this.entries)) {
+      this.evict(key);
+    }
+  }
+
+  // Private
+
+  read(key) {
+    return this.entries[this.#toCacheKey(key)]
+  }
+
+  write(key, entry) {
+    this.entries[this.#toCacheKey(key)] = entry;
+  }
+
+  touch(key) {
+    key = this.#toCacheKey(key);
+    const index = this.keys.indexOf(key);
+    if (index > -1) this.keys.splice(index, 1);
+    this.keys.unshift(key);
+    this.trim();
+  }
+
+  trim() {
+    for (const key of this.keys.splice(this.size)) {
+      this.evict(key);
+    }
+  }
+
+  evict(key) {
+    delete this.entries[key];
+  }
+}
+
+const PREFETCH_DELAY = 100;
+
+class PrefetchCache extends LRUCache {
+  #prefetchTimeout = null
+  #maxAges = {}
+
+  constructor(size = 1, prefetchDelay = PREFETCH_DELAY) {
+    super(size, toCacheKey);
+    this.prefetchDelay = prefetchDelay;
+  }
+
+  putLater(url, request, ttl) {
+    this.#prefetchTimeout = setTimeout(() => {
+      request.perform();
+      this.put(url, request, ttl);
+      this.#prefetchTimeout = null;
+    }, this.prefetchDelay);
+  }
+
+  put(url, request, ttl = cacheTtl) {
+    super.put(url, request);
+    this.#maxAges[toCacheKey(url)] = new Date(new Date().getTime() + ttl);
+  }
+
+  clear() {
+    super.clear();
+    if (this.#prefetchTimeout) clearTimeout(this.#prefetchTimeout);
+  }
+
+  evict(key) {
+    super.evict(key);
+    delete this.#maxAges[key];
+  }
+
+  has(key) {
+    if (super.has(key)) {
+      const maxAge = this.#maxAges[toCacheKey(key)];
+
+      return maxAge && maxAge > Date.now()
+    } else {
+      return false
+    }
+  }
+}
+
+const cacheTtl = 10 * 1000;
+const prefetchCache = new PrefetchCache();
+
+const FormSubmissionState = {
+  initialized: "initialized",
+  requesting: "requesting",
+  waiting: "waiting",
+  receiving: "receiving",
+  stopping: "stopping",
+  stopped: "stopped"
+};
+
+class FormSubmission {
+  state = FormSubmissionState.initialized
+
+  static confirmMethod(message) {
+    return Promise.resolve(confirm(message))
+  }
+
+  constructor(delegate, formElement, submitter, mustRedirect = false) {
+    const method = getMethod(formElement, submitter);
+    const action = getAction(getFormAction(formElement, submitter), method);
+    const body = buildFormData(formElement, submitter);
+    const enctype = getEnctype(formElement, submitter);
+
+    this.delegate = delegate;
+    this.formElement = formElement;
+    this.submitter = submitter;
+    this.fetchRequest = new FetchRequest(this, method, action, body, formElement, enctype);
+    this.mustRedirect = mustRedirect;
+  }
+
+  get method() {
+    return this.fetchRequest.method
+  }
+
+  set method(value) {
+    this.fetchRequest.method = value;
+  }
+
+  get action() {
+    return this.fetchRequest.url.toString()
+  }
+
+  set action(value) {
+    this.fetchRequest.url = expandURL(value);
+  }
+
+  get body() {
+    return this.fetchRequest.body
+  }
+
+  get enctype() {
+    return this.fetchRequest.enctype
+  }
+
+  get isSafe() {
+    return this.fetchRequest.isSafe
+  }
+
+  get location() {
+    return this.fetchRequest.url
+  }
+
+  // The submission process
+
+  async start() {
+    const { initialized, requesting } = FormSubmissionState;
+    const confirmationMessage = getAttribute("data-turbo-confirm", this.submitter, this.formElement);
+
+    if (typeof confirmationMessage === "string") {
+      const confirmMethod = typeof config.forms.confirm === "function" ?
+        config.forms.confirm :
+        FormSubmission.confirmMethod;
+
+      const answer = await confirmMethod(confirmationMessage, this.formElement, this.submitter);
+      if (!answer) {
+        return
+      }
+    }
+
+    if (this.state == initialized) {
+      this.state = requesting;
+      return this.fetchRequest.perform()
+    }
+  }
+
+  stop() {
+    const { stopping, stopped } = FormSubmissionState;
+    if (this.state != stopping && this.state != stopped) {
+      this.state = stopping;
+      this.fetchRequest.cancel();
+      return true
+    }
+  }
+
+  // Fetch request delegate
+
+  prepareRequest(request) {
+    if (!request.isSafe) {
+      const token = getCookieValue(getMetaContent("csrf-param")) || getMetaContent("csrf-token");
+      if (token) {
+        request.headers["X-CSRF-Token"] = token;
+      }
+    }
+
+    if (this.requestAcceptsTurboStreamResponse(request)) {
+      request.acceptResponseType(StreamMessage.contentType);
+    }
+  }
+
+  requestStarted(_request) {
+    this.state = FormSubmissionState.waiting;
+    if (this.submitter) config.forms.submitter.beforeSubmit(this.submitter);
+    this.setSubmitsWith();
+    markAsBusy(this.formElement);
+    dispatch("turbo:submit-start", {
+      target: this.formElement,
+      detail: { formSubmission: this }
+    });
+    this.delegate.formSubmissionStarted(this);
+  }
+
+  requestPreventedHandlingResponse(request, response) {
+    prefetchCache.clear();
+
+    this.result = { success: response.succeeded, fetchResponse: response };
+  }
+
+  requestSucceededWithResponse(request, response) {
+    if (response.clientError || response.serverError) {
+      this.delegate.formSubmissionFailedWithResponse(this, response);
+      return
+    }
+
+    prefetchCache.clear();
+
+    if (this.requestMustRedirect(request) && responseSucceededWithoutRedirect(response)) {
+      const error = new Error("Form responses must redirect to another location");
+      this.delegate.formSubmissionErrored(this, error);
+    } else {
+      this.state = FormSubmissionState.receiving;
+      this.result = { success: true, fetchResponse: response };
+      this.delegate.formSubmissionSucceededWithResponse(this, response);
+    }
+  }
+
+  requestFailedWithResponse(request, response) {
+    this.result = { success: false, fetchResponse: response };
+    this.delegate.formSubmissionFailedWithResponse(this, response);
+  }
+
+  requestErrored(request, error) {
+    this.result = { success: false, error };
+    this.delegate.formSubmissionErrored(this, error);
+  }
+
+  requestFinished(_request) {
+    this.state = FormSubmissionState.stopped;
+    if (this.submitter) config.forms.submitter.afterSubmit(this.submitter);
+    this.resetSubmitterText();
+    clearBusyState(this.formElement);
+    dispatch("turbo:submit-end", {
+      target: this.formElement,
+      detail: { formSubmission: this, ...this.result }
+    });
+    this.delegate.formSubmissionFinished(this);
+  }
+
+  // Private
+
+  setSubmitsWith() {
+    if (!this.submitter || !this.submitsWith) return
+
+    if (this.submitter.matches("button")) {
+      this.originalSubmitText = this.submitter.innerHTML;
+      this.submitter.innerHTML = this.submitsWith;
+    } else if (this.submitter.matches("input")) {
+      const input = this.submitter;
+      this.originalSubmitText = input.value;
+      input.value = this.submitsWith;
+    }
+  }
+
+  resetSubmitterText() {
+    if (!this.submitter || !this.originalSubmitText) return
+
+    if (this.submitter.matches("button")) {
+      this.submitter.innerHTML = this.originalSubmitText;
+    } else if (this.submitter.matches("input")) {
+      const input = this.submitter;
+      input.value = this.originalSubmitText;
+    }
+  }
+
+  requestMustRedirect(request) {
+    return !request.isSafe && this.mustRedirect
+  }
+
+  requestAcceptsTurboStreamResponse(request) {
+    return !request.isSafe || hasAttribute("data-turbo-stream", this.submitter, this.formElement)
+  }
+
+  get submitsWith() {
+    return this.submitter?.getAttribute("data-turbo-submits-with")
+  }
+}
+
+function buildFormData(formElement, submitter) {
+  const formData = new FormData(formElement);
+  const name = submitter?.getAttribute("name");
+  const value = submitter?.getAttribute("value");
+
+  if (name) {
+    formData.append(name, value || "");
+  }
+
+  return formData
+}
+
+function getCookieValue(cookieName) {
+  if (cookieName != null) {
+    const cookies = document.cookie ? document.cookie.split("; ") : [];
+    const cookie = cookies.find((cookie) => cookie.startsWith(cookieName));
+    if (cookie) {
+      const value = cookie.split("=").slice(1).join("=");
+      return value ? decodeURIComponent(value) : undefined
+    }
+  }
+}
+
+function responseSucceededWithoutRedirect(response) {
+  return response.statusCode == 200 && !response.redirected
+}
+
+function getFormAction(formElement, submitter) {
+  const formElementAction = typeof formElement.action === "string" ? formElement.action : null;
+
+  if (submitter?.hasAttribute("formaction")) {
+    return submitter.getAttribute("formaction") || ""
+  } else {
+    return formElement.getAttribute("action") || formElementAction || ""
+  }
+}
+
+function getAction(formAction, fetchMethod) {
+  const action = expandURL(formAction);
+
+  if (isSafe(fetchMethod)) {
+    action.search = "";
+  }
+
+  return action
+}
+
+function getMethod(formElement, submitter) {
+  const method = submitter?.getAttribute("formmethod") || formElement.getAttribute("method") || "";
+  return fetchMethodFromString(method.toLowerCase()) || FetchMethod.get
+}
+
+function getEnctype(formElement, submitter) {
+  return fetchEnctypeFromString(submitter?.getAttribute("formenctype") || formElement.enctype)
+}
+
+class Snapshot {
+  constructor(element) {
+    this.element = element;
+  }
+
+  get activeElement() {
+    return this.element.ownerDocument.activeElement
+  }
+
+  get children() {
+    return [...this.element.children]
+  }
+
+  hasAnchor(anchor) {
+    return this.getElementForAnchor(anchor) != null
+  }
+
+  getElementForAnchor(anchor) {
+    return anchor ? this.element.querySelector(`[id='${anchor}'], a[name='${anchor}']`) : null
+  }
+
+  get isConnected() {
+    return this.element.isConnected
+  }
+
+  get firstAutofocusableElement() {
+    return queryAutofocusableElement(this.element)
+  }
+
+  get permanentElements() {
+    return queryPermanentElementsAll(this.element)
+  }
+
+  getPermanentElementById(id) {
+    return getPermanentElementById(this.element, id)
+  }
+
+  getPermanentElementMapForSnapshot(snapshot) {
+    const permanentElementMap = {};
+
+    for (const currentPermanentElement of this.permanentElements) {
+      const { id } = currentPermanentElement;
+      const newPermanentElement = snapshot.getPermanentElementById(id);
+      if (newPermanentElement) {
+        permanentElementMap[id] = [currentPermanentElement, newPermanentElement];
+      }
+    }
+
+    return permanentElementMap
+  }
+}
+
+function getPermanentElementById(node, id) {
+  return node.querySelector(`#${id}[data-turbo-permanent]`)
+}
+
+function queryPermanentElementsAll(node) {
+  return node.querySelectorAll("[id][data-turbo-permanent]")
+}
+
+class FormSubmitObserver {
+  started = false
+
+  constructor(delegate, eventTarget) {
+    this.delegate = delegate;
+    this.eventTarget = eventTarget;
+  }
+
+  start() {
+    if (!this.started) {
+      this.eventTarget.addEventListener("submit", this.submitCaptured, true);
+      this.started = true;
+    }
+  }
+
+  stop() {
+    if (this.started) {
+      this.eventTarget.removeEventListener("submit", this.submitCaptured, true);
+      this.started = false;
+    }
+  }
+
+  submitCaptured = () => {
+    this.eventTarget.removeEventListener("submit", this.submitBubbled, false);
+    this.eventTarget.addEventListener("submit", this.submitBubbled, false);
+  }
+
+  submitBubbled = (event) => {
+    if (!event.defaultPrevented) {
+      const form = event.target instanceof HTMLFormElement ? event.target : undefined;
+      const submitter = event.submitter || undefined;
+
+      if (
+        form &&
+        submissionDoesNotDismissDialog(form, submitter) &&
+        submissionDoesNotTargetIFrame(form, submitter) &&
+        this.delegate.willSubmitForm(form, submitter)
+      ) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        this.delegate.formSubmitted(form, submitter);
+      }
+    }
+  }
+}
+
+function submissionDoesNotDismissDialog(form, submitter) {
+  const method = submitter?.getAttribute("formmethod") || form.getAttribute("method");
+
+  return method != "dialog"
+}
+
+function submissionDoesNotTargetIFrame(form, submitter) {
+  const target = submitter?.getAttribute("formtarget") || form.getAttribute("target");
+
+  return doesNotTargetIFrame(target)
+}
+
+class View {
+  #resolveRenderPromise = (_value) => {}
+  #resolveInterceptionPromise = (_value) => {}
+
+  constructor(delegate, element) {
+    this.delegate = delegate;
+    this.element = element;
+  }
+
+  // Scrolling
+
+  scrollToAnchor(anchor) {
+    const element = this.snapshot.getElementForAnchor(anchor);
+    if (element) {
+      this.focusElement(element);
+      this.scrollToElement(element);
+    } else {
+      this.scrollToPosition({ x: 0, y: 0 });
+    }
+  }
+
+  scrollToAnchorFromLocation(location) {
+    this.scrollToAnchor(getAnchor(location));
+  }
+
+  scrollToElement(element) {
+    element.scrollIntoView();
+  }
+
+  focusElement(element) {
+    if (element instanceof HTMLElement) {
+      if (element.hasAttribute("tabindex")) {
+        element.focus();
+      } else {
+        element.setAttribute("tabindex", "-1");
+        element.focus();
+        element.removeAttribute("tabindex");
+      }
+    }
+  }
+
+  scrollToPosition({ x, y }) {
+    this.scrollRoot.scrollTo(x, y);
+  }
+
+  scrollToTop() {
+    this.scrollToPosition({ x: 0, y: 0 });
+  }
+
+  get scrollRoot() {
+    return window
+  }
+
+  // Rendering
+
+  async render(renderer) {
+    const { isPreview, shouldRender, willRender, newSnapshot: snapshot } = renderer;
+
+    // A workaround to ignore tracked element mismatch reloads when performing
+    // a promoted Visit from a frame navigation
+    const shouldInvalidate = willRender;
+
+    if (shouldRender) {
+      try {
+        this.renderPromise = new Promise((resolve) => (this.#resolveRenderPromise = resolve));
+        this.renderer = renderer;
+        await this.prepareToRenderSnapshot(renderer);
+
+        const renderInterception = new Promise((resolve) => (this.#resolveInterceptionPromise = resolve));
+        const options = { resume: this.#resolveInterceptionPromise, render: this.renderer.renderElement, renderMethod: this.renderer.renderMethod };
+        const immediateRender = this.delegate.allowsImmediateRender(snapshot, options);
+        if (!immediateRender) await renderInterception;
+
+        await this.renderSnapshot(renderer);
+        this.delegate.viewRenderedSnapshot(snapshot, isPreview, this.renderer.renderMethod);
+        this.delegate.preloadOnLoadLinksForView(this.element);
+        this.finishRenderingSnapshot(renderer);
+      } finally {
+        delete this.renderer;
+        this.#resolveRenderPromise(undefined);
+        delete this.renderPromise;
+      }
+    } else if (shouldInvalidate) {
+      this.invalidate(renderer.reloadReason);
+    }
+  }
+
+  invalidate(reason) {
+    this.delegate.viewInvalidated(reason);
+  }
+
+  async prepareToRenderSnapshot(renderer) {
+    this.markAsPreview(renderer.isPreview);
+    await renderer.prepareToRender();
+  }
+
+  markAsPreview(isPreview) {
+    if (isPreview) {
+      this.element.setAttribute("data-turbo-preview", "");
+    } else {
+      this.element.removeAttribute("data-turbo-preview");
+    }
+  }
+
+  markVisitDirection(direction) {
+    this.element.setAttribute("data-turbo-visit-direction", direction);
+  }
+
+  unmarkVisitDirection() {
+    this.element.removeAttribute("data-turbo-visit-direction");
+  }
+
+  async renderSnapshot(renderer) {
+    await renderer.render();
+  }
+
+  finishRenderingSnapshot(renderer) {
+    renderer.finishRendering();
+  }
+}
+
+class FrameView extends View {
+  missing() {
+    this.element.innerHTML = `<strong class="turbo-frame-error">Content missing</strong>`;
+  }
+
+  get snapshot() {
+    return new Snapshot(this.element)
+  }
+}
+
+class LinkInterceptor {
+  constructor(delegate, element) {
+    this.delegate = delegate;
+    this.element = element;
+  }
+
+  start() {
+    this.element.addEventListener("click", this.clickBubbled);
+    document.addEventListener("turbo:click", this.linkClicked);
+    document.addEventListener("turbo:before-visit", this.willVisit);
+  }
+
+  stop() {
+    this.element.removeEventListener("click", this.clickBubbled);
+    document.removeEventListener("turbo:click", this.linkClicked);
+    document.removeEventListener("turbo:before-visit", this.willVisit);
+  }
+
+  clickBubbled = (event) => {
+    if (this.clickEventIsSignificant(event)) {
+      this.clickEvent = event;
+    } else {
+      delete this.clickEvent;
+    }
+  }
+
+  linkClicked = (event) => {
+    if (this.clickEvent && this.clickEventIsSignificant(event)) {
+      if (this.delegate.shouldInterceptLinkClick(event.target, event.detail.url, event.detail.originalEvent)) {
+        this.clickEvent.preventDefault();
+        event.preventDefault();
+        this.delegate.linkClickIntercepted(event.target, event.detail.url, event.detail.originalEvent);
+      }
+    }
+    delete this.clickEvent;
+  }
+
+  willVisit = (_event) => {
+    delete this.clickEvent;
+  }
+
+  clickEventIsSignificant(event) {
+    const target = event.composed ? event.target?.parentElement : event.target;
+    const element = findLinkFromClickTarget(target) || target;
+
+    return element instanceof Element && element.closest("turbo-frame, html") == this.element
+  }
+}
+
+class LinkClickObserver {
+  started = false
+
+  constructor(delegate, eventTarget) {
+    this.delegate = delegate;
+    this.eventTarget = eventTarget;
+  }
+
+  start() {
+    if (!this.started) {
+      this.eventTarget.addEventListener("click", this.clickCaptured, true);
+      this.started = true;
+    }
+  }
+
+  stop() {
+    if (this.started) {
+      this.eventTarget.removeEventListener("click", this.clickCaptured, true);
+      this.started = false;
+    }
+  }
+
+  clickCaptured = () => {
+    this.eventTarget.removeEventListener("click", this.clickBubbled, false);
+    this.eventTarget.addEventListener("click", this.clickBubbled, false);
+  }
+
+  clickBubbled = (event) => {
+    if (event instanceof MouseEvent && this.clickEventIsSignificant(event)) {
+      const target = (event.composedPath && event.composedPath()[0]) || event.target;
+      const link = findLinkFromClickTarget(target);
+      if (link && doesNotTargetIFrame(link.target)) {
+        const location = getLocationForLink(link);
+        if (this.delegate.willFollowLinkToLocation(link, location, event)) {
+          event.preventDefault();
+          this.delegate.followedLinkToLocation(link, location);
+        }
+      }
+    }
+  }
+
+  clickEventIsSignificant(event) {
+    return !(
+      (event.target && event.target.isContentEditable) ||
+      event.defaultPrevented ||
+      event.which > 1 ||
+      event.altKey ||
+      event.ctrlKey ||
+      event.metaKey ||
+      event.shiftKey
+    )
+  }
+}
+
+class FormLinkClickObserver {
+  constructor(delegate, element) {
+    this.delegate = delegate;
+    this.linkInterceptor = new LinkClickObserver(this, element);
+  }
+
+  start() {
+    this.linkInterceptor.start();
+  }
+
+  stop() {
+    this.linkInterceptor.stop();
+  }
+
+  // Link hover observer delegate
+
+  canPrefetchRequestToLocation(link, location) {
+    return false
+  }
+
+  prefetchAndCacheRequestToLocation(link, location) {
+    return
+  }
+
+  // Link click observer delegate
+
+  willFollowLinkToLocation(link, location, originalEvent) {
+    return (
+      this.delegate.willSubmitFormLinkToLocation(link, location, originalEvent) &&
+      (link.hasAttribute("data-turbo-method") || link.hasAttribute("data-turbo-stream"))
+    )
+  }
+
+  followedLinkToLocation(link, location) {
+    const form = document.createElement("form");
+
+    const type = "hidden";
+    for (const [name, value] of location.searchParams) {
+      form.append(Object.assign(document.createElement("input"), { type, name, value }));
+    }
+
+    const action = Object.assign(location, { search: "" });
+    form.setAttribute("data-turbo", "true");
+    form.setAttribute("action", action.href);
+    form.setAttribute("hidden", "");
+
+    const method = link.getAttribute("data-turbo-method");
+    if (method) form.setAttribute("method", method);
+
+    const turboFrame = link.getAttribute("data-turbo-frame");
+    if (turboFrame) form.setAttribute("data-turbo-frame", turboFrame);
+
+    const turboAction = getVisitAction(link);
+    if (turboAction) form.setAttribute("data-turbo-action", turboAction);
+
+    const turboConfirm = link.getAttribute("data-turbo-confirm");
+    if (turboConfirm) form.setAttribute("data-turbo-confirm", turboConfirm);
+
+    const turboStream = link.hasAttribute("data-turbo-stream");
+    if (turboStream) form.setAttribute("data-turbo-stream", "");
+
+    this.delegate.submittedFormLinkToLocation(link, location, form);
+
+    document.body.appendChild(form);
+    form.addEventListener("turbo:submit-end", () => form.remove(), { once: true });
+    requestAnimationFrame(() => form.requestSubmit());
+  }
+}
+
+class Bardo {
+  static async preservingPermanentElements(delegate, permanentElementMap, callback) {
+    const bardo = new this(delegate, permanentElementMap);
+    bardo.enter();
+    await callback();
+    bardo.leave();
+  }
+
+  constructor(delegate, permanentElementMap) {
+    this.delegate = delegate;
+    this.permanentElementMap = permanentElementMap;
+  }
+
+  enter() {
+    for (const id in this.permanentElementMap) {
+      const [currentPermanentElement, newPermanentElement] = this.permanentElementMap[id];
+      this.delegate.enteringBardo(currentPermanentElement, newPermanentElement);
+      this.replaceNewPermanentElementWithPlaceholder(newPermanentElement);
+    }
+  }
+
+  leave() {
+    for (const id in this.permanentElementMap) {
+      const [currentPermanentElement] = this.permanentElementMap[id];
+      this.replaceCurrentPermanentElementWithClone(currentPermanentElement);
+      this.replacePlaceholderWithPermanentElement(currentPermanentElement);
+      this.delegate.leavingBardo(currentPermanentElement);
+    }
+  }
+
+  replaceNewPermanentElementWithPlaceholder(permanentElement) {
+    const placeholder = createPlaceholderForPermanentElement(permanentElement);
+    permanentElement.replaceWith(placeholder);
+  }
+
+  replaceCurrentPermanentElementWithClone(permanentElement) {
+    const clone = permanentElement.cloneNode(true);
+    permanentElement.replaceWith(clone);
+  }
+
+  replacePlaceholderWithPermanentElement(permanentElement) {
+    const placeholder = this.getPlaceholderById(permanentElement.id);
+    placeholder?.replaceWith(permanentElement);
+  }
+
+  getPlaceholderById(id) {
+    return this.placeholders.find((element) => element.content == id)
+  }
+
+  get placeholders() {
+    return [...document.querySelectorAll("meta[name=turbo-permanent-placeholder][content]")]
+  }
+}
+
+function createPlaceholderForPermanentElement(permanentElement) {
+  const element = document.createElement("meta");
+  element.setAttribute("name", "turbo-permanent-placeholder");
+  element.setAttribute("content", permanentElement.id);
+  return element
+}
+
+class Renderer {
+  #activeElement = null
+
+  static renderElement(currentElement, newElement) {
+    // Abstract method
+  }
+
+  constructor(currentSnapshot, newSnapshot, isPreview, willRender = true) {
+    this.currentSnapshot = currentSnapshot;
+    this.newSnapshot = newSnapshot;
+    this.isPreview = isPreview;
+    this.willRender = willRender;
+    this.renderElement = this.constructor.renderElement;
+    this.promise = new Promise((resolve, reject) => (this.resolvingFunctions = { resolve, reject }));
+  }
+
+  get shouldRender() {
+    return true
+  }
+
+  get shouldAutofocus() {
+    return true
+  }
+
+  get reloadReason() {
+    return
+  }
+
+  prepareToRender() {
+    return
+  }
+
+  render() {
+    // Abstract method
+  }
+
+  finishRendering() {
+    if (this.resolvingFunctions) {
+      this.resolvingFunctions.resolve();
+      delete this.resolvingFunctions;
+    }
+  }
+
+  async preservingPermanentElements(callback) {
+    await Bardo.preservingPermanentElements(this, this.permanentElementMap, callback);
+  }
+
+  focusFirstAutofocusableElement() {
+    if (this.shouldAutofocus) {
+      const element = this.connectedSnapshot.firstAutofocusableElement;
+      if (element) {
+        element.focus();
+      }
+    }
+  }
+
+  // Bardo delegate
+
+  enteringBardo(currentPermanentElement) {
+    if (this.#activeElement) return
+
+    if (currentPermanentElement.contains(this.currentSnapshot.activeElement)) {
+      this.#activeElement = this.currentSnapshot.activeElement;
+    }
+  }
+
+  leavingBardo(currentPermanentElement) {
+    if (currentPermanentElement.contains(this.#activeElement) && this.#activeElement instanceof HTMLElement) {
+      this.#activeElement.focus();
+
+      this.#activeElement = null;
+    }
+  }
+
+  get connectedSnapshot() {
+    return this.newSnapshot.isConnected ? this.newSnapshot : this.currentSnapshot
+  }
+
+  get currentElement() {
+    return this.currentSnapshot.element
+  }
+
+  get newElement() {
+    return this.newSnapshot.element
+  }
+
+  get permanentElementMap() {
+    return this.currentSnapshot.getPermanentElementMapForSnapshot(this.newSnapshot)
+  }
+
+  get renderMethod() {
+    return "replace"
+  }
+}
+
+class FrameRenderer extends Renderer {
+  static renderElement(currentElement, newElement) {
+    const destinationRange = document.createRange();
+    destinationRange.selectNodeContents(currentElement);
+    destinationRange.deleteContents();
+
+    const frameElement = newElement;
+    const sourceRange = frameElement.ownerDocument?.createRange();
+    if (sourceRange) {
+      sourceRange.selectNodeContents(frameElement);
+      currentElement.appendChild(sourceRange.extractContents());
+    }
+  }
+
+  constructor(delegate, currentSnapshot, newSnapshot, renderElement, isPreview, willRender = true) {
+    super(currentSnapshot, newSnapshot, renderElement, isPreview, willRender);
+    this.delegate = delegate;
+  }
+
+  get shouldRender() {
+    return true
+  }
+
+  async render() {
+    await nextRepaint();
+    this.preservingPermanentElements(() => {
+      this.loadFrameElement();
+    });
+    this.scrollFrameIntoView();
+    await nextRepaint();
+    this.focusFirstAutofocusableElement();
+    await nextRepaint();
+    this.activateScriptElements();
+  }
+
+  loadFrameElement() {
+    this.delegate.willRenderFrame(this.currentElement, this.newElement);
+    this.renderElement(this.currentElement, this.newElement);
+  }
+
+  scrollFrameIntoView() {
+    if (this.currentElement.autoscroll || this.newElement.autoscroll) {
+      const element = this.currentElement.firstElementChild;
+      const block = readScrollLogicalPosition(this.currentElement.getAttribute("data-autoscroll-block"), "end");
+      const behavior = readScrollBehavior(this.currentElement.getAttribute("data-autoscroll-behavior"), "auto");
+
+      if (element) {
+        element.scrollIntoView({ block, behavior });
+        return true
+      }
+    }
+    return false
+  }
+
+  activateScriptElements() {
+    for (const inertScriptElement of this.newScriptElements) {
+      const activatedScriptElement = activateScriptElement(inertScriptElement);
+      inertScriptElement.replaceWith(activatedScriptElement);
+    }
+  }
+
+  get newScriptElements() {
+    return this.currentElement.querySelectorAll("script")
+  }
+}
+
+function readScrollLogicalPosition(value, defaultValue) {
+  if (value == "end" || value == "start" || value == "center" || value == "nearest") {
+    return value
+  } else {
+    return defaultValue
+  }
+}
+
+function readScrollBehavior(value, defaultValue) {
+  if (value == "auto" || value == "smooth") {
+    return value
+  } else {
+    return defaultValue
+  }
+}
+
 /**
-         * @param oldNode root node to merge content into
-         * @param newContent new content to merge
-         * @param ctx the merge context
-         * @returns {Element} the element that ended up in the DOM
-         */function morphOldNodeTo(e,t,r){if(!r.ignoreActive||e!==document.activeElement){if(t==null){if(r.callbacks.beforeNodeRemoved(e)===false)return e;e.remove();r.callbacks.afterNodeRemoved(e);return null}if(isSoftMatch(e,t)){if(r.callbacks.beforeNodeMorphed(e,t)===false)return e;if(e instanceof HTMLHeadElement&&r.head.ignore);else if(e instanceof HTMLHeadElement&&r.head.style!=="morph")handleHeadElement(t,e,r);else{syncNodeFrom(t,e,r);ignoreValueOfActiveElement(e,r)||morphChildren(t,e,r)}r.callbacks.afterNodeMorphed(e,t);return e}if(r.callbacks.beforeNodeRemoved(e)===false)return e;if(r.callbacks.beforeNodeAdded(t)===false)return e;e.parentElement.replaceChild(t,e);r.callbacks.afterNodeAdded(t);r.callbacks.afterNodeRemoved(e);return t}}
+ * @typedef {object} ConfigHead
+ *
+ * @property {'merge' | 'append' | 'morph' | 'none'} [style]
+ * @property {boolean} [block]
+ * @property {boolean} [ignore]
+ * @property {function(Element): boolean} [shouldPreserve]
+ * @property {function(Element): boolean} [shouldReAppend]
+ * @property {function(Element): boolean} [shouldRemove]
+ * @property {function(Element, {added: Node[], kept: Element[], removed: Element[]}): void} [afterHeadMorphed]
+ */
+
 /**
-         * This is the core algorithm for matching up children.  The idea is to use id sets to try to match up
-         * nodes as faithfully as possible.  We greedily match, which allows us to keep the algorithm fast, but
-         * by using id sets, we are able to better match up with content deeper in the DOM.
-         *
-         * Basic algorithm is, for each node in the new content:
-         *
-         * - if we have reached the end of the old parent, append the new content
-         * - if the new content has an id set match with the current insertion point, morph
-         * - search for an id set match
-         * - if id set match found, morph
-         * - otherwise search for a "soft" match
-         * - if a soft match is found, morph
-         * - otherwise, prepend the new node before the current insertion point
-         *
-         * The two search algorithms terminate if competing node matches appear to outweigh what can be achieved
-         * with the current node.  See findIdSetMatch() and findSoftMatch() for details.
-         *
-         * @param {Element} newParent the parent element of the new content
-         * @param {Element } oldParent the old content that we are merging the new content into
-         * @param ctx the merge context
-         */function morphChildren(e,t,r){let s=e.firstChild;let i=t.firstChild;let n;while(s){n=s;s=n.nextSibling;if(i==null){if(r.callbacks.beforeNodeAdded(n)===false)return;t.appendChild(n);r.callbacks.afterNodeAdded(n);removeIdsFromConsideration(r,n);continue}if(isIdSetMatch(n,i,r)){morphOldNodeTo(i,n,r);i=i.nextSibling;removeIdsFromConsideration(r,n);continue}let o=findIdSetMatch(e,t,n,i,r);if(o){i=removeNodesBetween(i,o,r);morphOldNodeTo(o,n,r);removeIdsFromConsideration(r,n);continue}let a=findSoftMatch(e,t,n,i,r);if(a){i=removeNodesBetween(i,a,r);morphOldNodeTo(a,n,r);removeIdsFromConsideration(r,n)}else{if(r.callbacks.beforeNodeAdded(n)===false)return;t.insertBefore(n,i);r.callbacks.afterNodeAdded(n);removeIdsFromConsideration(r,n)}}while(i!==null){let e=i;i=i.nextSibling;removeNode(e,r)}}
+ * @typedef {object} ConfigCallbacks
+ *
+ * @property {function(Node): boolean} [beforeNodeAdded]
+ * @property {function(Node): void} [afterNodeAdded]
+ * @property {function(Element, Node): boolean} [beforeNodeMorphed]
+ * @property {function(Element, Node): void} [afterNodeMorphed]
+ * @property {function(Element): boolean} [beforeNodeRemoved]
+ * @property {function(Element): void} [afterNodeRemoved]
+ * @property {function(string, Element, "update" | "remove"): boolean} [beforeAttributeUpdated]
+ */
+
 /**
-         * @param attr {String} the attribute to be mutated
-         * @param to {Element} the element that is going to be updated
-         * @param updateType {("update"|"remove")}
-         * @param ctx the merge context
-         * @returns {boolean} true if the attribute should be ignored, false otherwise
-         */function ignoreAttribute(e,t,r,s){return!(e!=="value"||!s.ignoreActiveValue||t!==document.activeElement)||s.callbacks.beforeAttributeUpdated(e,t,r)===false}
+ * @typedef {object} Config
+ *
+ * @property {'outerHTML' | 'innerHTML'} [morphStyle]
+ * @property {boolean} [ignoreActive]
+ * @property {boolean} [ignoreActiveValue]
+ * @property {boolean} [restoreFocus]
+ * @property {ConfigCallbacks} [callbacks]
+ * @property {ConfigHead} [head]
+ */
+
 /**
-         * syncs a given node with another node, copying over all attributes and
-         * inner element state from the 'from' node to the 'to' node
-         *
-         * @param {Element} from the element to copy attributes & state from
-         * @param {Element} to the element to copy attributes & state to
-         * @param ctx the merge context
-         */function syncNodeFrom(e,t,r){let s=e.nodeType;if(s===1){const s=e.attributes;const i=t.attributes;for(const e of s)ignoreAttribute(e.name,t,"update",r)||t.getAttribute(e.name)!==e.value&&t.setAttribute(e.name,e.value);for(let s=i.length-1;0<=s;s--){const n=i[s];ignoreAttribute(n.name,t,"remove",r)||(e.hasAttribute(n.name)||t.removeAttribute(n.name))}}s!==8&&s!==3||t.nodeValue!==e.nodeValue&&(t.nodeValue=e.nodeValue);ignoreValueOfActiveElement(t,r)||syncInputValue(e,t,r)}
+ * @typedef {function} NoOp
+ *
+ * @returns {void}
+ */
+
 /**
-         * @param from {Element} element to sync the value from
-         * @param to {Element} element to sync the value to
-         * @param attributeName {String} the attribute name
-         * @param ctx the merge context
-         */function syncBooleanAttribute(e,t,r,s){if(e[r]!==t[r]){let i=ignoreAttribute(r,t,"update",s);i||(t[r]=e[r]);e[r]?i||t.setAttribute(r,e[r]):ignoreAttribute(r,t,"remove",s)||t.removeAttribute(r)}}
+ * @typedef {object} ConfigHeadInternal
+ *
+ * @property {'merge' | 'append' | 'morph' | 'none'} style
+ * @property {boolean} [block]
+ * @property {boolean} [ignore]
+ * @property {(function(Element): boolean) | NoOp} shouldPreserve
+ * @property {(function(Element): boolean) | NoOp} shouldReAppend
+ * @property {(function(Element): boolean) | NoOp} shouldRemove
+ * @property {(function(Element, {added: Node[], kept: Element[], removed: Element[]}): void) | NoOp} afterHeadMorphed
+ */
+
 /**
-         * NB: many bothans died to bring us information:
-         *
-         *  https://github.com/patrick-steele-idem/morphdom/blob/master/src/specialElHandlers.js
-         *  https://github.com/choojs/nanomorph/blob/master/lib/morph.jsL113
-         *
-         * @param from {Element} the element to sync the input value from
-         * @param to {Element} the element to sync the input value to
-         * @param ctx the merge context
-         */function syncInputValue(e,t,r){if(e instanceof HTMLInputElement&&t instanceof HTMLInputElement&&e.type!=="file"){let s=e.value;let i=t.value;syncBooleanAttribute(e,t,"checked",r);syncBooleanAttribute(e,t,"disabled",r);if(e.hasAttribute("value")){if(s!==i&&!ignoreAttribute("value",t,"update",r)){t.setAttribute("value",s);t.value=s}}else if(!ignoreAttribute("value",t,"remove",r)){t.value="";t.removeAttribute("value")}}else if(e instanceof HTMLOptionElement)syncBooleanAttribute(e,t,"selected",r);else if(e instanceof HTMLTextAreaElement&&t instanceof HTMLTextAreaElement){let s=e.value;let i=t.value;if(ignoreAttribute("value",t,"update",r))return;s!==i&&(t.value=s);t.firstChild&&t.firstChild.nodeValue!==s&&(t.firstChild.nodeValue=s)}}function handleHeadElement(e,t,r){let s=[];let i=[];let n=[];let o=[];let a=r.head.style;let c=new Map;for(const t of e.children)c.set(t.outerHTML,t);for(const e of t.children){let t=c.has(e.outerHTML);let s=r.head.shouldReAppend(e);let l=r.head.shouldPreserve(e);if(t||l)if(s)i.push(e);else{c.delete(e.outerHTML);n.push(e)}else if(a==="append"){if(s){i.push(e);o.push(e)}}else r.head.shouldRemove(e)!==false&&i.push(e)}o.push(...c.values());let l=[];for(const e of o){let i=document.createRange().createContextualFragment(e.outerHTML).firstChild;if(r.callbacks.beforeNodeAdded(i)!==false){if(i.href||i.src){let e=null;let t=new Promise((function(t){e=t}));i.addEventListener("load",(function(){e()}));l.push(t)}t.appendChild(i);r.callbacks.afterNodeAdded(i);s.push(i)}}for(const e of i)if(r.callbacks.beforeNodeRemoved(e)!==false){t.removeChild(e);r.callbacks.afterNodeRemoved(e)}r.head.afterHeadMorphed(t,{added:s,kept:n,removed:i});return l}function noOp(){}function mergeDefaults(e){let r={};Object.assign(r,t);Object.assign(r,e);r.callbacks={};Object.assign(r.callbacks,t.callbacks);Object.assign(r.callbacks,e.callbacks);r.head={};Object.assign(r.head,t.head);Object.assign(r.head,e.head);return r}function createMorphContext(e,t,r){r=mergeDefaults(r);return{target:e,newContent:t,config:r,morphStyle:r.morphStyle,ignoreActive:r.ignoreActive,ignoreActiveValue:r.ignoreActiveValue,idMap:createIdMap(e,t),deadIds:new Set,callbacks:r.callbacks,head:r.head}}function isIdSetMatch(e,t,r){return e!=null&&t!=null&&(e.nodeType===t.nodeType&&e.tagName===t.tagName&&(e.id!==""&&e.id===t.id||getIdIntersectionCount(r,e,t)>0))}function isSoftMatch(e,t){return e!=null&&t!=null&&(e.nodeType===t.nodeType&&e.tagName===t.tagName)}function removeNodesBetween(e,t,r){while(e!==t){let t=e;e=e.nextSibling;removeNode(t,r)}removeIdsFromConsideration(r,t);return t.nextSibling}function findIdSetMatch(e,t,r,s,i){let n=getIdIntersectionCount(i,r,t);let o=null;if(n>0){let t=s;let o=0;while(t!=null){if(isIdSetMatch(r,t,i))return t;o+=getIdIntersectionCount(i,t,e);if(o>n)return null;t=t.nextSibling}}return o}function findSoftMatch(e,t,r,s,i){let n=s;let o=r.nextSibling;let a=0;while(n!=null){if(getIdIntersectionCount(i,n,e)>0)return null;if(isSoftMatch(r,n))return n;if(isSoftMatch(o,n)){a++;o=o.nextSibling;if(a>=2)return null}n=n.nextSibling}return n}function parseContent(e){let t=new DOMParser;let r=e.replace(/<svg(\s[^>]*>|>)([\s\S]*?)<\/svg>/gim,"");if(r.match(/<\/html>/)||r.match(/<\/head>/)||r.match(/<\/body>/)){let s=t.parseFromString(e,"text/html");if(r.match(/<\/html>/)){s.generatedByIdiomorph=true;return s}{let e=s.firstChild;if(e){e.generatedByIdiomorph=true;return e}return null}}{let r=t.parseFromString("<body><template>"+e+"</template></body>","text/html");let s=r.body.querySelector("template").content;s.generatedByIdiomorph=true;return s}}function normalizeContent(e){if(e==null){const e=document.createElement("div");return e}if(e.generatedByIdiomorph)return e;if(e instanceof Node){const t=document.createElement("div");t.append(e);return t}{const t=document.createElement("div");for(const r of[...e])t.append(r);return t}}function insertSiblings(e,t,r){let s=[];let i=[];while(e!=null){s.push(e);e=e.previousSibling}while(s.length>0){let e=s.pop();i.push(e);t.parentElement.insertBefore(e,t)}i.push(t);while(r!=null){s.push(r);i.push(r);r=r.nextSibling}while(s.length>0)t.parentElement.insertBefore(s.pop(),t.nextSibling);return i}function findBestNodeMatch(e,t,r){let s;s=e.firstChild;let i=s;let n=0;while(s){let e=scoreElement(s,t,r);if(e>n){i=s;n=e}s=s.nextSibling}return i}function scoreElement(e,t,r){return isSoftMatch(e,t)?.5+getIdIntersectionCount(r,e,t):0}function removeNode(e,t){removeIdsFromConsideration(t,e);if(t.callbacks.beforeNodeRemoved(e)!==false){e.remove();t.callbacks.afterNodeRemoved(e)}}function isIdInConsideration(e,t){return!e.deadIds.has(t)}function idIsWithinNode(t,r,s){let i=t.idMap.get(s)||e;return i.has(r)}function removeIdsFromConsideration(t,r){let s=t.idMap.get(r)||e;for(const e of s)t.deadIds.add(e)}function getIdIntersectionCount(t,r,s){let i=t.idMap.get(r)||e;let n=0;for(const e of i)isIdInConsideration(t,e)&&idIsWithinNode(t,e,s)&&++n;return n}
+ * @typedef {object} ConfigCallbacksInternal
+ *
+ * @property {(function(Node): boolean) | NoOp} beforeNodeAdded
+ * @property {(function(Node): void) | NoOp} afterNodeAdded
+ * @property {(function(Node, Node): boolean) | NoOp} beforeNodeMorphed
+ * @property {(function(Node, Node): void) | NoOp} afterNodeMorphed
+ * @property {(function(Node): boolean) | NoOp} beforeNodeRemoved
+ * @property {(function(Node): void) | NoOp} afterNodeRemoved
+ * @property {(function(string, Element, "update" | "remove"): boolean) | NoOp} beforeAttributeUpdated
+ */
+
 /**
-         * A bottom up algorithm that finds all elements with ids inside of the node
-         * argument and populates id sets for those nodes and all their parents, generating
-         * a set of ids contained within all nodes for the entire hierarchy in the DOM
-         *
-         * @param node {Element}
-         * @param {Map<Node, Set<String>>} idMap
-         */function populateIdMapForNode(e,t){let r=e.parentElement;let s=e.querySelectorAll("[id]");for(const e of s){let s=e;while(s!==r&&s!=null){let r=t.get(s);if(r==null){r=new Set;t.set(s,r)}r.add(e.id);s=s.parentElement}}}
+ * @typedef {object} ConfigInternal
+ *
+ * @property {'outerHTML' | 'innerHTML'} morphStyle
+ * @property {boolean} [ignoreActive]
+ * @property {boolean} [ignoreActiveValue]
+ * @property {boolean} [restoreFocus]
+ * @property {ConfigCallbacksInternal} callbacks
+ * @property {ConfigHeadInternal} head
+ */
+
 /**
-         * This function computes a map of nodes to all ids contained within that node (inclusive of the
-         * node).  This map can be used to ask if two nodes have intersecting sets of ids, which allows
-         * for a looser definition of "matching" than tradition id matching, and allows child nodes
-         * to contribute to a parent nodes matching.
-         *
-         * @param {Element} oldContent  the old content that will be morphed
-         * @param {Element} newContent  the new content to morph to
-         * @returns {Map<Node, Set<String>>} a map of nodes to id sets for the
-         */function createIdMap(e,t){let r=new Map;populateIdMapForNode(e,r);populateIdMapForNode(t,r);return r}return{morph:morph,defaults:t}}();function morphElements(e,t,{callbacks:r,...s}={}){p.morph(e,t,{...s,callbacks:new DefaultIdiomorphCallbacks(r)})}function morphChildren(e,t){morphElements(e,t.children,{morphStyle:"innerHTML"})}class DefaultIdiomorphCallbacks{#l;constructor({beforeNodeMorphed:e}={}){this.#l=e||(()=>true)}beforeNodeAdded=e=>!(e.id&&e.hasAttribute("data-turbo-permanent")&&document.getElementById(e.id));beforeNodeMorphed=(e,t)=>{if(e instanceof Element){if(!e.hasAttribute("data-turbo-permanent")&&this.#l(e,t)){const r=dispatch("turbo:before-morph-element",{cancelable:true,target:e,detail:{currentElement:e,newElement:t}});return!r.defaultPrevented}return false}};beforeAttributeUpdated=(e,t,r)=>{const s=dispatch("turbo:before-morph-attribute",{cancelable:true,target:t,detail:{attributeName:e,mutationType:r}});return!s.defaultPrevented};beforeNodeRemoved=e=>this.beforeNodeMorphed(e);afterNodeMorphed=(e,t)=>{e instanceof Element&&dispatch("turbo:morph-element",{target:e,detail:{currentElement:e,newElement:t}})}}class MorphingFrameRenderer extends FrameRenderer{static renderElement(e,t){dispatch("turbo:before-frame-morph",{target:e,detail:{currentElement:e,newElement:t}});morphChildren(e,t)}async preservingPermanentElements(e){return await e()}}class ProgressBar{static animationDuration=300;static get defaultCSS(){return unindent`
+ * @typedef {Object} IdSets
+ * @property {Set<string>} persistentIds
+ * @property {Map<Node, Set<string>>} idMap
+ */
+
+/**
+ * @typedef {Function} Morph
+ *
+ * @param {Element | Document} oldNode
+ * @param {Element | Node | HTMLCollection | Node[] | string | null} newContent
+ * @param {Config} [config]
+ * @returns {undefined | Node[]}
+ */
+
+// base IIFE to define idiomorph
+/**
+ *
+ * @type {{defaults: ConfigInternal, morph: Morph}}
+ */
+var Idiomorph = (function () {
+
+  /**
+   * @typedef {object} MorphContext
+   *
+   * @property {Element} target
+   * @property {Element} newContent
+   * @property {ConfigInternal} config
+   * @property {ConfigInternal['morphStyle']} morphStyle
+   * @property {ConfigInternal['ignoreActive']} ignoreActive
+   * @property {ConfigInternal['ignoreActiveValue']} ignoreActiveValue
+   * @property {ConfigInternal['restoreFocus']} restoreFocus
+   * @property {Map<Node, Set<string>>} idMap
+   * @property {Set<string>} persistentIds
+   * @property {ConfigInternal['callbacks']} callbacks
+   * @property {ConfigInternal['head']} head
+   * @property {HTMLDivElement} pantry
+   * @property {Element[]} activeElementAndParents
+   */
+
+  //=============================================================================
+  // AND NOW IT BEGINS...
+  //=============================================================================
+
+  const noOp = () => {};
+  /**
+   * Default configuration values, updatable by users now
+   * @type {ConfigInternal}
+   */
+  const defaults = {
+    morphStyle: "outerHTML",
+    callbacks: {
+      beforeNodeAdded: noOp,
+      afterNodeAdded: noOp,
+      beforeNodeMorphed: noOp,
+      afterNodeMorphed: noOp,
+      beforeNodeRemoved: noOp,
+      afterNodeRemoved: noOp,
+      beforeAttributeUpdated: noOp,
+    },
+    head: {
+      style: "merge",
+      shouldPreserve: (elt) => elt.getAttribute("im-preserve") === "true",
+      shouldReAppend: (elt) => elt.getAttribute("im-re-append") === "true",
+      shouldRemove: noOp,
+      afterHeadMorphed: noOp,
+    },
+    restoreFocus: true,
+  };
+
+  /**
+   * Core idiomorph function for morphing one DOM tree to another
+   *
+   * @param {Element | Document} oldNode
+   * @param {Element | Node | HTMLCollection | Node[] | string | null} newContent
+   * @param {Config} [config]
+   * @returns {Promise<Node[]> | Node[]}
+   */
+  function morph(oldNode, newContent, config = {}) {
+    oldNode = normalizeElement(oldNode);
+    const newNode = normalizeParent(newContent);
+    const ctx = createMorphContext(oldNode, newNode, config);
+
+    const morphedNodes = saveAndRestoreFocus(ctx, () => {
+      return withHeadBlocking(
+        ctx,
+        oldNode,
+        newNode,
+        /** @param {MorphContext} ctx */ (ctx) => {
+          if (ctx.morphStyle === "innerHTML") {
+            morphChildren(ctx, oldNode, newNode);
+            return Array.from(oldNode.childNodes);
+          } else {
+            return morphOuterHTML(ctx, oldNode, newNode);
+          }
+        },
+      );
+    });
+
+    ctx.pantry.remove();
+    return morphedNodes;
+  }
+
+  /**
+   * Morph just the outerHTML of the oldNode to the newContent
+   * We have to be careful because the oldNode could have siblings which need to be untouched
+   * @param {MorphContext} ctx
+   * @param {Element} oldNode
+   * @param {Element} newNode
+   * @returns {Node[]}
+   */
+  function morphOuterHTML(ctx, oldNode, newNode) {
+    const oldParent = normalizeParent(oldNode);
+    morphChildren(
+      ctx,
+      oldParent,
+      newNode,
+      // these two optional params are the secret sauce
+      oldNode, // start point for iteration
+      oldNode.nextSibling, // end point for iteration
+    );
+    // this is safe even with siblings, because normalizeParent returns a SlicedParentNode if needed.
+    return Array.from(oldParent.childNodes);
+  }
+
+  /**
+   * @param {MorphContext} ctx
+   * @param {Function} fn
+   * @returns {Promise<Node[]> | Node[]}
+   */
+  function saveAndRestoreFocus(ctx, fn) {
+    if (!ctx.config.restoreFocus) return fn();
+    let activeElement =
+      /** @type {HTMLInputElement|HTMLTextAreaElement|null} */ (
+        document.activeElement
+      );
+
+    // don't bother if the active element is not an input or textarea
+    if (
+      !(
+        activeElement instanceof HTMLInputElement ||
+        activeElement instanceof HTMLTextAreaElement
+      )
+    ) {
+      return fn();
+    }
+
+    const { id: activeElementId, selectionStart, selectionEnd } = activeElement;
+
+    const results = fn();
+
+    if (
+      activeElementId &&
+      activeElementId !== document.activeElement?.getAttribute("id")
+    ) {
+      activeElement = ctx.target.querySelector(`[id="${activeElementId}"]`);
+      activeElement?.focus();
+    }
+    if (activeElement && !activeElement.selectionEnd && selectionEnd) {
+      activeElement.setSelectionRange(selectionStart, selectionEnd);
+    }
+
+    return results;
+  }
+
+  const morphChildren = (function () {
+    /**
+     * This is the core algorithm for matching up children.  The idea is to use id sets to try to match up
+     * nodes as faithfully as possible.  We greedily match, which allows us to keep the algorithm fast, but
+     * by using id sets, we are able to better match up with content deeper in the DOM.
+     *
+     * Basic algorithm:
+     * - for each node in the new content:
+     *   - search self and siblings for an id set match, falling back to a soft match
+     *   - if match found
+     *     - remove any nodes up to the match:
+     *       - pantry persistent nodes
+     *       - delete the rest
+     *     - morph the match
+     *   - elsif no match found, and node is persistent
+     *     - find its match by querying the old root (future) and pantry (past)
+     *     - move it and its children here
+     *     - morph it
+     *   - else
+     *     - create a new node from scratch as a last result
+     *
+     * @param {MorphContext} ctx the merge context
+     * @param {Element} oldParent the old content that we are merging the new content into
+     * @param {Element} newParent the parent element of the new content
+     * @param {Node|null} [insertionPoint] the point in the DOM we start morphing at (defaults to first child)
+     * @param {Node|null} [endPoint] the point in the DOM we stop morphing at (defaults to after last child)
+     */
+    function morphChildren(
+      ctx,
+      oldParent,
+      newParent,
+      insertionPoint = null,
+      endPoint = null,
+    ) {
+      // normalize
+      if (
+        oldParent instanceof HTMLTemplateElement &&
+        newParent instanceof HTMLTemplateElement
+      ) {
+        // @ts-ignore we can pretend the DocumentFragment is an Element
+        oldParent = oldParent.content;
+        // @ts-ignore ditto
+        newParent = newParent.content;
+      }
+      insertionPoint ||= oldParent.firstChild;
+
+      // run through all the new content
+      for (const newChild of newParent.childNodes) {
+        // once we reach the end of the old parent content skip to the end and insert the rest
+        if (insertionPoint && insertionPoint != endPoint) {
+          const bestMatch = findBestMatch(
+            ctx,
+            newChild,
+            insertionPoint,
+            endPoint,
+          );
+          if (bestMatch) {
+            // if the node to morph is not at the insertion point then remove/move up to it
+            if (bestMatch !== insertionPoint) {
+              removeNodesBetween(ctx, insertionPoint, bestMatch);
+            }
+            morphNode(bestMatch, newChild, ctx);
+            insertionPoint = bestMatch.nextSibling;
+            continue;
+          }
+        }
+
+        // if the matching node is elsewhere in the original content
+        if (newChild instanceof Element) {
+          // we can pretend the id is non-null because the next `.has` line will reject it if not
+          const newChildId = /** @type {String} */ (
+            newChild.getAttribute("id")
+          );
+          if (ctx.persistentIds.has(newChildId)) {
+            // move it and all its children here and morph
+            const movedChild = moveBeforeById(
+              oldParent,
+              newChildId,
+              insertionPoint,
+              ctx,
+            );
+            morphNode(movedChild, newChild, ctx);
+            insertionPoint = movedChild.nextSibling;
+            continue;
+          }
+        }
+
+        // last resort: insert the new node from scratch
+        const insertedNode = createNode(
+          oldParent,
+          newChild,
+          insertionPoint,
+          ctx,
+        );
+        // could be null if beforeNodeAdded prevented insertion
+        if (insertedNode) {
+          insertionPoint = insertedNode.nextSibling;
+        }
+      }
+
+      // remove any remaining old nodes that didn't match up with new content
+      while (insertionPoint && insertionPoint != endPoint) {
+        const tempNode = insertionPoint;
+        insertionPoint = insertionPoint.nextSibling;
+        removeNode(ctx, tempNode);
+      }
+    }
+
+    /**
+     * This performs the action of inserting a new node while handling situations where the node contains
+     * elements with persistent ids and possible state info we can still preserve by moving in and then morphing
+     *
+     * @param {Element} oldParent
+     * @param {Node} newChild
+     * @param {Node|null} insertionPoint
+     * @param {MorphContext} ctx
+     * @returns {Node|null}
+     */
+    function createNode(oldParent, newChild, insertionPoint, ctx) {
+      if (ctx.callbacks.beforeNodeAdded(newChild) === false) return null;
+      if (ctx.idMap.has(newChild)) {
+        // node has children with ids with possible state so create a dummy elt of same type and apply full morph algorithm
+        const newEmptyChild = document.createElement(
+          /** @type {Element} */ (newChild).tagName,
+        );
+        oldParent.insertBefore(newEmptyChild, insertionPoint);
+        morphNode(newEmptyChild, newChild, ctx);
+        ctx.callbacks.afterNodeAdded(newEmptyChild);
+        return newEmptyChild;
+      } else {
+        // optimisation: no id state to preserve so we can just insert a clone of the newChild and its descendants
+        const newClonedChild = document.importNode(newChild, true); // importNode to not mutate newParent
+        oldParent.insertBefore(newClonedChild, insertionPoint);
+        ctx.callbacks.afterNodeAdded(newClonedChild);
+        return newClonedChild;
+      }
+    }
+
+    //=============================================================================
+    // Matching Functions
+    //=============================================================================
+    const findBestMatch = (function () {
+      /**
+       * Scans forward from the startPoint to the endPoint looking for a match
+       * for the node. It looks for an id set match first, then a soft match.
+       * We abort softmatching if we find two future soft matches, to reduce churn.
+       * @param {Node} node
+       * @param {MorphContext} ctx
+       * @param {Node | null} startPoint
+       * @param {Node | null} endPoint
+       * @returns {Node | null}
+       */
+      function findBestMatch(ctx, node, startPoint, endPoint) {
+        let softMatch = null;
+        let nextSibling = node.nextSibling;
+        let siblingSoftMatchCount = 0;
+
+        let cursor = startPoint;
+        while (cursor && cursor != endPoint) {
+          // soft matching is a prerequisite for id set matching
+          if (isSoftMatch(cursor, node)) {
+            if (isIdSetMatch(ctx, cursor, node)) {
+              return cursor; // found an id set match, we're done!
+            }
+
+            // we haven't yet saved a soft match fallback
+            if (softMatch === null) {
+              // the current soft match will hard match something else in the future, leave it
+              if (!ctx.idMap.has(cursor)) {
+                // save this as the fallback if we get through the loop without finding a hard match
+                softMatch = cursor;
+              }
+            }
+          }
+          if (
+            softMatch === null &&
+            nextSibling &&
+            isSoftMatch(cursor, nextSibling)
+          ) {
+            // The next new node has a soft match with this node, so
+            // increment the count of future soft matches
+            siblingSoftMatchCount++;
+            nextSibling = nextSibling.nextSibling;
+
+            // If there are two future soft matches, block soft matching for this node to allow
+            // future siblings to soft match. This is to reduce churn in the DOM when an element
+            // is prepended.
+            if (siblingSoftMatchCount >= 2) {
+              softMatch = undefined;
+            }
+          }
+
+          // if the current node contains active element, stop looking for better future matches,
+          // because if one is found, this node will be moved to the pantry, reparenting it and thus losing focus
+          // @ts-ignore pretend cursor is Element rather than Node, we're just testing for array inclusion
+          if (ctx.activeElementAndParents.includes(cursor)) break;
+
+          cursor = cursor.nextSibling;
+        }
+
+        return softMatch || null;
+      }
+
+      /**
+       *
+       * @param {MorphContext} ctx
+       * @param {Node} oldNode
+       * @param {Node} newNode
+       * @returns {boolean}
+       */
+      function isIdSetMatch(ctx, oldNode, newNode) {
+        let oldSet = ctx.idMap.get(oldNode);
+        let newSet = ctx.idMap.get(newNode);
+
+        if (!newSet || !oldSet) return false;
+
+        for (const id of oldSet) {
+          // a potential match is an id in the new and old nodes that
+          // has not already been merged into the DOM
+          // But the newNode content we call this on has not been
+          // merged yet and we don't allow duplicate IDs so it is simple
+          if (newSet.has(id)) {
+            return true;
+          }
+        }
+        return false;
+      }
+
+      /**
+       *
+       * @param {Node} oldNode
+       * @param {Node} newNode
+       * @returns {boolean}
+       */
+      function isSoftMatch(oldNode, newNode) {
+        // ok to cast: if one is not element, `id` and `tagName` will be undefined and we'll just compare that.
+        const oldElt = /** @type {Element} */ (oldNode);
+        const newElt = /** @type {Element} */ (newNode);
+
+        return (
+          oldElt.nodeType === newElt.nodeType &&
+          oldElt.tagName === newElt.tagName &&
+          // If oldElt has an `id` with possible state and it doesn't match newElt.id then avoid morphing.
+          // We'll still match an anonymous node with an IDed newElt, though, because if it got this far,
+          // its not persistent, and new nodes can't have any hidden state.
+          // We can't use .id because of form input shadowing, and we can't count on .getAttribute's presence because it could be a document-fragment
+          (!oldElt.getAttribute?.("id") ||
+            oldElt.getAttribute?.("id") === newElt.getAttribute?.("id"))
+        );
+      }
+
+      return findBestMatch;
+    })();
+
+    //=============================================================================
+    // DOM Manipulation Functions
+    //=============================================================================
+
+    /**
+     * Gets rid of an unwanted DOM node; strategy depends on nature of its reuse:
+     * - Persistent nodes will be moved to the pantry for later reuse
+     * - Other nodes will have their hooks called, and then are removed
+     * @param {MorphContext} ctx
+     * @param {Node} node
+     */
+    function removeNode(ctx, node) {
+      // are we going to id set match this later?
+      if (ctx.idMap.has(node)) {
+        // skip callbacks and move to pantry
+        moveBefore(ctx.pantry, node, null);
+      } else {
+        // remove for realsies
+        if (ctx.callbacks.beforeNodeRemoved(node) === false) return;
+        node.parentNode?.removeChild(node);
+        ctx.callbacks.afterNodeRemoved(node);
+      }
+    }
+
+    /**
+     * Remove nodes between the start and end nodes
+     * @param {MorphContext} ctx
+     * @param {Node} startInclusive
+     * @param {Node} endExclusive
+     * @returns {Node|null}
+     */
+    function removeNodesBetween(ctx, startInclusive, endExclusive) {
+      /** @type {Node | null} */
+      let cursor = startInclusive;
+      // remove nodes until the endExclusive node
+      while (cursor && cursor !== endExclusive) {
+        let tempNode = /** @type {Node} */ (cursor);
+        cursor = cursor.nextSibling;
+        removeNode(ctx, tempNode);
+      }
+      return cursor;
+    }
+
+    /**
+     * Search for an element by id within the document and pantry, and move it using moveBefore.
+     *
+     * @param {Element} parentNode - The parent node to which the element will be moved.
+     * @param {string} id - The ID of the element to be moved.
+     * @param {Node | null} after - The reference node to insert the element before.
+     *                              If `null`, the element is appended as the last child.
+     * @param {MorphContext} ctx
+     * @returns {Element} The found element
+     */
+    function moveBeforeById(parentNode, id, after, ctx) {
+      const target =
+        /** @type {Element} - will always be found */
+        (
+          // ctx.target.id unsafe because of form input shadowing
+          // ctx.target could be a document fragment which doesn't have `getAttribute`
+          (ctx.target.getAttribute?.("id") === id && ctx.target) ||
+            ctx.target.querySelector(`[id="${id}"]`) ||
+            ctx.pantry.querySelector(`[id="${id}"]`)
+        );
+      removeElementFromAncestorsIdMaps(target, ctx);
+      moveBefore(parentNode, target, after);
+      return target;
+    }
+
+    /**
+     * Removes an element from its ancestors' id maps. This is needed when an element is moved from the
+     * "future" via `moveBeforeId`. Otherwise, its erstwhile ancestors could be mistakenly moved to the
+     * pantry rather than being deleted, preventing their removal hooks from being called.
+     *
+     * @param {Element} element - element to remove from its ancestors' id maps
+     * @param {MorphContext} ctx
+     */
+    function removeElementFromAncestorsIdMaps(element, ctx) {
+      // we know id is non-null String, because this function is only called on elements with ids
+      const id = /** @type {String} */ (element.getAttribute("id"));
+      /** @ts-ignore - safe to loop in this way **/
+      while ((element = element.parentNode)) {
+        let idSet = ctx.idMap.get(element);
+        if (idSet) {
+          idSet.delete(id);
+          if (!idSet.size) {
+            ctx.idMap.delete(element);
+          }
+        }
+      }
+    }
+
+    /**
+     * Moves an element before another element within the same parent.
+     * Uses the proposed `moveBefore` API if available (and working), otherwise falls back to `insertBefore`.
+     * This is essentialy a forward-compat wrapper.
+     *
+     * @param {Element} parentNode - The parent node containing the after element.
+     * @param {Node} element - The element to be moved.
+     * @param {Node | null} after - The reference node to insert `element` before.
+     *                              If `null`, `element` is appended as the last child.
+     */
+    function moveBefore(parentNode, element, after) {
+      // @ts-ignore - use proposed moveBefore feature
+      if (parentNode.moveBefore) {
+        try {
+          // @ts-ignore - use proposed moveBefore feature
+          parentNode.moveBefore(element, after);
+        } catch (e) {
+          // fall back to insertBefore as some browsers may fail on moveBefore when trying to move Dom disconnected nodes to pantry
+          parentNode.insertBefore(element, after);
+        }
+      } else {
+        parentNode.insertBefore(element, after);
+      }
+    }
+
+    return morphChildren;
+  })();
+
+  //=============================================================================
+  // Single Node Morphing Code
+  //=============================================================================
+  const morphNode = (function () {
+    /**
+     * @param {Node} oldNode root node to merge content into
+     * @param {Node} newContent new content to merge
+     * @param {MorphContext} ctx the merge context
+     * @returns {Node | null} the element that ended up in the DOM
+     */
+    function morphNode(oldNode, newContent, ctx) {
+      if (ctx.ignoreActive && oldNode === document.activeElement) {
+        // don't morph focused element
+        return null;
+      }
+
+      if (ctx.callbacks.beforeNodeMorphed(oldNode, newContent) === false) {
+        return oldNode;
+      }
+
+      if (oldNode instanceof HTMLHeadElement && ctx.head.ignore) ; else if (
+        oldNode instanceof HTMLHeadElement &&
+        ctx.head.style !== "morph"
+      ) {
+        // ok to cast: if newContent wasn't also a <head>, it would've got caught in the `!isSoftMatch` branch above
+        handleHeadElement(
+          oldNode,
+          /** @type {HTMLHeadElement} */ (newContent),
+          ctx,
+        );
+      } else {
+        morphAttributes(oldNode, newContent, ctx);
+        if (!ignoreValueOfActiveElement(oldNode, ctx)) {
+          // @ts-ignore newContent can be a node here because .firstChild will be null
+          morphChildren(ctx, oldNode, newContent);
+        }
+      }
+      ctx.callbacks.afterNodeMorphed(oldNode, newContent);
+      return oldNode;
+    }
+
+    /**
+     * syncs the oldNode to the newNode, copying over all attributes and
+     * inner element state from the newNode to the oldNode
+     *
+     * @param {Node} oldNode the node to copy attributes & state to
+     * @param {Node} newNode the node to copy attributes & state from
+     * @param {MorphContext} ctx the merge context
+     */
+    function morphAttributes(oldNode, newNode, ctx) {
+      let type = newNode.nodeType;
+
+      // if is an element type, sync the attributes from the
+      // new node into the new node
+      if (type === 1 /* element type */) {
+        const oldElt = /** @type {Element} */ (oldNode);
+        const newElt = /** @type {Element} */ (newNode);
+
+        const oldAttributes = oldElt.attributes;
+        const newAttributes = newElt.attributes;
+        for (const newAttribute of newAttributes) {
+          if (ignoreAttribute(newAttribute.name, oldElt, "update", ctx)) {
+            continue;
+          }
+          if (oldElt.getAttribute(newAttribute.name) !== newAttribute.value) {
+            oldElt.setAttribute(newAttribute.name, newAttribute.value);
+          }
+        }
+        // iterate backwards to avoid skipping over items when a delete occurs
+        for (let i = oldAttributes.length - 1; 0 <= i; i--) {
+          const oldAttribute = oldAttributes[i];
+
+          // toAttributes is a live NamedNodeMap, so iteration+mutation is unsafe
+          // e.g. custom element attribute callbacks can remove other attributes
+          if (!oldAttribute) continue;
+
+          if (!newElt.hasAttribute(oldAttribute.name)) {
+            if (ignoreAttribute(oldAttribute.name, oldElt, "remove", ctx)) {
+              continue;
+            }
+            oldElt.removeAttribute(oldAttribute.name);
+          }
+        }
+
+        if (!ignoreValueOfActiveElement(oldElt, ctx)) {
+          syncInputValue(oldElt, newElt, ctx);
+        }
+      }
+
+      // sync text nodes
+      if (type === 8 /* comment */ || type === 3 /* text */) {
+        if (oldNode.nodeValue !== newNode.nodeValue) {
+          oldNode.nodeValue = newNode.nodeValue;
+        }
+      }
+    }
+
+    /**
+     * NB: many bothans died to bring us information:
+     *
+     *  https://github.com/patrick-steele-idem/morphdom/blob/master/src/specialElHandlers.js
+     *  https://github.com/choojs/nanomorph/blob/master/lib/morph.jsL113
+     *
+     * @param {Element} oldElement the element to sync the input value to
+     * @param {Element} newElement the element to sync the input value from
+     * @param {MorphContext} ctx the merge context
+     */
+    function syncInputValue(oldElement, newElement, ctx) {
+      if (
+        oldElement instanceof HTMLInputElement &&
+        newElement instanceof HTMLInputElement &&
+        newElement.type !== "file"
+      ) {
+        let newValue = newElement.value;
+        let oldValue = oldElement.value;
+
+        // sync boolean attributes
+        syncBooleanAttribute(oldElement, newElement, "checked", ctx);
+        syncBooleanAttribute(oldElement, newElement, "disabled", ctx);
+
+        if (!newElement.hasAttribute("value")) {
+          if (!ignoreAttribute("value", oldElement, "remove", ctx)) {
+            oldElement.value = "";
+            oldElement.removeAttribute("value");
+          }
+        } else if (oldValue !== newValue) {
+          if (!ignoreAttribute("value", oldElement, "update", ctx)) {
+            oldElement.setAttribute("value", newValue);
+            oldElement.value = newValue;
+          }
+        }
+        // TODO: QUESTION(1cg): this used to only check `newElement` unlike the other branches -- why?
+        // did I break something?
+      } else if (
+        oldElement instanceof HTMLOptionElement &&
+        newElement instanceof HTMLOptionElement
+      ) {
+        syncBooleanAttribute(oldElement, newElement, "selected", ctx);
+      } else if (
+        oldElement instanceof HTMLTextAreaElement &&
+        newElement instanceof HTMLTextAreaElement
+      ) {
+        let newValue = newElement.value;
+        let oldValue = oldElement.value;
+        if (ignoreAttribute("value", oldElement, "update", ctx)) {
+          return;
+        }
+        if (newValue !== oldValue) {
+          oldElement.value = newValue;
+        }
+        if (
+          oldElement.firstChild &&
+          oldElement.firstChild.nodeValue !== newValue
+        ) {
+          oldElement.firstChild.nodeValue = newValue;
+        }
+      }
+    }
+
+    /**
+     * @param {Element} oldElement element to write the value to
+     * @param {Element} newElement element to read the value from
+     * @param {string} attributeName the attribute name
+     * @param {MorphContext} ctx the merge context
+     */
+    function syncBooleanAttribute(oldElement, newElement, attributeName, ctx) {
+      // @ts-ignore this function is only used on boolean attrs that are reflected as dom properties
+      const newLiveValue = newElement[attributeName],
+        // @ts-ignore ditto
+        oldLiveValue = oldElement[attributeName];
+      if (newLiveValue !== oldLiveValue) {
+        const ignoreUpdate = ignoreAttribute(
+          attributeName,
+          oldElement,
+          "update",
+          ctx,
+        );
+        if (!ignoreUpdate) {
+          // update attribute's associated DOM property
+          // @ts-ignore this function is only used on boolean attrs that are reflected as dom properties
+          oldElement[attributeName] = newElement[attributeName];
+        }
+        if (newLiveValue) {
+          if (!ignoreUpdate) {
+            // https://developer.mozilla.org/en-US/docs/Glossary/Boolean/HTML
+            // this is the correct way to set a boolean attribute to "true"
+            oldElement.setAttribute(attributeName, "");
+          }
+        } else {
+          if (!ignoreAttribute(attributeName, oldElement, "remove", ctx)) {
+            oldElement.removeAttribute(attributeName);
+          }
+        }
+      }
+    }
+
+    /**
+     * @param {string} attr the attribute to be mutated
+     * @param {Element} element the element that is going to be updated
+     * @param {"update" | "remove"} updateType
+     * @param {MorphContext} ctx the merge context
+     * @returns {boolean} true if the attribute should be ignored, false otherwise
+     */
+    function ignoreAttribute(attr, element, updateType, ctx) {
+      if (
+        attr === "value" &&
+        ctx.ignoreActiveValue &&
+        element === document.activeElement
+      ) {
+        return true;
+      }
+      return (
+        ctx.callbacks.beforeAttributeUpdated(attr, element, updateType) ===
+        false
+      );
+    }
+
+    /**
+     * @param {Node} possibleActiveElement
+     * @param {MorphContext} ctx
+     * @returns {boolean}
+     */
+    function ignoreValueOfActiveElement(possibleActiveElement, ctx) {
+      return (
+        !!ctx.ignoreActiveValue &&
+        possibleActiveElement === document.activeElement &&
+        possibleActiveElement !== document.body
+      );
+    }
+
+    return morphNode;
+  })();
+
+  //=============================================================================
+  // Head Management Functions
+  //=============================================================================
+  /**
+   * @param {MorphContext} ctx
+   * @param {Element} oldNode
+   * @param {Element} newNode
+   * @param {function} callback
+   * @returns {Node[] | Promise<Node[]>}
+   */
+  function withHeadBlocking(ctx, oldNode, newNode, callback) {
+    if (ctx.head.block) {
+      const oldHead = oldNode.querySelector("head");
+      const newHead = newNode.querySelector("head");
+      if (oldHead && newHead) {
+        const promises = handleHeadElement(oldHead, newHead, ctx);
+        // when head promises resolve, proceed ignoring the head tag
+        return Promise.all(promises).then(() => {
+          const newCtx = Object.assign(ctx, {
+            head: {
+              block: false,
+              ignore: true,
+            },
+          });
+          return callback(newCtx);
+        });
+      }
+    }
+    // just proceed if we not head blocking
+    return callback(ctx);
+  }
+
+  /**
+   *  The HEAD tag can be handled specially, either w/ a 'merge' or 'append' style
+   *
+   * @param {Element} oldHead
+   * @param {Element} newHead
+   * @param {MorphContext} ctx
+   * @returns {Promise<void>[]}
+   */
+  function handleHeadElement(oldHead, newHead, ctx) {
+    let added = [];
+    let removed = [];
+    let preserved = [];
+    let nodesToAppend = [];
+
+    // put all new head elements into a Map, by their outerHTML
+    let srcToNewHeadNodes = new Map();
+    for (const newHeadChild of newHead.children) {
+      srcToNewHeadNodes.set(newHeadChild.outerHTML, newHeadChild);
+    }
+
+    // for each elt in the current head
+    for (const currentHeadElt of oldHead.children) {
+      // If the current head element is in the map
+      let inNewContent = srcToNewHeadNodes.has(currentHeadElt.outerHTML);
+      let isReAppended = ctx.head.shouldReAppend(currentHeadElt);
+      let isPreserved = ctx.head.shouldPreserve(currentHeadElt);
+      if (inNewContent || isPreserved) {
+        if (isReAppended) {
+          // remove the current version and let the new version replace it and re-execute
+          removed.push(currentHeadElt);
+        } else {
+          // this element already exists and should not be re-appended, so remove it from
+          // the new content map, preserving it in the DOM
+          srcToNewHeadNodes.delete(currentHeadElt.outerHTML);
+          preserved.push(currentHeadElt);
+        }
+      } else {
+        if (ctx.head.style === "append") {
+          // we are appending and this existing element is not new content
+          // so if and only if it is marked for re-append do we do anything
+          if (isReAppended) {
+            removed.push(currentHeadElt);
+            nodesToAppend.push(currentHeadElt);
+          }
+        } else {
+          // if this is a merge, we remove this content since it is not in the new head
+          if (ctx.head.shouldRemove(currentHeadElt) !== false) {
+            removed.push(currentHeadElt);
+          }
+        }
+      }
+    }
+
+    // Push the remaining new head elements in the Map into the
+    // nodes to append to the head tag
+    nodesToAppend.push(...srcToNewHeadNodes.values());
+
+    let promises = [];
+    for (const newNode of nodesToAppend) {
+      // TODO: This could theoretically be null, based on type
+      let newElt = /** @type {ChildNode} */ (
+        document.createRange().createContextualFragment(newNode.outerHTML)
+          .firstChild
+      );
+      if (ctx.callbacks.beforeNodeAdded(newElt) !== false) {
+        if (
+          ("href" in newElt && newElt.href) ||
+          ("src" in newElt && newElt.src)
+        ) {
+          /** @type {(result?: any) => void} */ let resolve;
+          let promise = new Promise(function (_resolve) {
+            resolve = _resolve;
+          });
+          newElt.addEventListener("load", function () {
+            resolve();
+          });
+          promises.push(promise);
+        }
+        oldHead.appendChild(newElt);
+        ctx.callbacks.afterNodeAdded(newElt);
+        added.push(newElt);
+      }
+    }
+
+    // remove all removed elements, after we have appended the new elements to avoid
+    // additional network requests for things like style sheets
+    for (const removedElement of removed) {
+      if (ctx.callbacks.beforeNodeRemoved(removedElement) !== false) {
+        oldHead.removeChild(removedElement);
+        ctx.callbacks.afterNodeRemoved(removedElement);
+      }
+    }
+
+    ctx.head.afterHeadMorphed(oldHead, {
+      added: added,
+      kept: preserved,
+      removed: removed,
+    });
+    return promises;
+  }
+
+  //=============================================================================
+  // Create Morph Context Functions
+  //=============================================================================
+  const createMorphContext = (function () {
+    /**
+     *
+     * @param {Element} oldNode
+     * @param {Element} newContent
+     * @param {Config} config
+     * @returns {MorphContext}
+     */
+    function createMorphContext(oldNode, newContent, config) {
+      const { persistentIds, idMap } = createIdMaps(oldNode, newContent);
+
+      const mergedConfig = mergeDefaults(config);
+      const morphStyle = mergedConfig.morphStyle || "outerHTML";
+      if (!["innerHTML", "outerHTML"].includes(morphStyle)) {
+        throw `Do not understand how to morph style ${morphStyle}`;
+      }
+
+      return {
+        target: oldNode,
+        newContent: newContent,
+        config: mergedConfig,
+        morphStyle: morphStyle,
+        ignoreActive: mergedConfig.ignoreActive,
+        ignoreActiveValue: mergedConfig.ignoreActiveValue,
+        restoreFocus: mergedConfig.restoreFocus,
+        idMap: idMap,
+        persistentIds: persistentIds,
+        pantry: createPantry(),
+        activeElementAndParents: createActiveElementAndParents(oldNode),
+        callbacks: mergedConfig.callbacks,
+        head: mergedConfig.head,
+      };
+    }
+
+    /**
+     * Deep merges the config object and the Idiomorph.defaults object to
+     * produce a final configuration object
+     * @param {Config} config
+     * @returns {ConfigInternal}
+     */
+    function mergeDefaults(config) {
+      let finalConfig = Object.assign({}, defaults);
+
+      // copy top level stuff into final config
+      Object.assign(finalConfig, config);
+
+      // copy callbacks into final config (do this to deep merge the callbacks)
+      finalConfig.callbacks = Object.assign(
+        {},
+        defaults.callbacks,
+        config.callbacks,
+      );
+
+      // copy head config into final config  (do this to deep merge the head)
+      finalConfig.head = Object.assign({}, defaults.head, config.head);
+
+      return finalConfig;
+    }
+
+    /**
+     * @returns {HTMLDivElement}
+     */
+    function createPantry() {
+      const pantry = document.createElement("div");
+      pantry.hidden = true;
+      document.body.insertAdjacentElement("afterend", pantry);
+      return pantry;
+    }
+
+    /**
+     * @param {Element} oldNode
+     * @returns {Element[]}
+     */
+    function createActiveElementAndParents(oldNode) {
+      /** @type {Element[]} */
+      let activeElementAndParents = [];
+      let elt = document.activeElement;
+      if (elt?.tagName !== "BODY" && oldNode.contains(elt)) {
+        while (elt) {
+          activeElementAndParents.push(elt);
+          if (elt === oldNode) break;
+          elt = elt.parentElement;
+        }
+      }
+      return activeElementAndParents;
+    }
+
+    /**
+     * Returns all elements with an ID contained within the root element and its descendants
+     *
+     * @param {Element} root
+     * @returns {Element[]}
+     */
+    function findIdElements(root) {
+      let elements = Array.from(root.querySelectorAll("[id]"));
+      // root could be a document fragment which doesn't have `getAttribute`
+      if (root.getAttribute?.("id")) {
+        elements.push(root);
+      }
+      return elements;
+    }
+
+    /**
+     * A bottom-up algorithm that populates a map of Element -> IdSet.
+     * The idSet for a given element is the set of all IDs contained within its subtree.
+     * As an optimzation, we filter these IDs through the given list of persistent IDs,
+     * because we don't need to bother considering IDed elements that won't be in the new content.
+     *
+     * @param {Map<Node, Set<string>>} idMap
+     * @param {Set<string>} persistentIds
+     * @param {Element} root
+     * @param {Element[]} elements
+     */
+    function populateIdMapWithTree(idMap, persistentIds, root, elements) {
+      for (const elt of elements) {
+        // we can pretend id is non-null String, because the .has line will reject it immediately if not
+        const id = /** @type {String} */ (elt.getAttribute("id"));
+        if (persistentIds.has(id)) {
+          /** @type {Element|null} */
+          let current = elt;
+          // walk up the parent hierarchy of that element, adding the id
+          // of element to the parent's id set
+          while (current) {
+            let idSet = idMap.get(current);
+            // if the id set doesn't exist, create it and insert it in the map
+            if (idSet == null) {
+              idSet = new Set();
+              idMap.set(current, idSet);
+            }
+            idSet.add(id);
+
+            if (current === root) break;
+            current = current.parentElement;
+          }
+        }
+      }
+    }
+
+    /**
+     * This function computes a map of nodes to all ids contained within that node (inclusive of the
+     * node).  This map can be used to ask if two nodes have intersecting sets of ids, which allows
+     * for a looser definition of "matching" than tradition id matching, and allows child nodes
+     * to contribute to a parent nodes matching.
+     *
+     * @param {Element} oldContent  the old content that will be morphed
+     * @param {Element} newContent  the new content to morph to
+     * @returns {IdSets}
+     */
+    function createIdMaps(oldContent, newContent) {
+      const oldIdElements = findIdElements(oldContent);
+      const newIdElements = findIdElements(newContent);
+
+      const persistentIds = createPersistentIds(oldIdElements, newIdElements);
+
+      /** @type {Map<Node, Set<string>>} */
+      let idMap = new Map();
+      populateIdMapWithTree(idMap, persistentIds, oldContent, oldIdElements);
+
+      /** @ts-ignore - if newContent is a duck-typed parent, pass its single child node as the root to halt upwards iteration */
+      const newRoot = newContent.__idiomorphRoot || newContent;
+      populateIdMapWithTree(idMap, persistentIds, newRoot, newIdElements);
+
+      return { persistentIds, idMap };
+    }
+
+    /**
+     * This function computes the set of ids that persist between the two contents excluding duplicates
+     *
+     * @param {Element[]} oldIdElements
+     * @param {Element[]} newIdElements
+     * @returns {Set<string>}
+     */
+    function createPersistentIds(oldIdElements, newIdElements) {
+      let duplicateIds = new Set();
+
+      /** @type {Map<string, string>} */
+      let oldIdTagNameMap = new Map();
+      for (const { id, tagName } of oldIdElements) {
+        if (oldIdTagNameMap.has(id)) {
+          duplicateIds.add(id);
+        } else {
+          oldIdTagNameMap.set(id, tagName);
+        }
+      }
+
+      let persistentIds = new Set();
+      for (const { id, tagName } of newIdElements) {
+        if (persistentIds.has(id)) {
+          duplicateIds.add(id);
+        } else if (oldIdTagNameMap.get(id) === tagName) {
+          persistentIds.add(id);
+        }
+        // skip if tag types mismatch because its not possible to morph one tag into another
+      }
+
+      for (const id of duplicateIds) {
+        persistentIds.delete(id);
+      }
+      return persistentIds;
+    }
+
+    return createMorphContext;
+  })();
+
+  //=============================================================================
+  // HTML Normalization Functions
+  //=============================================================================
+  const { normalizeElement, normalizeParent } = (function () {
+    /** @type {WeakSet<Node>} */
+    const generatedByIdiomorph = new WeakSet();
+
+    /**
+     *
+     * @param {Element | Document} content
+     * @returns {Element}
+     */
+    function normalizeElement(content) {
+      if (content instanceof Document) {
+        return content.documentElement;
+      } else {
+        return content;
+      }
+    }
+
+    /**
+     *
+     * @param {null | string | Node | HTMLCollection | Node[] | Document & {generatedByIdiomorph:boolean}} newContent
+     * @returns {Element}
+     */
+    function normalizeParent(newContent) {
+      if (newContent == null) {
+        return document.createElement("div"); // dummy parent element
+      } else if (typeof newContent === "string") {
+        return normalizeParent(parseContent(newContent));
+      } else if (
+        generatedByIdiomorph.has(/** @type {Element} */ (newContent))
+      ) {
+        // the template tag created by idiomorph parsing can serve as a dummy parent
+        return /** @type {Element} */ (newContent);
+      } else if (newContent instanceof Node) {
+        if (newContent.parentNode) {
+          // we can't use the parent directly because newContent may have siblings
+          // that we don't want in the morph, and reparenting might be expensive (TODO is it?),
+          // so instead we create a fake parent node that only sees a slice of its children.
+          /** @type {Element} */
+          return /** @type {any} */ (new SlicedParentNode(newContent));
+        } else {
+          // a single node is added as a child to a dummy parent
+          const dummyParent = document.createElement("div");
+          dummyParent.append(newContent);
+          return dummyParent;
+        }
+      } else {
+        // all nodes in the array or HTMLElement collection are consolidated under
+        // a single dummy parent element
+        const dummyParent = document.createElement("div");
+        for (const elt of [...newContent]) {
+          dummyParent.append(elt);
+        }
+        return dummyParent;
+      }
+    }
+
+    /**
+     * A fake duck-typed parent element to wrap a single node, without actually reparenting it.
+     * This is useful because the node may have siblings that we don't want in the morph, and it may also be moved
+     * or replaced with one or more elements during the morph. This class effectively allows us a window into
+     * a slice of a node's children.
+     * "If it walks like a duck, and quacks like a duck, then it must be a duck!" -- James Whitcomb Riley (1849–1916)
+     */
+    class SlicedParentNode {
+      /** @param {Node} node */
+      constructor(node) {
+        this.originalNode = node;
+        this.realParentNode = /** @type {Element} */ (node.parentNode);
+        this.previousSibling = node.previousSibling;
+        this.nextSibling = node.nextSibling;
+      }
+
+      /** @returns {Node[]} */
+      get childNodes() {
+        // return slice of realParent's current childNodes, based on previousSibling and nextSibling
+        const nodes = [];
+        let cursor = this.previousSibling
+          ? this.previousSibling.nextSibling
+          : this.realParentNode.firstChild;
+        while (cursor && cursor != this.nextSibling) {
+          nodes.push(cursor);
+          cursor = cursor.nextSibling;
+        }
+        return nodes;
+      }
+
+      /**
+       * @param {string} selector
+       * @returns {Element[]}
+       */
+      querySelectorAll(selector) {
+        return this.childNodes.reduce((results, node) => {
+          if (node instanceof Element) {
+            if (node.matches(selector)) results.push(node);
+            const nodeList = node.querySelectorAll(selector);
+            for (let i = 0; i < nodeList.length; i++) {
+              results.push(nodeList[i]);
+            }
+          }
+          return results;
+        }, /** @type {Element[]} */ ([]));
+      }
+
+      /**
+       * @param {Node} node
+       * @param {Node} referenceNode
+       * @returns {Node}
+       */
+      insertBefore(node, referenceNode) {
+        return this.realParentNode.insertBefore(node, referenceNode);
+      }
+
+      /**
+       * @param {Node} node
+       * @param {Node} referenceNode
+       * @returns {Node}
+       */
+      moveBefore(node, referenceNode) {
+        // @ts-ignore - use new moveBefore feature
+        return this.realParentNode.moveBefore(node, referenceNode);
+      }
+
+      /**
+       * for later use with populateIdMapWithTree to halt upwards iteration
+       * @returns {Node}
+       */
+      get __idiomorphRoot() {
+        return this.originalNode;
+      }
+    }
+
+    /**
+     *
+     * @param {string} newContent
+     * @returns {Node | null | DocumentFragment}
+     */
+    function parseContent(newContent) {
+      let parser = new DOMParser();
+
+      // remove svgs to avoid false-positive matches on head, etc.
+      let contentWithSvgsRemoved = newContent.replace(
+        /<svg(\s[^>]*>|>)([\s\S]*?)<\/svg>/gim,
+        "",
+      );
+
+      // if the newContent contains a html, head or body tag, we can simply parse it w/o wrapping
+      if (
+        contentWithSvgsRemoved.match(/<\/html>/) ||
+        contentWithSvgsRemoved.match(/<\/head>/) ||
+        contentWithSvgsRemoved.match(/<\/body>/)
+      ) {
+        let content = parser.parseFromString(newContent, "text/html");
+        // if it is a full HTML document, return the document itself as the parent container
+        if (contentWithSvgsRemoved.match(/<\/html>/)) {
+          generatedByIdiomorph.add(content);
+          return content;
+        } else {
+          // otherwise return the html element as the parent container
+          let htmlElement = content.firstChild;
+          if (htmlElement) {
+            generatedByIdiomorph.add(htmlElement);
+          }
+          return htmlElement;
+        }
+      } else {
+        // if it is partial HTML, wrap it in a template tag to provide a parent element and also to help
+        // deal with touchy tags like tr, tbody, etc.
+        let responseDoc = parser.parseFromString(
+          "<body><template>" + newContent + "</template></body>",
+          "text/html",
+        );
+        let content = /** @type {HTMLTemplateElement} */ (
+          responseDoc.body.querySelector("template")
+        ).content;
+        generatedByIdiomorph.add(content);
+        return content;
+      }
+    }
+
+    return { normalizeElement, normalizeParent };
+  })();
+
+  //=============================================================================
+  // This is what ends up becoming the Idiomorph global object
+  //=============================================================================
+  return {
+    morph,
+    defaults,
+  };
+})();
+
+/**
+ * Morph the state of the currentElement based on the attributes and contents of
+ * the newElement. Morphing may dispatch turbo:before-morph-element,
+ * turbo:before-morph-attribute, and turbo:morph-element events.
+ *
+ * @param currentElement Element destination of morphing changes
+ * @param newElement Element source of morphing changes
+ */
+function morphElements(currentElement, newElement, { callbacks, ...options } = {}) {
+  Idiomorph.morph(currentElement, newElement, {
+    ...options,
+    callbacks: new DefaultIdiomorphCallbacks(callbacks)
+  });
+}
+
+/**
+ * Morph the child elements of the currentElement based on the child elements of
+ * the newElement. Morphing children may dispatch turbo:before-morph-element,
+ * turbo:before-morph-attribute, and turbo:morph-element events.
+ *
+ * @param currentElement Element destination of morphing children changes
+ * @param newElement Element source of morphing children changes
+ */
+function morphChildren(currentElement, newElement, options = {}) {
+  morphElements(currentElement, newElement.childNodes, {
+    ...options,
+    morphStyle: "innerHTML"
+  });
+}
+
+function shouldRefreshFrameWithMorphing(currentFrame, newFrame) {
+  return currentFrame instanceof FrameElement &&
+    currentFrame.shouldReloadWithMorph && (!newFrame || areFramesCompatibleForRefreshing(currentFrame, newFrame)) &&
+    !currentFrame.closest("[data-turbo-permanent]")
+}
+
+function areFramesCompatibleForRefreshing(currentFrame, newFrame) {
+  // newFrame cannot yet be an instance of FrameElement because custom
+  // elements don't get initialized until they're attached to the DOM, so
+  // test its Element#nodeName instead
+  return newFrame instanceof Element && newFrame.nodeName === "TURBO-FRAME" && currentFrame.id === newFrame.id &&
+  (!newFrame.getAttribute("src") || urlsAreEqual(currentFrame.src, newFrame.getAttribute("src")))
+}
+
+function closestFrameReloadableWithMorphing(node) {
+  return node.parentElement.closest("turbo-frame[src][refresh=morph]")
+}
+
+class DefaultIdiomorphCallbacks {
+  #beforeNodeMorphed
+
+  constructor({ beforeNodeMorphed } = {}) {
+    this.#beforeNodeMorphed = beforeNodeMorphed || (() => true);
+  }
+
+  beforeNodeAdded = (node) => {
+    return !(node.id && node.hasAttribute("data-turbo-permanent") && document.getElementById(node.id))
+  }
+
+  beforeNodeMorphed = (currentElement, newElement) => {
+    if (currentElement instanceof Element) {
+      if (!currentElement.hasAttribute("data-turbo-permanent") && this.#beforeNodeMorphed(currentElement, newElement)) {
+        const event = dispatch("turbo:before-morph-element", {
+          cancelable: true,
+          target: currentElement,
+          detail: { currentElement, newElement }
+        });
+
+        return !event.defaultPrevented
+      } else {
+        return false
+      }
+    }
+  }
+
+  beforeAttributeUpdated = (attributeName, target, mutationType) => {
+    const event = dispatch("turbo:before-morph-attribute", {
+      cancelable: true,
+      target,
+      detail: { attributeName, mutationType }
+    });
+
+    return !event.defaultPrevented
+  }
+
+  beforeNodeRemoved = (node) => {
+    return this.beforeNodeMorphed(node)
+  }
+
+  afterNodeMorphed = (currentElement, newElement) => {
+    if (currentElement instanceof Element) {
+      dispatch("turbo:morph-element", {
+        target: currentElement,
+        detail: { currentElement, newElement }
+      });
+    }
+  }
+}
+
+class MorphingFrameRenderer extends FrameRenderer {
+  static renderElement(currentElement, newElement) {
+    dispatch("turbo:before-frame-morph", {
+      target: currentElement,
+      detail: { currentElement, newElement }
+    });
+
+    morphChildren(currentElement, newElement, {
+      callbacks: {
+        beforeNodeMorphed: (node, newNode) => {
+          if (
+            shouldRefreshFrameWithMorphing(node, newNode) &&
+              closestFrameReloadableWithMorphing(node) === currentElement
+          ) {
+            node.reload();
+            return false
+          }
+          return true
+        }
+      }
+    });
+  }
+
+  async preservingPermanentElements(callback) {
+    return await callback()
+  }
+}
+
+class ProgressBar {
+  static animationDuration = 300 /*ms*/
+
+  static get defaultCSS() {
+    return unindent`
       .turbo-progress-bar {
         position: fixed;
         display: block;
@@ -93,15 +3530,2684 @@
         z-index: 2147483647;
         transition:
           width ${ProgressBar.animationDuration}ms ease-out,
-          opacity ${ProgressBar.animationDuration/2}ms ${ProgressBar.animationDuration/2}ms ease-in;
+          opacity ${ProgressBar.animationDuration / 2}ms ${ProgressBar.animationDuration / 2}ms ease-in;
         transform: translate3d(0, 0, 0);
       }
-    `}hiding=false;value=0;visible=false;constructor(){this.stylesheetElement=this.createStylesheetElement();this.progressElement=this.createProgressElement();this.installStylesheetElement();this.setValue(0)}show(){if(!this.visible){this.visible=true;this.installProgressElement();this.startTrickling()}}hide(){if(this.visible&&!this.hiding){this.hiding=true;this.fadeProgressElement((()=>{this.uninstallProgressElement();this.stopTrickling();this.visible=false;this.hiding=false}))}}setValue(e){this.value=e;this.refresh()}installStylesheetElement(){document.head.insertBefore(this.stylesheetElement,document.head.firstChild)}installProgressElement(){this.progressElement.style.width="0";this.progressElement.style.opacity="1";document.documentElement.insertBefore(this.progressElement,document.body);this.refresh()}fadeProgressElement(e){this.progressElement.style.opacity="0";setTimeout(e,ProgressBar.animationDuration*1.5)}uninstallProgressElement(){this.progressElement.parentNode&&document.documentElement.removeChild(this.progressElement)}startTrickling(){this.trickleInterval||(this.trickleInterval=window.setInterval(this.trickle,ProgressBar.animationDuration))}stopTrickling(){window.clearInterval(this.trickleInterval);delete this.trickleInterval}trickle=()=>{this.setValue(this.value+Math.random()/100)};refresh(){requestAnimationFrame((()=>{this.progressElement.style.width=10+this.value*90+"%"}))}createStylesheetElement(){const e=document.createElement("style");e.type="text/css";e.textContent=ProgressBar.defaultCSS;const t=getCspNonce();t&&(e.nonce=t);return e}createProgressElement(){const e=document.createElement("div");e.className="turbo-progress-bar";return e}}class HeadSnapshot extends Snapshot{detailsByOuterHTML=this.children.filter((e=>!elementIsNoscript(e))).map((e=>elementWithoutNonce(e))).reduce(((e,t)=>{const{outerHTML:r}=t;const s=r in e?e[r]:{type:elementType(t),tracked:elementIsTracked(t),elements:[]};return{...e,[r]:{...s,elements:[...s.elements,t]}}}),{});get trackedElementSignature(){return Object.keys(this.detailsByOuterHTML).filter((e=>this.detailsByOuterHTML[e].tracked)).join("")}getScriptElementsNotInSnapshot(e){return this.getElementsMatchingTypeNotInSnapshot("script",e)}getStylesheetElementsNotInSnapshot(e){return this.getElementsMatchingTypeNotInSnapshot("stylesheet",e)}getElementsMatchingTypeNotInSnapshot(e,t){return Object.keys(this.detailsByOuterHTML).filter((e=>!(e in t.detailsByOuterHTML))).map((e=>this.detailsByOuterHTML[e])).filter((({type:t})=>t==e)).map((({elements:[e]})=>e))}get provisionalElements(){return Object.keys(this.detailsByOuterHTML).reduce(((e,t)=>{const{type:r,tracked:s,elements:i}=this.detailsByOuterHTML[t];return r!=null||s?i.length>1?[...e,...i.slice(1)]:e:[...e,...i]}),[])}getMetaValue(e){const t=this.findMetaElementByName(e);return t?t.getAttribute("content"):null}findMetaElementByName(e){return Object.keys(this.detailsByOuterHTML).reduce(((t,r)=>{const{elements:[s]}=this.detailsByOuterHTML[r];return elementIsMetaElementWithName(s,e)?s:t}),0)}}function elementType(e){return elementIsScript(e)?"script":elementIsStylesheet(e)?"stylesheet":void 0}function elementIsTracked(e){return e.getAttribute("data-turbo-track")=="reload"}function elementIsScript(e){const t=e.localName;return t=="script"}function elementIsNoscript(e){const t=e.localName;return t=="noscript"}function elementIsStylesheet(e){const t=e.localName;return t=="style"||t=="link"&&e.getAttribute("rel")=="stylesheet"}function elementIsMetaElementWithName(e,t){const r=e.localName;return r=="meta"&&e.getAttribute("name")==t}function elementWithoutNonce(e){e.hasAttribute("nonce")&&e.setAttribute("nonce","");return e}class PageSnapshot extends Snapshot{static fromHTMLString(e=""){return this.fromDocument(parseHTMLDocument(e))}static fromElement(e){return this.fromDocument(e.ownerDocument)}static fromDocument({documentElement:e,body:t,head:r}){return new this(e,t,new HeadSnapshot(r))}constructor(e,t,r){super(t);this.documentElement=e;this.headSnapshot=r}clone(){const e=this.element.cloneNode(true);const t=this.element.querySelectorAll("select");const r=e.querySelectorAll("select");for(const[e,s]of t.entries()){const t=r[e];for(const e of t.selectedOptions)e.selected=false;for(const e of s.selectedOptions)t.options[e.index].selected=true}for(const t of e.querySelectorAll('input[type="password"]'))t.value="";return new PageSnapshot(this.documentElement,e,this.headSnapshot)}get lang(){return this.documentElement.getAttribute("lang")}get headElement(){return this.headSnapshot.element}get rootLocation(){const e=this.getSetting("root")??"/";return expandURL(e)}get cacheControlValue(){return this.getSetting("cache-control")}get isPreviewable(){return this.cacheControlValue!="no-preview"}get isCacheable(){return this.cacheControlValue!="no-cache"}get isVisitable(){return this.getSetting("visit-control")!="reload"}get prefersViewTransitions(){return this.headSnapshot.getMetaValue("view-transition")==="same-origin"}get shouldMorphPage(){return this.getSetting("refresh-method")==="morph"}get shouldPreserveScrollPosition(){return this.getSetting("refresh-scroll")==="preserve"}getSetting(e){return this.headSnapshot.getMetaValue(`turbo-${e}`)}}class ViewTransitioner{#h=false;#d=Promise.resolve();renderChange(e,t){if(e&&this.viewTransitionsAvailable&&!this.#h){this.#h=true;this.#d=this.#d.then((async()=>{await document.startViewTransition(t).finished}))}else this.#d=this.#d.then(t);return this.#d}get viewTransitionsAvailable(){return document.startViewTransition}}const f={action:"advance",historyChanged:false,visitCachedSnapshot:()=>{},willRender:true,updateHistory:true,shouldCacheSnapshot:true,acceptsStreamResponse:false};const g={visitStart:"visitStart",requestStart:"requestStart",requestEnd:"requestEnd",visitEnd:"visitEnd"};const b={initialized:"initialized",started:"started",canceled:"canceled",failed:"failed",completed:"completed"};const v={networkFailure:0,timeoutFailure:-1,contentTypeMismatch:-2};const S={advance:"forward",restore:"back",replace:"none"};class Visit{identifier=uuid();timingMetrics={};followedRedirect=false;historyChanged=false;scrolled=false;shouldCacheSnapshot=true;acceptsStreamResponse=false;snapshotCached=false;state=b.initialized;viewTransitioner=new ViewTransitioner;constructor(e,t,r,s={}){this.delegate=e;this.location=t;this.restorationIdentifier=r||uuid();const{action:i,historyChanged:n,referrer:o,snapshot:a,snapshotHTML:c,response:l,visitCachedSnapshot:h,willRender:d,updateHistory:u,shouldCacheSnapshot:m,acceptsStreamResponse:p,direction:g}={...f,...s};this.action=i;this.historyChanged=n;this.referrer=o;this.snapshot=a;this.snapshotHTML=c;this.response=l;this.isSamePage=this.delegate.locationWithActionIsSamePage(this.location,this.action);this.isPageRefresh=this.view.isPageRefresh(this);this.visitCachedSnapshot=h;this.willRender=d;this.updateHistory=u;this.scrolled=!d;this.shouldCacheSnapshot=m;this.acceptsStreamResponse=p;this.direction=g||S[i]}get adapter(){return this.delegate.adapter}get view(){return this.delegate.view}get history(){return this.delegate.history}get restorationData(){return this.history.getRestorationDataForIdentifier(this.restorationIdentifier)}get silent(){return this.isSamePage}start(){if(this.state==b.initialized){this.recordTimingMetric(g.visitStart);this.state=b.started;this.adapter.visitStarted(this);this.delegate.visitStarted(this)}}cancel(){if(this.state==b.started){this.request&&this.request.cancel();this.cancelRender();this.state=b.canceled}}complete(){if(this.state==b.started){this.recordTimingMetric(g.visitEnd);this.adapter.visitCompleted(this);this.state=b.completed;this.followRedirect();this.followedRedirect||this.delegate.visitCompleted(this)}}fail(){if(this.state==b.started){this.state=b.failed;this.adapter.visitFailed(this);this.delegate.visitCompleted(this)}}changeHistory(){if(!this.historyChanged&&this.updateHistory){const e=this.location.href===this.referrer?.href?"replace":this.action;const t=getHistoryMethodForAction(e);this.history.update(t,this.location,this.restorationIdentifier);this.historyChanged=true}}issueRequest(){if(this.hasPreloadedResponse())this.simulateRequest();else if(this.shouldIssueRequest()&&!this.request){this.request=new FetchRequest(this,c.get,this.location);this.request.perform()}}simulateRequest(){if(this.response){this.startRequest();this.recordResponse();this.finishRequest()}}startRequest(){this.recordTimingMetric(g.requestStart);this.adapter.visitRequestStarted(this)}recordResponse(e=this.response){this.response=e;if(e){const{statusCode:t}=e;isSuccessful(t)?this.adapter.visitRequestCompleted(this):this.adapter.visitRequestFailedWithStatusCode(this,t)}}finishRequest(){this.recordTimingMetric(g.requestEnd);this.adapter.visitRequestFinished(this)}loadResponse(){if(this.response){const{statusCode:e,responseHTML:t}=this.response;this.render((async()=>{this.shouldCacheSnapshot&&this.cacheSnapshot();this.view.renderPromise&&await this.view.renderPromise;if(isSuccessful(e)&&t!=null){const e=PageSnapshot.fromHTMLString(t);await this.renderPageSnapshot(e,false);this.adapter.visitRendered(this);this.complete()}else{await this.view.renderError(PageSnapshot.fromHTMLString(t),this);this.adapter.visitRendered(this);this.fail()}}))}}getCachedSnapshot(){const e=this.view.getCachedSnapshotForLocation(this.location)||this.getPreloadedSnapshot();if(e&&(!getAnchor(this.location)||e.hasAnchor(getAnchor(this.location)))&&(this.action=="restore"||e.isPreviewable))return e}getPreloadedSnapshot(){if(this.snapshotHTML)return PageSnapshot.fromHTMLString(this.snapshotHTML)}hasCachedSnapshot(){return this.getCachedSnapshot()!=null}loadCachedSnapshot(){const e=this.getCachedSnapshot();if(e){const t=this.shouldIssueRequest();this.render((async()=>{this.cacheSnapshot();if(this.isSamePage||this.isPageRefresh)this.adapter.visitRendered(this);else{this.view.renderPromise&&await this.view.renderPromise;await this.renderPageSnapshot(e,t);this.adapter.visitRendered(this);t||this.complete()}}))}}followRedirect(){if(this.redirectedToLocation&&!this.followedRedirect&&this.response?.redirected){this.adapter.visitProposedToLocation(this.redirectedToLocation,{action:"replace",response:this.response,shouldCacheSnapshot:false,willRender:false});this.followedRedirect=true}}goToSamePageAnchor(){this.isSamePage&&this.render((async()=>{this.cacheSnapshot();this.performScroll();this.changeHistory();this.adapter.visitRendered(this)}))}prepareRequest(e){this.acceptsStreamResponse&&e.acceptResponseType(StreamMessage.contentType)}requestStarted(){this.startRequest()}requestPreventedHandlingResponse(e,t){}async requestSucceededWithResponse(e,t){const r=await t.responseHTML;const{redirected:s,statusCode:i}=t;if(r==void 0)this.recordResponse({statusCode:v.contentTypeMismatch,redirected:s});else{this.redirectedToLocation=t.redirected?t.location:void 0;this.recordResponse({statusCode:i,responseHTML:r,redirected:s})}}async requestFailedWithResponse(e,t){const r=await t.responseHTML;const{redirected:s,statusCode:i}=t;r==void 0?this.recordResponse({statusCode:v.contentTypeMismatch,redirected:s}):this.recordResponse({statusCode:i,responseHTML:r,redirected:s})}requestErrored(e,t){this.recordResponse({statusCode:v.networkFailure,redirected:false})}requestFinished(){this.finishRequest()}performScroll(){if(!this.scrolled&&!this.view.forceReloaded&&!this.view.shouldPreserveScrollPosition(this)){this.action=="restore"?this.scrollToRestoredPosition()||this.scrollToAnchor()||this.view.scrollToTop():this.scrollToAnchor()||this.view.scrollToTop();this.isSamePage&&this.delegate.visitScrolledToSamePageLocation(this.view.lastRenderedLocation,this.location);this.scrolled=true}}scrollToRestoredPosition(){const{scrollPosition:e}=this.restorationData;if(e){this.view.scrollToPosition(e);return true}}scrollToAnchor(){const e=getAnchor(this.location);if(e!=null){this.view.scrollToAnchor(e);return true}}recordTimingMetric(e){this.timingMetrics[e]=(new Date).getTime()}getTimingMetrics(){return{...this.timingMetrics}}getHistoryMethodForAction(e){switch(e){case"replace":return history.replaceState;case"advance":case"restore":return history.pushState}}hasPreloadedResponse(){return typeof this.response=="object"}shouldIssueRequest(){return!this.isSamePage&&(this.action=="restore"?!this.hasCachedSnapshot():this.willRender)}cacheSnapshot(){if(!this.snapshotCached){this.view.cacheSnapshot(this.snapshot).then((e=>e&&this.visitCachedSnapshot(e)));this.snapshotCached=true}}async render(e){this.cancelRender();await new Promise((e=>{this.frame=document.visibilityState==="hidden"?setTimeout((()=>e()),0):requestAnimationFrame((()=>e()))}));await e();delete this.frame}async renderPageSnapshot(e,t){await this.viewTransitioner.renderChange(this.view.shouldTransitionTo(e),(async()=>{await this.view.renderPage(e,t,this.willRender,this);this.performScroll()}))}cancelRender(){if(this.frame){cancelAnimationFrame(this.frame);delete this.frame}}}function isSuccessful(e){return e>=200&&e<300}class BrowserAdapter{progressBar=new ProgressBar;constructor(e){this.session=e}visitProposedToLocation(e,t){locationIsVisitable(e,this.navigator.rootLocation)?this.navigator.startVisit(e,t?.restorationIdentifier||uuid(),t):window.location.href=e.toString()}visitStarted(e){this.location=e.location;e.loadCachedSnapshot();e.issueRequest();e.goToSamePageAnchor()}visitRequestStarted(e){this.progressBar.setValue(0);e.hasCachedSnapshot()||e.action!="restore"?this.showVisitProgressBarAfterDelay():this.showProgressBar()}visitRequestCompleted(e){e.loadResponse()}visitRequestFailedWithStatusCode(e,t){switch(t){case v.networkFailure:case v.timeoutFailure:case v.contentTypeMismatch:return this.reload({reason:"request_failed",context:{statusCode:t}});default:return e.loadResponse()}}visitRequestFinished(e){}visitCompleted(e){this.progressBar.setValue(1);this.hideVisitProgressBar()}pageInvalidated(e){this.reload(e)}visitFailed(e){this.progressBar.setValue(1);this.hideVisitProgressBar()}visitRendered(e){}formSubmissionStarted(e){this.progressBar.setValue(0);this.showFormProgressBarAfterDelay()}formSubmissionFinished(e){this.progressBar.setValue(1);this.hideFormProgressBar()}showVisitProgressBarAfterDelay(){this.visitProgressBarTimeout=window.setTimeout(this.showProgressBar,this.session.progressBarDelay)}hideVisitProgressBar(){this.progressBar.hide();if(this.visitProgressBarTimeout!=null){window.clearTimeout(this.visitProgressBarTimeout);delete this.visitProgressBarTimeout}}showFormProgressBarAfterDelay(){this.formProgressBarTimeout==null&&(this.formProgressBarTimeout=window.setTimeout(this.showProgressBar,this.session.progressBarDelay))}hideFormProgressBar(){this.progressBar.hide();if(this.formProgressBarTimeout!=null){window.clearTimeout(this.formProgressBarTimeout);delete this.formProgressBarTimeout}}showProgressBar=()=>{this.progressBar.show()};reload(e){dispatch("turbo:reload",{detail:e});window.location.href=this.location?.toString()||window.location.href}get navigator(){return this.session.navigator}}class CacheObserver{selector="[data-turbo-temporary]";deprecatedSelector="[data-turbo-cache=false]";started=false;start(){if(!this.started){this.started=true;addEventListener("turbo:before-cache",this.removeTemporaryElements,false)}}stop(){if(this.started){this.started=false;removeEventListener("turbo:before-cache",this.removeTemporaryElements,false)}}removeTemporaryElements=e=>{for(const e of this.temporaryElements)e.remove()};get temporaryElements(){return[...document.querySelectorAll(this.selector),...this.temporaryElementsWithDeprecation]}get temporaryElementsWithDeprecation(){const e=document.querySelectorAll(this.deprecatedSelector);e.length&&console.warn(`The ${this.deprecatedSelector} selector is deprecated and will be removed in a future version. Use ${this.selector} instead.`);return[...e]}}class FrameRedirector{constructor(e,t){this.session=e;this.element=t;this.linkInterceptor=new LinkInterceptor(this,t);this.formSubmitObserver=new FormSubmitObserver(this,t)}start(){this.linkInterceptor.start();this.formSubmitObserver.start()}stop(){this.linkInterceptor.stop();this.formSubmitObserver.stop()}shouldInterceptLinkClick(e,t,r){return this.#u(e)}linkClickIntercepted(e,t,r){const s=this.#m(e);s&&s.delegate.linkClickIntercepted(e,t,r)}willSubmitForm(e,t){return e.closest("turbo-frame")==null&&this.#p(e,t)&&this.#u(e,t)}formSubmitted(e,t){const r=this.#m(e,t);r&&r.delegate.formSubmitted(e,t)}#p(e,t){const r=getAction$1(e,t);const s=this.element.ownerDocument.querySelector('meta[name="turbo-root"]');const i=expandURL(s?.content??"/");return this.#u(e,t)&&locationIsVisitable(r,i)}#u(e,t){const r=e instanceof HTMLFormElement?this.session.submissionIsNavigatable(e,t):this.session.elementIsNavigatable(e);if(r){const r=this.#m(e,t);return!!r&&r!=e.closest("turbo-frame")}return false}#m(e,t){const r=t?.getAttribute("data-turbo-frame")||e.getAttribute("data-turbo-frame");if(r&&r!="_top"){const e=this.element.querySelector(`#${r}:not([disabled])`);if(e instanceof FrameElement)return e}}}class History{location;restorationIdentifier=uuid();restorationData={};started=false;pageLoaded=false;currentIndex=0;constructor(e){this.delegate=e}start(){if(!this.started){addEventListener("popstate",this.onPopState,false);addEventListener("load",this.onPageLoad,false);this.currentIndex=history.state?.turbo?.restorationIndex||0;this.started=true;this.replace(new URL(window.location.href))}}stop(){if(this.started){removeEventListener("popstate",this.onPopState,false);removeEventListener("load",this.onPageLoad,false);this.started=false}}push(e,t){this.update(history.pushState,e,t)}replace(e,t){this.update(history.replaceState,e,t)}update(e,t,r=uuid()){e===history.pushState&&++this.currentIndex;const s={turbo:{restorationIdentifier:r,restorationIndex:this.currentIndex}};e.call(history,s,"",t.href);this.location=t;this.restorationIdentifier=r}getRestorationDataForIdentifier(e){return this.restorationData[e]||{}}updateRestorationData(e){const{restorationIdentifier:t}=this;const r=this.restorationData[t];this.restorationData[t]={...r,...e}}assumeControlOfScrollRestoration(){if(!this.previousScrollRestoration){this.previousScrollRestoration=history.scrollRestoration??"auto";history.scrollRestoration="manual"}}relinquishControlOfScrollRestoration(){if(this.previousScrollRestoration){history.scrollRestoration=this.previousScrollRestoration;delete this.previousScrollRestoration}}onPopState=e=>{if(this.shouldHandlePopState()){const{turbo:t}=e.state||{};if(t){this.location=new URL(window.location.href);const{restorationIdentifier:e,restorationIndex:r}=t;this.restorationIdentifier=e;const s=r>this.currentIndex?"forward":"back";this.delegate.historyPoppedToLocationWithRestorationIdentifierAndDirection(this.location,e,s);this.currentIndex=r}}};onPageLoad=async e=>{await nextMicrotask();this.pageLoaded=true};shouldHandlePopState(){return this.pageIsLoaded()}pageIsLoaded(){return this.pageLoaded||document.readyState=="complete"}}class LinkPrefetchObserver{started=false;#f=null;constructor(e,t){this.delegate=e;this.eventTarget=t}start(){this.started||(this.eventTarget.readyState==="loading"?this.eventTarget.addEventListener("DOMContentLoaded",this.#g,{once:true}):this.#g())}stop(){if(this.started){this.eventTarget.removeEventListener("mouseenter",this.#b,{capture:true,passive:true});this.eventTarget.removeEventListener("mouseleave",this.#v,{capture:true,passive:true});this.eventTarget.removeEventListener("turbo:before-fetch-request",this.#S,true);this.started=false}}#g=()=>{this.eventTarget.addEventListener("mouseenter",this.#b,{capture:true,passive:true});this.eventTarget.addEventListener("mouseleave",this.#v,{capture:true,passive:true});this.eventTarget.addEventListener("turbo:before-fetch-request",this.#S,true);this.started=true};#b=e=>{if(getMetaContent("turbo-prefetch")==="false")return;const t=e.target;const r=t.matches&&t.matches("a[href]:not([target^=_]):not([download])");if(r&&this.#w(t)){const e=t;const r=getLocationForLink(e);if(this.delegate.canPrefetchRequestToLocation(e,r)){this.#f=e;const s=new FetchRequest(this,c.get,r,new URLSearchParams,t);u.setLater(r.toString(),s,this.#E)}}};#v=e=>{e.target===this.#f&&this.#y()};#y=()=>{u.clear();this.#f=null};#S=e=>{if(e.target.tagName!=="FORM"&&e.detail.fetchOptions.method==="GET"){const t=u.get(e.detail.url.toString());t&&(e.detail.fetchRequest=t);u.clear()}};prepareRequest(e){const t=e.target;e.headers["X-Sec-Purpose"]="prefetch";const r=t.closest("turbo-frame");const s=t.getAttribute("data-turbo-frame")||r?.getAttribute("target")||r?.id;s&&s!=="_top"&&(e.headers["Turbo-Frame"]=s)}requestSucceededWithResponse(){}requestStarted(e){}requestErrored(e){}requestFinished(e){}requestPreventedHandlingResponse(e,t){}requestFailedWithResponse(e,t){}get#E(){return Number(getMetaContent("turbo-prefetch-cache-time"))||d}#w(e){const t=e.getAttribute("href");return!!t&&(!unfetchableLink(e)&&(!linkToTheSamePage(e)&&(!linkOptsOut(e)&&(!nonSafeLink(e)&&!eventPrevented(e)))))}}const unfetchableLink=e=>e.origin!==document.location.origin||!["http:","https:"].includes(e.protocol)||e.hasAttribute("target");const linkToTheSamePage=e=>e.pathname+e.search===document.location.pathname+document.location.search||e.href.startsWith("#");const linkOptsOut=e=>{if(e.getAttribute("data-turbo-prefetch")==="false")return true;if(e.getAttribute("data-turbo")==="false")return true;const t=findClosestRecursively(e,"[data-turbo-prefetch]");return!(!t||t.getAttribute("data-turbo-prefetch")!=="false")};const nonSafeLink=e=>{const t=e.getAttribute("data-turbo-method");return!(!t||t.toLowerCase()==="get")||(!!isUJS(e)||(!!e.hasAttribute("data-turbo-confirm")||!!e.hasAttribute("data-turbo-stream")))};const isUJS=e=>e.hasAttribute("data-remote")||e.hasAttribute("data-behavior")||e.hasAttribute("data-confirm")||e.hasAttribute("data-method");const eventPrevented=e=>{const t=dispatch("turbo:before-prefetch",{target:e,cancelable:true});return t.defaultPrevented};class Navigator{constructor(e){this.delegate=e}proposeVisit(e,t={}){this.delegate.allowsVisitingLocationWithAction(e,t.action)&&this.delegate.visitProposedToLocation(e,t)}startVisit(e,t,r={}){this.stop();this.currentVisit=new Visit(this,expandURL(e),t,{referrer:this.location,...r});this.currentVisit.start()}submitForm(e,t){this.stop();this.formSubmission=new FormSubmission(this,e,t,true);this.formSubmission.start()}stop(){if(this.formSubmission){this.formSubmission.stop();delete this.formSubmission}if(this.currentVisit){this.currentVisit.cancel();delete this.currentVisit}}get adapter(){return this.delegate.adapter}get view(){return this.delegate.view}get rootLocation(){return this.view.snapshot.rootLocation}get history(){return this.delegate.history}formSubmissionStarted(e){typeof this.adapter.formSubmissionStarted==="function"&&this.adapter.formSubmissionStarted(e)}async formSubmissionSucceededWithResponse(e,t){if(e==this.formSubmission){const r=await t.responseHTML;if(r){const s=e.isSafe;s||this.view.clearSnapshotCache();const{statusCode:i,redirected:n}=t;const o=this.#R(e,t);const a={action:o,shouldCacheSnapshot:s,response:{statusCode:i,responseHTML:r,redirected:n}};this.proposeVisit(t.location,a)}}}async formSubmissionFailedWithResponse(e,t){const r=await t.responseHTML;if(r){const e=PageSnapshot.fromHTMLString(r);t.serverError?await this.view.renderError(e,this.currentVisit):await this.view.renderPage(e,false,true,this.currentVisit);e.shouldPreserveScrollPosition||this.view.scrollToTop();this.view.clearSnapshotCache()}}formSubmissionErrored(e,t){console.error(t)}formSubmissionFinished(e){typeof this.adapter.formSubmissionFinished==="function"&&this.adapter.formSubmissionFinished(e)}visitStarted(e){this.delegate.visitStarted(e)}visitCompleted(e){this.delegate.visitCompleted(e);delete this.currentVisit}locationWithActionIsSamePage(e,t){const r=getAnchor(e);const s=getAnchor(this.view.lastRenderedLocation);const i=t==="restore"&&typeof r==="undefined";return t!=="replace"&&getRequestURL(e)===getRequestURL(this.view.lastRenderedLocation)&&(i||r!=null&&r!==s)}visitScrolledToSamePageLocation(e,t){this.delegate.visitScrolledToSamePageLocation(e,t)}get location(){return this.history.location}get restorationIdentifier(){return this.history.restorationIdentifier}#R(e,t){const{submitter:r,formElement:s}=e;return getVisitAction(r,s)||this.#A(t)}#A(e){const t=e.redirected&&e.location.href===this.location?.href;return t?"replace":"advance"}}const w={initial:0,loading:1,interactive:2,complete:3};class PageObserver{stage=w.initial;started=false;constructor(e){this.delegate=e}start(){if(!this.started){this.stage==w.initial&&(this.stage=w.loading);document.addEventListener("readystatechange",this.interpretReadyState,false);addEventListener("pagehide",this.pageWillUnload,false);this.started=true}}stop(){if(this.started){document.removeEventListener("readystatechange",this.interpretReadyState,false);removeEventListener("pagehide",this.pageWillUnload,false);this.started=false}}interpretReadyState=()=>{const{readyState:e}=this;e=="interactive"?this.pageIsInteractive():e=="complete"&&this.pageIsComplete()};pageIsInteractive(){if(this.stage==w.loading){this.stage=w.interactive;this.delegate.pageBecameInteractive()}}pageIsComplete(){this.pageIsInteractive();if(this.stage==w.interactive){this.stage=w.complete;this.delegate.pageLoaded()}}pageWillUnload=()=>{this.delegate.pageWillUnload()};get readyState(){return document.readyState}}class ScrollObserver{started=false;constructor(e){this.delegate=e}start(){if(!this.started){addEventListener("scroll",this.onScroll,false);this.onScroll();this.started=true}}stop(){if(this.started){removeEventListener("scroll",this.onScroll,false);this.started=false}}onScroll=()=>{this.updatePosition({x:window.pageXOffset,y:window.pageYOffset})};updatePosition(e){this.delegate.scrollPositionChanged(e)}}class StreamMessageRenderer{render({fragment:e}){Bardo.preservingPermanentElements(this,getPermanentElementMapForFragment(e),(()=>{withAutofocusFromFragment(e,(()=>{withPreservedFocus((()=>{document.documentElement.appendChild(e)}))}))}))}enteringBardo(e,t){t.replaceWith(e.cloneNode(true))}leavingBardo(){}}function getPermanentElementMapForFragment(e){const t=queryPermanentElementsAll(document.documentElement);const r={};for(const s of t){const{id:t}=s;for(const i of e.querySelectorAll("turbo-stream")){const e=getPermanentElementById(i.templateElement.content,t);e&&(r[t]=[s,e])}}return r}async function withAutofocusFromFragment(e,t){const r=`turbo-stream-autofocus-${uuid()}`;const s=e.querySelectorAll("turbo-stream");const i=firstAutofocusableElementInStreams(s);let n=null;if(i){n=i.id?i.id:r;i.id=n}t();await nextRepaint();const o=document.activeElement==null||document.activeElement==document.body;if(o&&n){const e=document.getElementById(n);elementIsFocusable(e)&&e.focus();e&&e.id==r&&e.removeAttribute("id")}}async function withPreservedFocus(e){const[t,r]=await around(e,(()=>document.activeElement));const s=t&&t.id;if(s){const e=document.getElementById(s);elementIsFocusable(e)&&e!=r&&e.focus()}}function firstAutofocusableElementInStreams(e){for(const t of e){const e=queryAutofocusableElement(t.templateElement.content);if(e)return e}return null}class StreamObserver{sources=new Set;#L=false;constructor(e){this.delegate=e}start(){if(!this.#L){this.#L=true;addEventListener("turbo:before-fetch-response",this.inspectFetchResponse,false)}}stop(){if(this.#L){this.#L=false;removeEventListener("turbo:before-fetch-response",this.inspectFetchResponse,false)}}connectStreamSource(e){if(!this.streamSourceIsConnected(e)){this.sources.add(e);e.addEventListener("message",this.receiveMessageEvent,false)}}disconnectStreamSource(e){if(this.streamSourceIsConnected(e)){this.sources.delete(e);e.removeEventListener("message",this.receiveMessageEvent,false)}}streamSourceIsConnected(e){return this.sources.has(e)}inspectFetchResponse=e=>{const t=fetchResponseFromEvent(e);if(t&&fetchResponseIsStream(t)){e.preventDefault();this.receiveMessageResponse(t)}};receiveMessageEvent=e=>{this.#L&&typeof e.data=="string"&&this.receiveMessageHTML(e.data)};async receiveMessageResponse(e){const t=await e.responseHTML;t&&this.receiveMessageHTML(t)}receiveMessageHTML(e){this.delegate.receivedMessageFromStream(StreamMessage.wrap(e))}}function fetchResponseFromEvent(e){const t=e.detail?.fetchResponse;if(t instanceof FetchResponse)return t}function fetchResponseIsStream(e){const t=e.contentType??"";return t.startsWith(StreamMessage.contentType)}class ErrorRenderer extends Renderer{static renderElement(e,t){const{documentElement:r,body:s}=document;r.replaceChild(t,s)}async render(){this.replaceHeadAndBody();this.activateScriptElements()}replaceHeadAndBody(){const{documentElement:e,head:t}=document;e.replaceChild(this.newHead,t);this.renderElement(this.currentElement,this.newElement)}activateScriptElements(){for(const e of this.scriptElements){const t=e.parentNode;if(t){const r=activateScriptElement(e);t.replaceChild(r,e)}}}get newHead(){return this.newSnapshot.headSnapshot.element}get scriptElements(){return document.documentElement.querySelectorAll("script")}}class PageRenderer extends Renderer{static renderElement(e,t){document.body&&t instanceof HTMLBodyElement?document.body.replaceWith(t):document.documentElement.appendChild(t)}get shouldRender(){return this.newSnapshot.isVisitable&&this.trackedElementsAreIdentical}get reloadReason(){return this.newSnapshot.isVisitable?this.trackedElementsAreIdentical?void 0:{reason:"tracked_element_mismatch"}:{reason:"turbo_visit_control_is_reload"}}async prepareToRender(){this.#C();await this.mergeHead()}async render(){this.willRender&&await this.replaceBody()}finishRendering(){super.finishRendering();this.isPreview||this.focusFirstAutofocusableElement()}get currentHeadSnapshot(){return this.currentSnapshot.headSnapshot}get newHeadSnapshot(){return this.newSnapshot.headSnapshot}get newElement(){return this.newSnapshot.element}#C(){const{documentElement:e}=this.currentSnapshot;const{lang:t}=this.newSnapshot;t?e.setAttribute("lang",t):e.removeAttribute("lang")}async mergeHead(){const e=this.mergeProvisionalElements();const t=this.copyNewHeadStylesheetElements();this.copyNewHeadScriptElements();await e;await t;this.willRender&&this.removeUnusedDynamicStylesheetElements()}async replaceBody(){await this.preservingPermanentElements((async()=>{this.activateNewBody();await this.assignNewBody()}))}get trackedElementsAreIdentical(){return this.currentHeadSnapshot.trackedElementSignature==this.newHeadSnapshot.trackedElementSignature}async copyNewHeadStylesheetElements(){const e=[];for(const t of this.newHeadStylesheetElements){e.push(waitForLoad(t));document.head.appendChild(t)}await Promise.all(e)}copyNewHeadScriptElements(){for(const e of this.newHeadScriptElements)document.head.appendChild(activateScriptElement(e))}removeUnusedDynamicStylesheetElements(){for(const e of this.unusedDynamicStylesheetElements)document.head.removeChild(e)}async mergeProvisionalElements(){const e=[...this.newHeadProvisionalElements];for(const t of this.currentHeadProvisionalElements)this.isCurrentElementInElementList(t,e)||document.head.removeChild(t);for(const t of e)document.head.appendChild(t)}isCurrentElementInElementList(e,t){for(const[r,s]of t.entries()){if(e.tagName=="TITLE"){if(s.tagName!="TITLE")continue;if(e.innerHTML==s.innerHTML){t.splice(r,1);return true}}if(s.isEqualNode(e)){t.splice(r,1);return true}}return false}removeCurrentHeadProvisionalElements(){for(const e of this.currentHeadProvisionalElements)document.head.removeChild(e)}copyNewHeadProvisionalElements(){for(const e of this.newHeadProvisionalElements)document.head.appendChild(e)}activateNewBody(){document.adoptNode(this.newElement);this.activateNewBodyScriptElements()}activateNewBodyScriptElements(){for(const e of this.newBodyScriptElements){const t=activateScriptElement(e);e.replaceWith(t)}}async assignNewBody(){await this.renderElement(this.currentElement,this.newElement)}get unusedDynamicStylesheetElements(){return this.oldHeadStylesheetElements.filter((e=>e.getAttribute("data-turbo-track")==="dynamic"))}get oldHeadStylesheetElements(){return this.currentHeadSnapshot.getStylesheetElementsNotInSnapshot(this.newHeadSnapshot)}get newHeadStylesheetElements(){return this.newHeadSnapshot.getStylesheetElementsNotInSnapshot(this.currentHeadSnapshot)}get newHeadScriptElements(){return this.newHeadSnapshot.getScriptElementsNotInSnapshot(this.currentHeadSnapshot)}get currentHeadProvisionalElements(){return this.currentHeadSnapshot.provisionalElements}get newHeadProvisionalElements(){return this.newHeadSnapshot.provisionalElements}get newBodyScriptElements(){return this.newElement.querySelectorAll("script")}}class MorphingPageRenderer extends PageRenderer{static renderElement(e,t){morphElements(e,t,{callbacks:{beforeNodeMorphed:e=>!canRefreshFrame(e)}});for(const t of e.querySelectorAll("turbo-frame"))canRefreshFrame(t)&&t.reload();dispatch("turbo:morph",{detail:{currentElement:e,newElement:t}})}async preservingPermanentElements(e){return await e()}get renderMethod(){return"morph"}get shouldAutofocus(){return false}}function canRefreshFrame(e){return e instanceof FrameElement&&e.src&&e.refresh==="morph"&&!e.closest("[data-turbo-permanent]")}class SnapshotCache{keys=[];snapshots={};constructor(e){this.size=e}has(e){return toCacheKey(e)in this.snapshots}get(e){if(this.has(e)){const t=this.read(e);this.touch(e);return t}}put(e,t){this.write(e,t);this.touch(e);return t}clear(){this.snapshots={}}read(e){return this.snapshots[toCacheKey(e)]}write(e,t){this.snapshots[toCacheKey(e)]=t}touch(e){const t=toCacheKey(e);const r=this.keys.indexOf(t);r>-1&&this.keys.splice(r,1);this.keys.unshift(t);this.trim()}trim(){for(const e of this.keys.splice(this.size))delete this.snapshots[e]}}class PageView extends View{snapshotCache=new SnapshotCache(10);lastRenderedLocation=new URL(location.href);forceReloaded=false;shouldTransitionTo(e){return this.snapshot.prefersViewTransitions&&e.prefersViewTransitions}renderPage(e,t=false,r=true,s){const i=this.isPageRefresh(s)&&this.snapshot.shouldMorphPage;const n=i?MorphingPageRenderer:PageRenderer;const o=new n(this.snapshot,e,t,r);o.shouldRender?s?.changeHistory():this.forceReloaded=true;return this.render(o)}renderError(e,t){t?.changeHistory();const r=new ErrorRenderer(this.snapshot,e,false);return this.render(r)}clearSnapshotCache(){this.snapshotCache.clear()}async cacheSnapshot(e=this.snapshot){if(e.isCacheable){this.delegate.viewWillCacheSnapshot();const{lastRenderedLocation:t}=this;await nextEventLoopTick();const r=e.clone();this.snapshotCache.put(t,r);return r}}getCachedSnapshotForLocation(e){return this.snapshotCache.get(e)}isPageRefresh(e){return!e||this.lastRenderedLocation.pathname===e.location.pathname&&e.action==="replace"}shouldPreserveScrollPosition(e){return this.isPageRefresh(e)&&this.snapshot.shouldPreserveScrollPosition}get snapshot(){return PageSnapshot.fromElement(this.element)}}class Preloader{selector="a[data-turbo-preload]";constructor(e,t){this.delegate=e;this.snapshotCache=t}start(){document.readyState==="loading"?document.addEventListener("DOMContentLoaded",this.#T):this.preloadOnLoadLinksForView(document.body)}stop(){document.removeEventListener("DOMContentLoaded",this.#T)}preloadOnLoadLinksForView(e){for(const t of e.querySelectorAll(this.selector))this.delegate.shouldPreloadLink(t)&&this.preloadURL(t)}async preloadURL(e){const t=new URL(e.href);if(this.snapshotCache.has(t))return;const r=new FetchRequest(this,c.get,t,new URLSearchParams,e);await r.perform()}prepareRequest(e){e.headers["X-Sec-Purpose"]="prefetch"}async requestSucceededWithResponse(e,t){try{const r=await t.responseHTML;const s=PageSnapshot.fromHTMLString(r);this.snapshotCache.put(e.url,s)}catch(e){}}requestStarted(e){}requestErrored(e){}requestFinished(e){}requestPreventedHandlingResponse(e,t){}requestFailedWithResponse(e,t){}#T=()=>{this.preloadOnLoadLinksForView(document.body)}}class Cache{constructor(e){this.session=e}clear(){this.session.clearCache()}resetCacheControl(){this.#P("")}exemptPageFromCache(){this.#P("no-cache")}exemptPageFromPreview(){this.#P("no-preview")}#P(e){setMetaContent("turbo-cache-control",e)}}class Session{navigator=new Navigator(this);history=new History(this);view=new PageView(this,document.documentElement);adapter=new BrowserAdapter(this);pageObserver=new PageObserver(this);cacheObserver=new CacheObserver;linkPrefetchObserver=new LinkPrefetchObserver(this,document);linkClickObserver=new LinkClickObserver(this,window);formSubmitObserver=new FormSubmitObserver(this,document);scrollObserver=new ScrollObserver(this);streamObserver=new StreamObserver(this);formLinkClickObserver=new FormLinkClickObserver(this,document.documentElement);frameRedirector=new FrameRedirector(this,document.documentElement);streamMessageRenderer=new StreamMessageRenderer;cache=new Cache(this);enabled=true;started=false;#F=150;constructor(e){this.recentRequests=e;this.preloader=new Preloader(this,this.view.snapshotCache);this.debouncedRefresh=this.refresh;this.pageRefreshDebouncePeriod=this.pageRefreshDebouncePeriod}start(){if(!this.started){this.pageObserver.start();this.cacheObserver.start();this.linkPrefetchObserver.start();this.formLinkClickObserver.start();this.linkClickObserver.start();this.formSubmitObserver.start();this.scrollObserver.start();this.streamObserver.start();this.frameRedirector.start();this.history.start();this.preloader.start();this.started=true;this.enabled=true}}disable(){this.enabled=false}stop(){if(this.started){this.pageObserver.stop();this.cacheObserver.stop();this.linkPrefetchObserver.stop();this.formLinkClickObserver.stop();this.linkClickObserver.stop();this.formSubmitObserver.stop();this.scrollObserver.stop();this.streamObserver.stop();this.frameRedirector.stop();this.history.stop();this.preloader.stop();this.started=false}}registerAdapter(e){this.adapter=e}visit(e,t={}){const r=t.frame?document.getElementById(t.frame):null;if(r instanceof FrameElement){const s=t.action||getVisitAction(r);r.delegate.proposeVisitIfNavigatedWithAction(r,s);r.src=e.toString()}else this.navigator.proposeVisit(expandURL(e),t)}refresh(e,t){const r=t&&this.recentRequests.has(t);r||this.navigator.currentVisit||this.visit(e,{action:"replace",shouldCacheSnapshot:false})}connectStreamSource(e){this.streamObserver.connectStreamSource(e)}disconnectStreamSource(e){this.streamObserver.disconnectStreamSource(e)}renderStreamMessage(e){this.streamMessageRenderer.render(StreamMessage.wrap(e))}clearCache(){this.view.clearSnapshotCache()}setProgressBarDelay(e){console.warn("Please replace `session.setProgressBarDelay(delay)` with `session.progressBarDelay = delay`. The function is deprecated and will be removed in a future version of Turbo.`");this.progressBarDelay=e}set progressBarDelay(e){n.drive.progressBarDelay=e}get progressBarDelay(){return n.drive.progressBarDelay}set drive(e){n.drive.enabled=e}get drive(){return n.drive.enabled}set formMode(e){n.forms.mode=e}get formMode(){return n.forms.mode}get location(){return this.history.location}get restorationIdentifier(){return this.history.restorationIdentifier}get pageRefreshDebouncePeriod(){return this.#F}set pageRefreshDebouncePeriod(e){this.refresh=debounce(this.debouncedRefresh.bind(this),e);this.#F=e}shouldPreloadLink(e){const t=e.hasAttribute("data-turbo-method");const r=e.hasAttribute("data-turbo-stream");const s=e.getAttribute("data-turbo-frame");const i=s=="_top"?null:document.getElementById(s)||findClosestRecursively(e,"turbo-frame:not([disabled])");if(t||r||i instanceof FrameElement)return false;{const t=new URL(e.href);return this.elementIsNavigatable(e)&&locationIsVisitable(t,this.snapshot.rootLocation)}}historyPoppedToLocationWithRestorationIdentifierAndDirection(e,t,r){this.enabled?this.navigator.startVisit(e,t,{action:"restore",historyChanged:true,direction:r}):this.adapter.pageInvalidated({reason:"turbo_disabled"})}scrollPositionChanged(e){this.history.updateRestorationData({scrollPosition:e})}willSubmitFormLinkToLocation(e,t){return this.elementIsNavigatable(e)&&locationIsVisitable(t,this.snapshot.rootLocation)}submittedFormLinkToLocation(){}canPrefetchRequestToLocation(e,t){return this.elementIsNavigatable(e)&&locationIsVisitable(t,this.snapshot.rootLocation)}willFollowLinkToLocation(e,t,r){return this.elementIsNavigatable(e)&&locationIsVisitable(t,this.snapshot.rootLocation)&&this.applicationAllowsFollowingLinkToLocation(e,t,r)}followedLinkToLocation(e,t){const r=this.getActionForLink(e);const s=e.hasAttribute("data-turbo-stream");this.visit(t.href,{action:r,acceptsStreamResponse:s})}allowsVisitingLocationWithAction(e,t){return this.locationWithActionIsSamePage(e,t)||this.applicationAllowsVisitingLocation(e)}visitProposedToLocation(e,t){extendURLWithDeprecatedProperties(e);this.adapter.visitProposedToLocation(e,t)}visitStarted(e){if(!e.acceptsStreamResponse){markAsBusy(document.documentElement);this.view.markVisitDirection(e.direction)}extendURLWithDeprecatedProperties(e.location);e.silent||this.notifyApplicationAfterVisitingLocation(e.location,e.action)}visitCompleted(e){this.view.unmarkVisitDirection();clearBusyState(document.documentElement);this.notifyApplicationAfterPageLoad(e.getTimingMetrics())}locationWithActionIsSamePage(e,t){return this.navigator.locationWithActionIsSamePage(e,t)}visitScrolledToSamePageLocation(e,t){this.notifyApplicationAfterVisitingSamePageLocation(e,t)}willSubmitForm(e,t){const r=getAction$1(e,t);return this.submissionIsNavigatable(e,t)&&locationIsVisitable(expandURL(r),this.snapshot.rootLocation)}formSubmitted(e,t){this.navigator.submitForm(e,t)}pageBecameInteractive(){this.view.lastRenderedLocation=this.location;this.notifyApplicationAfterPageLoad()}pageLoaded(){this.history.assumeControlOfScrollRestoration()}pageWillUnload(){this.history.relinquishControlOfScrollRestoration()}receivedMessageFromStream(e){this.renderStreamMessage(e)}viewWillCacheSnapshot(){this.navigator.currentVisit?.silent||this.notifyApplicationBeforeCachingSnapshot()}allowsImmediateRender({element:e},t){const r=this.notifyApplicationBeforeRender(e,t);const{defaultPrevented:s,detail:{render:i}}=r;this.view.renderer&&i&&(this.view.renderer.renderElement=i);return!s}viewRenderedSnapshot(e,t,r){this.view.lastRenderedLocation=this.history.location;this.notifyApplicationAfterRender(r)}preloadOnLoadLinksForView(e){this.preloader.preloadOnLoadLinksForView(e)}viewInvalidated(e){this.adapter.pageInvalidated(e)}frameLoaded(e){this.notifyApplicationAfterFrameLoad(e)}frameRendered(e,t){this.notifyApplicationAfterFrameRender(e,t)}applicationAllowsFollowingLinkToLocation(e,t,r){const s=this.notifyApplicationAfterClickingLinkToLocation(e,t,r);return!s.defaultPrevented}applicationAllowsVisitingLocation(e){const t=this.notifyApplicationBeforeVisitingLocation(e);return!t.defaultPrevented}notifyApplicationAfterClickingLinkToLocation(e,t,r){return dispatch("turbo:click",{target:e,detail:{url:t.href,originalEvent:r},cancelable:true})}notifyApplicationBeforeVisitingLocation(e){return dispatch("turbo:before-visit",{detail:{url:e.href},cancelable:true})}notifyApplicationAfterVisitingLocation(e,t){return dispatch("turbo:visit",{detail:{url:e.href,action:t}})}notifyApplicationBeforeCachingSnapshot(){return dispatch("turbo:before-cache")}notifyApplicationBeforeRender(e,t){return dispatch("turbo:before-render",{detail:{newBody:e,...t},cancelable:true})}notifyApplicationAfterRender(e){return dispatch("turbo:render",{detail:{renderMethod:e}})}notifyApplicationAfterPageLoad(e={}){return dispatch("turbo:load",{detail:{url:this.location.href,timing:e}})}notifyApplicationAfterVisitingSamePageLocation(e,t){dispatchEvent(new HashChangeEvent("hashchange",{oldURL:e.toString(),newURL:t.toString()}))}notifyApplicationAfterFrameLoad(e){return dispatch("turbo:frame-load",{target:e})}notifyApplicationAfterFrameRender(e,t){return dispatch("turbo:frame-render",{detail:{fetchResponse:e},target:t,cancelable:true})}submissionIsNavigatable(e,t){if(n.forms.mode=="off")return false;{const r=!t||this.elementIsNavigatable(t);return n.forms.mode=="optin"?r&&e.closest('[data-turbo="true"]')!=null:r&&this.elementIsNavigatable(e)}}elementIsNavigatable(e){const t=findClosestRecursively(e,"[data-turbo]");const r=findClosestRecursively(e,"turbo-frame");return n.drive.enabled||r?!t||t.getAttribute("data-turbo")!="false":!!t&&t.getAttribute("data-turbo")=="true"}getActionForLink(e){return getVisitAction(e)||"advance"}get snapshot(){return this.view.snapshot}}function extendURLWithDeprecatedProperties(e){Object.defineProperties(e,E)}const E={absoluteURL:{get(){return this.toString()}}};const y=new Session(o);const{cache:R,navigator:A}=y;function start(){y.start()}
+    `
+  }
+
+  hiding = false
+  value = 0
+  visible = false
+
+  constructor() {
+    this.stylesheetElement = this.createStylesheetElement();
+    this.progressElement = this.createProgressElement();
+    this.installStylesheetElement();
+    this.setValue(0);
+  }
+
+  show() {
+    if (!this.visible) {
+      this.visible = true;
+      this.installProgressElement();
+      this.startTrickling();
+    }
+  }
+
+  hide() {
+    if (this.visible && !this.hiding) {
+      this.hiding = true;
+      this.fadeProgressElement(() => {
+        this.uninstallProgressElement();
+        this.stopTrickling();
+        this.visible = false;
+        this.hiding = false;
+      });
+    }
+  }
+
+  setValue(value) {
+    this.value = value;
+    this.refresh();
+  }
+
+  // Private
+
+  installStylesheetElement() {
+    document.head.insertBefore(this.stylesheetElement, document.head.firstChild);
+  }
+
+  installProgressElement() {
+    this.progressElement.style.width = "0";
+    this.progressElement.style.opacity = "1";
+    document.documentElement.insertBefore(this.progressElement, document.body);
+    this.refresh();
+  }
+
+  fadeProgressElement(callback) {
+    this.progressElement.style.opacity = "0";
+    setTimeout(callback, ProgressBar.animationDuration * 1.5);
+  }
+
+  uninstallProgressElement() {
+    if (this.progressElement.parentNode) {
+      document.documentElement.removeChild(this.progressElement);
+    }
+  }
+
+  startTrickling() {
+    if (!this.trickleInterval) {
+      this.trickleInterval = window.setInterval(this.trickle, ProgressBar.animationDuration);
+    }
+  }
+
+  stopTrickling() {
+    window.clearInterval(this.trickleInterval);
+    delete this.trickleInterval;
+  }
+
+  trickle = () => {
+    this.setValue(this.value + Math.random() / 100);
+  }
+
+  refresh() {
+    requestAnimationFrame(() => {
+      this.progressElement.style.width = `${10 + this.value * 90}%`;
+    });
+  }
+
+  createStylesheetElement() {
+    const element = document.createElement("style");
+    element.type = "text/css";
+    element.textContent = ProgressBar.defaultCSS;
+    const cspNonce = getCspNonce();
+    if (cspNonce) {
+      element.nonce = cspNonce;
+    }
+    return element
+  }
+
+  createProgressElement() {
+    const element = document.createElement("div");
+    element.className = "turbo-progress-bar";
+    return element
+  }
+}
+
+class HeadSnapshot extends Snapshot {
+  detailsByOuterHTML = this.children
+    .filter((element) => !elementIsNoscript(element))
+    .map((element) => elementWithoutNonce(element))
+    .reduce((result, element) => {
+      const { outerHTML } = element;
+      const details =
+        outerHTML in result
+          ? result[outerHTML]
+          : {
+              type: elementType(element),
+              tracked: elementIsTracked(element),
+              elements: []
+            };
+      return {
+        ...result,
+        [outerHTML]: {
+          ...details,
+          elements: [...details.elements, element]
+        }
+      }
+    }, {})
+
+  get trackedElementSignature() {
+    return Object.keys(this.detailsByOuterHTML)
+      .filter((outerHTML) => this.detailsByOuterHTML[outerHTML].tracked)
+      .join("")
+  }
+
+  getScriptElementsNotInSnapshot(snapshot) {
+    return this.getElementsMatchingTypeNotInSnapshot("script", snapshot)
+  }
+
+  getStylesheetElementsNotInSnapshot(snapshot) {
+    return this.getElementsMatchingTypeNotInSnapshot("stylesheet", snapshot)
+  }
+
+  getElementsMatchingTypeNotInSnapshot(matchedType, snapshot) {
+    return Object.keys(this.detailsByOuterHTML)
+      .filter((outerHTML) => !(outerHTML in snapshot.detailsByOuterHTML))
+      .map((outerHTML) => this.detailsByOuterHTML[outerHTML])
+      .filter(({ type }) => type == matchedType)
+      .map(({ elements: [element] }) => element)
+  }
+
+  get provisionalElements() {
+    return Object.keys(this.detailsByOuterHTML).reduce((result, outerHTML) => {
+      const { type, tracked, elements } = this.detailsByOuterHTML[outerHTML];
+      if (type == null && !tracked) {
+        return [...result, ...elements]
+      } else if (elements.length > 1) {
+        return [...result, ...elements.slice(1)]
+      } else {
+        return result
+      }
+    }, [])
+  }
+
+  getMetaValue(name) {
+    const element = this.findMetaElementByName(name);
+    return element ? element.getAttribute("content") : null
+  }
+
+  findMetaElementByName(name) {
+    return Object.keys(this.detailsByOuterHTML).reduce((result, outerHTML) => {
+      const {
+        elements: [element]
+      } = this.detailsByOuterHTML[outerHTML];
+      return elementIsMetaElementWithName(element, name) ? element : result
+    }, undefined | undefined)
+  }
+}
+
+function elementType(element) {
+  if (elementIsScript(element)) {
+    return "script"
+  } else if (elementIsStylesheet(element)) {
+    return "stylesheet"
+  }
+}
+
+function elementIsTracked(element) {
+  return element.getAttribute("data-turbo-track") == "reload"
+}
+
+function elementIsScript(element) {
+  const tagName = element.localName;
+  return tagName == "script"
+}
+
+function elementIsNoscript(element) {
+  const tagName = element.localName;
+  return tagName == "noscript"
+}
+
+function elementIsStylesheet(element) {
+  const tagName = element.localName;
+  return tagName == "style" || (tagName == "link" && element.getAttribute("rel") == "stylesheet")
+}
+
+function elementIsMetaElementWithName(element, name) {
+  const tagName = element.localName;
+  return tagName == "meta" && element.getAttribute("name") == name
+}
+
+function elementWithoutNonce(element) {
+  if (element.hasAttribute("nonce")) {
+    element.setAttribute("nonce", "");
+  }
+
+  return element
+}
+
+class PageSnapshot extends Snapshot {
+  static fromHTMLString(html = "") {
+    return this.fromDocument(parseHTMLDocument(html))
+  }
+
+  static fromElement(element) {
+    return this.fromDocument(element.ownerDocument)
+  }
+
+  static fromDocument({ documentElement, body, head }) {
+    return new this(documentElement, body, new HeadSnapshot(head))
+  }
+
+  constructor(documentElement, body, headSnapshot) {
+    super(body);
+    this.documentElement = documentElement;
+    this.headSnapshot = headSnapshot;
+  }
+
+  clone() {
+    const clonedElement = this.element.cloneNode(true);
+
+    const selectElements = this.element.querySelectorAll("select");
+    const clonedSelectElements = clonedElement.querySelectorAll("select");
+
+    for (const [index, source] of selectElements.entries()) {
+      const clone = clonedSelectElements[index];
+      for (const option of clone.selectedOptions) option.selected = false;
+      for (const option of source.selectedOptions) clone.options[option.index].selected = true;
+    }
+
+    for (const clonedPasswordInput of clonedElement.querySelectorAll('input[type="password"]')) {
+      clonedPasswordInput.value = "";
+    }
+
+    for (const clonedNoscriptElement of clonedElement.querySelectorAll("noscript")) {
+      clonedNoscriptElement.remove();
+    }
+
+    return new PageSnapshot(this.documentElement, clonedElement, this.headSnapshot)
+  }
+
+  get lang() {
+    return this.documentElement.getAttribute("lang")
+  }
+
+  get dir() {
+    return this.documentElement.getAttribute("dir")
+  }
+
+  get headElement() {
+    return this.headSnapshot.element
+  }
+
+  get rootLocation() {
+    const root = this.getSetting("root") ?? "/";
+    return expandURL(root)
+  }
+
+  get cacheControlValue() {
+    return this.getSetting("cache-control")
+  }
+
+  get isPreviewable() {
+    return this.cacheControlValue != "no-preview"
+  }
+
+  get isCacheable() {
+    return this.cacheControlValue != "no-cache"
+  }
+
+  get isVisitable() {
+    return this.getSetting("visit-control") != "reload"
+  }
+
+  get prefersViewTransitions() {
+    const viewTransitionEnabled = this.getSetting("view-transition") === "true" || this.headSnapshot.getMetaValue("view-transition") === "same-origin";
+    return viewTransitionEnabled && !window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  }
+
+  get refreshMethod() {
+    return this.getSetting("refresh-method")
+  }
+
+  get refreshScroll() {
+    return this.getSetting("refresh-scroll")
+  }
+
+  // Private
+
+  getSetting(name) {
+    return this.headSnapshot.getMetaValue(`turbo-${name}`)
+  }
+}
+
+class ViewTransitioner {
+  #viewTransitionStarted = false
+  #lastOperation = Promise.resolve()
+
+  renderChange(useViewTransition, render) {
+    if (useViewTransition && this.viewTransitionsAvailable && !this.#viewTransitionStarted) {
+      this.#viewTransitionStarted = true;
+      this.#lastOperation = this.#lastOperation.then(async () => {
+        await document.startViewTransition(render).finished;
+      });
+    } else {
+      this.#lastOperation = this.#lastOperation.then(render);
+    }
+
+    return this.#lastOperation
+  }
+
+  get viewTransitionsAvailable() {
+    return document.startViewTransition
+  }
+}
+
+const defaultOptions = {
+  action: "advance",
+  historyChanged: false,
+  visitCachedSnapshot: () => {},
+  willRender: true,
+  updateHistory: true,
+  shouldCacheSnapshot: true,
+  acceptsStreamResponse: false,
+  refresh: {}
+};
+
+const TimingMetric = {
+  visitStart: "visitStart",
+  requestStart: "requestStart",
+  requestEnd: "requestEnd",
+  visitEnd: "visitEnd"
+};
+
+const VisitState = {
+  initialized: "initialized",
+  started: "started",
+  canceled: "canceled",
+  failed: "failed",
+  completed: "completed"
+};
+
+const SystemStatusCode = {
+  networkFailure: 0,
+  timeoutFailure: -1,
+  contentTypeMismatch: -2
+};
+
+const Direction = {
+  advance: "forward",
+  restore: "back",
+  replace: "none"
+};
+
+class Visit {
+  identifier = uuid() // Required by turbo-ios
+  timingMetrics = {}
+
+  followedRedirect = false
+  historyChanged = false
+  scrolled = false
+  shouldCacheSnapshot = true
+  acceptsStreamResponse = false
+  snapshotCached = false
+  state = VisitState.initialized
+  viewTransitioner = new ViewTransitioner()
+
+  constructor(delegate, location, restorationIdentifier, options = {}) {
+    this.delegate = delegate;
+    this.location = location;
+    this.restorationIdentifier = restorationIdentifier || uuid();
+
+    const {
+      action,
+      historyChanged,
+      referrer,
+      snapshot,
+      snapshotHTML,
+      response,
+      visitCachedSnapshot,
+      willRender,
+      updateHistory,
+      shouldCacheSnapshot,
+      acceptsStreamResponse,
+      direction,
+      refresh
+    } = {
+      ...defaultOptions,
+      ...options
+    };
+    this.action = action;
+    this.historyChanged = historyChanged;
+    this.referrer = referrer;
+    this.snapshot = snapshot;
+    this.snapshotHTML = snapshotHTML;
+    this.response = response;
+    this.isPageRefresh = this.view.isPageRefresh(this);
+    this.visitCachedSnapshot = visitCachedSnapshot;
+    this.willRender = willRender;
+    this.updateHistory = updateHistory;
+    this.scrolled = !willRender;
+    this.shouldCacheSnapshot = shouldCacheSnapshot;
+    this.acceptsStreamResponse = acceptsStreamResponse;
+    this.direction = direction || Direction[action];
+    this.refresh = refresh;
+  }
+
+  get adapter() {
+    return this.delegate.adapter
+  }
+
+  get view() {
+    return this.delegate.view
+  }
+
+  get history() {
+    return this.delegate.history
+  }
+
+  get restorationData() {
+    return this.history.getRestorationDataForIdentifier(this.restorationIdentifier)
+  }
+
+  start() {
+    if (this.state == VisitState.initialized) {
+      this.recordTimingMetric(TimingMetric.visitStart);
+      this.state = VisitState.started;
+      this.adapter.visitStarted(this);
+      this.delegate.visitStarted(this);
+    }
+  }
+
+  cancel() {
+    if (this.state == VisitState.started) {
+      if (this.request) {
+        this.request.cancel();
+      }
+      this.cancelRender();
+      this.state = VisitState.canceled;
+    }
+  }
+
+  complete() {
+    if (this.state == VisitState.started) {
+      this.recordTimingMetric(TimingMetric.visitEnd);
+      this.adapter.visitCompleted(this);
+      this.state = VisitState.completed;
+      this.followRedirect();
+
+      if (!this.followedRedirect) {
+        this.delegate.visitCompleted(this);
+      }
+    }
+  }
+
+  fail() {
+    if (this.state == VisitState.started) {
+      this.state = VisitState.failed;
+      this.adapter.visitFailed(this);
+      this.delegate.visitCompleted(this);
+    }
+  }
+
+  changeHistory() {
+    if (!this.historyChanged && this.updateHistory) {
+      const actionForHistory = this.location.href === this.referrer?.href ? "replace" : this.action;
+      const method = getHistoryMethodForAction(actionForHistory);
+      this.history.update(method, this.location, this.restorationIdentifier);
+      this.historyChanged = true;
+    }
+  }
+
+  issueRequest() {
+    if (this.hasPreloadedResponse()) {
+      this.simulateRequest();
+    } else if (this.shouldIssueRequest() && !this.request) {
+      this.request = new FetchRequest(this, FetchMethod.get, this.location);
+      this.request.perform();
+    }
+  }
+
+  simulateRequest() {
+    if (this.response) {
+      this.startRequest();
+      this.recordResponse();
+      this.finishRequest();
+    }
+  }
+
+  startRequest() {
+    this.recordTimingMetric(TimingMetric.requestStart);
+    this.adapter.visitRequestStarted(this);
+  }
+
+  recordResponse(response = this.response) {
+    this.response = response;
+    if (response) {
+      const { statusCode } = response;
+      if (isSuccessful(statusCode)) {
+        this.adapter.visitRequestCompleted(this);
+      } else {
+        this.adapter.visitRequestFailedWithStatusCode(this, statusCode);
+      }
+    }
+  }
+
+  finishRequest() {
+    this.recordTimingMetric(TimingMetric.requestEnd);
+    this.adapter.visitRequestFinished(this);
+  }
+
+  loadResponse() {
+    if (this.response) {
+      const { statusCode, responseHTML } = this.response;
+      this.render(async () => {
+        if (this.shouldCacheSnapshot) this.cacheSnapshot();
+        if (this.view.renderPromise) await this.view.renderPromise;
+
+        if (isSuccessful(statusCode) && responseHTML != null) {
+          const snapshot = PageSnapshot.fromHTMLString(responseHTML);
+          await this.renderPageSnapshot(snapshot, false);
+
+          this.adapter.visitRendered(this);
+          this.complete();
+        } else {
+          await this.view.renderError(PageSnapshot.fromHTMLString(responseHTML), this);
+          this.adapter.visitRendered(this);
+          this.fail();
+        }
+      });
+    }
+  }
+
+  getCachedSnapshot() {
+    const snapshot = this.view.getCachedSnapshotForLocation(this.location) || this.getPreloadedSnapshot();
+
+    if (snapshot && (!getAnchor(this.location) || snapshot.hasAnchor(getAnchor(this.location)))) {
+      if (this.action == "restore" || snapshot.isPreviewable) {
+        return snapshot
+      }
+    }
+  }
+
+  getPreloadedSnapshot() {
+    if (this.snapshotHTML) {
+      return PageSnapshot.fromHTMLString(this.snapshotHTML)
+    }
+  }
+
+  hasCachedSnapshot() {
+    return this.getCachedSnapshot() != null
+  }
+
+  loadCachedSnapshot() {
+    const snapshot = this.getCachedSnapshot();
+    if (snapshot) {
+      const isPreview = this.shouldIssueRequest();
+      this.render(async () => {
+        this.cacheSnapshot();
+        if (this.isPageRefresh) {
+          this.adapter.visitRendered(this);
+        } else {
+          if (this.view.renderPromise) await this.view.renderPromise;
+
+          await this.renderPageSnapshot(snapshot, isPreview);
+
+          this.adapter.visitRendered(this);
+          if (!isPreview) {
+            this.complete();
+          }
+        }
+      });
+    }
+  }
+
+  followRedirect() {
+    if (this.redirectedToLocation && !this.followedRedirect && this.response?.redirected) {
+      this.adapter.visitProposedToLocation(this.redirectedToLocation, {
+        action: "replace",
+        response: this.response,
+        shouldCacheSnapshot: false,
+        willRender: false
+      });
+      this.followedRedirect = true;
+    }
+  }
+
+  // Fetch request delegate
+
+  prepareRequest(request) {
+    if (this.acceptsStreamResponse) {
+      request.acceptResponseType(StreamMessage.contentType);
+    }
+  }
+
+  requestStarted() {
+    this.startRequest();
+  }
+
+  requestPreventedHandlingResponse(_request, _response) {}
+
+  async requestSucceededWithResponse(request, response) {
+    const responseHTML = await response.responseHTML;
+    const { redirected, statusCode } = response;
+    if (responseHTML == undefined) {
+      this.recordResponse({
+        statusCode: SystemStatusCode.contentTypeMismatch,
+        redirected
+      });
+    } else {
+      this.redirectedToLocation = response.redirected ? response.location : undefined;
+      this.recordResponse({ statusCode: statusCode, responseHTML, redirected });
+    }
+  }
+
+  async requestFailedWithResponse(request, response) {
+    const responseHTML = await response.responseHTML;
+    const { redirected, statusCode } = response;
+    if (responseHTML == undefined) {
+      this.recordResponse({
+        statusCode: SystemStatusCode.contentTypeMismatch,
+        redirected
+      });
+    } else {
+      this.recordResponse({ statusCode: statusCode, responseHTML, redirected });
+    }
+  }
+
+  requestErrored(_request, _error) {
+    this.recordResponse({
+      statusCode: SystemStatusCode.networkFailure,
+      redirected: false
+    });
+  }
+
+  requestFinished() {
+    this.finishRequest();
+  }
+
+  // Scrolling
+
+  performScroll() {
+    if (!this.scrolled && !this.view.forceReloaded && !this.view.shouldPreserveScrollPosition(this)) {
+      if (this.action == "restore") {
+        this.scrollToRestoredPosition() || this.scrollToAnchor() || this.view.scrollToTop();
+      } else {
+        this.scrollToAnchor() || this.view.scrollToTop();
+      }
+
+      this.scrolled = true;
+    }
+  }
+
+  scrollToRestoredPosition() {
+    const { scrollPosition } = this.restorationData;
+    if (scrollPosition) {
+      this.view.scrollToPosition(scrollPosition);
+      return true
+    }
+  }
+
+  scrollToAnchor() {
+    const anchor = getAnchor(this.location);
+    if (anchor != null) {
+      this.view.scrollToAnchor(anchor);
+      return true
+    }
+  }
+
+  // Instrumentation
+
+  recordTimingMetric(metric) {
+    this.timingMetrics[metric] = new Date().getTime();
+  }
+
+  getTimingMetrics() {
+    return { ...this.timingMetrics }
+  }
+
+  // Private
+
+  hasPreloadedResponse() {
+    return typeof this.response == "object"
+  }
+
+  shouldIssueRequest() {
+    if (this.action == "restore") {
+      return !this.hasCachedSnapshot()
+    } else {
+      return this.willRender
+    }
+  }
+
+  cacheSnapshot() {
+    if (!this.snapshotCached) {
+      this.view.cacheSnapshot(this.snapshot).then((snapshot) => snapshot && this.visitCachedSnapshot(snapshot));
+      this.snapshotCached = true;
+    }
+  }
+
+  async render(callback) {
+    this.cancelRender();
+    await new Promise((resolve) => {
+      this.frame =
+        document.visibilityState === "hidden" ? setTimeout(() => resolve(), 0) : requestAnimationFrame(() => resolve());
+    });
+    await callback();
+    delete this.frame;
+  }
+
+  async renderPageSnapshot(snapshot, isPreview) {
+    await this.viewTransitioner.renderChange(this.view.shouldTransitionTo(snapshot), async () => {
+      await this.view.renderPage(snapshot, isPreview, this.willRender, this);
+      this.performScroll();
+    });
+  }
+
+  cancelRender() {
+    if (this.frame) {
+      cancelAnimationFrame(this.frame);
+      delete this.frame;
+    }
+  }
+}
+
+function isSuccessful(statusCode) {
+  return statusCode >= 200 && statusCode < 300
+}
+
+class BrowserAdapter {
+  progressBar = new ProgressBar()
+
+  constructor(session) {
+    this.session = session;
+  }
+
+  visitProposedToLocation(location, options) {
+    if (locationIsVisitable(location, this.navigator.rootLocation)) {
+      this.navigator.startVisit(location, options?.restorationIdentifier || uuid(), options);
+    } else {
+      window.location.href = location.toString();
+    }
+  }
+
+  visitStarted(visit) {
+    this.location = visit.location;
+    this.redirectedToLocation = null;
+
+    visit.loadCachedSnapshot();
+    visit.issueRequest();
+  }
+
+  visitRequestStarted(visit) {
+    this.progressBar.setValue(0);
+    if (visit.hasCachedSnapshot() || visit.action != "restore") {
+      this.showVisitProgressBarAfterDelay();
+    } else {
+      this.showProgressBar();
+    }
+  }
+
+  visitRequestCompleted(visit) {
+    visit.loadResponse();
+
+    if (visit.response.redirected) {
+      this.redirectedToLocation = visit.redirectedToLocation;
+    }
+  }
+
+  visitRequestFailedWithStatusCode(visit, statusCode) {
+    switch (statusCode) {
+      case SystemStatusCode.networkFailure:
+      case SystemStatusCode.timeoutFailure:
+      case SystemStatusCode.contentTypeMismatch:
+        return this.reload({
+          reason: "request_failed",
+          context: {
+            statusCode
+          }
+        })
+      default:
+        return visit.loadResponse()
+    }
+  }
+
+  visitRequestFinished(_visit) {}
+
+  visitCompleted(_visit) {
+    this.progressBar.setValue(1);
+    this.hideVisitProgressBar();
+  }
+
+  pageInvalidated(reason) {
+    this.reload(reason);
+  }
+
+  visitFailed(_visit) {
+    this.progressBar.setValue(1);
+    this.hideVisitProgressBar();
+  }
+
+  visitRendered(_visit) {}
+
+  // Link prefetching
+
+  linkPrefetchingIsEnabledForLocation(location) {
+    return true
+  }
+
+  // Form Submission Delegate
+
+  formSubmissionStarted(_formSubmission) {
+    this.progressBar.setValue(0);
+    this.showFormProgressBarAfterDelay();
+  }
+
+  formSubmissionFinished(_formSubmission) {
+    this.progressBar.setValue(1);
+    this.hideFormProgressBar();
+  }
+
+  // Private
+
+  showVisitProgressBarAfterDelay() {
+    this.visitProgressBarTimeout = window.setTimeout(this.showProgressBar, this.session.progressBarDelay);
+  }
+
+  hideVisitProgressBar() {
+    this.progressBar.hide();
+    if (this.visitProgressBarTimeout != null) {
+      window.clearTimeout(this.visitProgressBarTimeout);
+      delete this.visitProgressBarTimeout;
+    }
+  }
+
+  showFormProgressBarAfterDelay() {
+    if (this.formProgressBarTimeout == null) {
+      this.formProgressBarTimeout = window.setTimeout(this.showProgressBar, this.session.progressBarDelay);
+    }
+  }
+
+  hideFormProgressBar() {
+    this.progressBar.hide();
+    if (this.formProgressBarTimeout != null) {
+      window.clearTimeout(this.formProgressBarTimeout);
+      delete this.formProgressBarTimeout;
+    }
+  }
+
+  showProgressBar = () => {
+    this.progressBar.show();
+  }
+
+  reload(reason) {
+    dispatch("turbo:reload", { detail: reason });
+
+    window.location.href = (this.redirectedToLocation || this.location)?.toString() || window.location.href;
+  }
+
+  get navigator() {
+    return this.session.navigator
+  }
+}
+
+class CacheObserver {
+  selector = "[data-turbo-temporary]"
+
+  started = false
+
+  start() {
+    if (!this.started) {
+      this.started = true;
+      addEventListener("turbo:before-cache", this.removeTemporaryElements, false);
+    }
+  }
+
+  stop() {
+    if (this.started) {
+      this.started = false;
+      removeEventListener("turbo:before-cache", this.removeTemporaryElements, false);
+    }
+  }
+
+  removeTemporaryElements = (_event) => {
+    for (const element of this.temporaryElements) {
+      element.remove();
+    }
+  }
+
+  get temporaryElements() {
+    return [...document.querySelectorAll(this.selector)]
+  }
+}
+
+class FrameRedirector {
+  constructor(session, element) {
+    this.session = session;
+    this.element = element;
+    this.linkInterceptor = new LinkInterceptor(this, element);
+    this.formSubmitObserver = new FormSubmitObserver(this, element);
+  }
+
+  start() {
+    this.linkInterceptor.start();
+    this.formSubmitObserver.start();
+  }
+
+  stop() {
+    this.linkInterceptor.stop();
+    this.formSubmitObserver.stop();
+  }
+
+  // Link interceptor delegate
+
+  shouldInterceptLinkClick(element, _location, _event) {
+    return this.#shouldRedirect(element)
+  }
+
+  linkClickIntercepted(element, url, event) {
+    const frame = this.#findFrameElement(element);
+    if (frame) {
+      frame.delegate.linkClickIntercepted(element, url, event);
+    }
+  }
+
+  // Form submit observer delegate
+
+  willSubmitForm(element, submitter) {
+    return (
+      element.closest("turbo-frame") == null &&
+      this.#shouldSubmit(element, submitter) &&
+      this.#shouldRedirect(element, submitter)
+    )
+  }
+
+  formSubmitted(element, submitter) {
+    const frame = this.#findFrameElement(element, submitter);
+    if (frame) {
+      frame.delegate.formSubmitted(element, submitter);
+    }
+  }
+
+  #shouldSubmit(form, submitter) {
+    const action = getAction$1(form, submitter);
+    const meta = this.element.ownerDocument.querySelector(`meta[name="turbo-root"]`);
+    const rootLocation = expandURL(meta?.content ?? "/");
+
+    return this.#shouldRedirect(form, submitter) && locationIsVisitable(action, rootLocation)
+  }
+
+  #shouldRedirect(element, submitter) {
+    const isNavigatable =
+      element instanceof HTMLFormElement
+        ? this.session.submissionIsNavigatable(element, submitter)
+        : this.session.elementIsNavigatable(element);
+
+    if (isNavigatable) {
+      const frame = this.#findFrameElement(element, submitter);
+      return frame ? frame != element.closest("turbo-frame") : false
+    } else {
+      return false
+    }
+  }
+
+  #findFrameElement(element, submitter) {
+    const id = submitter?.getAttribute("data-turbo-frame") || element.getAttribute("data-turbo-frame");
+    if (id && id != "_top") {
+      const frame = this.element.querySelector(`#${id}:not([disabled])`);
+      if (frame instanceof FrameElement) {
+        return frame
+      }
+    }
+  }
+}
+
+class History {
+  location
+  restorationIdentifier = uuid()
+  restorationData = {}
+  started = false
+  currentIndex = 0
+
+  constructor(delegate) {
+    this.delegate = delegate;
+  }
+
+  start() {
+    if (!this.started) {
+      addEventListener("popstate", this.onPopState, false);
+      this.currentIndex = history.state?.turbo?.restorationIndex || 0;
+      this.started = true;
+      this.replace(new URL(window.location.href));
+    }
+  }
+
+  stop() {
+    if (this.started) {
+      removeEventListener("popstate", this.onPopState, false);
+      this.started = false;
+    }
+  }
+
+  push(location, restorationIdentifier) {
+    this.update(history.pushState, location, restorationIdentifier);
+  }
+
+  replace(location, restorationIdentifier) {
+    this.update(history.replaceState, location, restorationIdentifier);
+  }
+
+  update(method, location, restorationIdentifier = uuid()) {
+    if (method === history.pushState) ++this.currentIndex;
+
+    const state = { turbo: { restorationIdentifier, restorationIndex: this.currentIndex } };
+    method.call(history, state, "", location.href);
+    this.location = location;
+    this.restorationIdentifier = restorationIdentifier;
+  }
+
+  // Restoration data
+
+  getRestorationDataForIdentifier(restorationIdentifier) {
+    return this.restorationData[restorationIdentifier] || {}
+  }
+
+  updateRestorationData(additionalData) {
+    const { restorationIdentifier } = this;
+    const restorationData = this.restorationData[restorationIdentifier];
+    this.restorationData[restorationIdentifier] = {
+      ...restorationData,
+      ...additionalData
+    };
+  }
+
+  // Scroll restoration
+
+  assumeControlOfScrollRestoration() {
+    if (!this.previousScrollRestoration) {
+      this.previousScrollRestoration = history.scrollRestoration ?? "auto";
+      history.scrollRestoration = "manual";
+    }
+  }
+
+  relinquishControlOfScrollRestoration() {
+    if (this.previousScrollRestoration) {
+      history.scrollRestoration = this.previousScrollRestoration;
+      delete this.previousScrollRestoration;
+    }
+  }
+
+  // Event handlers
+
+  onPopState = (event) => {
+    const { turbo } = event.state || {};
+    this.location = new URL(window.location.href);
+
+    if (turbo) {
+      const { restorationIdentifier, restorationIndex } = turbo;
+      this.restorationIdentifier = restorationIdentifier;
+      const direction = restorationIndex > this.currentIndex ? "forward" : "back";
+      this.delegate.historyPoppedToLocationWithRestorationIdentifierAndDirection(this.location, restorationIdentifier, direction);
+      this.currentIndex = restorationIndex;
+    } else {
+      this.currentIndex++;
+      this.delegate.historyPoppedWithEmptyState(this.location);
+    }
+  }
+}
+
+class LinkPrefetchObserver {
+  started = false
+  #prefetchedLink = null
+
+  constructor(delegate, eventTarget) {
+    this.delegate = delegate;
+    this.eventTarget = eventTarget;
+  }
+
+  start() {
+    if (this.started) return
+
+    if (this.eventTarget.readyState === "loading") {
+      this.eventTarget.addEventListener("DOMContentLoaded", this.#enable, { once: true });
+    } else {
+      this.#enable();
+    }
+  }
+
+  stop() {
+    if (!this.started) return
+
+    this.eventTarget.removeEventListener("mouseenter", this.#tryToPrefetchRequest, {
+      capture: true,
+      passive: true
+    });
+    this.eventTarget.removeEventListener("mouseleave", this.#cancelRequestIfObsolete, {
+      capture: true,
+      passive: true
+    });
+
+    this.eventTarget.removeEventListener("turbo:before-fetch-request", this.#tryToUsePrefetchedRequest, true);
+    this.started = false;
+  }
+
+  #enable = () => {
+    this.eventTarget.addEventListener("mouseenter", this.#tryToPrefetchRequest, {
+      capture: true,
+      passive: true
+    });
+    this.eventTarget.addEventListener("mouseleave", this.#cancelRequestIfObsolete, {
+      capture: true,
+      passive: true
+    });
+
+    this.eventTarget.addEventListener("turbo:before-fetch-request", this.#tryToUsePrefetchedRequest, true);
+    this.started = true;
+  }
+
+  #tryToPrefetchRequest = (event) => {
+    if (getMetaContent("turbo-prefetch") === "false") return
+
+    const target = event.target;
+    const isLink = target.matches && target.matches("a[href]:not([target^=_]):not([download])");
+
+    if (isLink && this.#isPrefetchable(target)) {
+      const link = target;
+      const location = getLocationForLink(link);
+
+      if (this.delegate.canPrefetchRequestToLocation(link, location)) {
+        this.#prefetchedLink = link;
+
+        const fetchRequest = new FetchRequest(
+          this,
+          FetchMethod.get,
+          location,
+          new URLSearchParams(),
+          target
+        );
+
+        fetchRequest.fetchOptions.priority = "low";
+
+        prefetchCache.putLater(location, fetchRequest, this.#cacheTtl);
+      }
+    }
+  }
+
+  #cancelRequestIfObsolete = (event) => {
+    if (event.target === this.#prefetchedLink) this.#cancelPrefetchRequest();
+  }
+
+  #cancelPrefetchRequest = () => {
+    prefetchCache.clear();
+    this.#prefetchedLink = null;
+  }
+
+  #tryToUsePrefetchedRequest = (event) => {
+    if (event.target.tagName !== "FORM" && event.detail.fetchOptions.method === "GET") {
+      const cached = prefetchCache.get(event.detail.url);
+
+      if (cached) {
+        // User clicked link, use cache response
+        event.detail.fetchRequest = cached;
+      }
+
+      prefetchCache.clear();
+    }
+  }
+
+  prepareRequest(request) {
+    const link = request.target;
+
+    request.headers["X-Sec-Purpose"] = "prefetch";
+
+    const turboFrame = link.closest("turbo-frame");
+    const turboFrameTarget = link.getAttribute("data-turbo-frame") || turboFrame?.getAttribute("target") || turboFrame?.id;
+
+    if (turboFrameTarget && turboFrameTarget !== "_top") {
+      request.headers["Turbo-Frame"] = turboFrameTarget;
+    }
+  }
+
+  // Fetch request interface
+
+  requestSucceededWithResponse() {}
+
+  requestStarted(fetchRequest) {}
+
+  requestErrored(fetchRequest) {}
+
+  requestFinished(fetchRequest) {}
+
+  requestPreventedHandlingResponse(fetchRequest, fetchResponse) {}
+
+  requestFailedWithResponse(fetchRequest, fetchResponse) {}
+
+  get #cacheTtl() {
+    return Number(getMetaContent("turbo-prefetch-cache-time")) || cacheTtl
+  }
+
+  #isPrefetchable(link) {
+    const href = link.getAttribute("href");
+
+    if (!href) return false
+
+    if (unfetchableLink(link)) return false
+    if (linkToTheSamePage(link)) return false
+    if (linkOptsOut(link)) return false
+    if (nonSafeLink(link)) return false
+    if (eventPrevented(link)) return false
+
+    return true
+  }
+}
+
+const unfetchableLink = (link) => {
+  return link.origin !== document.location.origin || !["http:", "https:"].includes(link.protocol) || link.hasAttribute("target")
+};
+
+const linkToTheSamePage = (link) => {
+  return (link.pathname + link.search === document.location.pathname + document.location.search) || link.href.startsWith("#")
+};
+
+const linkOptsOut = (link) => {
+  if (link.getAttribute("data-turbo-prefetch") === "false") return true
+  if (link.getAttribute("data-turbo") === "false") return true
+
+  const turboPrefetchParent = findClosestRecursively(link, "[data-turbo-prefetch]");
+  if (turboPrefetchParent && turboPrefetchParent.getAttribute("data-turbo-prefetch") === "false") return true
+
+  return false
+};
+
+const nonSafeLink = (link) => {
+  const turboMethod = link.getAttribute("data-turbo-method");
+  if (turboMethod && turboMethod.toLowerCase() !== "get") return true
+
+  if (isUJS(link)) return true
+  if (link.hasAttribute("data-turbo-confirm")) return true
+  if (link.hasAttribute("data-turbo-stream")) return true
+
+  return false
+};
+
+const isUJS = (link) => {
+  return link.hasAttribute("data-remote") || link.hasAttribute("data-behavior") || link.hasAttribute("data-confirm") || link.hasAttribute("data-method")
+};
+
+const eventPrevented = (link) => {
+  const event = dispatch("turbo:before-prefetch", { target: link, cancelable: true });
+  return event.defaultPrevented
+};
+
+class Navigator {
+  constructor(delegate) {
+    this.delegate = delegate;
+  }
+
+  proposeVisit(location, options = {}) {
+    if (this.delegate.allowsVisitingLocationWithAction(location, options.action)) {
+      this.delegate.visitProposedToLocation(location, options);
+    }
+  }
+
+  startVisit(locatable, restorationIdentifier, options = {}) {
+    this.stop();
+    this.currentVisit = new Visit(this, expandURL(locatable), restorationIdentifier, {
+      referrer: this.location,
+      ...options
+    });
+    this.currentVisit.start();
+  }
+
+  submitForm(form, submitter) {
+    this.stop();
+    this.formSubmission = new FormSubmission(this, form, submitter, true);
+
+    this.formSubmission.start();
+  }
+
+  stop() {
+    if (this.formSubmission) {
+      this.formSubmission.stop();
+      delete this.formSubmission;
+    }
+
+    if (this.currentVisit) {
+      this.currentVisit.cancel();
+      delete this.currentVisit;
+    }
+  }
+
+  get adapter() {
+    return this.delegate.adapter
+  }
+
+  get view() {
+    return this.delegate.view
+  }
+
+  get rootLocation() {
+    return this.view.snapshot.rootLocation
+  }
+
+  get history() {
+    return this.delegate.history
+  }
+
+  // Form submission delegate
+
+  formSubmissionStarted(formSubmission) {
+    // Not all adapters implement formSubmissionStarted
+    if (typeof this.adapter.formSubmissionStarted === "function") {
+      this.adapter.formSubmissionStarted(formSubmission);
+    }
+  }
+
+  async formSubmissionSucceededWithResponse(formSubmission, fetchResponse) {
+    if (formSubmission == this.formSubmission) {
+      const responseHTML = await fetchResponse.responseHTML;
+      if (responseHTML) {
+        const shouldCacheSnapshot = formSubmission.isSafe;
+        if (!shouldCacheSnapshot) {
+          this.view.clearSnapshotCache();
+        }
+
+        const { statusCode, redirected } = fetchResponse;
+        const action = this.#getActionForFormSubmission(formSubmission, fetchResponse);
+        const visitOptions = {
+          action,
+          shouldCacheSnapshot,
+          response: { statusCode, responseHTML, redirected }
+        };
+        this.proposeVisit(fetchResponse.location, visitOptions);
+      }
+    }
+  }
+
+  async formSubmissionFailedWithResponse(formSubmission, fetchResponse) {
+    const responseHTML = await fetchResponse.responseHTML;
+
+    if (responseHTML) {
+      const snapshot = PageSnapshot.fromHTMLString(responseHTML);
+      if (fetchResponse.serverError) {
+        await this.view.renderError(snapshot, this.currentVisit);
+      } else {
+        await this.view.renderPage(snapshot, false, true, this.currentVisit);
+      }
+      if (snapshot.refreshScroll !== "preserve") {
+        this.view.scrollToTop();
+      }
+      this.view.clearSnapshotCache();
+    }
+  }
+
+  formSubmissionErrored(formSubmission, error) {
+    console.error(error);
+  }
+
+  formSubmissionFinished(formSubmission) {
+    // Not all adapters implement formSubmissionFinished
+    if (typeof this.adapter.formSubmissionFinished === "function") {
+      this.adapter.formSubmissionFinished(formSubmission);
+    }
+  }
+
+  // Link prefetching
+
+  linkPrefetchingIsEnabledForLocation(location) {
+    // Not all adapters implement linkPrefetchingIsEnabledForLocation
+    if (typeof this.adapter.linkPrefetchingIsEnabledForLocation === "function") {
+      return this.adapter.linkPrefetchingIsEnabledForLocation(location)
+    }
+
+    return true
+  }
+
+  // Visit delegate
+
+  visitStarted(visit) {
+    this.delegate.visitStarted(visit);
+  }
+
+  visitCompleted(visit) {
+    this.delegate.visitCompleted(visit);
+    delete this.currentVisit;
+  }
+
+  // Same-page links are no longer handled with a Visit.
+  // This method is still needed for Turbo Native adapters.
+  locationWithActionIsSamePage(location, action) {
+    return false
+  }
+
+  // Visits
+
+  get location() {
+    return this.history.location
+  }
+
+  get restorationIdentifier() {
+    return this.history.restorationIdentifier
+  }
+
+  #getActionForFormSubmission(formSubmission, fetchResponse) {
+    const { submitter, formElement } = formSubmission;
+    return getVisitAction(submitter, formElement) || this.#getDefaultAction(fetchResponse)
+  }
+
+  #getDefaultAction(fetchResponse) {
+    const sameLocationRedirect = fetchResponse.redirected && fetchResponse.location.href === this.location?.href;
+    return sameLocationRedirect ? "replace" : "advance"
+  }
+}
+
+const PageStage = {
+  initial: 0,
+  loading: 1,
+  interactive: 2,
+  complete: 3
+};
+
+class PageObserver {
+  stage = PageStage.initial
+  started = false
+
+  constructor(delegate) {
+    this.delegate = delegate;
+  }
+
+  start() {
+    if (!this.started) {
+      if (this.stage == PageStage.initial) {
+        this.stage = PageStage.loading;
+      }
+      document.addEventListener("readystatechange", this.interpretReadyState, false);
+      addEventListener("pagehide", this.pageWillUnload, false);
+      this.started = true;
+    }
+  }
+
+  stop() {
+    if (this.started) {
+      document.removeEventListener("readystatechange", this.interpretReadyState, false);
+      removeEventListener("pagehide", this.pageWillUnload, false);
+      this.started = false;
+    }
+  }
+
+  interpretReadyState = () => {
+    const { readyState } = this;
+    if (readyState == "interactive") {
+      this.pageIsInteractive();
+    } else if (readyState == "complete") {
+      this.pageIsComplete();
+    }
+  }
+
+  pageIsInteractive() {
+    if (this.stage == PageStage.loading) {
+      this.stage = PageStage.interactive;
+      this.delegate.pageBecameInteractive();
+    }
+  }
+
+  pageIsComplete() {
+    this.pageIsInteractive();
+    if (this.stage == PageStage.interactive) {
+      this.stage = PageStage.complete;
+      this.delegate.pageLoaded();
+    }
+  }
+
+  pageWillUnload = () => {
+    this.delegate.pageWillUnload();
+  }
+
+  get readyState() {
+    return document.readyState
+  }
+}
+
+class ScrollObserver {
+  started = false
+
+  constructor(delegate) {
+    this.delegate = delegate;
+  }
+
+  start() {
+    if (!this.started) {
+      addEventListener("scroll", this.onScroll, false);
+      this.onScroll();
+      this.started = true;
+    }
+  }
+
+  stop() {
+    if (this.started) {
+      removeEventListener("scroll", this.onScroll, false);
+      this.started = false;
+    }
+  }
+
+  onScroll = () => {
+    this.updatePosition({ x: window.pageXOffset, y: window.pageYOffset });
+  }
+
+  // Private
+
+  updatePosition(position) {
+    this.delegate.scrollPositionChanged(position);
+  }
+}
+
+class StreamMessageRenderer {
+  render({ fragment }) {
+    Bardo.preservingPermanentElements(this, getPermanentElementMapForFragment(fragment), () => {
+      withAutofocusFromFragment(fragment, () => {
+        withPreservedFocus(() => {
+          document.documentElement.appendChild(fragment);
+        });
+      });
+    });
+  }
+
+  // Bardo delegate
+
+  enteringBardo(currentPermanentElement, newPermanentElement) {
+    newPermanentElement.replaceWith(currentPermanentElement.cloneNode(true));
+  }
+
+  leavingBardo() {}
+}
+
+function getPermanentElementMapForFragment(fragment) {
+  const permanentElementsInDocument = queryPermanentElementsAll(document.documentElement);
+  const permanentElementMap = {};
+  for (const permanentElementInDocument of permanentElementsInDocument) {
+    const { id } = permanentElementInDocument;
+
+    for (const streamElement of fragment.querySelectorAll("turbo-stream")) {
+      const elementInStream = getPermanentElementById(streamElement.templateElement.content, id);
+
+      if (elementInStream) {
+        permanentElementMap[id] = [permanentElementInDocument, elementInStream];
+      }
+    }
+  }
+
+  return permanentElementMap
+}
+
+async function withAutofocusFromFragment(fragment, callback) {
+  const generatedID = `turbo-stream-autofocus-${uuid()}`;
+  const turboStreams = fragment.querySelectorAll("turbo-stream");
+  const elementWithAutofocus = firstAutofocusableElementInStreams(turboStreams);
+  let willAutofocusId = null;
+
+  if (elementWithAutofocus) {
+    if (elementWithAutofocus.id) {
+      willAutofocusId = elementWithAutofocus.id;
+    } else {
+      willAutofocusId = generatedID;
+    }
+
+    elementWithAutofocus.id = willAutofocusId;
+  }
+
+  callback();
+  await nextRepaint();
+
+  const hasNoActiveElement = document.activeElement == null || document.activeElement == document.body;
+
+  if (hasNoActiveElement && willAutofocusId) {
+    const elementToAutofocus = document.getElementById(willAutofocusId);
+
+    if (elementIsFocusable(elementToAutofocus)) {
+      elementToAutofocus.focus();
+    }
+    if (elementToAutofocus && elementToAutofocus.id == generatedID) {
+      elementToAutofocus.removeAttribute("id");
+    }
+  }
+}
+
+async function withPreservedFocus(callback) {
+  const [activeElementBeforeRender, activeElementAfterRender] = await around(callback, () => document.activeElement);
+
+  const restoreFocusTo = activeElementBeforeRender && activeElementBeforeRender.id;
+
+  if (restoreFocusTo) {
+    const elementToFocus = document.getElementById(restoreFocusTo);
+
+    if (elementIsFocusable(elementToFocus) && elementToFocus != activeElementAfterRender) {
+      elementToFocus.focus();
+    }
+  }
+}
+
+function firstAutofocusableElementInStreams(nodeListOfStreamElements) {
+  for (const streamElement of nodeListOfStreamElements) {
+    const elementWithAutofocus = queryAutofocusableElement(streamElement.templateElement.content);
+
+    if (elementWithAutofocus) return elementWithAutofocus
+  }
+
+  return null
+}
+
+class StreamObserver {
+  sources = new Set()
+  #started = false
+
+  constructor(delegate) {
+    this.delegate = delegate;
+  }
+
+  start() {
+    if (!this.#started) {
+      this.#started = true;
+      addEventListener("turbo:before-fetch-response", this.inspectFetchResponse, false);
+    }
+  }
+
+  stop() {
+    if (this.#started) {
+      this.#started = false;
+      removeEventListener("turbo:before-fetch-response", this.inspectFetchResponse, false);
+    }
+  }
+
+  connectStreamSource(source) {
+    if (!this.streamSourceIsConnected(source)) {
+      this.sources.add(source);
+      source.addEventListener("message", this.receiveMessageEvent, false);
+    }
+  }
+
+  disconnectStreamSource(source) {
+    if (this.streamSourceIsConnected(source)) {
+      this.sources.delete(source);
+      source.removeEventListener("message", this.receiveMessageEvent, false);
+    }
+  }
+
+  streamSourceIsConnected(source) {
+    return this.sources.has(source)
+  }
+
+  inspectFetchResponse = (event) => {
+    const response = fetchResponseFromEvent(event);
+    if (response && fetchResponseIsStream(response)) {
+      event.preventDefault();
+      this.receiveMessageResponse(response);
+    }
+  }
+
+  receiveMessageEvent = (event) => {
+    if (this.#started && typeof event.data == "string") {
+      this.receiveMessageHTML(event.data);
+    }
+  }
+
+  async receiveMessageResponse(response) {
+    const html = await response.responseHTML;
+    if (html) {
+      this.receiveMessageHTML(html);
+    }
+  }
+
+  receiveMessageHTML(html) {
+    this.delegate.receivedMessageFromStream(StreamMessage.wrap(html));
+  }
+}
+
+function fetchResponseFromEvent(event) {
+  const fetchResponse = event.detail?.fetchResponse;
+  if (fetchResponse instanceof FetchResponse) {
+    return fetchResponse
+  }
+}
+
+function fetchResponseIsStream(response) {
+  const contentType = response.contentType ?? "";
+  return contentType.startsWith(StreamMessage.contentType)
+}
+
+class ErrorRenderer extends Renderer {
+  static renderElement(currentElement, newElement) {
+    const { documentElement, body } = document;
+
+    documentElement.replaceChild(newElement, body);
+  }
+
+  async render() {
+    this.replaceHeadAndBody();
+    this.activateScriptElements();
+  }
+
+  replaceHeadAndBody() {
+    const { documentElement, head } = document;
+    documentElement.replaceChild(this.newHead, head);
+    this.renderElement(this.currentElement, this.newElement);
+  }
+
+  activateScriptElements() {
+    for (const replaceableElement of this.scriptElements) {
+      const parentNode = replaceableElement.parentNode;
+      if (parentNode) {
+        const element = activateScriptElement(replaceableElement);
+        parentNode.replaceChild(element, replaceableElement);
+      }
+    }
+  }
+
+  get newHead() {
+    return this.newSnapshot.headSnapshot.element
+  }
+
+  get scriptElements() {
+    return document.documentElement.querySelectorAll("script")
+  }
+}
+
+class PageRenderer extends Renderer {
+  static renderElement(currentElement, newElement) {
+    if (document.body && newElement instanceof HTMLBodyElement) {
+      document.body.replaceWith(newElement);
+    } else {
+      document.documentElement.appendChild(newElement);
+    }
+  }
+
+  get shouldRender() {
+    return this.newSnapshot.isVisitable && this.trackedElementsAreIdentical
+  }
+
+  get reloadReason() {
+    if (!this.newSnapshot.isVisitable) {
+      return {
+        reason: "turbo_visit_control_is_reload"
+      }
+    }
+
+    if (!this.trackedElementsAreIdentical) {
+      return {
+        reason: "tracked_element_mismatch"
+      }
+    }
+  }
+
+  async prepareToRender() {
+    this.#setLanguage();
+    await this.mergeHead();
+  }
+
+  async render() {
+    if (this.willRender) {
+      await this.replaceBody();
+    }
+  }
+
+  finishRendering() {
+    super.finishRendering();
+    if (!this.isPreview) {
+      this.focusFirstAutofocusableElement();
+    }
+  }
+
+  get currentHeadSnapshot() {
+    return this.currentSnapshot.headSnapshot
+  }
+
+  get newHeadSnapshot() {
+    return this.newSnapshot.headSnapshot
+  }
+
+  get newElement() {
+    return this.newSnapshot.element
+  }
+
+  #setLanguage() {
+    const { documentElement } = this.currentSnapshot;
+    const { dir, lang } = this.newSnapshot;
+
+    if (lang) {
+      documentElement.setAttribute("lang", lang);
+    } else {
+      documentElement.removeAttribute("lang");
+    }
+    if (dir) {
+      documentElement.setAttribute("dir", dir);
+    } else {
+      documentElement.removeAttribute("dir");
+    }
+  }
+
+  async mergeHead() {
+    const mergedHeadElements = this.mergeProvisionalElements();
+    const newStylesheetElements = this.copyNewHeadStylesheetElements();
+    this.copyNewHeadScriptElements();
+
+    await mergedHeadElements;
+    await newStylesheetElements;
+
+    if (this.willRender) {
+      this.removeUnusedDynamicStylesheetElements();
+    }
+  }
+
+  async replaceBody() {
+    await this.preservingPermanentElements(async () => {
+      this.activateNewBody();
+      await this.assignNewBody();
+    });
+  }
+
+  get trackedElementsAreIdentical() {
+    return this.currentHeadSnapshot.trackedElementSignature == this.newHeadSnapshot.trackedElementSignature
+  }
+
+  async copyNewHeadStylesheetElements() {
+    const loadingElements = [];
+
+    for (const element of this.newHeadStylesheetElements) {
+      loadingElements.push(waitForLoad(element));
+
+      document.head.appendChild(element);
+    }
+
+    await Promise.all(loadingElements);
+  }
+
+  copyNewHeadScriptElements() {
+    for (const element of this.newHeadScriptElements) {
+      document.head.appendChild(activateScriptElement(element));
+    }
+  }
+
+  removeUnusedDynamicStylesheetElements() {
+    for (const element of this.unusedDynamicStylesheetElements) {
+      document.head.removeChild(element);
+    }
+  }
+
+  async mergeProvisionalElements() {
+    const newHeadElements = [...this.newHeadProvisionalElements];
+
+    for (const element of this.currentHeadProvisionalElements) {
+      if (!this.isCurrentElementInElementList(element, newHeadElements)) {
+        document.head.removeChild(element);
+      }
+    }
+
+    for (const element of newHeadElements) {
+      document.head.appendChild(element);
+    }
+  }
+
+  isCurrentElementInElementList(element, elementList) {
+    for (const [index, newElement] of elementList.entries()) {
+      // if title element...
+      if (element.tagName == "TITLE") {
+        if (newElement.tagName != "TITLE") {
+          continue
+        }
+        if (element.innerHTML == newElement.innerHTML) {
+          elementList.splice(index, 1);
+          return true
+        }
+      }
+
+      // if any other element...
+      if (newElement.isEqualNode(element)) {
+        elementList.splice(index, 1);
+        return true
+      }
+    }
+
+    return false
+  }
+
+  removeCurrentHeadProvisionalElements() {
+    for (const element of this.currentHeadProvisionalElements) {
+      document.head.removeChild(element);
+    }
+  }
+
+  copyNewHeadProvisionalElements() {
+    for (const element of this.newHeadProvisionalElements) {
+      document.head.appendChild(element);
+    }
+  }
+
+  activateNewBody() {
+    document.adoptNode(this.newElement);
+    this.removeNoscriptElements();
+    this.activateNewBodyScriptElements();
+  }
+
+  removeNoscriptElements() {
+    for (const noscriptElement of this.newElement.querySelectorAll("noscript")) {
+      noscriptElement.remove();
+    }
+  }
+
+  activateNewBodyScriptElements() {
+    for (const inertScriptElement of this.newBodyScriptElements) {
+      const activatedScriptElement = activateScriptElement(inertScriptElement);
+      inertScriptElement.replaceWith(activatedScriptElement);
+    }
+  }
+
+  async assignNewBody() {
+    await this.renderElement(this.currentElement, this.newElement);
+  }
+
+  get unusedDynamicStylesheetElements() {
+    return this.oldHeadStylesheetElements.filter((element) => {
+      return element.getAttribute("data-turbo-track") === "dynamic"
+    })
+  }
+
+  get oldHeadStylesheetElements() {
+    return this.currentHeadSnapshot.getStylesheetElementsNotInSnapshot(this.newHeadSnapshot)
+  }
+
+  get newHeadStylesheetElements() {
+    return this.newHeadSnapshot.getStylesheetElementsNotInSnapshot(this.currentHeadSnapshot)
+  }
+
+  get newHeadScriptElements() {
+    return this.newHeadSnapshot.getScriptElementsNotInSnapshot(this.currentHeadSnapshot)
+  }
+
+  get currentHeadProvisionalElements() {
+    return this.currentHeadSnapshot.provisionalElements
+  }
+
+  get newHeadProvisionalElements() {
+    return this.newHeadSnapshot.provisionalElements
+  }
+
+  get newBodyScriptElements() {
+    return this.newElement.querySelectorAll("script")
+  }
+}
+
+class MorphingPageRenderer extends PageRenderer {
+  static renderElement(currentElement, newElement) {
+    morphElements(currentElement, newElement, {
+      callbacks: {
+        beforeNodeMorphed: (node, newNode) => {
+          if (
+            shouldRefreshFrameWithMorphing(node, newNode) &&
+              !closestFrameReloadableWithMorphing(node)
+          ) {
+            node.reload();
+            return false
+          }
+          return true
+        }
+      }
+    });
+
+    dispatch("turbo:morph", { detail: { currentElement, newElement } });
+  }
+
+  async preservingPermanentElements(callback) {
+    return await callback()
+  }
+
+  get renderMethod() {
+    return "morph"
+  }
+
+  get shouldAutofocus() {
+    return false
+  }
+}
+
+class SnapshotCache extends LRUCache {
+  constructor(size) {
+    super(size, toCacheKey);
+  }
+
+  get snapshots() {
+    return this.entries
+  }
+}
+
+class PageView extends View {
+  snapshotCache = new SnapshotCache(10)
+  lastRenderedLocation = new URL(location.href)
+  forceReloaded = false
+
+  shouldTransitionTo(newSnapshot) {
+    return this.snapshot.prefersViewTransitions && newSnapshot.prefersViewTransitions
+  }
+
+  renderPage(snapshot, isPreview = false, willRender = true, visit) {
+    const shouldMorphPage = this.isPageRefresh(visit) && (visit?.refresh?.method || this.snapshot.refreshMethod) === "morph";
+    const rendererClass = shouldMorphPage ? MorphingPageRenderer : PageRenderer;
+
+    const renderer = new rendererClass(this.snapshot, snapshot, isPreview, willRender);
+
+    if (!renderer.shouldRender) {
+      this.forceReloaded = true;
+    } else {
+      visit?.changeHistory();
+    }
+
+    return this.render(renderer)
+  }
+
+  renderError(snapshot, visit) {
+    visit?.changeHistory();
+    const renderer = new ErrorRenderer(this.snapshot, snapshot, false);
+    return this.render(renderer)
+  }
+
+  clearSnapshotCache() {
+    this.snapshotCache.clear();
+  }
+
+  async cacheSnapshot(snapshot = this.snapshot) {
+    if (snapshot.isCacheable) {
+      this.delegate.viewWillCacheSnapshot();
+      const { lastRenderedLocation: location } = this;
+      await nextEventLoopTick();
+      const cachedSnapshot = snapshot.clone();
+      this.snapshotCache.put(location, cachedSnapshot);
+      return cachedSnapshot
+    }
+  }
+
+  getCachedSnapshotForLocation(location) {
+    return this.snapshotCache.get(location)
+  }
+
+  isPageRefresh(visit) {
+    return !visit || (this.lastRenderedLocation.pathname === visit.location.pathname && visit.action === "replace")
+  }
+
+  shouldPreserveScrollPosition(visit) {
+    return this.isPageRefresh(visit) && (visit?.refresh?.scroll || this.snapshot.refreshScroll) === "preserve"
+  }
+
+  get snapshot() {
+    return PageSnapshot.fromElement(this.element)
+  }
+}
+
+class Preloader {
+  selector = "a[data-turbo-preload]"
+
+  constructor(delegate, snapshotCache) {
+    this.delegate = delegate;
+    this.snapshotCache = snapshotCache;
+  }
+
+  start() {
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", this.#preloadAll);
+    } else {
+      this.preloadOnLoadLinksForView(document.body);
+    }
+  }
+
+  stop() {
+    document.removeEventListener("DOMContentLoaded", this.#preloadAll);
+  }
+
+  preloadOnLoadLinksForView(element) {
+    for (const link of element.querySelectorAll(this.selector)) {
+      if (this.delegate.shouldPreloadLink(link)) {
+        this.preloadURL(link);
+      }
+    }
+  }
+
+  async preloadURL(link) {
+    const location = new URL(link.href);
+
+    if (this.snapshotCache.has(location)) {
+      return
+    }
+
+    const fetchRequest = new FetchRequest(this, FetchMethod.get, location, new URLSearchParams(), link);
+    await fetchRequest.perform();
+  }
+
+  // Fetch request delegate
+
+  prepareRequest(fetchRequest) {
+    fetchRequest.headers["X-Sec-Purpose"] = "prefetch";
+  }
+
+  async requestSucceededWithResponse(fetchRequest, fetchResponse) {
+    try {
+      const responseHTML = await fetchResponse.responseHTML;
+      const snapshot = PageSnapshot.fromHTMLString(responseHTML);
+
+      this.snapshotCache.put(fetchRequest.url, snapshot);
+    } catch (_) {
+      // If we cannot preload that is ok!
+    }
+  }
+
+  requestStarted(fetchRequest) {}
+
+  requestErrored(fetchRequest) {}
+
+  requestFinished(fetchRequest) {}
+
+  requestPreventedHandlingResponse(fetchRequest, fetchResponse) {}
+
+  requestFailedWithResponse(fetchRequest, fetchResponse) {}
+
+  #preloadAll = () => {
+    this.preloadOnLoadLinksForView(document.body);
+  }
+}
+
+class Cache {
+  constructor(session) {
+    this.session = session;
+  }
+
+  clear() {
+    this.session.clearCache();
+  }
+
+  resetCacheControl() {
+    this.#setCacheControl("");
+  }
+
+  exemptPageFromCache() {
+    this.#setCacheControl("no-cache");
+  }
+
+  exemptPageFromPreview() {
+    this.#setCacheControl("no-preview");
+  }
+
+  #setCacheControl(value) {
+    setMetaContent("turbo-cache-control", value);
+  }
+}
+
+class Session {
+  navigator = new Navigator(this)
+  history = new History(this)
+  view = new PageView(this, document.documentElement)
+  adapter = new BrowserAdapter(this)
+
+  pageObserver = new PageObserver(this)
+  cacheObserver = new CacheObserver()
+  linkPrefetchObserver = new LinkPrefetchObserver(this, document)
+  linkClickObserver = new LinkClickObserver(this, window)
+  formSubmitObserver = new FormSubmitObserver(this, document)
+  scrollObserver = new ScrollObserver(this)
+  streamObserver = new StreamObserver(this)
+  formLinkClickObserver = new FormLinkClickObserver(this, document.documentElement)
+  frameRedirector = new FrameRedirector(this, document.documentElement)
+  streamMessageRenderer = new StreamMessageRenderer()
+  cache = new Cache(this)
+
+  enabled = true
+  started = false
+  #pageRefreshDebouncePeriod = 150
+
+  constructor(recentRequests) {
+    this.recentRequests = recentRequests;
+    this.preloader = new Preloader(this, this.view.snapshotCache);
+    this.debouncedRefresh = this.refresh;
+    this.pageRefreshDebouncePeriod = this.pageRefreshDebouncePeriod;
+  }
+
+  start() {
+    if (!this.started) {
+      this.pageObserver.start();
+      this.cacheObserver.start();
+      this.linkPrefetchObserver.start();
+      this.formLinkClickObserver.start();
+      this.linkClickObserver.start();
+      this.formSubmitObserver.start();
+      this.scrollObserver.start();
+      this.streamObserver.start();
+      this.frameRedirector.start();
+      this.history.start();
+      this.preloader.start();
+      this.started = true;
+      this.enabled = true;
+    }
+  }
+
+  disable() {
+    this.enabled = false;
+  }
+
+  stop() {
+    if (this.started) {
+      this.pageObserver.stop();
+      this.cacheObserver.stop();
+      this.linkPrefetchObserver.stop();
+      this.formLinkClickObserver.stop();
+      this.linkClickObserver.stop();
+      this.formSubmitObserver.stop();
+      this.scrollObserver.stop();
+      this.streamObserver.stop();
+      this.frameRedirector.stop();
+      this.history.stop();
+      this.preloader.stop();
+      this.started = false;
+    }
+  }
+
+  registerAdapter(adapter) {
+    this.adapter = adapter;
+  }
+
+  visit(location, options = {}) {
+    const frameElement = options.frame ? document.getElementById(options.frame) : null;
+
+    if (frameElement instanceof FrameElement) {
+      const action = options.action || getVisitAction(frameElement);
+
+      frameElement.delegate.proposeVisitIfNavigatedWithAction(frameElement, action);
+      frameElement.src = location.toString();
+    } else {
+      this.navigator.proposeVisit(expandURL(location), options);
+    }
+  }
+
+  refresh(url, options = {}) {
+    options = typeof options === "string" ? { requestId: options } : options;
+
+    const { method, requestId, scroll } = options;
+    const isRecentRequest = requestId && this.recentRequests.has(requestId);
+    const isCurrentUrl = url === document.baseURI;
+    if (!isRecentRequest && !this.navigator.currentVisit && isCurrentUrl) {
+      this.visit(url, { action: "replace", shouldCacheSnapshot: false, refresh: { method, scroll } });
+    }
+  }
+
+  connectStreamSource(source) {
+    this.streamObserver.connectStreamSource(source);
+  }
+
+  disconnectStreamSource(source) {
+    this.streamObserver.disconnectStreamSource(source);
+  }
+
+  renderStreamMessage(message) {
+    this.streamMessageRenderer.render(StreamMessage.wrap(message));
+  }
+
+  clearCache() {
+    this.view.clearSnapshotCache();
+  }
+
+  setProgressBarDelay(delay) {
+    console.warn(
+      "Please replace `session.setProgressBarDelay(delay)` with `session.progressBarDelay = delay`. The function is deprecated and will be removed in a future version of Turbo.`"
+    );
+
+    this.progressBarDelay = delay;
+  }
+
+  set progressBarDelay(delay) {
+    config.drive.progressBarDelay = delay;
+  }
+
+  get progressBarDelay() {
+    return config.drive.progressBarDelay
+  }
+
+  set drive(value) {
+    config.drive.enabled = value;
+  }
+
+  get drive() {
+    return config.drive.enabled
+  }
+
+  set formMode(value) {
+    config.forms.mode = value;
+  }
+
+  get formMode() {
+    return config.forms.mode
+  }
+
+  get location() {
+    return this.history.location
+  }
+
+  get restorationIdentifier() {
+    return this.history.restorationIdentifier
+  }
+
+  get pageRefreshDebouncePeriod() {
+    return this.#pageRefreshDebouncePeriod
+  }
+
+  set pageRefreshDebouncePeriod(value) {
+    this.refresh = debounce(this.debouncedRefresh.bind(this), value);
+    this.#pageRefreshDebouncePeriod = value;
+  }
+
+  // Preloader delegate
+
+  shouldPreloadLink(element) {
+    const isUnsafe = element.hasAttribute("data-turbo-method");
+    const isStream = element.hasAttribute("data-turbo-stream");
+    const frameTarget = element.getAttribute("data-turbo-frame");
+    const frame = frameTarget == "_top" ?
+      null :
+      document.getElementById(frameTarget) || findClosestRecursively(element, "turbo-frame:not([disabled])");
+
+    if (isUnsafe || isStream || frame instanceof FrameElement) {
+      return false
+    } else {
+      const location = new URL(element.href);
+
+      return this.elementIsNavigatable(element) && locationIsVisitable(location, this.snapshot.rootLocation)
+    }
+  }
+
+  // History delegate
+
+  historyPoppedToLocationWithRestorationIdentifierAndDirection(location, restorationIdentifier, direction) {
+    if (this.enabled) {
+      this.navigator.startVisit(location, restorationIdentifier, {
+        action: "restore",
+        historyChanged: true,
+        direction
+      });
+    } else {
+      this.adapter.pageInvalidated({
+        reason: "turbo_disabled"
+      });
+    }
+  }
+
+  historyPoppedWithEmptyState(location) {
+    this.history.replace(location);
+    this.view.lastRenderedLocation = location;
+    this.view.cacheSnapshot();
+  }
+
+  // Scroll observer delegate
+
+  scrollPositionChanged(position) {
+    this.history.updateRestorationData({ scrollPosition: position });
+  }
+
+  // Form click observer delegate
+
+  willSubmitFormLinkToLocation(link, location) {
+    return this.elementIsNavigatable(link) && locationIsVisitable(location, this.snapshot.rootLocation)
+  }
+
+  submittedFormLinkToLocation() {}
+
+  // Link hover observer delegate
+
+  canPrefetchRequestToLocation(link, location) {
+    return (
+      this.elementIsNavigatable(link) &&
+      locationIsVisitable(location, this.snapshot.rootLocation) &&
+      this.navigator.linkPrefetchingIsEnabledForLocation(location)
+    )
+  }
+
+  // Link click observer delegate
+
+  willFollowLinkToLocation(link, location, event) {
+    return (
+      this.elementIsNavigatable(link) &&
+      locationIsVisitable(location, this.snapshot.rootLocation) &&
+      this.applicationAllowsFollowingLinkToLocation(link, location, event)
+    )
+  }
+
+  followedLinkToLocation(link, location) {
+    const action = this.getActionForLink(link);
+    const acceptsStreamResponse = link.hasAttribute("data-turbo-stream");
+
+    this.visit(location.href, { action, acceptsStreamResponse });
+  }
+
+  // Navigator delegate
+
+  allowsVisitingLocationWithAction(location, action) {
+    return this.applicationAllowsVisitingLocation(location)
+  }
+
+  visitProposedToLocation(location, options) {
+    extendURLWithDeprecatedProperties(location);
+    this.adapter.visitProposedToLocation(location, options);
+  }
+
+  // Visit delegate
+
+  visitStarted(visit) {
+    if (!visit.acceptsStreamResponse) {
+      markAsBusy(document.documentElement);
+      this.view.markVisitDirection(visit.direction);
+    }
+    extendURLWithDeprecatedProperties(visit.location);
+    this.notifyApplicationAfterVisitingLocation(visit.location, visit.action);
+  }
+
+  visitCompleted(visit) {
+    this.view.unmarkVisitDirection();
+    clearBusyState(document.documentElement);
+    this.notifyApplicationAfterPageLoad(visit.getTimingMetrics());
+  }
+
+  // Form submit observer delegate
+
+  willSubmitForm(form, submitter) {
+    const action = getAction$1(form, submitter);
+
+    return (
+      this.submissionIsNavigatable(form, submitter) &&
+      locationIsVisitable(expandURL(action), this.snapshot.rootLocation)
+    )
+  }
+
+  formSubmitted(form, submitter) {
+    this.navigator.submitForm(form, submitter);
+  }
+
+  // Page observer delegate
+
+  pageBecameInteractive() {
+    this.view.lastRenderedLocation = this.location;
+    this.notifyApplicationAfterPageLoad();
+  }
+
+  pageLoaded() {
+    this.history.assumeControlOfScrollRestoration();
+  }
+
+  pageWillUnload() {
+    this.history.relinquishControlOfScrollRestoration();
+  }
+
+  // Stream observer delegate
+
+  receivedMessageFromStream(message) {
+    this.renderStreamMessage(message);
+  }
+
+  // Page view delegate
+
+  viewWillCacheSnapshot() {
+    this.notifyApplicationBeforeCachingSnapshot();
+  }
+
+  allowsImmediateRender({ element }, options) {
+    const event = this.notifyApplicationBeforeRender(element, options);
+    const {
+      defaultPrevented,
+      detail: { render }
+    } = event;
+
+    if (this.view.renderer && render) {
+      this.view.renderer.renderElement = render;
+    }
+
+    return !defaultPrevented
+  }
+
+  viewRenderedSnapshot(_snapshot, _isPreview, renderMethod) {
+    this.view.lastRenderedLocation = this.history.location;
+    this.notifyApplicationAfterRender(renderMethod);
+  }
+
+  preloadOnLoadLinksForView(element) {
+    this.preloader.preloadOnLoadLinksForView(element);
+  }
+
+  viewInvalidated(reason) {
+    this.adapter.pageInvalidated(reason);
+  }
+
+  // Frame element
+
+  frameLoaded(frame) {
+    this.notifyApplicationAfterFrameLoad(frame);
+  }
+
+  frameRendered(fetchResponse, frame) {
+    this.notifyApplicationAfterFrameRender(fetchResponse, frame);
+  }
+
+  // Application events
+
+  applicationAllowsFollowingLinkToLocation(link, location, ev) {
+    const event = this.notifyApplicationAfterClickingLinkToLocation(link, location, ev);
+    return !event.defaultPrevented
+  }
+
+  applicationAllowsVisitingLocation(location) {
+    const event = this.notifyApplicationBeforeVisitingLocation(location);
+    return !event.defaultPrevented
+  }
+
+  notifyApplicationAfterClickingLinkToLocation(link, location, event) {
+    return dispatch("turbo:click", {
+      target: link,
+      detail: { url: location.href, originalEvent: event },
+      cancelable: true
+    })
+  }
+
+  notifyApplicationBeforeVisitingLocation(location) {
+    return dispatch("turbo:before-visit", {
+      detail: { url: location.href },
+      cancelable: true
+    })
+  }
+
+  notifyApplicationAfterVisitingLocation(location, action) {
+    return dispatch("turbo:visit", { detail: { url: location.href, action } })
+  }
+
+  notifyApplicationBeforeCachingSnapshot() {
+    return dispatch("turbo:before-cache")
+  }
+
+  notifyApplicationBeforeRender(newBody, options) {
+    return dispatch("turbo:before-render", {
+      detail: { newBody, ...options },
+      cancelable: true
+    })
+  }
+
+  notifyApplicationAfterRender(renderMethod) {
+    return dispatch("turbo:render", { detail: { renderMethod } })
+  }
+
+  notifyApplicationAfterPageLoad(timing = {}) {
+    return dispatch("turbo:load", {
+      detail: { url: this.location.href, timing }
+    })
+  }
+
+  notifyApplicationAfterFrameLoad(frame) {
+    return dispatch("turbo:frame-load", { target: frame })
+  }
+
+  notifyApplicationAfterFrameRender(fetchResponse, frame) {
+    return dispatch("turbo:frame-render", {
+      detail: { fetchResponse },
+      target: frame,
+      cancelable: true
+    })
+  }
+
+  // Helpers
+
+  submissionIsNavigatable(form, submitter) {
+    if (config.forms.mode == "off") {
+      return false
+    } else {
+      const submitterIsNavigatable = submitter ? this.elementIsNavigatable(submitter) : true;
+
+      if (config.forms.mode == "optin") {
+        return submitterIsNavigatable && form.closest('[data-turbo="true"]') != null
+      } else {
+        return submitterIsNavigatable && this.elementIsNavigatable(form)
+      }
+    }
+  }
+
+  elementIsNavigatable(element) {
+    const container = findClosestRecursively(element, "[data-turbo]");
+    const withinFrame = findClosestRecursively(element, "turbo-frame");
+
+    // Check if Drive is enabled on the session or we're within a Frame.
+    if (config.drive.enabled || withinFrame) {
+      // Element is navigatable by default, unless `data-turbo="false"`.
+      if (container) {
+        return container.getAttribute("data-turbo") != "false"
+      } else {
+        return true
+      }
+    } else {
+      // Element isn't navigatable by default, unless `data-turbo="true"`.
+      if (container) {
+        return container.getAttribute("data-turbo") == "true"
+      } else {
+        return false
+      }
+    }
+  }
+
+  // Private
+
+  getActionForLink(link) {
+    return getVisitAction(link) || "advance"
+  }
+
+  get snapshot() {
+    return this.view.snapshot
+  }
+}
+
+// Older versions of the Turbo Native adapters referenced the
+// `Location#absoluteURL` property in their implementations of
+// the `Adapter#visitProposedToLocation()` and `#visitStarted()`
+// methods. The Location class has since been removed in favor
+// of the DOM URL API, and accordingly all Adapter methods now
+// receive URL objects.
+//
+// We alias #absoluteURL to #toString() here to avoid crashing
+// older adapters which do not expect URL objects. We should
+// consider removing this support at some point in the future.
+
+function extendURLWithDeprecatedProperties(url) {
+  Object.defineProperties(url, deprecatedLocationPropertyDescriptors);
+}
+
+const deprecatedLocationPropertyDescriptors = {
+  absoluteURL: {
+    get() {
+      return this.toString()
+    }
+  }
+};
+
+const session = new Session(recentRequests);
+
+// Rename `navigator` to avoid shadowing `window.navigator`
+const { cache, navigator: sessionNavigator } = session;
+
+/**
+ * Starts the main session.
+ * This initialises any necessary observers such as those to monitor
+ * link interactions.
+ */
+function start() {
+  session.start();
+}
+
 /**
  * Registers an adapter for the main session.
  *
  * @param adapter Adapter to register
- */function registerAdapter(e){y.registerAdapter(e)}
+ */
+function registerAdapter(adapter) {
+  session.registerAdapter(adapter);
+}
+
 /**
  * Performs an application visit to the given location.
  *
@@ -115,29 +6221,39 @@
  * navigations to the same page will not result in a new history entry.
  * @param options.snapshotHTML Cached snapshot to render
  * @param options.response Response of the specified location
- */function visit(e,t){y.visit(e,t)}
+ */
+function visit(location, options) {
+  session.visit(location, options);
+}
+
 /**
  * Connects a stream source to the main session.
  *
  * @param source Stream source to connect
- */function connectStreamSource(e){y.connectStreamSource(e)}
+ */
+function connectStreamSource(source) {
+  session.connectStreamSource(source);
+}
+
 /**
  * Disconnects a stream source from the main session.
  *
  * @param source Stream source to disconnect
- */function disconnectStreamSource(e){y.disconnectStreamSource(e)}
+ */
+function disconnectStreamSource(source) {
+  session.disconnectStreamSource(source);
+}
+
 /**
  * Renders a stream message to the main session by appending it to the
  * current document.
  *
  * @param message Message to render
- */function renderStreamMessage(e){y.renderStreamMessage(e)}
-/**
- * Removes all entries from the Turbo Drive page cache.
- * Call this when state has changed on the server that may affect cached pages.
- *
- * @deprecated since version 7.2.0 in favor of `Turbo.cache.clear()`
- */function clearCache(){console.warn("Please replace `Turbo.clearCache()` with `Turbo.cache.clear()`. The top-level function is deprecated and will be removed in a future version of Turbo.`");y.clearCache()}
+ */
+function renderStreamMessage(message) {
+  session.renderStreamMessage(message);
+}
+
 /**
  * Sets the delay after which the progress bar will appear during navigation.
  *
@@ -147,7 +6263,977 @@
  * adapters.
  *
  * @param delay Time to delay in milliseconds
- */function setProgressBarDelay(e){console.warn("Please replace `Turbo.setProgressBarDelay(delay)` with `Turbo.config.drive.progressBarDelay = delay`. The top-level function is deprecated and will be removed in a future version of Turbo.`");n.drive.progressBarDelay=e}function setConfirmMethod(e){console.warn("Please replace `Turbo.setConfirmMethod(confirmMethod)` with `Turbo.config.forms.confirm = confirmMethod`. The top-level function is deprecated and will be removed in a future version of Turbo.`");n.forms.confirm=e}function setFormMode(e){console.warn("Please replace `Turbo.setFormMode(mode)` with `Turbo.config.forms.mode = mode`. The top-level function is deprecated and will be removed in a future version of Turbo.`");n.forms.mode=e}var L=Object.freeze({__proto__:null,navigator:A,session:y,cache:R,PageRenderer:PageRenderer,PageSnapshot:PageSnapshot,FrameRenderer:FrameRenderer,fetch:fetchWithTurboHeaders,config:n,start:start,registerAdapter:registerAdapter,visit:visit,connectStreamSource:connectStreamSource,disconnectStreamSource:disconnectStreamSource,renderStreamMessage:renderStreamMessage,clearCache:clearCache,setProgressBarDelay:setProgressBarDelay,setConfirmMethod:setConfirmMethod,setFormMode:setFormMode});class TurboFrameMissingError extends Error{}class FrameController{fetchResponseLoaded=e=>Promise.resolve();#M=null;#k=()=>{};#I=false;#q=false;#B=new Set;#H=false;action=null;constructor(e){this.element=e;this.view=new FrameView(this,this.element);this.appearanceObserver=new AppearanceObserver(this,this.element);this.formLinkClickObserver=new FormLinkClickObserver(this,this.element);this.linkInterceptor=new LinkInterceptor(this,this.element);this.restorationIdentifier=uuid();this.formSubmitObserver=new FormSubmitObserver(this,this.element)}connect(){if(!this.#I){this.#I=true;this.loadingStyle==t.lazy?this.appearanceObserver.start():this.#N();this.formLinkClickObserver.start();this.linkInterceptor.start();this.formSubmitObserver.start()}}disconnect(){if(this.#I){this.#I=false;this.appearanceObserver.stop();this.formLinkClickObserver.stop();this.linkInterceptor.stop();this.formSubmitObserver.stop()}}disabledChanged(){this.loadingStyle==t.eager&&this.#N()}sourceURLChanged(){if(!this.#O("src")){this.element.isConnected&&(this.complete=false);(this.loadingStyle==t.eager||this.#q)&&this.#N()}}sourceURLReloaded(){const{refresh:e,src:t}=this.element;this.#H=t&&e==="morph";this.element.removeAttribute("complete");this.element.src=null;this.element.src=t;return this.element.loaded}loadingStyleChanged(){if(this.loadingStyle==t.lazy)this.appearanceObserver.start();else{this.appearanceObserver.stop();this.#N()}}async#N(){if(this.enabled&&this.isActive&&!this.complete&&this.sourceURL){this.element.loaded=this.#x(expandURL(this.sourceURL));this.appearanceObserver.stop();await this.element.loaded;this.#q=true}}async loadResponse(e){(e.redirected||e.succeeded&&e.isHTML)&&(this.sourceURL=e.response.url);try{const t=await e.responseHTML;if(t){const r=parseHTMLDocument(t);const s=PageSnapshot.fromDocument(r);s.isVisitable?await this.#V(e,r):await this.#D(e)}}finally{this.#H=false;this.fetchResponseLoaded=()=>Promise.resolve()}}elementAppearedInViewport(e){this.proposeVisitIfNavigatedWithAction(e,getVisitAction(e));this.#N()}willSubmitFormLinkToLocation(e){return this.#W(e)}submittedFormLinkToLocation(e,t,r){const s=this.#m(e);s&&r.setAttribute("data-turbo-frame",s.id)}shouldInterceptLinkClick(e,t,r){return this.#W(e)}linkClickIntercepted(e,t){this.#U(e,t)}willSubmitForm(e,t){return e.closest("turbo-frame")==this.element&&this.#W(e,t)}formSubmitted(e,t){this.formSubmission&&this.formSubmission.stop();this.formSubmission=new FormSubmission(this,e,t);const{fetchRequest:r}=this.formSubmission;this.prepareRequest(r);this.formSubmission.start()}prepareRequest(e){e.headers["Turbo-Frame"]=this.id;this.currentNavigationElement?.hasAttribute("data-turbo-stream")&&e.acceptResponseType(StreamMessage.contentType)}requestStarted(e){markAsBusy(this.element)}requestPreventedHandlingResponse(e,t){this.#k()}async requestSucceededWithResponse(e,t){await this.loadResponse(t);this.#k()}async requestFailedWithResponse(e,t){await this.loadResponse(t);this.#k()}requestErrored(e,t){console.error(t);this.#k()}requestFinished(e){clearBusyState(this.element)}formSubmissionStarted({formElement:e}){markAsBusy(e,this.#m(e))}formSubmissionSucceededWithResponse(e,t){const r=this.#m(e.formElement,e.submitter);r.delegate.proposeVisitIfNavigatedWithAction(r,getVisitAction(e.submitter,e.formElement,r));r.delegate.loadResponse(t);e.isSafe||y.clearCache()}formSubmissionFailedWithResponse(e,t){this.element.delegate.loadResponse(t);y.clearCache()}formSubmissionErrored(e,t){console.error(t)}formSubmissionFinished({formElement:e}){clearBusyState(e,this.#m(e))}allowsImmediateRender({element:e},t){const r=dispatch("turbo:before-frame-render",{target:this.element,detail:{newFrame:e,...t},cancelable:true});const{defaultPrevented:s,detail:{render:i}}=r;this.view.renderer&&i&&(this.view.renderer.renderElement=i);return!s}viewRenderedSnapshot(e,t,r){}preloadOnLoadLinksForView(e){y.preloadOnLoadLinksForView(e)}viewInvalidated(){}willRenderFrame(e,t){this.previousFrameElement=e.cloneNode(true)}visitCachedSnapshot=({element:e})=>{const t=e.querySelector("#"+this.element.id);t&&this.previousFrameElement&&t.replaceChildren(...this.previousFrameElement.children);delete this.previousFrameElement};async#V(e,t){const r=await this.extractForeignFrameElement(t.body);const s=this.#H?MorphingFrameRenderer:FrameRenderer;if(r){const t=new Snapshot(r);const i=new s(this,this.view.snapshot,t,false,false);this.view.renderPromise&&await this.view.renderPromise;this.changeHistory();await this.view.render(i);this.complete=true;y.frameRendered(e,this.element);y.frameLoaded(this.element);await this.fetchResponseLoaded(e)}else this.#z(e)&&this.#j(e)}async#x(e){const t=new FetchRequest(this,c.get,e,new URLSearchParams,this.element);this.#M?.cancel();this.#M=t;return new Promise((e=>{this.#k=()=>{this.#k=()=>{};this.#M=null;e()};t.perform()}))}#U(e,t,r){const s=this.#m(e,r);s.delegate.proposeVisitIfNavigatedWithAction(s,getVisitAction(r,e,s));this.#$(e,(()=>{s.src=t}))}proposeVisitIfNavigatedWithAction(e,t=null){this.action=t;if(this.action){const t=PageSnapshot.fromElement(e).clone();const{visitCachedSnapshot:r}=e.delegate;e.delegate.fetchResponseLoaded=async s=>{if(e.src){const{statusCode:i,redirected:n}=s;const o=await s.responseHTML;const a={statusCode:i,redirected:n,responseHTML:o};const c={response:a,visitCachedSnapshot:r,willRender:false,updateHistory:false,restorationIdentifier:this.restorationIdentifier,snapshot:t};this.action&&(c.action=this.action);y.visit(e.src,c)}}}}changeHistory(){if(this.action){const e=getHistoryMethodForAction(this.action);y.history.update(e,expandURL(this.element.src||""),this.restorationIdentifier)}}async#D(e){console.warn(`The response (${e.statusCode}) from <turbo-frame id="${this.element.id}"> is performing a full page visit due to turbo-visit-control.`);await this.#_(e.response)}#z(e){this.element.setAttribute("complete","");const t=e.response;const visit=async(e,t)=>{e instanceof Response?this.#_(e):y.visit(e,t)};const r=dispatch("turbo:frame-missing",{target:this.element,detail:{response:t,visit:visit},cancelable:true});return!r.defaultPrevented}#j(e){this.view.missing();this.#K(e)}#K(e){const t=`The response (${e.statusCode}) did not contain the expected <turbo-frame id="${this.element.id}"> and will be ignored. To perform a full page visit instead, set turbo-visit-control to reload.`;throw new TurboFrameMissingError(t)}async#_(e){const t=new FetchResponse(e);const r=await t.responseHTML;const{location:s,redirected:i,statusCode:n}=t;return y.visit(s,{response:{redirected:i,statusCode:n,responseHTML:r}})}#m(e,t){const r=getAttribute("data-turbo-frame",t,e)||this.element.getAttribute("target");return getFrameElementById(r)??this.element}async extractForeignFrameElement(e){let t;const r=CSS.escape(this.id);try{t=activateElement(e.querySelector(`turbo-frame#${r}`),this.sourceURL);if(t)return t;t=activateElement(e.querySelector(`turbo-frame[src][recurse~=${r}]`),this.sourceURL);if(t){await t.loaded;return await this.extractForeignFrameElement(t)}}catch(e){console.error(e);return new FrameElement}return null}#X(e,t){const r=getAction$1(e,t);return locationIsVisitable(expandURL(r),this.rootLocation)}#W(e,t){const r=getAttribute("data-turbo-frame",t,e)||this.element.getAttribute("target");if(e instanceof HTMLFormElement&&!this.#X(e,t))return false;if(!this.enabled||r=="_top")return false;if(r){const e=getFrameElementById(r);if(e)return!e.disabled}return!!y.elementIsNavigatable(e)&&!(t&&!y.elementIsNavigatable(t))}get id(){return this.element.id}get enabled(){return!this.element.disabled}get sourceURL(){if(this.element.src)return this.element.src}set sourceURL(e){this.#Q("src",(()=>{this.element.src=e??null}))}get loadingStyle(){return this.element.loading}get isLoading(){return this.formSubmission!==void 0||this.#k()!==void 0}get complete(){return this.element.hasAttribute("complete")}set complete(e){e?this.element.setAttribute("complete",""):this.element.removeAttribute("complete")}get isActive(){return this.element.isActive&&this.#I}get rootLocation(){const e=this.element.ownerDocument.querySelector('meta[name="turbo-root"]');const t=e?.content??"/";return expandURL(t)}#O(e){return this.#B.has(e)}#Q(e,t){this.#B.add(e);t();this.#B.delete(e)}#$(e,t){this.currentNavigationElement=e;t();delete this.currentNavigationElement}}function getFrameElementById(e){if(e!=null){const t=document.getElementById(e);if(t instanceof FrameElement)return t}}function activateElement(e,t){if(e){const r=e.getAttribute("src");if(r!=null&&t!=null&&urlsAreEqual(r,t))throw new Error(`Matching <turbo-frame id="${e.id}"> element has a source URL which references itself`);e.ownerDocument!==document&&(e=document.importNode(e,true));if(e instanceof FrameElement){e.connectedCallback();e.disconnectedCallback();return e}}}const C={after(){this.targetElements.forEach((e=>e.parentElement?.insertBefore(this.templateContent,e.nextSibling)))},append(){this.removeDuplicateTargetChildren();this.targetElements.forEach((e=>e.append(this.templateContent)))},before(){this.targetElements.forEach((e=>e.parentElement?.insertBefore(this.templateContent,e)))},prepend(){this.removeDuplicateTargetChildren();this.targetElements.forEach((e=>e.prepend(this.templateContent)))},remove(){this.targetElements.forEach((e=>e.remove()))},replace(){const e=this.getAttribute("method");this.targetElements.forEach((t=>{e==="morph"?morphElements(t,this.templateContent):t.replaceWith(this.templateContent)}))},update(){const e=this.getAttribute("method");this.targetElements.forEach((t=>{if(e==="morph")morphChildren(t,this.templateContent);else{t.innerHTML="";t.append(this.templateContent)}}))},refresh(){y.refresh(this.baseURI,this.requestId)}};class StreamElement extends HTMLElement{static async renderElement(e){await e.performAction()}async connectedCallback(){try{await this.render()}catch(e){console.error(e)}finally{this.disconnect()}}async render(){return this.renderPromise??=(async()=>{const e=this.beforeRenderEvent;if(this.dispatchEvent(e)){await nextRepaint();await e.detail.render(this)}})()}disconnect(){try{this.remove()}catch{}}removeDuplicateTargetChildren(){this.duplicateChildren.forEach((e=>e.remove()))}get duplicateChildren(){const e=this.targetElements.flatMap((e=>[...e.children])).filter((e=>!!e.id));const t=[...this.templateContent?.children||[]].filter((e=>!!e.id)).map((e=>e.id));return e.filter((e=>t.includes(e.id)))}get performAction(){if(this.action){const e=C[this.action];if(e)return e;this.#Y("unknown action")}this.#Y("action attribute is missing")}get targetElements(){if(this.target)return this.targetElementsById;if(this.targets)return this.targetElementsByQuery;this.#Y("target or targets attribute is missing")}get templateContent(){return this.templateElement.content.cloneNode(true)}get templateElement(){if(this.firstElementChild===null){const e=this.ownerDocument.createElement("template");this.appendChild(e);return e}if(this.firstElementChild instanceof HTMLTemplateElement)return this.firstElementChild;this.#Y("first child element must be a <template> element")}get action(){return this.getAttribute("action")}get target(){return this.getAttribute("target")}get targets(){return this.getAttribute("targets")}get requestId(){return this.getAttribute("request-id")}#Y(e){throw new Error(`${this.description}: ${e}`)}get description(){return(this.outerHTML.match(/<[^>]+>/)??[])[0]??"<turbo-stream>"}get beforeRenderEvent(){return new CustomEvent("turbo:before-stream-render",{bubbles:true,cancelable:true,detail:{newStream:this,render:StreamElement.renderElement}})}get targetElementsById(){const e=this.ownerDocument?.getElementById(this.target);return e!==null?[e]:[]}get targetElementsByQuery(){const e=this.ownerDocument?.querySelectorAll(this.targets);return e.length!==0?Array.prototype.slice.call(e):[]}}class StreamSourceElement extends HTMLElement{streamSource=null;connectedCallback(){this.streamSource=this.src.match(/^ws{1,2}:/)?new WebSocket(this.src):new EventSource(this.src);connectStreamSource(this.streamSource)}disconnectedCallback(){if(this.streamSource){this.streamSource.close();disconnectStreamSource(this.streamSource)}}get src(){return this.getAttribute("src")||""}}FrameElement.delegateConstructor=FrameController;customElements.get("turbo-frame")===void 0&&customElements.define("turbo-frame",FrameElement);customElements.get("turbo-stream")===void 0&&customElements.define("turbo-stream",StreamElement);customElements.get("turbo-stream-source")===void 0&&customElements.define("turbo-stream-source",StreamSourceElement);(()=>{let e=document.currentScript;if(e&&!e.hasAttribute("data-turbo-suppress-warning")){e=e.parentElement;while(e){if(e==document.body)return console.warn(unindent`
+ */
+function setProgressBarDelay(delay) {
+  console.warn(
+    "Please replace `Turbo.setProgressBarDelay(delay)` with `Turbo.config.drive.progressBarDelay = delay`. The top-level function is deprecated and will be removed in a future version of Turbo.`"
+  );
+  config.drive.progressBarDelay = delay;
+}
+
+function setConfirmMethod(confirmMethod) {
+  console.warn(
+    "Please replace `Turbo.setConfirmMethod(confirmMethod)` with `Turbo.config.forms.confirm = confirmMethod`. The top-level function is deprecated and will be removed in a future version of Turbo.`"
+  );
+  config.forms.confirm = confirmMethod;
+}
+
+function setFormMode(mode) {
+  console.warn(
+    "Please replace `Turbo.setFormMode(mode)` with `Turbo.config.forms.mode = mode`. The top-level function is deprecated and will be removed in a future version of Turbo.`"
+  );
+  config.forms.mode = mode;
+}
+
+/**
+ * Morph the state of the currentBody based on the attributes and contents of
+ * the newBody. Morphing body elements may dispatch turbo:morph,
+ * turbo:before-morph-element, turbo:before-morph-attribute, and
+ * turbo:morph-element events.
+ *
+ * @param currentBody HTMLBodyElement destination of morphing changes
+ * @param newBody HTMLBodyElement source of morphing changes
+ */
+function morphBodyElements(currentBody, newBody) {
+  MorphingPageRenderer.renderElement(currentBody, newBody);
+}
+
+/**
+ * Morph the child elements of the currentFrame based on the child elements of
+ * the newFrame. Morphing turbo-frame elements may dispatch turbo:before-frame-morph,
+ * turbo:before-morph-element, turbo:before-morph-attribute, and
+ * turbo:morph-element events.
+ *
+ * @param currentFrame FrameElement destination of morphing children changes
+ * @param newFrame FrameElement source of morphing children changes
+ */
+function morphTurboFrameElements(currentFrame, newFrame) {
+  MorphingFrameRenderer.renderElement(currentFrame, newFrame);
+}
+
+var Turbo = /*#__PURE__*/Object.freeze({
+  __proto__: null,
+  PageRenderer: PageRenderer,
+  PageSnapshot: PageSnapshot,
+  FrameRenderer: FrameRenderer,
+  fetch: fetchWithTurboHeaders,
+  config: config,
+  session: session,
+  cache: cache,
+  navigator: sessionNavigator,
+  start: start,
+  registerAdapter: registerAdapter,
+  visit: visit,
+  connectStreamSource: connectStreamSource,
+  disconnectStreamSource: disconnectStreamSource,
+  renderStreamMessage: renderStreamMessage,
+  setProgressBarDelay: setProgressBarDelay,
+  setConfirmMethod: setConfirmMethod,
+  setFormMode: setFormMode,
+  morphBodyElements: morphBodyElements,
+  morphTurboFrameElements: morphTurboFrameElements,
+  morphChildren: morphChildren,
+  morphElements: morphElements
+});
+
+class TurboFrameMissingError extends Error {}
+
+class FrameController {
+  fetchResponseLoaded = (_fetchResponse) => Promise.resolve()
+  #currentFetchRequest = null
+  #resolveVisitPromise = () => {}
+  #connected = false
+  #hasBeenLoaded = false
+  #ignoredAttributes = new Set()
+  #shouldMorphFrame = false
+  action = null
+
+  constructor(element) {
+    this.element = element;
+    this.view = new FrameView(this, this.element);
+    this.appearanceObserver = new AppearanceObserver(this, this.element);
+    this.formLinkClickObserver = new FormLinkClickObserver(this, this.element);
+    this.linkInterceptor = new LinkInterceptor(this, this.element);
+    this.restorationIdentifier = uuid();
+    this.formSubmitObserver = new FormSubmitObserver(this, this.element);
+  }
+
+  // Frame delegate
+
+  connect() {
+    if (!this.#connected) {
+      this.#connected = true;
+      if (this.loadingStyle == FrameLoadingStyle.lazy) {
+        this.appearanceObserver.start();
+      } else {
+        this.#loadSourceURL();
+      }
+      this.formLinkClickObserver.start();
+      this.linkInterceptor.start();
+      this.formSubmitObserver.start();
+    }
+  }
+
+  disconnect() {
+    if (this.#connected) {
+      this.#connected = false;
+      this.appearanceObserver.stop();
+      this.formLinkClickObserver.stop();
+      this.linkInterceptor.stop();
+      this.formSubmitObserver.stop();
+
+      if (!this.element.hasAttribute("recurse")) {
+        this.#currentFetchRequest?.cancel();
+      }
+    }
+  }
+
+  disabledChanged() {
+    if (this.disabled) {
+      this.#currentFetchRequest?.cancel();
+    } else if (this.loadingStyle == FrameLoadingStyle.eager) {
+      this.#loadSourceURL();
+    }
+  }
+
+  sourceURLChanged() {
+    if (this.#isIgnoringChangesTo("src")) return
+
+    if (!this.sourceURL) {
+      this.#currentFetchRequest?.cancel();
+    }
+
+    if (this.element.isConnected) {
+      this.complete = false;
+    }
+
+    if (this.loadingStyle == FrameLoadingStyle.eager || this.#hasBeenLoaded) {
+      this.#loadSourceURL();
+    }
+  }
+
+  sourceURLReloaded() {
+    const { refresh, src } = this.element;
+
+    this.#shouldMorphFrame = src && refresh === "morph";
+
+    this.element.removeAttribute("complete");
+    this.element.src = null;
+    this.element.src = src;
+    return this.element.loaded
+  }
+
+  loadingStyleChanged() {
+    if (this.loadingStyle == FrameLoadingStyle.lazy) {
+      this.appearanceObserver.start();
+    } else {
+      this.appearanceObserver.stop();
+      this.#loadSourceURL();
+    }
+  }
+
+  async #loadSourceURL() {
+    if (this.enabled && this.isActive && !this.complete && this.sourceURL) {
+      this.element.loaded = this.#visit(expandURL(this.sourceURL));
+      this.appearanceObserver.stop();
+      await this.element.loaded;
+      this.#hasBeenLoaded = true;
+    }
+  }
+
+  async loadResponse(fetchResponse) {
+    if (fetchResponse.redirected || (fetchResponse.succeeded && fetchResponse.isHTML)) {
+      this.sourceURL = fetchResponse.response.url;
+    }
+
+    try {
+      const html = await fetchResponse.responseHTML;
+      if (html) {
+        const document = parseHTMLDocument(html);
+        const pageSnapshot = PageSnapshot.fromDocument(document);
+
+        if (pageSnapshot.isVisitable) {
+          await this.#loadFrameResponse(fetchResponse, document);
+        } else {
+          await this.#handleUnvisitableFrameResponse(fetchResponse);
+        }
+      }
+    } finally {
+      this.#shouldMorphFrame = false;
+      this.fetchResponseLoaded = () => Promise.resolve();
+    }
+  }
+
+  // Appearance observer delegate
+
+  elementAppearedInViewport(element) {
+    this.proposeVisitIfNavigatedWithAction(element, getVisitAction(element));
+    this.#loadSourceURL();
+  }
+
+  // Form link click observer delegate
+
+  willSubmitFormLinkToLocation(link) {
+    return this.#shouldInterceptNavigation(link)
+  }
+
+  submittedFormLinkToLocation(link, _location, form) {
+    const frame = this.#findFrameElement(link);
+    if (frame) form.setAttribute("data-turbo-frame", frame.id);
+  }
+
+  // Link interceptor delegate
+
+  shouldInterceptLinkClick(element, _location, _event) {
+    return this.#shouldInterceptNavigation(element)
+  }
+
+  linkClickIntercepted(element, location) {
+    this.#navigateFrame(element, location);
+  }
+
+  // Form submit observer delegate
+
+  willSubmitForm(element, submitter) {
+    return element.closest("turbo-frame") == this.element && this.#shouldInterceptNavigation(element, submitter)
+  }
+
+  formSubmitted(element, submitter) {
+    if (this.formSubmission) {
+      this.formSubmission.stop();
+    }
+
+    this.formSubmission = new FormSubmission(this, element, submitter);
+
+    const { fetchRequest } = this.formSubmission;
+    const frame = this.#findFrameElement(element, submitter);
+
+    this.prepareRequest(fetchRequest, frame);
+    this.formSubmission.start();
+  }
+
+  // Fetch request delegate
+
+  prepareRequest(request, frame = this) {
+    request.headers["Turbo-Frame"] = frame.id;
+
+    if (this.currentNavigationElement?.hasAttribute("data-turbo-stream")) {
+      request.acceptResponseType(StreamMessage.contentType);
+    }
+  }
+
+  requestStarted(_request) {
+    markAsBusy(this.element);
+  }
+
+  requestPreventedHandlingResponse(_request, _response) {
+    this.#resolveVisitPromise();
+  }
+
+  async requestSucceededWithResponse(request, response) {
+    await this.loadResponse(response);
+    this.#resolveVisitPromise();
+  }
+
+  async requestFailedWithResponse(request, response) {
+    await this.loadResponse(response);
+    this.#resolveVisitPromise();
+  }
+
+  requestErrored(request, error) {
+    console.error(error);
+    this.#resolveVisitPromise();
+  }
+
+  requestFinished(_request) {
+    clearBusyState(this.element);
+  }
+
+  // Form submission delegate
+
+  formSubmissionStarted({ formElement }) {
+    markAsBusy(formElement, this.#findFrameElement(formElement));
+  }
+
+  formSubmissionSucceededWithResponse(formSubmission, response) {
+    const frame = this.#findFrameElement(formSubmission.formElement, formSubmission.submitter);
+
+    frame.delegate.proposeVisitIfNavigatedWithAction(frame, getVisitAction(formSubmission.submitter, formSubmission.formElement, frame));
+    frame.delegate.loadResponse(response);
+
+    if (!formSubmission.isSafe) {
+      session.clearCache();
+    }
+  }
+
+  formSubmissionFailedWithResponse(formSubmission, fetchResponse) {
+    this.element.delegate.loadResponse(fetchResponse);
+    session.clearCache();
+  }
+
+  formSubmissionErrored(formSubmission, error) {
+    console.error(error);
+  }
+
+  formSubmissionFinished({ formElement }) {
+    clearBusyState(formElement, this.#findFrameElement(formElement));
+  }
+
+  // View delegate
+
+  allowsImmediateRender({ element: newFrame }, options) {
+    const event = dispatch("turbo:before-frame-render", {
+      target: this.element,
+      detail: { newFrame, ...options },
+      cancelable: true
+    });
+
+    const {
+      defaultPrevented,
+      detail: { render }
+    } = event;
+
+    if (this.view.renderer && render) {
+      this.view.renderer.renderElement = render;
+    }
+
+    return !defaultPrevented
+  }
+
+  viewRenderedSnapshot(_snapshot, _isPreview, _renderMethod) {}
+
+  preloadOnLoadLinksForView(element) {
+    session.preloadOnLoadLinksForView(element);
+  }
+
+  viewInvalidated() {}
+
+  // Frame renderer delegate
+
+  willRenderFrame(currentElement, _newElement) {
+    this.previousFrameElement = currentElement.cloneNode(true);
+  }
+
+  visitCachedSnapshot = ({ element }) => {
+    const frame = element.querySelector("#" + this.element.id);
+
+    if (frame && this.previousFrameElement) {
+      frame.replaceChildren(...this.previousFrameElement.children);
+    }
+
+    delete this.previousFrameElement;
+  }
+
+  // Private
+
+  async #loadFrameResponse(fetchResponse, document) {
+    const newFrameElement = await this.extractForeignFrameElement(document.body);
+    const rendererClass = this.#shouldMorphFrame ? MorphingFrameRenderer : FrameRenderer;
+
+    if (newFrameElement) {
+      const snapshot = new Snapshot(newFrameElement);
+      const renderer = new rendererClass(this, this.view.snapshot, snapshot, false, false);
+      if (this.view.renderPromise) await this.view.renderPromise;
+      this.changeHistory();
+
+      await this.view.render(renderer);
+      this.complete = true;
+      session.frameRendered(fetchResponse, this.element);
+      session.frameLoaded(this.element);
+      await this.fetchResponseLoaded(fetchResponse);
+    } else if (this.#willHandleFrameMissingFromResponse(fetchResponse)) {
+      this.#handleFrameMissingFromResponse(fetchResponse);
+    }
+  }
+
+  async #visit(url) {
+    const request = new FetchRequest(this, FetchMethod.get, url, new URLSearchParams(), this.element);
+
+    this.#currentFetchRequest?.cancel();
+    this.#currentFetchRequest = request;
+
+    return new Promise((resolve) => {
+      this.#resolveVisitPromise = () => {
+        this.#resolveVisitPromise = () => {};
+        this.#currentFetchRequest = null;
+        resolve();
+      };
+      request.perform();
+    })
+  }
+
+  #navigateFrame(element, url, submitter) {
+    const frame = this.#findFrameElement(element, submitter);
+
+    frame.delegate.proposeVisitIfNavigatedWithAction(frame, getVisitAction(submitter, element, frame));
+
+    this.#withCurrentNavigationElement(element, () => {
+      frame.src = url;
+    });
+  }
+
+  proposeVisitIfNavigatedWithAction(frame, action = null) {
+    this.action = action;
+
+    if (this.action) {
+      const pageSnapshot = PageSnapshot.fromElement(frame).clone();
+      const { visitCachedSnapshot } = frame.delegate;
+
+      frame.delegate.fetchResponseLoaded = async (fetchResponse) => {
+        if (frame.src) {
+          const { statusCode, redirected } = fetchResponse;
+          const responseHTML = await fetchResponse.responseHTML;
+          const response = { statusCode, redirected, responseHTML };
+          const options = {
+            response,
+            visitCachedSnapshot,
+            willRender: false,
+            updateHistory: false,
+            restorationIdentifier: this.restorationIdentifier,
+            snapshot: pageSnapshot
+          };
+
+          if (this.action) options.action = this.action;
+
+          session.visit(frame.src, options);
+        }
+      };
+    }
+  }
+
+  changeHistory() {
+    if (this.action) {
+      const method = getHistoryMethodForAction(this.action);
+      session.history.update(method, expandURL(this.element.src || ""), this.restorationIdentifier);
+    }
+  }
+
+  async #handleUnvisitableFrameResponse(fetchResponse) {
+    console.warn(
+      `The response (${fetchResponse.statusCode}) from <turbo-frame id="${this.element.id}"> is performing a full page visit due to turbo-visit-control.`
+    );
+
+    await this.#visitResponse(fetchResponse.response);
+  }
+
+  #willHandleFrameMissingFromResponse(fetchResponse) {
+    this.element.setAttribute("complete", "");
+
+    const response = fetchResponse.response;
+    const visit = async (url, options) => {
+      if (url instanceof Response) {
+        this.#visitResponse(url);
+      } else {
+        session.visit(url, options);
+      }
+    };
+
+    const event = dispatch("turbo:frame-missing", {
+      target: this.element,
+      detail: { response, visit },
+      cancelable: true
+    });
+
+    return !event.defaultPrevented
+  }
+
+  #handleFrameMissingFromResponse(fetchResponse) {
+    this.view.missing();
+    this.#throwFrameMissingError(fetchResponse);
+  }
+
+  #throwFrameMissingError(fetchResponse) {
+    const message = `The response (${fetchResponse.statusCode}) did not contain the expected <turbo-frame id="${this.element.id}"> and will be ignored. To perform a full page visit instead, set turbo-visit-control to reload.`;
+    throw new TurboFrameMissingError(message)
+  }
+
+  async #visitResponse(response) {
+    const wrapped = new FetchResponse(response);
+    const responseHTML = await wrapped.responseHTML;
+    const { location, redirected, statusCode } = wrapped;
+
+    return session.visit(location, { response: { redirected, statusCode, responseHTML } })
+  }
+
+  #findFrameElement(element, submitter) {
+    const id = getAttribute("data-turbo-frame", submitter, element) || this.element.getAttribute("target");
+    const target = this.#getFrameElementById(id);
+
+    return target instanceof FrameElement ? target : this.element
+  }
+
+  async extractForeignFrameElement(container) {
+    let element;
+    const id = CSS.escape(this.id);
+
+    try {
+      element = activateElement(container.querySelector(`turbo-frame#${id}`), this.sourceURL);
+      if (element) {
+        return element
+      }
+
+      element = activateElement(container.querySelector(`turbo-frame[src][recurse~=${id}]`), this.sourceURL);
+      if (element) {
+        await element.loaded;
+        return await this.extractForeignFrameElement(element)
+      }
+    } catch (error) {
+      console.error(error);
+      return new FrameElement()
+    }
+
+    return null
+  }
+
+  #formActionIsVisitable(form, submitter) {
+    const action = getAction$1(form, submitter);
+
+    return locationIsVisitable(expandURL(action), this.rootLocation)
+  }
+
+  #shouldInterceptNavigation(element, submitter) {
+    const id = getAttribute("data-turbo-frame", submitter, element) || this.element.getAttribute("target");
+
+    if (element instanceof HTMLFormElement && !this.#formActionIsVisitable(element, submitter)) {
+      return false
+    }
+
+    if (!this.enabled || id == "_top") {
+      return false
+    }
+
+    if (id) {
+      const frameElement = this.#getFrameElementById(id);
+      if (frameElement) {
+        return !frameElement.disabled
+      } else if (id == "_parent") {
+        return false
+      }
+    }
+
+    if (!session.elementIsNavigatable(element)) {
+      return false
+    }
+
+    if (submitter && !session.elementIsNavigatable(submitter)) {
+      return false
+    }
+
+    return true
+  }
+
+  // Computed properties
+
+  get id() {
+    return this.element.id
+  }
+
+  get disabled() {
+    return this.element.disabled
+  }
+
+  get enabled() {
+    return !this.disabled
+  }
+
+  get sourceURL() {
+    if (this.element.src) {
+      return this.element.src
+    }
+  }
+
+  set sourceURL(sourceURL) {
+    this.#ignoringChangesToAttribute("src", () => {
+      this.element.src = sourceURL ?? null;
+    });
+  }
+
+  get loadingStyle() {
+    return this.element.loading
+  }
+
+  get isLoading() {
+    return this.formSubmission !== undefined || this.#resolveVisitPromise() !== undefined
+  }
+
+  get complete() {
+    return this.element.hasAttribute("complete")
+  }
+
+  set complete(value) {
+    if (value) {
+      this.element.setAttribute("complete", "");
+    } else {
+      this.element.removeAttribute("complete");
+    }
+  }
+
+  get isActive() {
+    return this.element.isActive && this.#connected
+  }
+
+  get rootLocation() {
+    const meta = this.element.ownerDocument.querySelector(`meta[name="turbo-root"]`);
+    const root = meta?.content ?? "/";
+    return expandURL(root)
+  }
+
+  #isIgnoringChangesTo(attributeName) {
+    return this.#ignoredAttributes.has(attributeName)
+  }
+
+  #ignoringChangesToAttribute(attributeName, callback) {
+    this.#ignoredAttributes.add(attributeName);
+    callback();
+    this.#ignoredAttributes.delete(attributeName);
+  }
+
+  #withCurrentNavigationElement(element, callback) {
+    this.currentNavigationElement = element;
+    callback();
+    delete this.currentNavigationElement;
+  }
+
+  #getFrameElementById(id) {
+    if (id != null) {
+      const element = id === "_parent" ?
+        this.element.parentElement.closest("turbo-frame") :
+        document.getElementById(id);
+      if (element instanceof FrameElement) {
+        return element
+      }
+    }
+  }
+}
+
+function activateElement(element, currentURL) {
+  if (element) {
+    const src = element.getAttribute("src");
+    if (src != null && currentURL != null && urlsAreEqual(src, currentURL)) {
+      throw new Error(`Matching <turbo-frame id="${element.id}"> element has a source URL which references itself`)
+    }
+    if (element.ownerDocument !== document) {
+      element = document.importNode(element, true);
+    }
+
+    if (element instanceof FrameElement) {
+      element.connectedCallback();
+      element.disconnectedCallback();
+      return element
+    }
+  }
+}
+
+const StreamActions = {
+  after() {
+    this.removeDuplicateTargetSiblings();
+    this.targetElements.forEach((e) => e.parentElement?.insertBefore(this.templateContent, e.nextSibling));
+  },
+
+  append() {
+    this.removeDuplicateTargetChildren();
+    this.targetElements.forEach((e) => e.append(this.templateContent));
+  },
+
+  before() {
+    this.removeDuplicateTargetSiblings();
+    this.targetElements.forEach((e) => e.parentElement?.insertBefore(this.templateContent, e));
+  },
+
+  prepend() {
+    this.removeDuplicateTargetChildren();
+    this.targetElements.forEach((e) => e.prepend(this.templateContent));
+  },
+
+  remove() {
+    this.targetElements.forEach((e) => e.remove());
+  },
+
+  replace() {
+    const method = this.getAttribute("method");
+
+    this.targetElements.forEach((targetElement) => {
+      if (method === "morph") {
+        morphElements(targetElement, this.templateContent);
+      } else {
+        targetElement.replaceWith(this.templateContent);
+      }
+    });
+  },
+
+  update() {
+    const method = this.getAttribute("method");
+
+    this.targetElements.forEach((targetElement) => {
+      if (method === "morph") {
+        morphChildren(targetElement, this.templateContent);
+      } else {
+        targetElement.innerHTML = "";
+        targetElement.append(this.templateContent);
+      }
+    });
+  },
+
+  refresh() {
+    const method = this.getAttribute("method");
+    const requestId = this.requestId;
+    const scroll = this.getAttribute("scroll");
+
+    session.refresh(this.baseURI, { method, requestId, scroll });
+  }
+};
+
+// <turbo-stream action=replace target=id><template>...
+
+/**
+ * Renders updates to the page from a stream of messages.
+ *
+ * Using the `action` attribute, this can be configured one of eight ways:
+ *
+ * - `after` - inserts the result after the target
+ * - `append` - appends the result to the target
+ * - `before` - inserts the result before the target
+ * - `prepend` - prepends the result to the target
+ * - `refresh` - initiates a page refresh
+ * - `remove` - removes the target
+ * - `replace` - replaces the outer HTML of the target
+ * - `update` - replaces the inner HTML of the target
+ *
+ * @customElement turbo-stream
+ * @example
+ *   <turbo-stream action="append" target="dom_id">
+ *     <template>
+ *       Content to append to target designated with the dom_id.
+ *     </template>
+ *   </turbo-stream>
+ */
+class StreamElement extends HTMLElement {
+  static async renderElement(newElement) {
+    await newElement.performAction();
+  }
+
+  async connectedCallback() {
+    try {
+      await this.render();
+    } catch (error) {
+      console.error(error);
+    } finally {
+      this.disconnect();
+    }
+  }
+
+  async render() {
+    return (this.renderPromise ??= (async () => {
+      const event = this.beforeRenderEvent;
+
+      if (this.dispatchEvent(event)) {
+        await nextRepaint();
+        await event.detail.render(this);
+      }
+    })())
+  }
+
+  disconnect() {
+    try {
+      this.remove();
+      // eslint-disable-next-line no-empty
+    } catch {}
+  }
+
+  /**
+   * Removes duplicate children (by ID)
+   */
+  removeDuplicateTargetChildren() {
+    this.duplicateChildren.forEach((c) => c.remove());
+  }
+
+  /**
+   * Gets the list of duplicate children (i.e. those with the same ID)
+   */
+  get duplicateChildren() {
+    const existingChildren = this.targetElements.flatMap((e) => [...e.children]).filter((c) => !!c.getAttribute("id"));
+    const newChildrenIds = [...(this.templateContent?.children || [])].filter((c) => !!c.getAttribute("id")).map((c) => c.getAttribute("id"));
+
+    return existingChildren.filter((c) => newChildrenIds.includes(c.getAttribute("id")))
+  }
+
+  /**
+  * Removes duplicate siblings (by ID)
+  */
+  removeDuplicateTargetSiblings() {
+    this.duplicateSiblings.forEach((c) => c.remove());
+  }
+
+  /**
+  * Gets the list of duplicate siblings (i.e. those with the same ID)
+  */
+  get duplicateSiblings() {
+    const existingChildren = this.targetElements.flatMap((e) => [...e.parentElement.children]).filter((c) => !!c.id);
+    const newChildrenIds = [...(this.templateContent?.children || [])].filter((c) => !!c.id).map((c) => c.id);
+
+    return existingChildren.filter((c) => newChildrenIds.includes(c.id))
+  }
+
+  /**
+   * Gets the action function to be performed.
+   */
+  get performAction() {
+    if (this.action) {
+      const actionFunction = StreamActions[this.action];
+      if (actionFunction) {
+        return actionFunction
+      }
+      this.#raise("unknown action");
+    }
+    this.#raise("action attribute is missing");
+  }
+
+  /**
+   * Gets the target elements which the template will be rendered to.
+   */
+  get targetElements() {
+    if (this.target) {
+      return this.targetElementsById
+    } else if (this.targets) {
+      return this.targetElementsByQuery
+    } else {
+      this.#raise("target or targets attribute is missing");
+    }
+  }
+
+  /**
+   * Gets the contents of the main `<template>`.
+   */
+  get templateContent() {
+    return this.templateElement.content.cloneNode(true)
+  }
+
+  /**
+   * Gets the main `<template>` used for rendering
+   */
+  get templateElement() {
+    if (this.firstElementChild === null) {
+      const template = this.ownerDocument.createElement("template");
+      this.appendChild(template);
+      return template
+    } else if (this.firstElementChild instanceof HTMLTemplateElement) {
+      return this.firstElementChild
+    }
+    this.#raise("first child element must be a <template> element");
+  }
+
+  /**
+   * Gets the current action.
+   */
+  get action() {
+    return this.getAttribute("action")
+  }
+
+  /**
+   * Gets the current target (an element ID) to which the result will
+   * be rendered.
+   */
+  get target() {
+    return this.getAttribute("target")
+  }
+
+  /**
+   * Gets the current "targets" selector (a CSS selector)
+   */
+  get targets() {
+    return this.getAttribute("targets")
+  }
+
+  /**
+   * Reads the request-id attribute
+   */
+  get requestId() {
+    return this.getAttribute("request-id")
+  }
+
+  #raise(message) {
+    throw new Error(`${this.description}: ${message}`)
+  }
+
+  get description() {
+    return (this.outerHTML.match(/<[^>]+>/) ?? [])[0] ?? "<turbo-stream>"
+  }
+
+  get beforeRenderEvent() {
+    return new CustomEvent("turbo:before-stream-render", {
+      bubbles: true,
+      cancelable: true,
+      detail: { newStream: this, render: StreamElement.renderElement }
+    })
+  }
+
+  get targetElementsById() {
+    const element = this.ownerDocument?.getElementById(this.target);
+
+    if (element !== null) {
+      return [element]
+    } else {
+      return []
+    }
+  }
+
+  get targetElementsByQuery() {
+    const elements = this.ownerDocument?.querySelectorAll(this.targets);
+
+    if (elements.length !== 0) {
+      return Array.prototype.slice.call(elements)
+    } else {
+      return []
+    }
+  }
+}
+
+class StreamSourceElement extends HTMLElement {
+  streamSource = null
+
+  connectedCallback() {
+    this.streamSource = this.src.match(/^ws{1,2}:/) ? new WebSocket(this.src) : new EventSource(this.src);
+
+    connectStreamSource(this.streamSource);
+  }
+
+  disconnectedCallback() {
+    if (this.streamSource) {
+      this.streamSource.close();
+
+      disconnectStreamSource(this.streamSource);
+    }
+  }
+
+  get src() {
+    return this.getAttribute("src") || ""
+  }
+}
+
+FrameElement.delegateConstructor = FrameController;
+
+if (customElements.get("turbo-frame") === undefined) {
+  customElements.define("turbo-frame", FrameElement);
+}
+
+if (customElements.get("turbo-stream") === undefined) {
+  customElements.define("turbo-stream", StreamElement);
+}
+
+if (customElements.get("turbo-stream-source") === undefined) {
+  customElements.define("turbo-stream-source", StreamSourceElement);
+}
+
+(() => {
+  const scriptElement = document.currentScript;
+  if (!scriptElement) return
+  if (scriptElement.hasAttribute("data-turbo-suppress-warning")) return
+
+  let element = scriptElement.parentElement;
+  while (element) {
+    if (element == document.body) {
+      return console.warn(
+        unindent`
         You are loading Turbo from a <script> element inside the <body> element. This is probably not what you meant to do!
 
         Load your application’s JavaScript bundle inside the <head> element instead. <script> elements in <body> are evaluated with each page change.
@@ -156,5 +7242,16 @@
 
         ——
         Suppress this warning by adding a "data-turbo-suppress-warning" attribute to: %s
-      `,e.outerHTML);e=e.parentElement}}})();window.Turbo={...L,StreamActions:C};start();export{l as FetchEnctype,c as FetchMethod,FetchRequest,FetchResponse,FrameElement,t as FrameLoadingStyle,FrameRenderer,PageRenderer,PageSnapshot,C as StreamActions,StreamElement,StreamSourceElement,R as cache,clearCache,n as config,connectStreamSource,disconnectStreamSource,fetchWithTurboHeaders as fetch,fetchEnctypeFromString,fetchMethodFromString,isSafe,A as navigator,registerAdapter,renderStreamMessage,y as session,setConfirmMethod,setFormMode,setProgressBarDelay,start,visit};
+      `,
+        scriptElement.outerHTML
+      )
+    }
 
+    element = element.parentElement;
+  }
+})();
+
+window.Turbo = { ...Turbo, StreamActions };
+start();
+
+export { FetchEnctype, FetchMethod, FetchRequest, FetchResponse, FrameElement, FrameLoadingStyle, FrameRenderer, PageRenderer, PageSnapshot, StreamActions, StreamElement, StreamSourceElement, cache, config, connectStreamSource, disconnectStreamSource, fetchWithTurboHeaders as fetch, fetchEnctypeFromString, fetchMethodFromString, isSafe, morphBodyElements, morphChildren, morphElements, morphTurboFrameElements, sessionNavigator as navigator, registerAdapter, renderStreamMessage, session, setConfirmMethod, setFormMode, setProgressBarDelay, start, visit };

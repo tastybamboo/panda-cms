@@ -12,7 +12,7 @@ RSpec.describe "Admin Files", type: :request do
     post "/admin/test_sessions", params: {user_id: admin_user.id}
   end
 
-  describe "GET /admin/cms/files" do
+  describe "GET /admin/files" do
     it "excludes variant blobs from the listing" do
       # Create an original blob
       original = ActiveStorage::Blob.create_and_upload!(
@@ -30,7 +30,7 @@ RSpec.describe "Admin Files", type: :request do
       variant_record = ActiveStorage::VariantRecord.create!(blob: original, variation_digest: "test_digest")
       variant_record.image.attach(variant_blob)
 
-      get "/admin/cms/files"
+      get "/admin/files"
 
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("original.jpg")
@@ -38,7 +38,7 @@ RSpec.describe "Admin Files", type: :request do
     end
   end
 
-  describe "GET /admin/cms/files with category filter" do
+  describe "GET /admin/files with category filter" do
     it "filters files by category" do
       categorized_blob = ActiveStorage::Blob.create_and_upload!(
         io: StringIO.new("categorized"),
@@ -52,7 +52,7 @@ RSpec.describe "Admin Files", type: :request do
       )
       Panda::Core::FileCategorization.create!(file_category: category, blob: categorized_blob)
 
-      get "/admin/cms/files", params: {category: "test-category"}
+      get "/admin/files", params: {category: "test-category"}
 
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("categorized.txt")
@@ -72,7 +72,7 @@ RSpec.describe "Admin Files", type: :request do
       )
       Panda::Core::FileCategorization.create!(file_category: category, blob: tagged_blob)
 
-      get "/admin/cms/files", params: {category: "uncategorized"}
+      get "/admin/files", params: {category: "uncategorized"}
 
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("loose_file.txt")
@@ -86,14 +86,14 @@ RSpec.describe "Admin Files", type: :request do
         content_type: "text/plain"
       )
 
-      get "/admin/cms/files"
+      get "/admin/files"
 
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("any_file.txt")
     end
   end
 
-  describe "DELETE /admin/cms/files/:id" do
+  describe "DELETE /admin/files/:id" do
     it "deletes a blob with no attachments" do
       blob = ActiveStorage::Blob.create_and_upload!(
         io: StringIO.new("delete me"),
@@ -103,11 +103,11 @@ RSpec.describe "Admin Files", type: :request do
 
       perform_enqueued_jobs do
         expect {
-          delete "/admin/cms/files/#{blob.id}"
+          delete "/admin/files/#{blob.id}"
         }.to change(ActiveStorage::Blob, :count).by(-1)
       end
 
-      expect(response).to redirect_to("/admin/cms/files")
+      expect(response).to redirect_to("/admin/files")
     end
 
     it "deletes a blob that has active attachments" do
@@ -120,12 +120,12 @@ RSpec.describe "Admin Files", type: :request do
 
       perform_enqueued_jobs do
         expect {
-          delete "/admin/cms/files/#{blob.id}"
+          delete "/admin/files/#{blob.id}"
         }.to change(ActiveStorage::Blob, :count).by(-1)
           .and change(ActiveStorage::Attachment, :count).by(-1)
       end
 
-      expect(response).to redirect_to("/admin/cms/files")
+      expect(response).to redirect_to("/admin/files")
     end
 
     it "deletes a blob that has variant records" do
@@ -144,12 +144,12 @@ RSpec.describe "Admin Files", type: :request do
 
       perform_enqueued_jobs do
         expect {
-          delete "/admin/cms/files/#{blob.id}"
+          delete "/admin/files/#{blob.id}"
         }.to change(ActiveStorage::Blob, :count).by(-2)
           .and change(ActiveStorage::VariantRecord, :count).by(-1)
       end
 
-      expect(response).to redirect_to("/admin/cms/files")
+      expect(response).to redirect_to("/admin/files")
     end
 
     it "also removes associated file categorizations" do
@@ -161,14 +161,14 @@ RSpec.describe "Admin Files", type: :request do
       Panda::Core::FileCategorization.create!(file_category: category, blob: blob)
 
       expect {
-        delete "/admin/cms/files/#{blob.id}"
+        delete "/admin/files/#{blob.id}"
       }.to change(Panda::Core::FileCategorization, :count).by(-1)
 
-      expect(response).to redirect_to("/admin/cms/files")
+      expect(response).to redirect_to("/admin/files")
     end
   end
 
-  describe "POST /admin/cms/files (gallery upload)" do
+  describe "POST /admin/files (gallery upload)" do
     it "stamps the uploader metadata on the blob" do
       file = Rack::Test::UploadedFile.new(
         StringIO.new("test content"),
@@ -176,7 +176,7 @@ RSpec.describe "Admin Files", type: :request do
         original_filename: "test.txt"
       )
 
-      post "/admin/cms/files", params: {
+      post "/admin/files", params: {
         file_upload: {file: file, file_category_id: category.id}
       }
 

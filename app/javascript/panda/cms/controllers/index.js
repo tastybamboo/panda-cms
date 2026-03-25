@@ -25,8 +25,6 @@ async function registerController(name, path) {
 const cmsControllers = [
   ["slug", "/panda/cms/controllers/slug_controller.js"],
   ["tree", "/panda/cms/controllers/tree_controller.js"],
-  ["file-gallery", "/panda/cms/controllers/file_gallery_controller.js"],
-  ["file-upload", "/panda/cms/controllers/file_upload_controller.js"],
   ["page-form", "/panda/cms/controllers/page_form_controller.js"],
   ["nested-form", "/panda/cms/controllers/nested_form_controller.js"],
   ["menu-form", "/panda/cms/controllers/menu_form_controller.js"],

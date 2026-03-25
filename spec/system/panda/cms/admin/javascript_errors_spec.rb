@@ -92,7 +92,7 @@ RSpec.describe "JavaScript errors", type: :system, js: true do
 
   describe "Files index" do
     it "has no JavaScript errors" do
-      visit "/admin/cms/files"
+      visit "/admin/files"
       expect(page).to have_content("Files", wait: 5)
       setup_error_tracking
 
