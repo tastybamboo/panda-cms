@@ -382,6 +382,8 @@ RSpec.describe "Forms Management", type: :system do
     it "shows Show on summary checkbox in form field editor" do
       visit "/admin/cms/forms/#{summary_form.id}/edit"
 
+      # Existing fields are collapsed by default — expand the first one
+      first("[data-action='click->collapsible-item#toggle']").click
       expect(page).to have_field("Show on summary", wait: 10)
     end
   end
