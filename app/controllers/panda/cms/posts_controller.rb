@@ -65,7 +65,7 @@ module Panda
 
         # HTTP caching: Use the most recent post in this month for conditional requests
         # Returns 304 Not Modified if no posts in this month have changed
-        latest_month_timestamp = @posts.maximum(:updated_at) || @month
+        latest_month_timestamp = @posts.maximum(:updated_at) || @month.in_time_zone.beginning_of_day
         return unless stale?(etag: [@month, @posts.count, latest_month_timestamp], last_modified: latest_month_timestamp, public: true)
 
         render inline: "", layout: Panda::CMS.config.posts[:layouts][:by_month]
@@ -81,7 +81,7 @@ module Panda
       end
 
       def render_not_found
-        render file: Rails.public_path.join("404.html"), status: :not_found, layout: false
+        render "panda/cms/errors/404", status: :not_found, layout: "error"
       end
     end
   end
