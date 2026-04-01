@@ -3,6 +3,8 @@
 module Panda
   module CMS
     class PostsController < ApplicationController
+      rescue_from ActiveRecord::RecordNotFound, with: :render_not_found
+
       before_action :set_default_ivars
 
       # TODO: Change from layout rendering to standard template rendering
@@ -34,7 +36,7 @@ module Panda
 
         # HTTP caching: Send ETag and Last-Modified headers for individual posts
         # Returns 304 Not Modified if client's cached version is still valid
-        fresh_when(@post, last_modified: @post.updated_at, public: true)
+        return unless stale?(@post, last_modified: @post.updated_at, public: true)
 
         render inline: "", layout: Panda::CMS.config.posts[:layouts][:show]
       end
@@ -48,7 +50,7 @@ module Panda
           .ordered
 
         latest_timestamp = @posts.maximum(:updated_at) || @post_category.updated_at
-        fresh_when(etag: [@post_category.cache_key_with_version, @posts.count, latest_timestamp], last_modified: latest_timestamp, public: true)
+        return unless stale?(etag: [@post_category.cache_key_with_version, @posts.count, latest_timestamp], last_modified: latest_timestamp, public: true)
 
         render inline: "", layout: Panda::CMS.config.posts[:layouts][:index]
       end
@@ -64,7 +66,7 @@ module Panda
         # HTTP caching: Use the most recent post in this month for conditional requests
         # Returns 304 Not Modified if no posts in this month have changed
         latest_month_timestamp = @posts.maximum(:updated_at) || @month
-        fresh_when(etag: [@month, @posts.count, latest_month_timestamp], last_modified: latest_month_timestamp, public: true)
+        return unless stale?(etag: [@month, @posts.count, latest_month_timestamp], last_modified: latest_month_timestamp, public: true)
 
         render inline: "", layout: Panda::CMS.config.posts[:layouts][:by_month]
       end
@@ -76,6 +78,10 @@ module Panda
       def set_default_ivars
         @page = nil
         @overrides = {}
+      end
+
+      def render_not_found
+        render file: Rails.public_path.join("404.html"), status: :not_found, layout: false
       end
     end
   end
