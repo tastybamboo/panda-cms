@@ -151,7 +151,7 @@ RSpec.describe Panda::CMS::SEOHelper, type: :helper do
       end
 
       it "renders og:image tags with dimensions" do
-        allow(helper).to receive(:rails_blob_representation_proxy_url).and_return("https://example.com/image.jpg")
+        allow(Rails.application.routes.url_helpers).to receive(:rails_blob_representation_proxy_url).and_return("https://example.com/image.jpg")
 
         result = helper.render_seo_meta_tags(test_page)
         expect(result).to include('property="og:image"')
@@ -164,7 +164,7 @@ RSpec.describe Panda::CMS::SEOHelper, type: :helper do
       end
 
       it "gracefully skips image tags when URL generation fails" do
-        allow(helper).to receive(:rails_blob_representation_proxy_url)
+        allow(Rails.application.routes.url_helpers).to receive(:rails_blob_representation_proxy_url)
           .and_raise(ActionController::UrlGenerationError.new("missing keys"))
         allow(Rails.logger).to receive(:warn)
 

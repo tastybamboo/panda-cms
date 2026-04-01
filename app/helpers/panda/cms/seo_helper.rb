@@ -68,13 +68,19 @@ module Panda
       # and rails_representation_url was renamed to rails_blob_representation_proxy_url.
       # Avoids eager processing — uses variant.blob and variant.variation directly so the
       # variant is only processed lazily when the representation URL is requested by a client.
+      #
+      # Note: ActiveStorage route helpers are not mixed into ActionView::Base in Rails 8.1+,
+      # so we access them via Rails.application.routes.url_helpers instead of respond_to?.
       def variant_representation_url(variant)
-        if respond_to?(:rails_blob_representation_proxy_url)
+        url_helpers = Rails.application.routes.url_helpers
+        if url_helpers.respond_to?(:rails_blob_representation_proxy_url)
           # Rails 8.1+
-          rails_blob_representation_proxy_url(
+          url_helpers.rails_blob_representation_proxy_url(
             variant.blob.signed_id,
             variant.variation.key,
-            variant.blob.filename
+            variant.blob.filename,
+            host: request.host_with_port,
+            protocol: request.protocol
           )
         else
           # Rails 7.x
