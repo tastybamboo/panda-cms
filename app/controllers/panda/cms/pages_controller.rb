@@ -97,6 +97,9 @@ module Panda
           referer: request.referer, # TODO: Fix the naming of this column
           params: request.parameters
         )
+      rescue ActionDispatch::RemoteIp::IpSpoofAttackError
+        # Skip visit recording when IP headers conflict (e.g. multiple proxies).
+        # The page still renders normally — only the analytics record is lost.
       end
 
       def create_redirect_if_path_changed
