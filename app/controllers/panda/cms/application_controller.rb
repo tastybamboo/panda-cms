@@ -8,6 +8,9 @@ module Panda
 
       protect_from_forgery with: :exception
 
+      rescue_from ActionController::InvalidAuthenticityToken, with: :handle_invalid_authenticity_token
+      rescue_from ActionController::BadRequest, with: :handle_bad_request
+
       # Add flash types for improved alert support with Tailwind
       add_flash_types :success, :warning, :error, :info
 
@@ -70,6 +73,17 @@ module Panda
 
       def user_signed_in?
         !!Panda::Core::Current.user
+      end
+
+      private
+
+      def handle_invalid_authenticity_token
+        redirect_back fallback_location: main_app.root_path,
+          flash: {error: "Your session has expired. Please try again."}
+      end
+
+      def handle_bad_request
+        head :bad_request
       end
     end
   end

@@ -16,4 +16,4 @@ pre-commit:
     - name: standardrb
       run: bundle exec standardrb
     - name: zeitwork
-      run: rake app:zeitwerk:check
+      run: bundle exec rake app:zeitwerk:check
