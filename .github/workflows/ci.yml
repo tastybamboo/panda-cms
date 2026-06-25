@@ -52,7 +52,7 @@ jobs:
           Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
 
       - name: Cache gems
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: vendor/bundle
           key: ${{ runner.os }}-gems-stable-${{ hashFiles('Gemfile.lock') }}
@@ -122,7 +122,7 @@ jobs:
           Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
 
       - name: Cache gems
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: vendor/bundle
           key: ${{ runner.os }}-gems-flaky-${{ hashFiles('Gemfile.lock') }}
@@ -168,7 +168,7 @@ jobs:
       - uses: actions/checkout@v6.0.2
 
       - name: Cache gems
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: vendor/bundle
           key: ${{ runner.os }}-gems-lint-${{ hashFiles('**/Gemfile.lock') }}
