@@ -15,7 +15,7 @@ jobs:
     outputs:
       has_flaky_tests: ${{ steps.check-flaky.outputs.has_flaky }}
     container:
-      image: ghcr.io/tastybamboo/panda-ci:ruby-4.0.1
+      image: ghcr.io/tastybamboo/panda-ci:ruby-4.0
     env:
       BUNDLE_PATH: vendor/bundle
       RAILS_ENV: test
@@ -94,7 +94,7 @@ jobs:
     runs-on: ubuntu-latest
     continue-on-error: true
     container:
-      image: ghcr.io/tastybamboo/panda-ci:ruby-4.0.1
+      image: ghcr.io/tastybamboo/panda-ci:ruby-4.0
     env:
       BUNDLE_PATH: vendor/bundle
       RAILS_ENV: test

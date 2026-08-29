@@ -5,7 +5,7 @@ module Panda
     # Lightweight feature flag registry so open-source core can gate functionality
     # that is only available when panda-cms-pro is installed.
     module Features
-      Feature = Struct.new(:name, :provider, keyword_init: true)
+      Feature = Struct.new(:name, :provider)
 
       class MissingFeatureError < StandardError; end
 
