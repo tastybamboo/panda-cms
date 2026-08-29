@@ -61,18 +61,20 @@ module Panda
         end
       end
 
-      # Register search providers for editor link-autocomplete
-      initializer "panda_cms.search_providers" do
-        ActiveSupport.on_load(:active_record) do
-          Panda::Core::SearchRegistry.register(
-            name: "pages",
-            search_class: Panda::CMS::Page
-          )
-          Panda::Core::SearchRegistry.register(
-            name: "posts",
-            search_class: Panda::CMS::Post
-          )
-        end
+      # Register search providers for editor link-autocomplete.
+      # to_prepare rather than on_load(:active_record): the hook can fire
+      # before the autoloaders are set up (boot order depends on the gem
+      # set), and reloading in development would leave stale classes in
+      # the registry. Registration is idempotent by name.
+      config.to_prepare do
+        Panda::Core::SearchRegistry.register(
+          name: "pages",
+          search_class: Panda::CMS::Page
+        )
+        Panda::Core::SearchRegistry.register(
+          name: "posts",
+          search_class: Panda::CMS::Post
+        )
       end
 
       # Configure custom error pages in production-like environments

@@ -6,7 +6,7 @@ module Panda
       # Lightweight helper to mirror the client-side character counter logic
       # and allow deterministic testing.
       class CharacterCounter
-        Result = Struct.new(:count, :limit, :remaining, :status, :over_limit?, keyword_init: true)
+        Result = Struct.new(:count, :limit, :remaining, :status, :over_limit?)
 
         DEFAULT_WARNING_THRESHOLD = 10
 
