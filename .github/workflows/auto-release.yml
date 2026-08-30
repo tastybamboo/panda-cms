@@ -235,7 +235,7 @@ jobs:
           rm ~/.gem/credentials
 
       - name: "Update GitHub Release"
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ needs.check-version.outputs.tag_name }}
           name: ${{ needs.check-version.outputs.tag_name }}
